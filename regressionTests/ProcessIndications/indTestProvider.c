@@ -96,7 +96,7 @@ CMPIStatus IndTestProviderAuthorizeFilter(CMPIIndicationMI * mi,
                                              CMPIContext * ctx,
                                              CMPIResult * rslt,
                                              CMPISelectExp* se, 
-                                             const char *ns, 
+                                             const char *type, 
                                              CMPIObjectPath* op, 
                                              const char *user)
 {
@@ -111,7 +111,7 @@ CMPIStatus IndTestProviderMustPoll(CMPIIndicationMI * mi,
                                          CMPIContext * ctx,
                                          CMPIResult * rslt,
                                          CMPISelectExp* se, 
-                                         const char *ns, 
+                                         const char *type, 
                                          CMPIObjectPath* op)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -128,11 +128,12 @@ CMPIStatus IndTestProviderActivateFilter(CMPIIndicationMI * mi,
                                        CMPIContext * ctx,
                                        CMPIResult * rslt,
                                        CMPISelectExp* se, 
-                                       const char *ns, 
+                                       const char *type, 
                                        CMPIObjectPath* op, 
                                        CMPIBoolean first)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIString *ns=CMGetNameSpace(op,NULL);
    
    _SFCB_ENTER(TRACE_PROVIDERS, "IndTestProviderActivateFilter");
    printf("IndTestProviderActivateFilter %d\n",currentProc);
@@ -140,7 +141,7 @@ CMPIStatus IndTestProviderActivateFilter(CMPIIndicationMI * mi,
    if (activeFilters==0) {
       CMPIContext *indCtx=CBPrepareAttachThread(_broker,ctx);
       activeFilters++;
-      nameSpace=(char*)ns;
+      nameSpace=(char*)ns->hdl;
       _broker->xft->newThread(indThread,indCtx,0);
    }   
    _SFCB_RETURN(st);    
@@ -151,7 +152,7 @@ CMPIStatus IndTestProviderDeActivateFilter(CMPIIndicationMI * mi,
                                           CMPIContext * ctx,
                                           CMPIResult * rslt,
                                           CMPISelectExp* se, 
-                                          const char *ns, 
+                                          const char *type, 
                                           CMPIObjectPath* op, 
                                           CMPIBoolean last)
 {

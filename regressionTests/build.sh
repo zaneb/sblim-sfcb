@@ -37,6 +37,7 @@ mkdir -p bin lib repository/root/interop  repository/root/tests
 rm -f repository/root/interop/*
 cp scripts/wbemcat bin
 cp scripts/catdiff bin
+cp scripts/sfcbdiff bin
 
 if [ $# -gt 0 ] 
 then

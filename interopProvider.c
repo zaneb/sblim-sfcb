@@ -61,6 +61,7 @@ extern CMPIStatus InternalProviderDeleteInstance(CMPIInstanceMI * mi,
        CMPIContext * ctx, CMPIResult * rslt, CMPIObjectPath * cop);
 extern void closeProviderContext(BinRequestContext* ctx);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
+extern int testNameSpace(char *ns, CMPIStatus *st);
 
 extern QLStatement *parseQuery(int mode, char *query, char *lang, int *rc);
 
@@ -74,6 +75,7 @@ typedef struct filter {
    int useCount;
    char *query;
    char *lang;
+   char *sns;
 } Filter;
 
 typedef struct handler {
@@ -154,7 +156,7 @@ static void removeSubscription(Subscription *su,  char *key)
 
 
 static Filter *addFilter(CMPIInstance *ci,  char *key, QLStatement *qs, 
-   char *query, char *lang)
+   char *query, char *lang, char *sns)
 {
    Filter *fi;
       
@@ -175,6 +177,7 @@ static Filter *addFilter(CMPIInstance *ci,  char *key, QLStatement *qs,
    fi->qs=qs;
    fi->query=strdup(query);
    fi->lang=strdup(lang);
+   fi->sns=strdup(sns);
    filterHt->ft->put(filterHt,key,fi);
    
    _SFCB_RETURN(fi);
@@ -252,12 +255,12 @@ static void removeHandler(Handler *ha,  char *key)
 
 extern int isChild(const char *ns, const char *parent, const char* child);
 
-static int isa(const char *child, const char *parent)
+static int isa(const char *sns, const char *child, const char *parent)
 {
    int rv;
    _SFCB_ENTER(TRACE_INDPROVIDER, "isa");
    if (strcasecmp(child,parent)==0) return 1;
-   rv=isChild("root/interop",parent,child);
+   rv=isChild(sns,parent,child);
    _SFCB_RETURN(rv);
 }
 
@@ -324,7 +327,7 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
 #define CREATE_INST 1
 extern CMPISelectExp *TempCMPISelectExp(QLStatement *qs);
 
-CMPIStatus activateSubscription(char *principle, const char *ns, const char *cn,
+CMPIStatus activateSubscription(char *principle, const char *cn,
              Filter *fi, int *rrc)
 {
    CMPIObjectPath *path;
@@ -338,7 +341,7 @@ CMPIStatus activateSubscription(char *principle, const char *ns, const char *cn,
    _SFCB_ENTER(TRACE_INDPROVIDER, "activateSubscription");
    
    if (rrc) *rrc=0;
-   path = TrackedCMPIObjectPath(ns, cn, &rc);
+   path = TrackedCMPIObjectPath(fi->sns, cn, &rc);
    
    sreq.principle = setCharsMsgSegment(principle);
    sreq.objectPath = setObjectPathMsgSegment(path);
@@ -346,7 +349,7 @@ CMPIStatus activateSubscription(char *principle, const char *ns, const char *cn,
    sreq.language = setCharsMsgSegment(fi->lang);
    sreq.filterId=fi;
 
-   req.nameSpace = setCharsMsgSegment((char*) ns);
+   req.nameSpace = setCharsMsgSegment(fi->sns);
    req.className = setCharsMsgSegment((char*) cn);
 
    memset(&binCtx,0,sizeof(BinRequestContext));
@@ -355,6 +358,8 @@ CMPIStatus activateSubscription(char *principle, const char *ns, const char *cn,
    binCtx.bHdrSize = sizeof(sreq);
    binCtx.chunkedMode=binCtx.xmlAs=0;
 
+   _SFCB_TRACE(1, ("--- getProviderContext for %s-%s",fi->sns,cn));
+   
    irc = getProviderContext(&binCtx, &req);
  
    if (irc == MSG_X_PROVIDER) {      
@@ -383,7 +388,7 @@ CMPIStatus activateSubscription(char *principle, const char *ns, const char *cn,
    _SFCB_RETURN(st);
 }
 
-CMPIStatus activateLifeCycleSubscription(char *principle, const char *ns, const char *cn,
+CMPIStatus activateLifeCycleSubscription(char *principle, const char *cn,
              Filter *fi, int type)
 {
    CMPIStatus st={CMPI_RC_OK,NULL};
@@ -413,7 +418,7 @@ CMPIStatus activateLifeCycleSubscription(char *principle, const char *ns, const 
                      ok=1;
                      printf("lhs: %s\n",(char*)lhs->hdl); 
                      printf("rhs: %s\n",(char*)rhs->hdl);
-                     st=activateSubscription(principle,ns,(char*)rhs->hdl,fi,&irc);
+                     st=activateSubscription(principle,(char*)rhs->hdl,fi,&irc);
                      if (irc==MSG_X_INVALID_CLASS) 
                         st.rc=CMPI_RC_ERR_INVALID_CLASS;
                      if (st.rc!=CMPI_RC_OK) break;
@@ -436,7 +441,7 @@ CMPIStatus activateLifeCycleSubscription(char *principle, const char *ns, const 
 }
 
 
-int fowardSubscription(CMPIContext * ctx, Filter *fi, char *ns, CMPIStatus *st)
+int fowardSubscription(CMPIContext * ctx, Filter *fi, CMPIStatus *st)
 {
    CMPIStatus rc;
    char *principle=NULL;
@@ -450,12 +455,12 @@ int fowardSubscription(CMPIContext * ctx, Filter *fi, char *ns, CMPIStatus *st)
       principle=(char*)principleP.value.string->hdl;
 
    for ( ; *fClasses; fClasses++) {
-      if (isa(*fClasses,"cim_processindication")) {
-         *st=activateSubscription(principle, ns, *fClasses, fi, &irc);
+      if (isa(fi->sns,*fClasses,"cim_processindication")) {
+         *st=activateSubscription(principle, *fClasses, fi, &irc);
       }
-      else if (isa(*fClasses,"CIM_InstCreation")) {
+      else if (isa(fi->sns,*fClasses,"CIM_InstCreation")) {
           printf("--- CIM_InstCreation\n");
-         *st=activateLifeCycleSubscription(principle, ns, *fClasses, fi,CREATE_INST);
+         *st=activateLifeCycleSubscription(principle, *fClasses, fi,CREATE_INST);
       }
       else {
          setStatus(st,CMPI_RC_ERR_NOT_SUPPORTED,"Lifecycle indications not supported");
@@ -476,12 +481,9 @@ static CMPIStatus processSubscription(CMPIBroker *broker, CMPIContext *ctx,
    Subscription *su;
    CMPIObjectPath *op;
    char *key,*skey;
-   char *ns;
    CMPIDateTime *dt;
     
    _SFCB_ENTER(TRACE_INDPROVIDER, "processSubscription");
-   
-   ns=(char*)CMGetNameSpace(cop,NULL)->hdl;
    
    skey=internalProviderNormalizeObjectPath(cop);
    if (getSubscription(skey)) {
@@ -513,7 +515,7 @@ static CMPIStatus processSubscription(CMPIBroker *broker, CMPIContext *ctx,
    CMSetProperty(ci,"SubscriptionDuration",&dt,CMPI_dateTime);
          
    su=addSubscription(ci,skey,fi,ha); 
-   fowardSubscription(ctx,fi,ns,&st);   
+   fowardSubscription(ctx,fi,&st);   
        
    if (st.rc!=CMPI_RC_OK) removeSubscription(su,skey); 
       
@@ -531,7 +533,7 @@ void initInterOp(CMPIBroker *broker, CMPIContext *ctx)
    CMPIInstance *ci;
    CMPIStatus st;
    CMPIObjectPath *cop;
-   char *key,*query,*lng;
+   char *key,*query,*lng,*sns;
    QLStatement *qs=NULL;
    int rc;
     
@@ -542,19 +544,22 @@ void initInterOp(CMPIBroker *broker, CMPIContext *ctx)
    _SFCB_TRACE(1,("--- checking for cim_indicationfilter"));
    op=CMNewObjectPath(broker,"root/interop","cim_indicationfilter",&st);
    ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,0);
+   
    if (ul) for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
           ci=(CMPIInstance*)ul->ft->getNext(ul)) {
       cop=CMGetObjectPath(ci,&st);
       query=(char*)CMGetProperty(ci,"query",&st).value.string->hdl;
       lng=(char*)CMGetProperty(ci,"querylanguage",&st).value.string->hdl;
+      sns=(char*)CMGetProperty(ci,"SourceNamespace",&st).value.string->hdl;
       qs=parseQuery(MEM_NOT_TRACKED,query,lng,&rc);
       key=internalProviderNormalizeObjectPath(cop);
-      addFilter(ci,key,qs,query,lng);
+      addFilter(ci,key,qs,query,lng,sns);
    }   
 
    _SFCB_TRACE(1,("--- checking for cim_listenerdestination"));
    op=CMNewObjectPath(broker,"root/interop","cim_listenerdestination",&st);
    ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,1);
+   
    if (ul) for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
           ci=(CMPIInstance*) ul->ft->getNext(ul)) {
       cop=CMGetObjectPath(ci,&st); 
@@ -564,6 +569,7 @@ void initInterOp(CMPIBroker *broker, CMPIContext *ctx)
    _SFCB_TRACE(1,("--- checking for cim_indicationsubscription"));
    op=CMNewObjectPath(broker,"root/interop","cim_indicationsubscription",&st);
    ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,0);
+   
    if (ul) for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
           ci=(CMPIInstance*)ul->ft->getNext(ul)) {
       CMPIObjectPath *hop;    
@@ -657,6 +663,7 @@ CMPIStatus InteropProviderCreateInstance(CMPIInstanceMI * mi,
       char *key=NULL,*ql,lng[16];
       CMPIString *lang=ci->ft->getProperty(ci,"querylanguage",&st).value.string;
       CMPIString *query=ci->ft->getProperty(ci,"query",&st).value.string;
+      CMPIString *sns=ci->ft->getProperty(ci,"SourceNamespace",&st).value.string;
       
       _SFCB_TRACE(1,("--- create cim_indicationfilter"));
    
@@ -690,7 +697,7 @@ CMPIStatus InteropProviderCreateInstance(CMPIInstanceMI * mi,
          _SFCB_RETURN(st);         
       }
 
-      addFilter(ci,key,qs,(char*)query->hdl,lng);
+      addFilter(ci,key,qs,(char*)query->hdl,lng,(char*)sns->hdl);
    }
    
    else {
@@ -739,7 +746,7 @@ CMPIStatus InteropProviderDeleteInstance(CMPIInstanceMI * mi,
          if (fi->useCount==1) {
             char **fClasses=fi->qs->ft->getFromClassList(fi->qs);
             for ( ; *fClasses; fClasses++) {
-               if (isa(*fClasses,"cim_processindication")) {
+               if (isa(fi->sns,*fClasses,"cim_processindication")) {
                   deactivateFilter(ctx, ns, *fClasses, fi);
                }
             }

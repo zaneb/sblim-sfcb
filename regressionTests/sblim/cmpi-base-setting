@@ -1,0 +1,12 @@
+# Settings for SBLIM Base Instrumentation
+
+STANDALONE=1
+
+CIMOMINC=../../..
+CIMOMLIB=../../lib
+CIMOMMOF=../../schema
+
+COMMONINC=$(CIMOMINC)
+COMMONLIB=$(CIMOMLIB)
+
+MOFMAKEFILE=makefile.standalone

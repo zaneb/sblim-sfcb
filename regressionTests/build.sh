@@ -21,12 +21,16 @@
 
 dirs='FilesAndDirectories BigOutput ProcessIndications'
 
-if [ ! -e $CIMDIR ] 
+sfcbdir=/usr/local/share/sfcb
+if [ -x /usr/bin/curl ] && [ ! -f $sfcbdir/CIM/CIM_Schema.mof ]
 then
-    echo --- build.sh cannot continue: $CIMDIR not found. 
-    echo --- You need to download the desired CIM Mof files from www.dmtf.org into sfcb/dmtf-mofs prior to running build.sh.
+    echo --- build.sh cannot continue: $sfcbdir/CIM/CIM_Schema.mof not found 
+    echo --- You need to download the CIM Mof files from www.dmtf.org prior to running build.sh.
+    echo --- Execute \'sudo sh ../getSchema.sh\' to get the latest DMTF schemas. 
     exit 5
 fi
+
+CIMDIR=$sfcbdir/CIM
 
 mkdir -p bin lib repository/root/interop  repository/root/tests
 
@@ -45,8 +49,8 @@ do
    make -C $x install
 done   
 
-echo mofc -I $CIMDIR -i CIM_Schema$CIMVER.mof -o repository/root/interop/classSchemas  schema/interop.mof
-mofc -I $CIMDIR -i CIM_Schema$CIMVER.mof -o repository/root/interop/classSchemas  schema/interop.mof
+echo mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof
+mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof
 
 mofs=''
 for x in $dirs
@@ -54,8 +58,8 @@ do
    mofs=$mofs' '$x'/schema/*.mof'
 done   
 
-echo mofc -I $CIMDIR -i CIM_Schema$CIMVER.mof -o repository/root/tests/classSchemas $mofs
-mofc -I $CIMDIR -i CIM_Schema$CIMVER.mof -o repository/root/tests/classSchemas $mofs
+echo mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/tests/classSchemas $mofs
+mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/tests/classSchemas $mofs
 
 regs='schema/baseProvider.reg'
 for x in $dirs

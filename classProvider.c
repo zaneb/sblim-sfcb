@@ -168,11 +168,16 @@ static ClassRegister *newClassRegister(char *fname)
       char *cn;
       
       if (hdr.type!=HDR_Class) {
-         fprintf(stderr,"--- newClassRegister(): not a class record");
-         abort();
+         fprintf(stderr,"--- %s contains non-class record(s) - directory skipped\n",fin);
+         return NULL;
      }
       
       buf = (char *) malloc(hdr.size);
+      if (buf==NULL) {
+         fprintf(stderr,"--- %s contains record(s) that are too long - directory skipped\n",fin);
+         return NULL;
+      }
+      
       total+=hdr.size;
       *((ClObjectHdr *) buf) = hdr;
       
@@ -189,8 +194,8 @@ static ClassRegister *newClassRegister(char *fname)
          }   
       }
       else {
-         fprintf(stderr,"--- newClassRegister(): failed to read next class");
-         abort();
+         fprintf(stderr,"--- %s contains invalid record(s) - directory skipped\n",fin);
+         return NULL;
       }
    }
 //   printf("--- %d Association classes\n", assocs);
@@ -225,8 +230,11 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns)
          strcpy(n,dn);
          strcat(n,"/");
          strcat(n,de->d_name);
-         ns->ft->put(ns, n+nsBaseLen, cr=newClassRegister(n));
-         gatherNameSpaces(n,ns);
+         cr=newClassRegister(n);
+         if (cr) {
+            ns->ft->put(ns, n+nsBaseLen, cr);
+            gatherNameSpaces(n,ns);
+         }   
       } 
    }
    closedir(dir);  

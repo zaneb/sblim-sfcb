@@ -1,0 +1,9 @@
+#
+#  Provider registration for indication tests
+#
+[TST_LifeCycleIndication]
+   provider: CreateInstIndTestProvider
+   location: CreateInstIndTestProvider
+   type: instance indication
+   namespace: root/tests
+#

@@ -1,0 +1,9 @@
+//
+// mof file for LifeCycle indication tests
+//
+class TST_LifeCycleIndication : CIM_ManagedElement
+{
+  [key]  
+   sint32 id;
+   string msg;
+};

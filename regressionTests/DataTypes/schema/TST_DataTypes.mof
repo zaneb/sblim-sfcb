@@ -1,0 +1,75 @@
+
+// ===================================================================
+// TST_DataTypes
+// ===================================================================
+   
+   [Version ("2.2.0"), Description (
+   "TST_DataTypes is a concrete class")
+   ] 
+class TST_DataTypes
+{
+      [Key, MaxLen (256)]
+   string CreationClassName;
+
+      [Key]   
+   uint64 InstanceId;
+       
+      [Maxlen (256), Description (
+       "a string property of TST_DataTypes")]
+   string PropertyString;
+
+      [Description (
+       "a uint8 property of TST_DataTypes")]
+   uint8 PropertyUint8;
+
+      [Description (
+      "a uint16 property of TST_DataTypes")]
+   uint16 PropertyUint16;
+
+      [Description (
+      "a uint32 property of TST_DataTypes")]
+   uint32 PropertyUint32;
+
+      [Description (
+      "a uint64 property of TST_DataTypes")]
+   uint64 PropertyUint64;
+
+      [Description (
+      "a sint8 property of TST_DataTypes")]
+   sint8 PropertySint8;
+
+      [Description (
+       "a sint16 property of TST_DataTypes")]
+   sint16 PropertySint16;
+
+      [Description (
+      "a sint32 property of TST_DataTypes")]
+   sint32 PropertySint32;
+
+      [Description (
+      "a sint64 property of TST_DataTypes")]
+   sint64 PropertySint64;
+
+      [Description (
+      "a boolean property of TST_DataTypes")]
+   boolean PropertyBoolean;
+
+     [Description (
+      "a real32 property of TST_DataTypes")]
+   real32 PropertyReal32;
+
+     [Description (
+      "a real64 property of TST_DataTypes")]
+   real64 PropertyReal64;
+
+      [Description (
+      "a datetime property of TST_DataTypes")]
+   datetime PropertyDatetime;
+
+      [Description (
+      "a char16 property of TST_DataTypes")]
+   char16 PropertyChar16;
+
+   String SayHello();
+      
+};

@@ -1,0 +1,6 @@
+[TST_DataTypes]
+   provider: dataTypes
+   location: dataTypes
+   type: instance
+   namespace: root/tests
+#

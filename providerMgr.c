@@ -85,7 +85,7 @@ extern void releaseHeap(void *hc);
 extern int spSendAck(int to);
 
 static UtilList *_getConstClassChildren(const char *ns, const char *cn);
-static CMPIConstClass *_getConstClass(const char *ns, const char *cn);
+static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus *st);
 static UtilList *_getAssocClassNames(const char *ns);
 
 static void notSupported(int *requestor, OperationHdr * req)
@@ -149,7 +149,7 @@ int nameSpaceOk(ProviderInfo *info, char *nameSpace)
 {
    char **ns;
    
-   _SFCB_ENTER(TRACE_PROVIDERMGR, "lookupProvider");
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "nameSpaceOk");
    
    _SFCB_TRACE(1,("--- testing for %s on %s",nameSpace,info->providerName));
    
@@ -164,7 +164,8 @@ int nameSpaceOk(ProviderInfo *info, char *nameSpace)
    _SFCB_RETURN(0);
 }
 
-static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace)
+static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace, 
+      CMPIStatus *st)
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR, "lookupProvider");
    const char *cls = className;
@@ -175,6 +176,7 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace)
             UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
 
    info = (ProviderInfo*) (*ht)->ft->get(*ht, className);
+   st->rc=0;
 
    if (info && nameSpaceOk(info,nameSpace)) {
       _SFCB_TRACE(1,("Provider found for %s",className));
@@ -198,7 +200,7 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace)
       }
       else {
          _SFCB_TRACE(1,("Getting class %s",cls));
-         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls);
+         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, st);
          if (cc == NULL) {
             _SFCB_TRACE(1,("Returning NULL for %s",className));
            _SFCB_RETURN(NULL);
@@ -214,23 +216,22 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace)
 static int addProviders(long type, char *className, char *nameSpace, 
             UtilList * providerList)
 {
-   _SFCB_ENTER(TRACE_PROVIDERMGR, "addProviders");
-   char *child;       
-      
-
+   char *child;          
    ProviderInfo *ip;
    UtilList *children;
    int rc = CMPI_RC_OK;
+   CMPIStatus st;
 
-   ip = lookupProvider(type,className,nameSpace);
-   if (ip == NULL) _SFCB_RETURN(CMPI_RC_ERR_FAILED);
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "addProviders");    
+
+   ip = lookupProvider(type,className,nameSpace,&st);
+   if (ip == NULL) _SFCB_RETURN(st.rc);
    
    if (ip->providerName && !providerList->ft->contains(providerList, ip)) {
       _SFCB_TRACE(1,("--- adding className: %s provider: %s",className,ip->providerName));
       providerList->ft->add(providerList, ip);
    } 
-   
-    
+      
    _SFCB_TRACE(1,("--- getting children")); 
    children = _getConstClassChildren(nameSpace, className);
    _SFCB_TRACE(1,("--- children %p",children));
@@ -248,27 +249,38 @@ static int addProviders(long type, char *className, char *nameSpace,
    _SFCB_RETURN(rc);
 }
 
-static UtilList *lookupProviders(long type, char *className,char *nameSpace)
+static UtilList *lookupProviders(long type, char *className, char *nameSpace,
+         CMPIStatus *st)
 {
    UtilList *lst;
    UtilHashTable **ht=provHt(type,1);
+   char *id;
+   int rc;
    
    _SFCB_ENTER(TRACE_PROVIDERMGR, "lookupProviders");
-
+   
+   id=(char*)malloc(strlen(nameSpace)+strlen(className)+8);
+   strcpy(id,nameSpace);
+   strcat(id,"|");
+   strcat(id,className);
+   
    if (*ht == NULL) *ht =  UtilFactory->newHashTable(61,
                   UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
 
-   lst = (*ht)->ft->get(*ht, className);
+   lst = (*ht)->ft->get(*ht, id);
 
    if (lst == NULL) {
-     lst = UtilFactory->newList();
-      if (addProviders(type, className, nameSpace, lst)) {
+      lst = UtilFactory->newList();
+      if ((rc=addProviders(type, className, nameSpace, lst))) {
          lst->ft->release(lst);
+         free(id);
+         st->rc=rc;
          _SFCB_RETURN(NULL);
       }
-      (*ht)->ft->put(*ht, className, lst);
+      (*ht)->ft->put(*ht, id, lst);
    }
 
+   free(id);
   _SFCB_RETURN(lst);
 }
 
@@ -282,8 +294,9 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
    ProviderInfo *info;
    int dmy = 0, rc,indFound=0;
    char *msg = NULL;
+   CMPIStatus st;
 
-   providers = lookupProviders(type,className,nameSpace);
+   providers = lookupProviders(type,className,nameSpace,&st);
 
    if (providers) {
       count = (n=providers->ft->size(providers)) - 1;
@@ -308,21 +321,27 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
          }
       }
    }
-   else spSendCtlResult(requestor, &dmy, MSG_X_INVALID_CLASS, 0, NULL);
+   else {
+      if (st.rc==CMPI_RC_ERR_INVALID_NAMESPACE) rc=MSG_X_INVALID_NAMESPACE;
+      else rc=MSG_X_INVALID_CLASS;
+      spSendCtlResult(requestor, &dmy, rc, 0, NULL);
+   }   
    
    _SFCB_EXIT();
 }
 
 static void findProvider(long type, int *requestor, OperationHdr * req)
 {
-   _SFCB_ENTER(TRACE_PROVIDERMGR, "findProvider");
    char *className = (char *) req->className.data;
    char *nameSpace = (char *) req->nameSpace.data;
    ProviderInfo *info;
    char *msg=NULL;
    int rc;
+   CMPIStatus st;
 
-   if ((info = lookupProvider(type,className,nameSpace)) != NULL) {
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "findProvider");
+   
+   if ((info = lookupProvider(type,className,nameSpace,&st)) != NULL) {
       if (info->type!=FORCE_PROVIDER_NOTFOUND &&
           (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
          spSendCtlResult(requestor, &info->providerSockets.send, MSG_X_PROVIDER,
@@ -333,7 +352,11 @@ static void findProvider(long type, int *requestor, OperationHdr * req)
          if (msg) free(msg);
       }
    }
-   else spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_INVALID_CLASS, 0, NULL);
+   else {
+      if (st.rc==CMPI_RC_ERR_INVALID_NAMESPACE) rc=MSG_X_INVALID_NAMESPACE;
+      else rc=MSG_X_INVALID_CLASS;
+      spSendCtlResult(requestor, &sfcbSockets.send, rc, 0, NULL);
+   }   
    _SFCB_EXIT();
 }
 
@@ -371,11 +394,13 @@ static void processIndProviderList(int *requestor, OperationHdr * req)
 
 static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
 {
-   _SFCB_ENTER(TRACE_PROVIDERASSOCMGR, "getAssocProvider");
    long type = ASSOCIATION_PROVIDER;
    const char *cls = className;
    ProviderInfo *info;
+   CMPIStatus rc;
 
+   _SFCB_ENTER(TRACE_PROVIDERASSOCMGR, "getAssocProvider");
+   
    if (assocProviderHt == NULL)
       assocProviderHt = UtilFactory->newHashTable(61,
         UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
@@ -390,7 +415,7 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
          _SFCB_RETURN(info);
       }
       else {
-         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls);
+         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, &rc);
          if (cc == NULL) {
             _SFCB_RETURN(NULL);
          }
@@ -410,12 +435,13 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
 
 static int addAssocProviders(char *className, char *nameSpace, UtilList * providerList)
 {
-   _SFCB_ENTER(TRACE_PROVIDERASSOCMGR, "addAssocProviders");
    char *child;
    ProviderInfo *ip;
    UtilList *children = NULL;
    int rc = CMPI_RC_OK;
 
+   _SFCB_ENTER(TRACE_PROVIDERASSOCMGR, "addAssocProviders");
+   
    if (strcmp(className, "$ASSOCCLASSES$") != 0) {
       ip = getAssocProvider(className,nameSpace);
       if (ip == NULL) return CMPI_RC_ERR_FAILED;
@@ -515,11 +541,13 @@ static void assocProviderList(int *requestor, OperationHdr * req)
 
 static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
 {
-   _SFCB_ENTER(TRACE_PROVIDERMGR, "getMethodProvider");
    long type = METHOD_PROVIDER;
    const char *cls = className;
    ProviderInfo *info;
+   CMPIStatus rc;
 
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "getMethodProvider");
+   
    if (methodProviderHt == NULL)
       methodProviderHt = UtilFactory->newHashTable(61,
          UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
@@ -538,7 +566,7 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
          _SFCB_RETURN(info);
       }
       else {
-         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls);
+         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, &rc);
          if (cc == NULL) {
             _SFCB_RETURN(NULL);
          }
@@ -1000,13 +1028,12 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    _SFCB_RETURN(ccl);
 }
 
-static CMPIConstClass *_getConstClass(const char *ns, const char *cn)
+static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus *st)
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR, "_getConstClass");
 
    CMPIObjectPath *path;
    CMPIConstClass *ccl = NULL;
-   CMPIStatus rc;
    GetClassReq sreq = BINREQ(OPS_GetClass, 2);
    BinResponseHdr *resp;
    BinRequestContext binCtx;
@@ -1014,7 +1041,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn)
    int irc;
    char *msg;
    
-   path = NewCMPIObjectPath(ns, cn, &rc);
+   path = NewCMPIObjectPath(ns, cn, st);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principle = setCharsMsgSegment("$$");
 
@@ -1037,6 +1064,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn)
       _SFCB_TRACE(1, ("--- Invoking ClassProvider for %s %s",ns,cn));
       resp = invokeProvider(&binCtx);
       resp->rc--;
+      st->rc=resp->rc;
       if (resp->rc == CMPI_RC_OK) {
          ccl = relocateSerializedConstClass(resp->object[0].data);
          ccl = ccl->ft->clone(ccl, NULL);
@@ -1186,7 +1214,7 @@ static UtilList *_getConstClassChildren(const char *ns, const char *cn)
    irc = _methProvider(&binCtx, &req);
 
    if (irc) {
-      data = localInvokeMethod(&binCtx, path, "getchildren", in, &out, &rc,0);
+      data = localInvokeMethod(&binCtx, path, "getchildren", in, &out, &rc, 0);
       if (out) {
          ar = CMGetArg(out, "children", &rc).value.array;
          ul = UtilFactory->newList();

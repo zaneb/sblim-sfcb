@@ -614,6 +614,8 @@ CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
    
    _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderInvokeMethod");
 
+   CMPIString *nsi=CMGetNameSpace(ref,NULL);
+   
    cReg=getNsReg(ref, &rc);
    if (cReg==NULL) {
       CMPIStatus st = { CMPI_RC_ERR_INVALID_NAMESPACE, NULL };

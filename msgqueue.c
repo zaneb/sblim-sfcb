@@ -247,6 +247,7 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length)
    case MSG_X_PROVIDER:
       *length = spMsg.segments;
       *data = spMsg.provId;
+   case MSG_X_INVALID_NAMESPACE:
    case MSG_X_PROVIDER_NOT_FOUND:
    case MSG_X_INVALID_CLASS:
       _SFCB_RETURN(spMsg.type.ctl.xtra);

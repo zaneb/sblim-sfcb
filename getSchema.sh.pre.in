@@ -1,7 +1,7 @@
 #!/bin/sh
 #Script to fetch CIM schema for sfcb.
 
-trap "rm /tmp/cimv290.zip" exit 
+trap "rm -f /tmp/cimv290.zip" exit 
 
 sfcbdir=@datadir@/sfcb
 

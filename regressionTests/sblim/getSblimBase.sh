@@ -6,8 +6,7 @@ mirror=http://belnet.dl.sourceforge.net/sourceforge
 
 trap "rm /tmp/cmpi-base.tar.gz" exit 
 
-rm -r sblim-* testsuite schema
-mkdir -p schema
+rm -r sblim-* testsuite schema/*
 cp dummy.mof schema
 cp Linux_Base.reg schema
     

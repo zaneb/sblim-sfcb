@@ -6,4 +6,5 @@ install:
 	mkdir -p  ../repository/root/cimv2      
 	mofc -I $(CIMDIR) -i CIM_Schema.mof -o ../repository/root/cimv2/classSchemas schema/Linux_Base.cimv2mof
 	make -C sblim-wbemcli install
+	ln -s ../bin/wbemcli ../bin/wbemgi
 	HOME=`pwd`/.. make -C sblim-cmpi-base/test install

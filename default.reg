@@ -1,7 +1,7 @@
 [$ClassProvider$]
    provider: ClassProvider
    location: sfcClassProvider
-   type: instance method
+   type: class method
    unload: never
 #
 [$DefaultProvider$]

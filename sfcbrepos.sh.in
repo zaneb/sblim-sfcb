@@ -85,7 +85,7 @@ then
 	mkdir -p $registrationdir/repository/root/cimv2 &&
 	cp $stagingdir/default.reg $registrationdir/providerRegister &&
 	cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister &&
-	mofc -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof 
+	sfcbmof -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof 
 	then 	
 	exit 0
     else	

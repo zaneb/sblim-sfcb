@@ -1,0 +1,5 @@
+# Environment settings
+CMPIINCLUDE=../..
+LIBINSTALL=../lib
+CIMVER=28
+CIMDIR=../dmtf/CIM$CIMVER

@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# /*
+#  * catdiff
+#  *
+#  * (C) Copyright IBM Corp. 2005
+#  *
+#  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+# * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+#  * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+#  *
+#  * You can obtain a current copy of the Common Public License from
+#  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+#  *
+#  * Author:       Adrian Schuur <schuur@de.ibm.com>
+#  *
+#  * Description:
+#  *
+# */
+
+
+tf=$1
+echo "  Testing $tf"
+wbemcat $1.xml &>$tf.rsp
+if [ -s $tf.OK ]
+then 
+   diff $tf.rsp $tf.OK >$tf.diff
+else
+   echo "   $tf.OK created"
+   mv $tf.rsp $tf.OK 
+fi
+   
+if [ $? != 0 ]
+then
+   echo "  - diff test failed - see $tf.rsp and $tf.diff"
+   exit 1
+else 
+   rm -f $tf.diff $tf.rsp  
+fi
+exit 0

@@ -1,0 +1,8 @@
+//
+// mof file for indication tests
+//
+class TST_ProcessIndication : CIM_ProcessIndication
+{
+   string msg;
+   sint32 code;
+};

@@ -1,0 +1,65 @@
+To server: <?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<MESSAGE ID="4711" PROTOCOLVERSION="1.0"><SIMPLEREQ><IMETHODCALL NAME="GetInstance"><LOCALNAMESPACEPATH><NAMESPACE NAME="root"></NAMESPACE><NAMESPACE NAME="tests"></NAMESPACE></LOCALNAMESPACEPATH>
+<IPARAMVALUE NAME="LocalOnly"><VALUE>FALSE</VALUE></IPARAMVALUE>
+<IPARAMVALUE NAME="IncludeQualifiers"><VALUE>FALSE</VALUE></IPARAMVALUE>
+<IPARAMVALUE NAME="IncludeClassOrigin"><VALUE>TRUE</VALUE></IPARAMVALUE>
+<IPARAMVALUE NAME="InstanceName"><INSTANCENAME CLASSNAME="CWS_Directory"><KEYBINDING NAME="CreationClassName"><KEYVALUE VALUETYPE="string">CWS_Directory</KEYVALUE></KEYBINDING><KEYBINDING NAME="CSCreationClassName"><KEYVALUE VALUETYPE="string">CIM_UnitaryComputerSystem</KEYVALUE></KEYBINDING><KEYBINDING NAME="CSName"><KEYVALUE VALUETYPE="string">localhost</KEYVALUE></KEYBINDING><KEYBINDING NAME="FSCreationClassName"><KEYVALUE VALUETYPE="string">CIM_FileSystem</KEYVALUE></KEYBINDING><KEYBINDING NAME="FSName"><KEYVALUE VALUETYPE="string">/Simulated/CMPI/tests/</KEYVALUE></KEYBINDING><KEYBINDING NAME="Name"><KEYVALUE VALUETYPE="string">/Simulated/CMPI/tests/Providers</KEYVALUE></KEYBINDING></INSTANCENAME></IPARAMVALUE>
+</IMETHODCALL></SIMPLEREQ>
+</MESSAGE></CIM>
+From server: 
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="1.1">
+<MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+<SIMPLERSP>
+<IMETHODRESPONSE NAME="GetInstance">
+<IRETURNVALUE>
+<INSTANCE CLASSNAME="CWS_Directory">
+<PROPERTY NAME="CSCreationClassName" TYPE="string">
+<VALUE>CIM_UnitaryComputerSystem</VALUE>
+</PROPERTY>
+<PROPERTY NAME="CSName" TYPE="string">
+<VALUE>localhost</VALUE>
+</PROPERTY>
+<PROPERTY NAME="FSCreationClassName" TYPE="string">
+<VALUE>CIM_FileSystem</VALUE>
+</PROPERTY>
+<PROPERTY NAME="FSName" TYPE="string">
+<VALUE>/Simulated/CMPI/tests/</VALUE>
+</PROPERTY>
+<PROPERTY NAME="CreationClassName" TYPE="string">
+<VALUE>CWS_Directory</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Name" TYPE="string">
+<VALUE>/Simulated/CMPI/tests/Providers</VALUE>
+</PROPERTY>
+<PROPERTY NAME="FileSize" TYPE="uint64">
+<VALUE>4096</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Readable" TYPE="boolean">
+<VALUE>TRUE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Writeable" TYPE="boolean">
+<VALUE>TRUE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Executable" TYPE="boolean">
+<VALUE>TRUE</VALUE>
+</PROPERTY>
+</INSTANCE>
+</IRETURNVALUE>
+</IMETHODRESPONSE>
+</SIMPLERSP>
+</MESSAGE>
+</CIM>
+localhost:5988/root/tests:CWS_Directory.CreationClassName="CWS_Directory",CSCreationClassName="CIM_UnitaryComputerSystem",CSName="localhost",FSCreationClassName="CIM_FileSystem",FSName="/Simulated/CMPI/tests/",Name="/Simulated/CMPI/tests/Providers"
+-CSCreationClassName="CIM_UnitaryComputerSystem"
+-CSName="localhost"
+-FSCreationClassName="CIM_FileSystem"
+-FSName="/Simulated/CMPI/tests/"
+-CreationClassName="CWS_Directory"
+-Name="/Simulated/CMPI/tests/Providers"
+-FileSize=4096
+-Readable=TRUE
+-Writeable=TRUE
+-Executable=TRUE
+

@@ -278,19 +278,20 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
    char *principle=ctx->ft->getEntry(ctx,CMPIPrinciple,NULL).value.string->hdl;;
    int irc;
    
-   _SFCB_ENTER(TRACE_INDPROVIDER, "deactivateFilter");
+   _SFCB_ENTER(TRACE_INDPROVIDER, "deactivateFilter"); 
+   printf( "deactivateFilter\n"); 
    
    path = TrackedCMPIObjectPath(ns, cn, &st);
    
    sreq.principle = setCharsMsgSegment(principle);
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.query = setCharsMsgSegment(NULL);
-   sreq.language = setCharsMsgSegment(NULL);
-   sreq.type = setCharsMsgSegment(NULL);
-   sreq.sns = setCharsMsgSegment(NULL);
+   sreq.query = setCharsMsgSegment(fi->query);
+   sreq.language = setCharsMsgSegment(fi->lang);
+   sreq.type = setCharsMsgSegment(fi->type);
+   sreq.sns = setCharsMsgSegment(fi->sns);
    sreq.filterId=fi;
 
-   req.nameSpace = setCharsMsgSegment((char*) ns);
+   req.nameSpace = setCharsMsgSegment(fi->sns);
    req.className = setCharsMsgSegment((char*) cn);
 
    memset(&binCtx,0,sizeof(BinRequestContext));
@@ -298,6 +299,8 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
    binCtx.bHdr = &sreq.hdr;
    binCtx.bHdrSize = sizeof(sreq);
    binCtx.chunkedMode=binCtx.xmlAs=0;
+
+   _SFCB_TRACE(1, ("--- getProviderContext for %s-%s",fi->sns,cn));
 
    irc = getProviderContext(&binCtx, &req);
  
@@ -355,6 +358,7 @@ CMPIStatus activateSubscription(char *principle, const char *cn, const char *typ
    sreq.query = setCharsMsgSegment(fi->query);
    sreq.language = setCharsMsgSegment(fi->lang);
    sreq.type = setCharsMsgSegment((char*)type);
+   fi->type=strdup(type);
    sreq.sns = setCharsMsgSegment(fi->sns);
    sreq.filterId=fi;
 

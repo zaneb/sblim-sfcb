@@ -1,0 +1,25 @@
+[$ClassProvider$]
+   provider: ClassProvider
+   location: sfcClassProvider
+   type: instance method
+   unload: never
+#
+[$DefaultProvider$]
+   provider: InternalProvider
+   location: sfcInternalProvider
+   type: instance association method
+   unload: never
+   namespace: root/tests
+#
+[$InterOpProvider$]
+   provider: InteropProvider
+   location: sfcInteropProvider
+   type: instance association method
+   unload: never
+#
+[CIM_ListenerDestinationCIMXML]
+   provider: IndCIMXMLHandler
+   location: sfcIndCIMXMLHandler
+   type: instance method
+   namespace: root/interop
+#   

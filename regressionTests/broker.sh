@@ -1,1 +1,1 @@
-sfcBroker -I -c sfcb.cfg $1 $2 
+sfcBroker -I -c sfcb.cfg $1 $2 $3 $4 

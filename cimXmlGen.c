@@ -353,6 +353,7 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
          }
          sprintf(str, "%llu", ul);
       }
+      
       else if (d.type & CMPI_SINT) {
          long long sl;
           switch (d.type) {
@@ -370,6 +371,14 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
             break;
          }
          sprintf(str, "%lld", sl);
+      }
+      
+      else if (d.type==CMPI_real32) {
+         sprintf(str, "%.7e", d.value.real32);
+      }
+      
+      else if (d.type==CMPI_real64) {
+         sprintf(str, "%.16e", d.value.real64);
       }
 
       else if (d.type == CMPI_boolean)

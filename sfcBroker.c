@@ -65,6 +65,8 @@ extern void dumpTiming(int pid);
 static char **restartArgv;
 static int restartArgc;
 
+char * configfile = NULL;
+
 static char * copyright = "(C) Copyright IBM Corp. 2005";
 
 void clean_up(int sd, const char *the_file)
@@ -220,6 +222,9 @@ int main(int argc, char *argv[])
             tmask = atoi(argv[++i]);
          }
       }
+      else if (strcmp(argv[i], "-c") == 0) {
+	configfile = strdup(argv[++i]);
+      }
       else if (strcmp(argv[i], "-F") == 0);
       else if (strcmp(argv[i], "-nF") == 0);
       else if (strcmp(argv[i], "-S") == 0) collectStat=1;
@@ -235,7 +240,7 @@ int main(int argc, char *argv[])
    
    _sfcb_set_trace_mask(tmask);
 
-   setupControl(NULL);
+   setupControl(configfile);
 //        SFCB_DEBUG
 #ifndef SFCB_DEBUG
    if (tmask)

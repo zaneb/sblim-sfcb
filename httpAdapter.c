@@ -84,6 +84,7 @@ extern RespSegments genChunkResponses(BinRequestContext*, BinResponseHdr**, int)
 extern RespSegments genFirstChunkErrorResponse(BinRequestContext * binCtx, int rc, char *msg);
 extern char *getErrTrailer(int id, int rc, char *m);
 extern void dumpTiming(int pid);
+extern char * configfile;
 
 int sfcBrokerPid=0;
 
@@ -791,7 +792,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "httpDaemon");
 
-   setupControl(NULL);
+   setupControl(configfile);
    sfcbSSLMode=sslMode;
    if (sslMode) processName="HTTPS-Daemon";
    else processName="HTTP-Daemon";

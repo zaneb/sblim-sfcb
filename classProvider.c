@@ -45,6 +45,7 @@
 
 static CMPIBroker *_broker;
 
+extern char * configfile;
 extern ProviderRegister *pReg;
 
 typedef struct _Class_Register_FT Class_Register_FT;
@@ -223,7 +224,7 @@ static UtilHashTable *buildClassRegisters()
    char *dir;
    char *dn;
 
-   setupControl(NULL);
+   setupControl(configfile);
 
    if (getControlChars("registrationDir",&dir)) {
      dir = "/var/lib/sfcb/registration";

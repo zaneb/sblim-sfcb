@@ -21,7 +21,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 0.8.6b, schuur@de.ibm.com, sfcb)
+AC_INIT(Small Footprint CIM Broker, 0.8.6c, schuur@de.ibm.com, sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE

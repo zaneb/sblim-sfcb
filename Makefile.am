@@ -150,7 +150,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	sfcVersion.h
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
-	sfcb.init-redhat sfcb.init-suse sfcb.init-none
+	sfcb.init-redhat sfcb.init-suse sfcb.init-none regressionTests doc
 
 dist_pkgdata_SCRIPTS=genSslCert.sh getSchema.sh
 
@@ -189,6 +189,7 @@ install-data-local: sfcb.cfg
 	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
 	test -d $(DESTDIR)$(sfcbdocdir) || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)
 	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
+	$(INSTALL_DATA) $(srcdir)/doc/sfcb.html $(DESTDIR)$(sfcbdocdir)
 
 install-exec-local:sfcb.init
 	test -d $(DESTDIR)$(initdir) || $(mkdir_p) $(DESTDIR)$(initdir)
@@ -202,3 +203,6 @@ uninstall-local:
 
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcb.cfg getSchema.sh sfcb.init
+
+dist-hook:
+	test -d "$(distdir)" &&	rm -rf `find $(distdir) -type d -name CVS`

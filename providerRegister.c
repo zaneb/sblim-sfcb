@@ -32,6 +32,7 @@
 
 static ProviderInfo forceNotFound={"",FORCE_PROVIDER_NOTFOUND};
 extern int exFlags;
+extern char * configfile;
 
 ProviderInfo *classProvInfoPtr = NULL;
 ProviderInfo *defaultProvInfoPtr = NULL;
@@ -65,7 +66,7 @@ ProviderRegister *newProviderRegister(char *fn)
                                                       sizeof(ProviderBase));
    ProviderBase *bb = (ProviderBase *) br + 1;
    
-   setupControl(NULL);
+   setupControl(configfile);
 
    if (getControlChars("registrationDir",&dir)) {
      dir = "/var/lib/sfcb/registration";

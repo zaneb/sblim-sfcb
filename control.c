@@ -83,9 +83,14 @@ int setupControl(char *fn)
       ct->ft->put(ct, init[i].id, &init[i]);
    }
 
-   strcpy(fin, SFCB_CONFDIR);
-
-   strcat(fin, "/sfcb.cfg");
+   if (fn) {
+     strcpy(fin,fn);
+   } else {
+     strcpy(fin, SFCB_CONFDIR);
+     
+     strcat(fin, "/sfcb.cfg");
+   }
+   
    in = fopen(fin, "r");
    if (in == NULL) {
       fprintf(stderr, "--- %s not found\n", fin);
@@ -119,6 +124,11 @@ int setupControl(char *fn)
    }
 
    if (stmt) free(stmt);
+
+
+   if (in) {
+     fclose(in);
+   }
 
    if (err) {
       printf("--- Broker termintaed because of previous error(s)\n");

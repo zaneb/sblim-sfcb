@@ -38,15 +38,13 @@
 
 #include "cimXmlRequest.h"
 #include "sfcVersion.h"
+#include "control.h"
 
 extern void setExFlag(unsigned long f);
 extern char *parseTarget(const char *target);
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
 extern int init_sfcBroker(char *);
 extern CMPIBroker *Broker;
-extern int setupControl(char *);
-extern int getControlNum(char *id, long *val);
-extern int getControlBool(char *id, int *val);
 extern void initHttpProcCtl(int);
 extern void initProvProcCtl(int);
 extern void processTerminated(int pid);
@@ -207,7 +205,9 @@ int main(int argc, char *argv[])
    printf("--- (C) Copyright IBM Corp. 2004\n");
 
    for (c = 0, i = 1; i < argc; i++) {
-      if (strcmp(argv[i], "-v") == 0)
+      if (strcmp(argv[i], "-d") == 0)
+         daemon(0,0);
+      else if (strcmp(argv[i], "-v") == 0)
          exFlags |= 1;
       else if (strcmp(argv[i], "-tm") == 0) {
          if (*argv[i+1]=='?') {
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
    setSignal(SIGTERM, handleSigterm,SA_ONESHOT);
    setSignal(SIGINT,  handleSigterm,0);
    setSignal(SIGKILL, handleSigterm,0);
-   setSignal(SIGHUP, handleSigHup,0);
+   setSignal(SIGHUP, handleSigHup,SA_NOMASK);
    
    if (startHttp) {
       if (sslMode)

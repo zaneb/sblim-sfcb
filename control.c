@@ -27,6 +27,14 @@
 #include <string.h>
 
 
+#ifndef SFCB_CONFDIR
+#define SFCB_CONFDIR "/etc/sfcb"
+#endif
+
+#ifndef SFCB_STATEDIR
+#define SFCB_STATEDIR "/var/lib/sfcb"
+#endif
+
 typedef struct control {
    char *id;
    int type;
@@ -52,14 +60,15 @@ Control init[] = {
    {"providerSampleInterval",  1, "30"},
    {"providerTimeoutInterval", 1, "60"},
 
-   {"sslKeyFilePath",   0, "file.pem"},
-   {"sslCertificateFilePath", 0, "server.pem"},
+   {"sslKeyFilePath",   0, SFCB_CONFDIR "/file.pem"},
+   {"sslCertificateFilePath", 0, SFCB_CONFDIR "/server.pem"},
+
+   {"registrationDir", 0, SFCB_STATEDIR "/registration"},
 };
 
 int setupControl(char *fn)
 {
    FILE *in;
-   char *dir = getenv("SFCB_HOME");
    char fin[1024], *stmt = NULL;
    int i, m, n=0, err=0;
    CntlVals rv;
@@ -74,9 +83,7 @@ int setupControl(char *fn)
       ct->ft->put(ct, init[i].id, &init[i]);
    }
 
-   if (dir == NULL)  dir = "./";
-
-   strcpy(fin, dir);
+   strcpy(fin, SFCB_CONFDIR);
 
    strcat(fin, "/sfcb.cfg");
    in = fopen(fin, "r");

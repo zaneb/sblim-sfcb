@@ -33,6 +33,7 @@
 #include "constClass.h"
 #include "providerRegister.h"
 #include "trace.h"
+#include "control.h"
 
 #define NEW(x) ((x *) malloc(sizeof(x)))
 
@@ -219,11 +220,15 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns)
 
 static UtilHashTable *buildClassRegisters()
 {
-   char *dir = getenv("SFCB_HOME");
+   char *dir;
    char *dn;
-   
-   if (dir == NULL) dir = "./";
 
+   setupControl(NULL);
+
+   if (getControlChars("registrationDir",&dir)) {
+     dir = "/var/lib/sfcb/registration";
+   }
+   
    dn=(char*)alloca(strlen(dir)+32);
    strcpy(dn,dir);
    if (dir[strlen(dir)-1]!='/') strcat(dn,"/");

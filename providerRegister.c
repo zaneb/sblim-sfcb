@@ -54,7 +54,7 @@ static ProviderRegister *clone(ProviderRegister * br)
 ProviderRegister *newProviderRegister(char *fn)
 {
    FILE *in;
-   char *dir = getenv("SFCB_HOME");
+   char *dir;
    char fin[1024], *stmt = NULL;
    ProviderInfo *info = NULL;
    int err = 0, n = 0;
@@ -64,8 +64,13 @@ ProviderRegister *newProviderRegister(char *fn)
    ProviderRegister *br = (ProviderRegister *) malloc(sizeof(ProviderRegister) +
                                                       sizeof(ProviderBase));
    ProviderBase *bb = (ProviderBase *) br + 1;
+   
+   setupControl(NULL);
 
-   if (dir == NULL) dir = "./";
+   if (getControlChars("registrationDir",&dir)) {
+     dir = "/var/lib/sfcb/registration";
+   }
+
    strcpy(fin, dir);
    strcat(fin, "/providerRegister");
    in = fopen(fin, "r");

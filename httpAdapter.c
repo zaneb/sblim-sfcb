@@ -50,6 +50,7 @@
 
 #include "httpComm.h"
 #include "sfcVersion.h"
+#include "control.h"
 
 unsigned long exFlags = 0;
 static char *name;
@@ -70,11 +71,6 @@ static key_t httpProcSemKey;
 static key_t httpWorkSemKey;
 static int httpProcSem;
 static int httpWorkSem;
-
-extern int setupControl(char *);
-extern int getControlNum(char *id, long *val);
-extern int getControlBool(char *id, int *val);
-extern int semGetValue(int semid, int semnum);
 
 extern char *decode64(char *data);
 extern void libraryName(const char *location, char *fullName);

@@ -20,10 +20,17 @@
 # 
 # 
 
+sfcbstatedir=$(localstatedir)/lib/sfcb
+sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
+initdir=/etc/init.d
+
 BUILT_SOURCES=queryParser.c queryLexer.c authorizationParser.c \
 	authorizationLexer.c
 
 AM_YFLAGS=-d
+
+AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sysconfdir)/sfcb\" \
+	-DSFCB_STATEDIR=\"$(sfcbstatedir)\"
 
 SUBDIRS=. $(MOFC_DIR)
 
@@ -133,7 +140,7 @@ libsfcCimXmlCodec_la_LIBADD=-lsfcBrokerCore
 
 sfcBroker_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter
 
-noinst_HEADERS=array.h   httpComm.h     providerMgr.h \
+noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \
 	cimXmlParser.h    native.h       support.h \
 	cimXmlRequest.h  genericlist.h  objectImpl.h   trace.h \
@@ -142,7 +149,8 @@ noinst_HEADERS=array.h   httpComm.h     providerMgr.h \
 	selectexp.h queryOperation.h authorizationUtil.h authorizationEnum.c \
 	sfcVersion.h
 
-EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in
+EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
+	sfcb.init-redhat sfcb.init-suse sfcb.init-none
 
 dist_pkgdata_SCRIPTS=genSslCert.sh getSchema.sh
 
@@ -151,16 +159,21 @@ dist_pkgdata_DATA=default.reg
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage
 
 sfcbrepos: sfcbrepos.sh
-	sed s?$$\{prefix\}?$(prefix)? $< > $@
+	sed s?$$\{prefix\}?$(prefix)?g $< > $@
 
 sfcbstage: sfcbstage.sh
-	sed s?$$\{prefix\}?$(prefix)? $< > $@
+	sed s?$$\{prefix\}?$(prefix)?g $< > $@
 
 sfcb.cfg: sfcb.cfg.pre
-	sed s?$$\{prefix\}?$(prefix)? $< > $@
+	sed s?$$\{prefix\}?$(prefix)?g $< > $@
 
 getSchema.sh: getSchema.sh.pre
-	sed s?$$\{prefix\}?$(prefix)? $< > $@
+	sed s?$$\{prefix\}?$(prefix)?g $< > $@
+
+sfcb.init: sfcb.$(INIT_STYLE)
+	sed -e "s?@sysconfdir\@?$(sysconfdir)?g" \
+		-e "s?@bindir\@?$(bindir)?g" \
+		-e "s?@libdir\@?$(libdir)?g" $< > $@
 
 providerRegister: providerRegister.c
 	touch $@
@@ -168,11 +181,22 @@ providerRegister: providerRegister.c
 unittest:
 	cd test && sh check_all.sh
 
-install-data-local: sfcb.cfg
+install-data-local: sfcb.cfg sfcb.init
 	test -d $(DESTDIR)$(sysconfdir)/sfcb || $(mkdir_p) $(DESTDIR)$(sysconfdir)/sfcb
 	$(INSTALL_DATA) sfcb.cfg $(DESTDIR)$(sysconfdir)/sfcb
-	test -d $(localstatedir)/lib/sfcb/registration || $(mkdir_p) $(DESTDIR)$(localstatedir)/lib/sfcb/registration
-	test -d $(localstatedir)/lib/sfcb/stage || $(mkdir_p) $(DESTDIR)$(localstatedir)/lib/sfcb/stage
+	test -d $(DESTDIR)$(sfcbstatedir)/registration || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/registration
+	test -d $(DESTDIR)$(sfcbstatedir)/stage || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage
+	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
+	test -d $(DESTDIR)$(sfcbdocdir) || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)
+	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
+	test -d $(DESTDIR)$(initdir) || $(mkdir_p) $(DESTDIR)$(initdir)
+	$(INSTALL_DATA) sfcb.init $(DESTDIR)$(initdir)/sfcb
 
-distclean-local:
-	rm -f sfcbrepos sfcbstage sfcb.cfg getSchema.sh
+uninstall-local:
+	rm -f $(DESTDIR)$(sysconfdir)/sfcb/sfcb.cfg
+	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
+	rm -f $(DESTDIR)$(sfcbdocdir)/*
+	rm -f $(DESTDIR)$(initdir)/sfcb
+
+clean-local:
+	rm -f sfcbrepos sfcbstage sfcb.cfg getSchema.sh sfcb.init

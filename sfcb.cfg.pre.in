@@ -8,6 +8,6 @@ enableHttps:    false
 basicAuthLib:   sfcBasicAuthentication
 doBasicAuth:    false
 useChunking:    true
-sslKeyFilePath: @sysconfdir@/file.pem
-sslCertificateFilePath: @sysconfdir@/server.pem
+sslKeyFilePath: @sysconfdir@/sfcb/file.pem
+sslCertificateFilePath: @sysconfdir@/sfcb/server.pem
 registrationDir: @localstatedir@/lib/sfcb/registration

@@ -1,0 +1,58 @@
+# $Id$
+#
+#!/bin/bash
+# 
+# Generic System V Init Script
+
+echo $PATH | grep -q @bindir@ ||PATH=@bindir@:$PATH
+
+if [ -z "$LD_LIBRARY_PATH" ] || echo $LD_LIBRARY_PATH | grep -qv @libdir@
+then
+    LD_LIBRARY_PATH=@libdir@:$LD_LIBRARY_PATH
+fi
+
+start() {
+	echo -n "Starting sfcb: "
+	@bindir@/sfcBroker -d && echo "done." && return 0 ||
+	echo "failed."
+	return 1
+}	
+
+stop() {
+	echo -n "Shutting down sfcb: "
+	killall -9 sfcBroker && echo "done." && return 0 ||
+	echo "failed."
+	return 1
+}
+
+reload() {
+	echo -n "Reloading sfcb configuration: "
+	killall -HUP sfcBroker && echo "done." && return 0 ||
+	echo "failed."
+	return 1
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    status)
+	echo -n "Checking SFCB status: "
+	ps --noheaders -C sfcBroker || echo "stopped." 
+	;;
+    restart)
+    	stop
+	start
+	;;
+    reload)
+	reload
+	;;
+    *)
+	echo "Usage: sfcb {start|stop|status|reload|restart}"
+	exit 1
+	;;
+esac
+exit $?

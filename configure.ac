@@ -1,29 +1,27 @@
-
+# $Id$
 # 
-# /*
-#  * configure.ac
-#  *
-#  * (C) Copyright IBM Corp. 2005
-#  *
-#  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
-#  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
-#  * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
-#  *
-#  * You can obtain a current copy of the Common Public License from
-#  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
-#  *
-#  * Author:        Viktor Mihajlovski <mihajlov@de.ibm.com>
-#  * Contributions: Adrian Schuur <schuur@de.ibm.com>
-#  *
-# * Description:
-#  *
-#  * Configure process input for sfcb.
-#  *
-# */
+# configure.ac
+#
+# (C) Copyright IBM Corp. 2005
+#
+# THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+# ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+# CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+#
+# You can obtain a current copy of the Common Public License from
+# http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+#
+# Author:        Viktor Mihajlovski <mihajlov@de.ibm.com>
+# Contributions: Adrian Schuur <schuur@de.ibm.com>
+#
+# Description:
+#
+# Configure process input for sfcb.
 # 
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT(Small Footprint CIM Broker, 0.8.6, schuur@de.ibm.com, sfcb)
+
+AC_INIT(Small Footprint CIM Broker, 0.8.6b, schuur@de.ibm.com, sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE
@@ -109,6 +107,20 @@ AC_FUNC_STRFTIME
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS([alarm bzero gettimeofday localtime_r memmove memset socket strcasecmp strchr strdup strncasecmp strpbrk strrchr strspn strstr tzset])
 
+# Check for Linux System Style
+
+if test -f /etc/redhat-release 
+then
+   INIT_STYLE=init-redhat
+elif test -f /etc/SuSE-release
+then 
+   INIT_STYLE=init-suse
+else
+   INIT_STYLE=init-generic
+fi
+AC_SUBST(INIT_STYLE)
+
+# Checks for subdirectories
 if test -d test; then
    AC_CONFIG_SUBDIRS([test])
 fi

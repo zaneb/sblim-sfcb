@@ -51,10 +51,6 @@ fi
 
 %post
 /sbin/ldconfig
-cp %{_datadir}/%{name}/default.reg %{_localstatedir}/lib/%{name}/stage
-
-%preun
-rm -f %{_localstatedir}/lib/%{name}/stage/default.reg
 
 %postun
 /sbin/ldconfig
@@ -62,7 +58,8 @@ rm -f %{_localstatedir}/lib/%{name}/stage/default.reg
 %files
 %defattr(-,root,root)
 %config %{_sysconfdir}/%{name}
-%{_datadir}/%{name}
-%{_localstatedir}/lib/%{name}
-%{_bindir}/*
-%{_libdir}/*.so*
+%doc %{_datadir}/doc/sfcb/*
+#%{_datadir}/%{name}
+#%{_localstatedir}/lib/%{name}
+#%{_bindir}/*
+#%{_libdir}/*.so*

@@ -81,14 +81,13 @@ fi
 if [ -d $stagingdir ] && [ -f $stagingdir/default.reg ] &&
 	[ -f $cimschemadir/CIM_Schema.mof ] 
 then
-    rm -rf $registrationdir/repository &&
-    mkdir -p $registrationdir/repository/root/cimv2 &&
-    cp $stagingdir/default.reg $registrationdir/providerRegister &&
-    cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister &&
-    mofc -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof &&
-    exit 0 ||
-    echo Failed to create sfcb registration. >&2 &&
-    exit 1
+    (rm -rf $registrationdir/repository &&
+	mkdir -p $registrationdir/repository/root/cimv2 &&
+	cp $stagingdir/default.reg $registrationdir/providerRegister &&
+	cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister &&
+	mofc -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof &&
+	exit 0) ||
+    (echo Failed to create sfcb registration. >&2 && exit 1)
 else
     echo Could not find required staging files. Please check your setup. >&2
     exit 1

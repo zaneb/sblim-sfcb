@@ -889,7 +889,7 @@ void dump(char *msg, void *a, int len)
 
 void cntlSkipws(char **p)
 {
-   while (**p <= ' ' && **p != '\n')
+   while (**p && **p <= ' ' && **p != '\n')
       (*p)++;
 }
 
@@ -897,7 +897,7 @@ int cntlParseStmt(char *in, CntlVals * rv)
 {
    rv->type = 0;
    cntlSkipws(&in);
-   if (*in == '#') {
+   if (*in == 0 || *in == '#' || *in == '\n') {
       rv->type = 3;
    }
    else if (*in == '[') {

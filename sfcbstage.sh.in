@@ -1,0 +1,73 @@
+#!/bin/sh
+
+function usage() 
+{
+    echo "usage: $0 [-h] [ -s stagingdir] [ -r regfile ] mof ...  " 1>&2 
+}
+
+
+args=`getopt hr:s: $*`
+
+if [ $? != 0 ]
+then
+    usage $0
+    exit 1
+fi
+
+set -- $args
+
+while [ -n "$1" ]
+do
+  case $1 in
+      -h) help=1; 
+	  shift;;
+      -s) stagingdir=$2
+	  shift 2;;
+      -r) regfile=$2
+	  shift 2;;
+      --) shift;
+	  break;;
+      **) break;;
+  esac
+done
+
+if [ "$help" == "1" ]
+then
+    usage
+    echo -e "\t-h display help message"
+    echo -e "\t-s specify staging directory [@localstatedir@/lib/sfcb/stage]"
+    echo -e "\t-r specify sfcb registration file "
+    echo
+    echo Use this command to copy registration files to the sfcb staging area.
+    exit 0
+fi
+
+if [ -z "$*" ]
+then
+    usage $0
+    exit 1
+fi
+
+if [ -z "$stagingdir" ]
+then
+    stagingdir=@localstatedir@/lib/sfcb/stage
+fi
+
+if [ -n "$regfile" ]
+then
+    cp $regfile $stagingdir/regs ||
+    echo "Error: could not copy registration files to $stagingdir" 1>&2 &&
+    exit 1
+fi
+
+if [ -n "$*" ]
+then
+    cp $* $stagingdir/mofs &&
+    exit 0 ||
+    echo "Error: could not find registration files" 1>&2    
+    exit 1
+fi
+
+
+
+

@@ -1,0 +1,31 @@
+[$ClassProvider$]
+   provider: ClassProvider
+   location: sfcClassProvider
+   type: instance method
+   unload: never
+#
+[$DefaultProvider$]
+   provider: InternalProvider
+   location: sfcInternalProvider
+   type: instance association
+#
+[CIM_IndicationFilter]
+   provider: InteropProvider
+   location: sfcInteropProvider
+   type: instance association method
+#
+[CIM_IndicationSubscription]
+   provider: InteropProvider
+   location: sfcInteropProvider
+   type: instance association method
+#
+[CIM_ListenerDestinationCIMXML]
+   provider: IndCIMXMHandler
+   location: sfcIndCIMXMHandler
+   type: instance method
+#
+[SFC_Authorization]
+   provider: SFC_Authorization
+   location: sfcAuthorizationProvider
+   type: instance method
+#

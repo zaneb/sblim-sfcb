@@ -1,0 +1,12 @@
+Principal author of SFCB is Adrian Schuur <schuur@de.ibm.com> 
+
+Frank Scheffler has contributed by writing the Remote CMPI interface
+from which many code portions have been reused - especially the native
+data support.
+
+Keith Pomakis has kindly granted the use of his hashtable and generic list
+functions.
+
+The query parser syntax is partially based on the OpenPegasus WQL Parser.
+See the copyright statements in queryParser.y and queryLexer.l for
+details. 

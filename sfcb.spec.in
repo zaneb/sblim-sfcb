@@ -1,0 +1,68 @@
+#
+# sfcb.spec
+#
+# Package spec for wbemcli
+#
+
+BuildRoot: /var/tmp/buildroot
+
+Summary: Small Footprint CIM Broker
+Name: @PACKAGE_TARNAME@
+Version: @PACKAGE_VERSION@
+Release: 0
+Group: Systems Management/Base
+License: Common Public License 1.0
+
+Source0: ftp://www-126.ibm.com/pub/sblim/%{name}-%{version}.tar.bz2
+
+%Description
+Small Footprint CIM Broker.
+
+%prep
+
+%setup -T -b 0 -n %{name}-%{version}
+
+export PATCH_GET=0
+#%patch0 -p1
+
+%build
+
+%configure --disable-debug
+make
+
+%install
+
+if [ `id -ur` != 0 ]
+then
+# paranoia check 
+	rm -rf $RPM_BUILD_ROOT 
+fi
+%makeinstall
+
+# remove unused libtool files
+rm -f $RPM_BUILD_ROOT/%{_libdir}/*a
+
+%clean
+if [ `id -ur` != 0 ]
+then
+# paranoia check 
+	rm -rf $RPM_BUILD_ROOT 
+fi
+
+%post
+/sbin/ldconfig
+cp %{_datadir}/%{name}/default.reg %{_localstatedir}/lib/%{name}/stage
+
+%preun
+rm -f %{_localstatedir}/lib/%{name}/stage/default.reg
+
+%postun
+/sbin/ldconfig
+
+%files
+%defattr(-,root,root)
+%config %{_sysconfdir}/%{name}
+%{_datadir}/%{name}
+%{_localstatedir}/lib/%{name}
+%{_bindir}/*
+%{_libdir}/*.so*

@@ -1,0 +1,19 @@
+#!/bin/sh
+#Script to fetch CIM schema for sfcb.
+
+trap "rm /tmp/cimv290.zip" exit 
+
+sfcbdir=@datadir@/sfcb
+
+if [ -x /usr/bin/curl ] && [ ! -f $sfcbdir/CIM/CIM_Schema.mof ]
+then
+    echo "Fetching CIM Schema from DMTF homepage ..."
+    [ -d $sfcbdir/CIM ] || mkdir -p $sfcbdir/CIM
+    /usr/bin/curl -o /tmp/cimv290.zip http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip &&    
+    unzip -jd $sfcbdir/CIM /tmp/cimv290.zip &&
+    exit 0
+    echo "Failed to fetch and install CIM schema" 1>&2 
+else
+    echo "Need curl to get CIM schema files." 1>&2
+    exit 1
+fi

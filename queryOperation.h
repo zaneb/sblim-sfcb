@@ -1,0 +1,234 @@
+
+/*
+ * queryOperation.h
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:        Adrian Schuur <schuur@de.ibm.com>
+ *
+ * Description:
+ *
+ * query executor.
+ *
+*/
+
+
+#ifndef qlOperation_h
+#define qlOperation_h
+
+#include "cmpidt.h"
+#include "cmpift.h"
+#include "cmpimacs.h"
+#include "support.h"
+
+#define qsAllocNew(qs,strct) (strct*)qsAlloc(qs,sizeof(strct))
+
+//#define QL_TRACE(X) X  
+#define QL_TRACE(X)   
+
+struct qlPropertySource;
+typedef struct qlPropertySource QLPropertySource;
+struct qlPropertyNameData; 
+typedef struct qlPropertyNameData QLPropertyNameData; 
+struct qlOperandFt;
+typedef struct qlOperandFt QLOperandFt;
+struct qLqueryOperand;
+typedef struct qLqueryOperand QLOperand;
+
+struct qlStatementFt;
+typedef struct qlStatementFt QLStatementFt;
+struct qlStatement;
+typedef struct qlStatement QLStatement;
+struct qlControl;
+typedef struct qlControl QLControl;
+struct qlCollector;
+typedef struct qlCollector QLCollector;
+
+extern void *qsAlloc(QLStatement *qs, unsigned int size);
+
+typedef enum qlOpd {
+    QL_Invalid,
+    QL_NotFound,
+    QL_Integer,
+    QL_UInteger,
+    QL_Double,
+    QL_Boolean,
+    QL_Chars,
+    QL_Char,
+    QL_PropertyName, 
+    QL_Name, 
+} QLOpd;
+
+struct qlPropertyNameData {
+   char* className;
+   char* part[4];
+   int next,max;
+};
+
+struct qlOperandFt {
+   char *(*toString)(QLOperand*);
+   char *(*type)(QLOperand*);
+   int (*compare)(QLOperand*,QLOperand*,QLPropertySource*);
+   void (*addClass)(QLOperand*,QLStatement*,char*);
+   void (*addPart)(QLOperand*,QLStatement*,char *p);
+};
+
+struct qLqueryOperand {
+   QLOperandFt *ft;
+   QLOpd type;
+   union {
+     CMPIValue value;
+     long long  integerVal;
+     double  doubleVal;
+     unsigned char booleanVal;
+     char* charsVal;
+     QLPropertyNameData *propertyName;
+   };
+};
+
+QLOperand* newIntQueryOperand(QLStatement*, long long val);
+QLOperand* newDoubleQueryOperand(QLStatement*, double val);
+QLOperand* newBooleanQueryOperand(QLStatement*, unsigned char val);
+QLOperand* newCharsQueryOperand(QLStatement*, char* val);
+QLOperand* newPropQueryOperand(QLStatement*, QLPropertyNameData* val);
+QLPropertyNameData* newPropertyNameData(QLStatement*);
+
+typedef enum qlOp {
+    QL_OR,
+    QL_AND,
+    QL_NOT,
+    QL_EQ=CMPI_PredOp_Equals,
+    QL_NE=CMPI_PredOp_NotEquals,
+    QL_LT=CMPI_PredOp_LessThan,
+    QL_LE=CMPI_PredOp_LessThanOrEquals,
+    QL_GT=CMPI_PredOp_GreaterThan,
+    QL_GE=CMPI_PredOp_GreaterThanOrEquals,
+    QL_ISA=CMPI_PredOp_Isa,
+    QL_NOT_ISA=CMPI_PredOp_NotIsa,
+    QL_LIKE=CMPI_PredOp_Like,
+    QL_NOT_LIKE=CMPI_PredOp_NotLike,
+    QL_IS_NULL,
+    QL_IS_NOT_NULL,
+    QL_IS_TRUE,
+    QL_IS_NOT_TRUE,
+    QL_IS_FALSE,
+    QL_IS_NOT_FALSE,
+    QL_nop,
+    QL_bin
+} QLOp;
+
+
+struct qlOperationFt;
+typedef struct qlOperationFt QLOperationFt;
+struct qlOperation;
+typedef struct qlOperation QLOperation;
+//struct predicateDisjunction; 
+//typedef struct predicateDisjunction PredicateDisjunction; 
+//struct predicateConjunction; 
+//typedef struct predicateConjunction PredicateConjunction; 
+
+#define Predicates CMPIArray
+#define PredicateDisjunction CMPIArray
+#define PredicateConjunction CMPIArray
+
+struct qlOperationFt {
+   int (*_evaluate)(QLOperation*,QLPropertySource* source);
+   int (*evaluate)(QLOperation*,QLPropertySource* source);
+   char* (*toString)(QLOperation*);
+   QLOp (*operation)(QLOperation*);
+   void (*traverse)(QLOperation*);
+   void (*eliminateNots)(QLOperation*, int inv);
+   PredicateDisjunction* (*getPredicateDisjunction)(QLOperation*); 
+   PredicateConjunction* (*getPredicateConjunction)(QLOperation*); 
+   int (*isBinaryOperation)(QLOperation*);
+};
+
+struct qlOperation {
+   QLOperationFt *ft;
+   QLOperation  *lhon,*rhon;
+   QLOperand *lhod,*rhod;
+   QLOp opr;
+   union {
+     unsigned int noOp : 1;
+     unsigned int invert : 1;
+   } flag;
+};
+
+QLOperation* newLtOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+QLOperation* newGtOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+QLOperation* newLeOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+QLOperation* newGeOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+QLOperation* newEqOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+QLOperation* newNeOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+QLOperation* newIsaOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+ 
+QLOperation* newAndOperation(QLStatement*,QLOperation* lo, QLOperation* ro); 
+QLOperation* newOrOperation(QLStatement*,QLOperation* lo, QLOperation* ro); 
+QLOperation* newNotOperation(QLStatement*,QLOperation* lo);
+QLOperation* newBinaryOperation(QLStatement*,QLOperation* lo);
+
+QLOperation* newIsNullOperation(QLStatement*,QLOperand* lo);
+QLOperation* newIsNotNullOperation(QLStatement*,QLOperand* lo);
+
+
+
+struct qlPropertySource {
+   void* data;
+   CMPIValue (*getValue)(QLPropertySource*, char* name, QLOpd *type);
+};
+
+
+
+
+
+struct qlStatementFt {
+   void (*release)(QLStatement*);  
+   CMPIInstance *(*cloneAndFilter)(QLStatement*,CMPIInstance*,CMPIObjectPath*,char**);
+   void (*setAllProperties)(QLStatement*,int allProperties);  
+   void (*appendSelectPropertyName)(QLStatement*,char *name);
+   void (*addFromClass)(QLStatement*,char *cn, char *ca);
+   void (*setWhereCondition)(QLStatement*,QLOperation *op);
+   int  (*testPropertyClass)(QLStatement*,char* cl);
+   char **(*getFromClassList)(QLStatement*);
+};
+
+struct qlStatement {
+   QLStatementFt *ft;
+//   QLStatement *next;
+   void *filterId;
+   unsigned int useCount;
+   int wql,allProps;
+   int fcMax,fcNext;
+   char **fClasses;
+   int spMax,spNext;
+   char **spNames;
+   QLOperation *where;
+   CMPIObjectPath *cop;
+   char **keys;
+   QLPropertySource propSrc;
+   unsigned int allocMode,allocNext,allocMax;
+   void **allocList;
+};
+
+struct qlCollector {
+   void (*resetName)(QLCollector *qc);
+   void (*clear)(QLCollector *qc);
+   QLOperand* (*addPnClass)(QLCollector *qc, QLStatement *qs, char* c);
+   void (*addPnPart)(QLCollector *qc, QLStatement *qs, char* p); 
+   QLOperand *pnOpn;
+   QLOperand *abOpn;
+};
+
+struct qlControl {
+   QLStatement *statement;
+   QLCollector *collector;
+};
+
+#endif

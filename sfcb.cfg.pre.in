@@ -1,0 +1,13 @@
+httpPort:       5988
+httpProcs:      8
+httpsPort:      5989
+enableHttp:     true
+httpsProcs:     8
+provProcs:      32
+enableHttps:    false
+basicAuthLib:   sfcBasicAuthentication
+doBasicAuth:    false
+useChunking:    true
+sslKeyFilePath: @sysconfdir@/file.pem
+sslCertificateFilePath: @sysconfdir@/server.pem
+registrationDir: @localstatedir@/lib/sfcb/registration

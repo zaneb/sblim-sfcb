@@ -1,0 +1,95 @@
+#!/bin/sh
+
+function usage() 
+{
+    echo "usage: $0 [-h] [-f] [-c cimschemadir] [-s stagingdir] [-r registrationdir] " 1>&2 
+}
+
+
+args=`getopt fhs:r:c: $*`
+
+if [ $? != 0 ]
+then
+    usage $0
+    exit 1
+fi
+
+set -- $args
+
+while [ -n "$1" ]
+do
+  case $1 in
+      -h) help=1; 
+	  shift;;
+      -f) force=1
+	  shift;;
+      -s) stagingdir=$2
+	  shift 2;;
+      -r) registrationdir=$2
+	  shift 2;;
+      -c) cimschemadir=$2
+	  shift 2;;
+      --) shift;
+	  break;;
+      **) break;;
+  esac
+done
+
+if [ "$help" == "1" ]
+then
+    usage
+    echo -e "\t-h display help message"
+    echo -e "\t-f force repository creation"
+    echo -e "\t-s specify staging directory [@localstatedir@/lib/sfcb/stage]"
+    echo -e "\t-r specify repository directory [@localstatedir@/lib/sfcb/registration]"
+    echo -e "\t-c specify directory containing CIM Schema MOFs [@datadir@/sfcb/CIM]"
+    echo
+    echo "Use to create sfcb provider registration and class repository."
+    exit 0
+fi
+
+if [ -z "$force" ]
+then 
+    echo Setting up sfcb Repository, Class and Provider Registration
+    echo Your old repository and registration data will be deleted
+    echo Do you want to proceed "(type yes to continue)"
+
+    read response
+
+    if [ x$response == x ] || [ $response != yes ]
+    then
+	echo Keeping old data
+	exit 2
+    fi
+fi
+
+if [ -z "$stagingdir" ]
+then
+    stagingdir=@localstatedir@/lib/sfcb/stage
+fi
+
+if [ -z "$registrationdir" ]
+then
+    registrationdir=@localstatedir@/lib/sfcb/registration
+fi
+
+if [ -z "$cimschemadir" ]
+then
+    cimschemadir=@datadir@/sfcb/CIM
+fi
+
+if [ -d $stagingdir ] && [ -f $stagingdir/default.reg ] &&
+	[ -f $cimschemadir/CIM_Schema.mof ] 
+then
+    rm -rf $registrationdir/repository &&
+    mkdir -p $registrationdir/repository/root/cimv2 &&
+    cp $stagingdir/default.reg $registrationdir/providerRegister &&
+    cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister &&
+    mofc -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof &&
+    exit 0 ||
+    echo Failed to create sfcb registration. >&2 &&
+    exit 1
+else
+    echo Could not find required staging files. Please check your setup. >&2
+    exit 1
+fi

@@ -1,0 +1,54 @@
+README for Small Footprint CIM Broker
+=====================================
+
+Additional Installation Info
+----------------------------
+
+In order to be functional sfcb will need a CIM schema installed. There's
+a sample getSchema.sh script in /usr/[local/]share/sfcb that will retrieve
+CIM Schema V2.9.0 from the DMTF homepage and copy the MOF files to
+/usr/[local/]share/sfcb/CIM .
+
+Registration
+------------
+
+The package has two helper scripts that can be used to register providers
+with sfcb in a two step process:
+
+1. Staging
+
+A provider must be acompanied by an sfcb registration file describing it
+and by (a set of) MOF(s) for the class definition. With the sfcbstage
+command these are copied into the staging area in 
+[/usr/local]/var/lib/sfcb/stage. This step doesn't modify the repository.
+
+Usage example:
+
+sfcbstage -r provider.reg class1.mof class2.mof
+
+2. Repository Rebuild
+
+With the sfcbrepos command the entire repository and provider registration
+for sfcb is rebuilt. In order to work it requires a CIM schema MOF collection
+in /usr/[local/]share/sfcb/CIM and data in the staging area mentioned above.
+When invoked without the -f option, it will issue a warning that all previous 
+data will be lost. As long as you really plan to rebuild the repository this
+is OK.
+Obviously it is desirable to stop sfcb before the rebuild is performed.
+
+CVS Instructions
+----------------
+
+If you have extracted the package from CVS you should do two things to enable
+the build environment (including the MOF compiler):
+
+1. Check out the mofc package into the sfcb directory. Should be as easy
+   as cvs co mofc . If you don't need mofc you can skip this step.
+
+2. Run autoconfiscate.sh to setup for build.
+
+NOTE: The autoconfiscating requires automake, autoconf and libtool installed
+on your build system. IMPORTANT: libtool 1.5.8 or higher is required. As of
+the date of this writing (March 2005) this version was not yet shipped with
+the usual distributions. Please make sure, you have the right version of
+libtool installed!

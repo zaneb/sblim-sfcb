@@ -39,7 +39,10 @@
 
 #include "cmpidt.h"
 #include "cmpift.h"
+#include "cmpiftx.h"
 #include "cmpimacs.h"
+#include "cmpimacsx.h"
+#include "objectImpl.h"
 
 #define LOCALCLASSNAME "ClassProvider"
 
@@ -135,7 +138,8 @@ static ClassRegister *newClassRegister(char *fname)
    ClassBase *cb = (ClassBase *) (cr + 1);
    FILE *in;
    char fin[1024];
-   long s, size,total=0;
+   long s, total=0;
+   ClObjectHdr hdr;
    
    cr->hdl = cb;
    cr->ft = ClassRegisterFT;
@@ -157,13 +161,22 @@ static ClassRegister *newClassRegister(char *fname)
    cb->ht = UtilFactory->newHashTable(61,
                UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
 
-   while ((s = fread(&size, 1, 4, in)) == 4) {
+   while ((s = fread(&hdr, 1, sizeof(hdr), in)) == sizeof(hdr)) {
+//   while ((s = fread(&size, 1, 4, in)) == 4) {
       CMPIConstClass *cc=NULL;
-      char *buf = (char *) malloc(size);
-      total+=size;
+      char *buf=NULL;
       char *cn;
-      *((long *) buf) = size;
-      if (fread(buf + 4, 1, size - 4, in) == size - 4) {
+      
+      if (hdr.type!=HDR_Class) {
+         fprintf(stderr,"--- newClassRegister(): not a class record");
+         abort();
+     }
+      
+      buf = (char *) malloc(hdr.size);
+      total+=hdr.size;
+      *((ClObjectHdr *) buf) = hdr;
+      
+      if (fread(buf + sizeof(hdr), 1, hdr.size - sizeof(hdr), in) == hdr.size - sizeof(hdr)) {
          cc = NEW(CMPIConstClass);
          cc->hdl = buf;
          cc->ft = CMPIConstClassFT;
@@ -176,7 +189,8 @@ static ClassRegister *newClassRegister(char *fname)
          }   
       }
       else {
-         printf("--- got a problem ---");
+         fprintf(stderr,"--- newClassRegister(): failed to read next class");
+         abort();
       }
    }
 //   printf("--- %d Association classes\n", assocs);
@@ -268,7 +282,7 @@ static int putClass(ClassRegister * cr, CMPIConstClass * cls)
 
 static CMPIConstClass *getClass(ClassRegister * cr, const char *clsName)
 {
-   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderEnumInstanceNames");
+   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderEnumClassNames");
    _SFCB_TRACE(1,("--- classname %s cReg %p",clsName,cr));
    ClassBase *cb = (ClassBase *) cr->hdl;
    CMPIConstClass *cls = cb->ht->ft->get(cb->ht, clsName);
@@ -289,10 +303,10 @@ Class_Register_FT *ClassRegisterFT = &ift;
 
 
 /* ------------------------------------------------------------------ *
- * Instance MI Cleanup
+ * Class MI Cleanup
  * ------------------------------------------------------------------ */
 
-CMPIStatus ClassProviderCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
+CMPIStatus ClassProviderCleanup(CMPIClassMI * mi, CMPIContext * ctx)
 {
 /* 
    ClassBase *cb;
@@ -316,7 +330,7 @@ CMPIStatus ClassProviderCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
 }
 
 /* ------------------------------------------------------------------ *
- * Instance MI Functions
+ * Class MI Functions
  * ------------------------------------------------------------------ */
 
 static void loopOnChildNames(ClassRegister *cReg, char *cn, CMPIResult * rslt)
@@ -332,7 +346,7 @@ static void loopOnChildNames(ClassRegister *cReg, char *cn, CMPIResult * rslt)
 }
  
 
-CMPIStatus ClassProviderEnumInstanceNames(CMPIInstanceMI * mi,
+CMPIStatus ClassProviderEnumClassNames(CMPIClassMI * mi,
                                           CMPIContext * ctx,
                                           CMPIResult * rslt,
                                           CMPIObjectPath * ref)
@@ -350,7 +364,7 @@ CMPIStatus ClassProviderEnumInstanceNames(CMPIInstanceMI * mi,
    ClassRegister *cReg;
    char *ns;
 
-   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderEnumInstanceNames");
+   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderEnumClassNames");
    
    cReg=getNsReg(ref, &rc);
    if (cReg==NULL) {
@@ -410,10 +424,10 @@ static void loopOnChildren(ClassRegister *cReg, char *cn, CMPIResult * rslt)
  
  
 
-CMPIStatus ClassProviderEnumInstances(CMPIInstanceMI * mi,
+CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
                                       CMPIContext * ctx,
                                       CMPIResult * rslt,
-                                      CMPIObjectPath * ref, char **properties)
+                                      CMPIObjectPath * ref)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char *cn=NULL;
@@ -426,7 +440,7 @@ CMPIStatus ClassProviderEnumInstances(CMPIInstanceMI * mi,
    CMPIConstClass *cls;
    ClassRegister *cReg;
 
-   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderEnumInstances");
+   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderEnumClasss");
    
    cReg=getNsReg(ref, &rc);
    if (cReg==NULL) {
@@ -468,7 +482,7 @@ CMPIStatus ClassProviderEnumInstances(CMPIInstanceMI * mi,
 }
 
 
-CMPIStatus ClassProviderGetInstance(CMPIInstanceMI * mi,
+CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
                                     CMPIContext * ctx,
                                     CMPIResult * rslt,
                                     CMPIObjectPath * ref, char **properties)
@@ -479,7 +493,7 @@ CMPIStatus ClassProviderGetInstance(CMPIInstanceMI * mi,
    ClassRegister *cReg;
    int rc;
 
-   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderGetInstance");
+   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderGetClass");
    _SFCB_TRACE(1,("--- ClassName %s",(char *) cn->hdl));
    
    cReg=getNsReg(ref, &rc);
@@ -496,37 +510,28 @@ CMPIStatus ClassProviderGetInstance(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-CMPIStatus ClassProviderCreateInstance(CMPIInstanceMI * mi,
+CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
                                        CMPIContext * ctx,
                                        CMPIResult * rslt,
-                                       CMPIObjectPath * cop, CMPIInstance * ci)
+                                       CMPIObjectPath * cop, CMPIConstClass * ci)
 {
    CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    return st;
 }
 
-CMPIStatus ClassProviderSetInstance(CMPIInstanceMI * mi,
+CMPIStatus ClassProviderSetClass(CMPIClassMI * mi,
                                     CMPIContext * ctx,
                                     CMPIResult * rslt,
                                     CMPIObjectPath * cop,
-                                    CMPIInstance * ci, char **properties)
+                                    CMPIConstClass * ci)
 {
    CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    return st;
 }
 
-CMPIStatus ClassProviderDeleteInstance(CMPIInstanceMI * mi,
+CMPIStatus ClassProviderDeleteClass(CMPIClassMI * mi,
                                        CMPIContext * ctx,
                                        CMPIResult * rslt, CMPIObjectPath * cop)
-{
-   CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   return st;
-}
-
-CMPIStatus ClassProviderExecQuery(CMPIInstanceMI * mi,
-                                  CMPIContext * ctx,
-                                  CMPIResult * rslt,
-                                  CMPIObjectPath * cop, char *lang, char *query)
 {
    CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    return st;
@@ -604,7 +609,7 @@ CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
                                      CMPIContext * ctx,
                                      CMPIResult * rslt,
                                      CMPIObjectPath * ref,
-                                     char *methodName,
+                                     const char *methodName,
                                      CMPIArgs * in, CMPIArgs * out)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -711,8 +716,9 @@ CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
 }
 
 
-CMInstanceMIStub(ClassProvider, ClassProvider, _broker, CMNoHook);
+CMClassMIStub(ClassProvider, ClassProvider, _broker, CMNoHook);
 
 CMMethodMIStub(ClassProvider, ClassProvider, _broker, CMNoHook);
+ 
 //
 //

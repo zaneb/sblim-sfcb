@@ -354,16 +354,6 @@ typedef struct xtokEnumClasses {
 } XtokEnumClasses;
 
 
-
-
-
-
-
-typedef struct xtokDeleteClass {
-   OperationHdr op;
-} XtokDeleteClass;
-
-
 /*
  *    getInstance
 */
@@ -436,6 +426,20 @@ typedef struct xtokModifyInstance {
    int namedInstSet,properties;
    char **propertyList;
 } XtokModifyInstance;
+
+
+/*
+ *    deleteInstance
+*/
+
+typedef struct xtokDeleteClassParm {
+   char *className;
+} XtokDeleteClassParm;
+
+typedef struct xtokDeleteClass {
+   OperationHdr op;
+   char *className;
+} XtokDeleteClass;
 
 
 /*

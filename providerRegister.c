@@ -149,6 +149,8 @@ ProviderRegister *newProviderRegister(char *fn)
                   info->type |= METHOD_PROVIDER;
                else if (strcmp(t, "indication") == 0)
                   info->type |= INDICATION_PROVIDER;
+               else if (strcmp(t, "class") == 0)
+                  info->type |= CLASS_PROVIDER;
                else {
                   printf("--- invalid type specification: \n\t%d: %s\n", n, stmt);
                   err = 1;

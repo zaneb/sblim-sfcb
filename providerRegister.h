@@ -66,13 +66,16 @@ typedef struct _ProviderInfo {
    CMPIAssociationMI *associationMI;
    CMPIMethodMI *methodMI;
    CMPIIndicationMI *indicationMI;
+   CMPIPropertyMI *propertyMI;
+   CMPIClassMI *classMI;
 } ProviderInfo;
 
 #define INSTANCE_PROVIDER       1
 #define ASSOCIATION_PROVIDER    2
 #define INDICATION_PROVIDER     4
 #define METHOD_PROVIDER         8
-#define INSTANCE_QUERY_PROVIDER 16
+#define PROPERTY_PROVIDER       16
+#define CLASS_PROVIDER          32
 #define FORCE_PROVIDER_NOTFOUND 128
 
 

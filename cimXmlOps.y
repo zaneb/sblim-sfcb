@@ -158,8 +158,6 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
    XtokGetClassParms             xtokGetClassParms;
    XtokGetClass                  xtokGetClass;
 
-   XtokDeleteClass               xtokDeleteClass;
-
    XtokEnumClassNames            xtokEnumClassNames;
    XtokEnumClassNamesParmsList   xtokEnumClassNamesParmsList;
    XtokEnumClassNamesParms       xtokEnumClassNamesParms;
@@ -171,6 +169,9 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
    XtokGetInstance               xtokGetInstance;
    XtokGetInstanceParmsList      xtokGetInstanceParmsList;
    XtokGetInstanceParms          xtokGetInstanceParms;
+
+   XtokDeleteClass               xtokDeleteClass;
+   XtokDeleteClassParm           xtokDeleteClassParm;
 
    XtokDeleteInstance            xtokDeleteInstance;
    XtokDeleteInstanceParm        xtokDeleteInstanceParm;
@@ -235,12 +236,13 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
 %type  <xtokEnumClassesParmsList> enumClassesParmsList
 %type  <xtokEnumClassesParms>    enumClassesParms
 
-%token <xtokDeleteClass>         XTOK_DELETECLASS
-%type  <xtokDeleteClass>         deleteClass
-
 %token <xtokCreateInstance>      XTOK_CREATEINSTANCE
 %type  <xtokCreateInstance>      createInstance
 %type  <xtokCreateInstanceParm>  createInstanceParm
+
+%token <xtokDeleteClass>         XTOK_DELETECLASS
+%type  <xtokDeleteClass>         deleteClass
+%type  <xtokDeleteClassParm>     deleteClassParm
 
 %token <xtokDeleteInstance>      XTOK_DELETEINSTANCE
 %type  <xtokDeleteInstance>      deleteInstance
@@ -660,22 +662,6 @@ getClassParms
 
 
 /*
- *    deleteClass
-*/
-
-deleteClass
-    : localNameSpacePath XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
-    {
-       $$.op.count = 2;
-       $$.op.type = OPS_DeleteClass;
-       $$.op.nameSpace=setCharsMsgSegment($1);
-       $$.op.className=setCharsMsgSegment($3);
-
-       setRequest(parm,&$$,sizeof(XtokDeleteClass),OPS_DeleteClass);
-    }
-;
-
-/*
  *    enumClassNames
 */
 
@@ -1017,6 +1003,41 @@ modifyInstanceParms
        $$.properties=$2.list.next;
        $$.namedInstSet=0;
        $$.flags = $$.flagsSet = 0 ;
+    }
+;
+
+
+/*
+ *    deleteClass
+*/
+
+deleteClass
+    : localNameSpacePath
+    {
+       $$.op.count = 2;
+       $$.op.type = OPS_DeleteClass;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment(NULL);
+
+       setRequest(parm,&$$,sizeof(XtokDeleteClass),OPS_DeleteClass);
+    }
+    | localNameSpacePath deleteClassParm
+    {
+       $$.op.count = 2;
+       $$.op.type = OPS_DeleteClass;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment($2.className);
+       $$.className = $2.className;
+
+       setRequest(parm,&$$,sizeof(XtokDeleteClass),OPS_DeleteClass);
+    }
+;
+
+
+deleteClassParm
+    : XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
+    {
+       $$.className = $2;
     }
 ;
 

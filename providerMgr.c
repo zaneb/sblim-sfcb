@@ -669,11 +669,11 @@ static MgrHandler mHandlers[] = {
    {notSupported},              //dummy
    {classProvider},             //OPS_GetClass 1
    {instProvider},              //OPS_GetInstance 2
-   {notSupported},              //OPS_DeleteClass 3
+   {classProvider},             //OPS_DeleteClass 3
    {instProvider},              //OPS_DeleteInstance 4
-   {notSupported},              //OPS_CreateClass 5
+   {classProvider},             //OPS_CreateClass 5
    {instProvider},              //OPS_CreateInstance 6
-   {notSupported},              //OPS_ModifyClass 7
+   {classProvider},             //OPS_ModifyClass 7
    {instProvider},              //OPS_ModifyInstance 8
    {classProvider},             //OPS_EnumerateClasses 9
    {classProvider},             //OPS_EnumerateClassNames 10
@@ -694,10 +694,15 @@ static MgrHandler mHandlers[] = {
    {NULL},
    {NULL},
 #ifdef SFCB_INCL_INDICATION_SUPPORT
-   {processIndProviderList},    //OPS_ProcessIndicationList 24
+   {processIndProviderList},    //OPS_ProcessIndicationList 27
 #else
-   {notSupported},              //OPS_ProcessIndicationList 24
-#endif   
+   {notSupported},              //OPS_ProcessIndicationList 27
+#endif  
+              // Next entries are never called - They used by ProviderDrv.c
+   {NULL},                      //OPS_ActivateFilter     28
+   {NULL},                      //OPS_DeactivateFilter   29
+   {NULL},                      //OPS_DisableIndications 30
+   {NULL},                      //OPS_EnableIndications  31
 };
       
 void processProviderMgrRequests()

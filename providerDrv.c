@@ -291,6 +291,18 @@ static int getMethodMI(ProviderInfo *info, CMPIMethodMI **mi, CMPIContext *ctx)
    _SFCB_RETURN(rc);
 }
 
+static int getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
+{
+   int rc;
+    _SFCB_ENTER(TRACE_PROVIDERDRV, "getClassMI");
+    
+   if (info->classMI == NULL) info->classMI =
+          loadClassMI(info->providerName, info->library, Broker, ctx);
+   *mi = info->classMI;
+   rc = info->classMI ? 1 : 0;
+   _SFCB_RETURN(rc);
+}
+
 
 
 
@@ -645,7 +657,8 @@ static BinResponseHdr *getClass(BinRequestHdr * hdr, ProviderInfo * info, int re
    if (req->count>2) props=makePropertyList(req->count-2,req->properties);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
-   rci = info->instanceMI->ft->getInstance(info->instanceMI, ctx, result, path,props);
+//   rci = info->instanceMI->ft->getInstance(info->instanceMI, ctx, result, path,props);
+   rci = info->classMI->ft->getClass(info->classMI, ctx, result, path,props);
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    r = native_result2array(result);
@@ -668,7 +681,8 @@ static BinResponseHdr *getClass(BinRequestHdr * hdr, ProviderInfo * info, int re
 static BinResponseHdr *enumClassNames(BinRequestHdr * hdr,
                                          ProviderInfo * info, int requestor)
 {
-   EnumInstanceNamesReq *req = (EnumInstanceNamesReq *) hdr;
+//   EnumInstanceNamesReq *req = (EnumInstanceNamesReq *) hdr;
+   EnumClassNamesReq *req = (EnumClassNamesReq *) hdr;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
@@ -686,7 +700,8 @@ static BinResponseHdr *enumClassNames(BinRequestHdr * hdr,
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
 
-   rci = info->instanceMI->ft->enumInstanceNames(info->instanceMI, ctx, result,
+//   rci = info->instanceMI->ft->enumInstanceNames(info->instanceMI, ctx, result,
+   rci = info->classMI->ft->enumClassNames(info->classMI, ctx, result,
                                                path);
    r = native_result2array(result);
 
@@ -712,7 +727,8 @@ static BinResponseHdr *enumClasses(BinRequestHdr * hdr,
                                          ProviderInfo * info, int requestor)
 {
    _SFCB_ENTER(TRACE_PROVIDERDRV, "enumClasses");
-   EnumInstancesReq *req = (EnumInstancesReq *) hdr;
+//   EnumInstancesReq *req = (EnumInstancesReq *) hdr;
+   EnumClassesReq *req = (EnumClassesReq *) hdr;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
@@ -726,8 +742,7 @@ static BinResponseHdr *enumClasses(BinRequestHdr * hdr,
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
 
-   rci = info->instanceMI->ft->enumInstances(info->instanceMI, ctx, result,
-                                               path,NULL);
+   rci = info->classMI->ft->enumClasses(info->classMI, ctx, result,path);
    r = native_result2array(result);
 
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
@@ -931,7 +946,6 @@ static BinResponseHdr *modifyInstance(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
    CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
-   CMPIArray *r;
    CMPICount count;
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
@@ -1498,6 +1512,9 @@ static int initProvider(ProviderInfo *info)
    }   
    if (info->type & INDICATION_PROVIDER) {
       rc |= (getIndicationMI(info, (CMPIIndicationMI **) & mi, ctx) != 1);
+   }   
+   if (info->type & CLASS_PROVIDER) {
+      rc |= (getClassMI(info, (CMPIClassMI **) & mi, ctx) != 1);
    }   
 
    if (rc) _SFCB_RETURN(-2);

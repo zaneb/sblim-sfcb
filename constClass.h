@@ -23,7 +23,7 @@
 #ifndef CMPI_constClass_h
 #define CMPI_constClass_h
 
-#include "objectImpl.h"
+#include "cmpidt.h"
 
 #define MALLOCED(a) (((a) & 0xff000000)!=0xff000000)
 

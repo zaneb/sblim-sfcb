@@ -27,7 +27,9 @@
 #include "cimXmlRequest.h"
 #include "cimXmlParser.h"
 #include "msgqueue.h"
+#include "cmpidt.h"
 #include "constClass.h"
+#include "objectImpl.h"
 
 #include "native.h"
 #include "trace.h"

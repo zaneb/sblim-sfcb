@@ -249,7 +249,7 @@ static int getInstanceMI(ProviderInfo *info, CMPIInstanceMI **mi, CMPIContext *c
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getInstanceMI");
    
    if (info->instanceMI == NULL) info->instanceMI =
-          tool_load_InstanceMI(info->providerName, info->library, Broker, ctx);
+          loadInstanceMI(info->providerName, info->library, Broker, ctx);
    *mi = info->instanceMI;
    rc = info->instanceMI ? 1 : 0;
    _SFCB_RETURN(rc);
@@ -261,7 +261,7 @@ static int getAssociationMI(ProviderInfo *info, CMPIAssociationMI **mi, CMPICont
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getAssociationMI");
     
    if (info->associationMI == NULL) info->associationMI =
-          tool_load_AssociationMI(info->providerName, info->library, Broker, ctx);
+          loadAssociationMI(info->providerName, info->library, Broker, ctx);
    *mi = info->associationMI;
    rc = info->associationMI ? 1 : 0;
    _SFCB_RETURN(rc);
@@ -273,7 +273,7 @@ static int getIndicationMI(ProviderInfo *info, CMPIIndicationMI **mi, CMPIContex
     _SFCB_ENTER(TRACE_PROVIDERDRV, "getIndicationMI");
     
    if (info->indicationMI == NULL) info->indicationMI =
-          tool_load_IndicationMI(info->providerName, info->library, Broker, ctx);
+          loadIndicationMI(info->providerName, info->library, Broker, ctx);
    *mi = info->indicationMI;
    rc = info->indicationMI ? 1 : 0;
    _SFCB_RETURN(rc);
@@ -285,7 +285,7 @@ static int getMethodMI(ProviderInfo *info, CMPIMethodMI **mi, CMPIContext *ctx)
     _SFCB_ENTER(TRACE_PROVIDERDRV, "getMethodMI");
     
    if (info->methodMI == NULL) info->methodMI =
-          tool_load_MethodMI(info->providerName, info->library, Broker, ctx);
+          loadMethodMI(info->providerName, info->library, Broker, ctx);
    *mi = info->methodMI;
    rc = info->methodMI ? 1 : 0;
    _SFCB_RETURN(rc);

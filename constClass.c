@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "constClass.h"
+#include "objectImpl.h"
 #include "msgqueue.h"
 
 //#define DEB(x) x

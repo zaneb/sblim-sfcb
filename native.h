@@ -33,6 +33,7 @@
 
 #include "cmpidt.h"
 #include "cmpift.h"
+#include "constClass.h"
 #include "cmpimacs.h"
 #include "msgqueue.h"
 

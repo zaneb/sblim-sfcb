@@ -34,7 +34,7 @@
 int collectStat=0;
 unsigned long exFlags = 0;
 
-void *tool_load_lib(const char *libname)
+void *loadLibib(const char *libname)
 {
    char filename[255];
    sprintf(filename, "lib%s.so", libname);
@@ -42,7 +42,7 @@ void *tool_load_lib(const char *libname)
 }
 
 
-static void *__get_generic_entry_point(void *library, const char *ptype)
+static void *getGenericEntryPoint(void *library, const char *ptype)
 {
    char entry_point[255];
    void *sym;
@@ -52,7 +52,7 @@ static void *__get_generic_entry_point(void *library, const char *ptype)
 }
 
 
-static void *__get_fixed_entry_point(const char *provider,
+static void *getFixedEntryPoint(const char *provider,
                                      void *library, const char *ptype)
 {
    char entry_point[255];
@@ -70,17 +70,17 @@ typedef CMPIInstanceMI *(*FIXED_InstanceMI) (CMPIBroker * broker,
                                              CMPIContext * ctx);
 
 
-CMPIInstanceMI *tool_load_InstanceMI(const char *provider, void *library,
+CMPIInstanceMI *loadInstanceMI(const char *provider, void *library,
                                      CMPIBroker * broker, CMPIContext * ctx)
 {
    CMPIInstanceMI *mi; 
-   _SFCB_ENTER(TRACE_PROVIDERDRV, "tool_load_InstanceMI");
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "loadInstanceMI");
    
    GENERIC_InstanceMI g = (GENERIC_InstanceMI) 
-      __get_generic_entry_point(library,"Instance");
+      getGenericEntryPoint(library,"Instance");
    if (g == NULL) {
       FIXED_InstanceMI f = (FIXED_InstanceMI) 
-         __get_fixed_entry_point(provider, library, "Instance");
+         getFixedEntryPoint(provider, library, "Instance");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
          mi=(f) (broker, ctx);
@@ -103,20 +103,20 @@ typedef CMPIAssociationMI *(*FIXED_AssociationMI) (CMPIBroker * broker,
                                                    CMPIContext * ctx);
 
 
-CMPIAssociationMI *tool_load_AssociationMI(const char *provider,
+CMPIAssociationMI *loadAssociationMI(const char *provider,
                                            void *library,
                                            CMPIBroker * broker,
                                            CMPIContext * ctx)
 {
    CMPIAssociationMI *mi; 
-   _SFCB_ENTER(TRACE_PROVIDERDRV, "tool_load_AssociationMI");
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "loadAssociationMI");
    
    GENERIC_AssociationMI g = (GENERIC_AssociationMI) 
-      __get_generic_entry_point(library, "Association");
+      getGenericEntryPoint(library, "Association");
       
    if (g == NULL) {
       FIXED_AssociationMI f = (FIXED_AssociationMI) 
-         __get_fixed_entry_point(provider, library, "Association");
+         getFixedEntryPoint(provider, library, "Association");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
          mi=(f) (broker, ctx);
@@ -139,17 +139,17 @@ typedef CMPIMethodMI *(*FIXED_MethodMI) (CMPIBroker * broker,
                                          CMPIContext * ctx);
 
 
-CMPIMethodMI *tool_load_MethodMI(const char *provider, void *library,
+CMPIMethodMI *loadMethodMI(const char *provider, void *library,
                                  CMPIBroker * broker, CMPIContext * ctx)
 {
    CMPIMethodMI *mi; 
-   _SFCB_ENTER(TRACE_PROVIDERDRV, "tool_load_MethodMI");
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "loadMethodMI");
    
    GENERIC_MethodMI g =
-       (GENERIC_MethodMI) __get_generic_entry_point(library, "Method");
+       (GENERIC_MethodMI) getGenericEntryPoint(library, "Method");
    if (g == NULL) {
       FIXED_MethodMI f =
-          (FIXED_MethodMI) __get_fixed_entry_point(provider, library,"Method");
+          (FIXED_MethodMI) getFixedEntryPoint(provider, library,"Method");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
          mi=(f)(broker, ctx);
@@ -171,18 +171,18 @@ typedef CMPIPropertyMI *(*GENERIC_PropertyMI) (CMPIBroker * broker,
 typedef CMPIPropertyMI *(*FIXED_PropertyMI) (CMPIBroker * broker,
                                              CMPIContext * ctx);
 
-CMPIPropertyMI *tool_load_PropertyMI(const char *provider, void *library,
+CMPIPropertyMI *loadPropertyMI(const char *provider, void *library,
                                      CMPIBroker * broker, CMPIContext * ctx)
 {
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "loadPropertyMI");
    GENERIC_PropertyMI g =
-       (GENERIC_PropertyMI) __get_generic_entry_point(library,
+       (GENERIC_PropertyMI) getGenericEntryPoint(library,
                                                       "Property");
    if (g == NULL) {
       FIXED_PropertyMI f =
-          (FIXED_PropertyMI) __get_fixed_entry_point(provider, library,
+          (FIXED_PropertyMI) getFixedEntryPoint(provider, library,
                                                      "Property");
-      if (f == NULL)
-         return NULL;
+      if (f == NULL) _SFCB_RETURN(NULL);
       return (f) (broker, ctx);
    }
    return (g) (broker, ctx, provider);
@@ -196,24 +196,38 @@ typedef CMPIIndicationMI *(*FIXED_IndicationMI) (CMPIBroker * broker,
                                                  CMPIContext * ctx);
 
 
-CMPIIndicationMI *tool_load_IndicationMI(const char *provider,
+CMPIIndicationMI *loadIndicationMI(const char *provider,
                                          void *library,
                                          CMPIBroker * broker, CMPIContext * ctx)
 {
    GENERIC_IndicationMI g =
-       (GENERIC_IndicationMI) __get_generic_entry_point(library,
+       (GENERIC_IndicationMI) getGenericEntryPoint(library,
                                                         "Indication");
    if (g == NULL) {
       FIXED_IndicationMI f =
-          (FIXED_IndicationMI) __get_fixed_entry_point(provider, library,
+          (FIXED_IndicationMI) getFixedEntryPoint(provider, library,
                                                        "Indication");
-      if (f == NULL)
-         return NULL;
+      if (f == NULL) return NULL;
       return (f) (broker, ctx);
    }
    return (g) (broker, ctx, provider);
 };
 
+
+
+typedef CMPIClassMI *(*FIXED_ClassMI) (CMPIBroker * broker,
+                                                 CMPIContext * ctx);
+
+CMPIClassMI *loadClassMI(const char *provider,
+                                         void *library,
+                                         CMPIBroker * broker, CMPIContext * ctx)
+{
+   FIXED_ClassMI f =
+          (FIXED_ClassMI) getFixedEntryPoint(provider, library,
+                                                       "Class");
+   if (f == NULL) return NULL;
+   return (f) (broker, ctx);
+};
 
 /****************************************************************************/
 

@@ -25,7 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <constClass.h>
+#include "constClass.h"
+#include "objectImpl.h"
 
 #include "native.h"
 #include "msgqueue.h"

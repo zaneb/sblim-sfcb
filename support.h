@@ -28,27 +28,32 @@
 
 #include "cmpidt.h"
 #include "cmpift.h"
+#include "cmpiftx.h"
 #include "cmpimacs.h"
 
 
-CMPIInstanceMI *tool_load_InstanceMI(const char *provider,
+CMPIInstanceMI *loadInstanceMI(const char *provider,
                                      void *library,
                                      CMPIBroker * broker, CMPIContext * ctx);
-CMPIAssociationMI *tool_load_AssociationMI(const char *provider,
+CMPIAssociationMI *loadAssociationMI(const char *provider,
                                            void *library,
                                            CMPIBroker * broker,
                                            CMPIContext * ctx);
-CMPIMethodMI *tool_load_MethodMI(const char *provider,
+CMPIMethodMI *loadMethodMI(const char *provider,
                                  void *library,
                                  CMPIBroker * broker, CMPIContext * ctx);
-CMPIPropertyMI *tool_load_PropertyMI(const char *provider,
+CMPIPropertyMI *loadPropertyMI(const char *provider,
                                      void *library,
                                      CMPIBroker * broker, CMPIContext * ctx);
-CMPIIndicationMI *tool_load_IndicationMI(const char *provider,
+CMPIIndicationMI *loadIndicationMI(const char *provider,
                                          void *library,
                                          CMPIBroker * broker,
                                          CMPIContext * ctx);
 
+CMPIClassMI *loadClassMI(const char *provider,
+                                         void *library,
+                                         CMPIBroker * broker,
+                                         CMPIContext * ctx);
 
 
 /*!

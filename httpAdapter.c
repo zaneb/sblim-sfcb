@@ -74,9 +74,9 @@ static int httpWorkSem;
 
 extern char *decode64(char *data);
 extern void libraryName(const char *location, char *fullName);
-extern void *tool_load_lib(const char *libname);
+extern void *loadLibib(const char *libname);
 extern int getControlChars(char *id, char **val);
-extern void *tool_load_lib(const char *libname);
+extern void *loadLibib(const char *libname);
 
 extern RespSegments genFirstChunkResponses(BinRequestContext*,BinResponseHdr**,int,int);
 extern RespSegments genLastChunkResponses(BinRequestContext*, BinResponseHdr**, int);

@@ -192,10 +192,10 @@ static QLOperand *getPnOpn(QLCollector *qc, QLStatement *qs)
    return qc->pnOpn;
 }
 
-static QLOperand *qcAddPnClass(QLCollector *qc, QLStatement *qs, char* c) 
+static QLOperand *qcAddPnClass(QLCollector *qc, QLStatement *qs, char* c, int opt) 
 {
    QLOperand *opn=getPnOpn(qc,qs);
-   opn->ft->addClass(opn,qs,c);
+   opn->ft->addClass(opn,qs,c,opt);
    return opn;
 }
 

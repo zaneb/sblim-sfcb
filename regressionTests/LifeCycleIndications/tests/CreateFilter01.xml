@@ -22,7 +22,7 @@
               <VALUE>Filter01</VALUE>
             </PROPERTY>
             <PROPERTY NAME="Query" TYPE="string"> 
-              <VALUE>SELECT * FROM CIM_InstCreation where sourceinstance isa TST_LifeCycleIndication</VALUE>
+<VALUE>SELECT * FROM CIM_InstCreation where sourceinstance isa TST_LifeCycleIndication and sourceinstance.id=1</VALUE>
             </PROPERTY>
             <PROPERTY NAME="QueryLanguage" TYPE="string"> 
               <VALUE>WQL</VALUE>

@@ -364,22 +364,25 @@ classPropertyName
     : className '.' classPropertyNameList
     {
        if (QS->wql) {
-          yyErr("Bad property-identifier-1: ",$1,"...");
-          YYERROR;
+          printf("components ?\n"); 
+//          yyErr("Bad property-identifier-1: ",$1,"...");
+//          YYERROR;
+          $$=QC->addPnClass(QC,QS,$1,0);
+          QC->resetName(QC);
        }
-       if (QS->ft->testPropertyClass(QS,$1)==0) {
+       else if (QS->ft->testPropertyClass(QS,$1)==0) {
           yyErr("class-identifier not in From clause: ",$1,"");
           YYERROR;
        }
        else {
-          $$=QC->addPnClass(QC,QS,$1);
+          $$=QC->addPnClass(QC,QS,$1,0);
           QC->resetName(QC);
        }
     }
     | propertyIdentifier
     {
        if (QS->wql) {
-          $$=QC->addPnClass(QC,QS,$1);
+          $$=QC->addPnClass(QC,QS,$1,1);
           QC->resetName(QC);
        }
        else {

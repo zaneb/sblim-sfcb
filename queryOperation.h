@@ -70,14 +70,14 @@ typedef enum qlOpd {
 struct qlPropertyNameData {
    char* className;
    char* part[4];
-   int next,max;
+   int next,max,composite;
 };
 
 struct qlOperandFt {
    char *(*toString)(QLOperand*);
    char *(*type)(QLOperand*);
    int (*compare)(QLOperand*,QLOperand*,QLPropertySource*);
-   void (*addClass)(QLOperand*,QLStatement*,char*);
+   void (*addClass)(QLOperand*,QLStatement*,char*,int);
    void (*addPart)(QLOperand*,QLStatement*,char *p);
 };
 
@@ -225,7 +225,7 @@ struct qlStatement {
 struct qlCollector {
    void (*resetName)(QLCollector *qc);
    void (*clear)(QLCollector *qc);
-   QLOperand* (*addPnClass)(QLCollector *qc, QLStatement *qs, char* c);
+   QLOperand* (*addPnClass)(QLCollector *qc, QLStatement *qs, char* c, int opt);
    void (*addPnPart)(QLCollector *qc, QLStatement *qs, char* p); 
    QLOperand *pnOpn;
    QLOperand *abOpn;

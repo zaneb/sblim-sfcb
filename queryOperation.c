@@ -46,14 +46,29 @@ char * qsStrDup(QLStatement *qs, char *str) {
    
 static CMPIValue getPropValue(QLOperand* self, QLPropertySource* src, QLOpd *type)
 {
-  CMPIValue v=src->getValue(src,self->propertyName->part[0],type);
+   CMPIValue v;
+   if (self->propertyName->composite) {
+      v=src->getValue(src,self->propertyName->className,type);
+      if (*type==QL_Inst) {
+         QLPropertySource nsrc=*src;
+         nsrc.data=v.inst;
+         v=src->getValue(&nsrc,self->propertyName->part[0],type);
+         if (*type==QL_Inst) *type=QL_Invalid;
+      } 
+      else *type=QL_Invalid;
+   }
+
+   else {
+      v=src->getValue(src,self->propertyName->part[0],type);
+//      if (*type==QL_Inst) *type=QL_Invalid;
+   }   
    return v;
 }
 
 QLPropertyNameData* newPropertyNameData(QLStatement *qs) {
    QLPropertyNameData *pd=qsAllocNew(qs,QLPropertyNameData);
    pd->max=8;
-   pd->next=0;
+   pd->composite=pd->next=0;
    return pd;
 }
 
@@ -214,9 +229,13 @@ static int propCompare(QLOperand* self, QLOperand* op,
    return rc;
 }
 
-static void propAddClass(QLOperand *op, QLStatement* qs, char* c) 
+static void propAddClass(QLOperand *op, QLStatement* qs, char* c, int opt) 
 {
-    op->propertyName->className=qsStrDup(qs,c);  
+    op->propertyName->className=qsStrDup(qs,c); 
+    if (opt) {
+       op->propertyName->composite=0; 
+    }
+    else op->propertyName->composite=1; 
 }
 
 static void propAddPart(QLOperand *op, QLStatement* qs, char* p) 

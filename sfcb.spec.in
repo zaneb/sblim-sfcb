@@ -20,6 +20,13 @@ Provides: cimserver
 %Description
 Small Footprint CIM Broker.
 
+%Package schema
+Summary: CIM Schema Files
+Copyright: (C) Distributed Management Task Force
+Group: Systems Management/Base
+%Description schema
+DMTF CIM Schema files that can be used with the Small Footprint CIM Broker.
+
 %prep
 
 %setup -T -b 0 -n %{name}-%{version}
@@ -41,9 +48,25 @@ then
 fi
 
 make DESTDIR=$RPM_BUILD_ROOT install
+make DESTDIR=$RPM_BUILD_ROOT install-cimschema
 
 # remove unused libtool files
 rm -f $RPM_BUILD_ROOT/%{_libdir}/*a
+
+echo "%defattr(-,root,root)" > _pkg_list
+
+find $RPM_BUILD_ROOT/%{_datadir}/%{name} -type f | grep -v $RPM_BUILD_ROOT/%{_datadir}/%{name}/CIM >> _pkg_list
+sed s?$RPM_BUILD_ROOT??g _pkg_list > _pkg_list_2
+mv -f _pkg_list_2 _pkg_list
+echo "%config %{_sysconfdir}/%{name}" >> _pkg_list
+echo "%doc %{_datadir}/doc" >> _pkg_list
+echo "%{_sysconfdir}/init.d/%{name}" >> _pkg_list
+echo "%{_localstatedir}/lib/%{name}" >> _pkg_list
+echo "%{_bindir}/*" >> _pkg_list
+echo "%{_libdir}/*.so*" >> _pkg_list
+
+echo =======================================
+cat _pkg_list
 
 %clean
 if [ `id -ur` != 0 ]
@@ -58,12 +81,7 @@ fi
 %postun
 /sbin/ldconfig
 
-%files
-%defattr(-,root,root)
-%config %{_sysconfdir}/%{name}
-%doc %{_datadir}/doc
-%{_sysconfdir}/init.d/%{name}
-%{_datadir}/%{name}
-%{_localstatedir}/lib/%{name}
-%{_bindir}/*
-%{_libdir}/*.so*
+%files schema
+%{_datadir}/%{name}/CIM
+
+%files -f _pkg_list

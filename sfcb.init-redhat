@@ -6,7 +6,7 @@
 #
 # description: Small Footprint CIM Broker Service
 #
-# processname: sfcBroker
+# processname: sfcbd
 #
 # config: @sysconfdir@/sfcb/sfcb.cfg
 
@@ -30,7 +30,7 @@ fi
 
 start() {
 	echo -n "Starting sfcb: "
-	daemon @bindir@/sfcBroker -d &&
+	daemon @bindir@/sfcbd -d &&
 	touch /var/lock/subsys/sfcb &&
 	return 0 ||
 	return 1
@@ -38,14 +38,14 @@ start() {
 
 stop() {
 	echo -n "Shutting down sfcb: "
-	killproc sfcBroker &&
+	killproc sfcbd &&
 	rm -f /var/lock/subsys/sfcb &&
 	return 0 || return 1
 }
 
 reload() {
 	echo -n "Reloading sfcb configuration: "
-	killproc sfcBroker -HUP &&
+	killproc sfcbd -HUP &&
 	return 0 || return 1
 }
 
@@ -57,7 +57,7 @@ case "$1" in
 	stop
 	;;
     status)
-	status sfcBroker
+	status sfcbd
 	;;
     restart)
     	stop

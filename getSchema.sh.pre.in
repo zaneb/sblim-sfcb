@@ -3,7 +3,13 @@
 
 trap "rm -f /tmp/cimv290.zip" exit 
 
-sfcbdir=@datadir@/sfcb
+if test $# == 1; then
+    sfcbdir=$1
+elif test $# == 0; then
+    sfcbdir=@datadir@/sfcb
+else
+    echo usage: $0 [schemadir]
+fi
 
 if [ -x /usr/bin/curl ] 
 then
@@ -11,12 +17,15 @@ then
    then
       echo "Fetching CIM Schema from DMTF homepage ..."
       [ -d $sfcbdir/CIM ] || mkdir -p $sfcbdir/CIM
-      /usr/bin/curl -o /tmp/cimv290.zip http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip &&    
-      unzip -jd $sfcbdir/CIM /tmp/cimv290.zip &&
-      exit 0
+      if [ $? == 0 ]; then
+	  /usr/bin/curl -o /tmp/cimv290.zip \
+ http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip &&
+	  unzip -jd $sfcbdir/CIM /tmp/cimv290.zip &&
+	  exit 0
+      fi
       echo "Failed to fetch and install CIM schema" 1>&2 
    else
-      echo "CIM Schema already loaded"
+      echo "CIM Schema already present - nothing to do."
       exit 0
    fi   
 else

@@ -116,9 +116,9 @@ static void handleSigterm(int sig)
 static void restartSfcBroker(void *p)
 {
    sleep(1);
-   printf("\n--- \n--- Restarting sfcBroker\n---\n");
+   printf("\n--- \n--- Restarting sfcbd\n---\n");
    
-   execvp("sfcBroker",restartArgv);
+   execvp("sfcbd",restartArgv);
    perror("--- execv for restart problem:");
    abort();
 }
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 
    startHttp = 1;
    collectStat=0;
-   processName="sfcBroker";
+   processName="sfcbd";
    provPauseStr=getenv("SFCB_PAUSE_PROVIDER");
    httpPauseStr=getenv("SFCB_PAUSE_CODEC");
    currentProc=sfcBrokerPid=getpid();
@@ -286,8 +286,8 @@ int main(int argc, char *argv[])
    if (getControlNum("providerTimeoutInterval", &provTimeoutInterval))
       provTimeoutInterval = 10;
 
-   resultSockets=getSocketPair("sfcBroker result");
-   sfcbSockets=getSocketPair("sfcBroker sfcb");
+   resultSockets=getSocketPair("sfcbd result");
+   sfcbSockets=getSocketPair("sfcbd sfcb");
 
    initSem(dSockets,dSockets,pSockets);
    initProvProcCtl(pSockets);

@@ -46,7 +46,7 @@ lib_LTLIBRARIES = \
    libsfcIndCIMXMLHandler.la
 
 bin_PROGRAMS = \
-   sfcBroker 
+   sfcbd 
 
 libsfcBrokerCore_la_SOURCES = \
     args.c \
@@ -139,7 +139,9 @@ libsfcCimXmlCodec_la_SOURCES = \
    cimXmlRequest.c 
 libsfcCimXmlCodec_la_LIBADD=-lsfcBrokerCore 
 
-sfcBroker_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter
+
+sfcbd_SOURCES=sfcBroker.c
+sfcbd_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter
 
 noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \
@@ -207,3 +209,7 @@ clean-local:
 
 dist-hook:
 	test -d "$(distdir)" &&	rm -rf `find $(distdir) -type d -name CVS`
+
+install-cimschema: getSchema.sh
+	test -d $(DESTDIR)$(pkgdatadir) || $(mkdir_p) $(DESTDIR)$(pkgdatadir)
+	sh getSchema.sh $(DESTDIR)$(pkgdatadir)

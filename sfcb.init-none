@@ -21,21 +21,21 @@ fi
 
 start() {
 	echo -n "Starting sfcb: "
-	@bindir@/sfcBroker -d && echo "done." && return 0 ||
+	@bindir@/sfcbd -d && echo "done." && return 0 ||
 	echo "failed."
 	return 1
 }	
 
 stop() {
 	echo -n "Shutting down sfcb: "
-	killall -9 sfcBroker && echo "done." && return 0 ||
+	killall -9 sfcbd && echo "done." && return 0 ||
 	echo "failed."
 	return 1
 }
 
 reload() {
 	echo -n "Reloading sfcb configuration: "
-	killall -HUP sfcBroker && echo "done." && return 0 ||
+	killall -HUP sfcbd && echo "done." && return 0 ||
 	echo "failed."
 	return 1
 }
@@ -49,7 +49,7 @@ case "$1" in
 	;;
     status)
 	echo -n "Checking SFCB status: "
-	ps --noheaders -C sfcBroker || echo "stopped." 
+	ps --noheaders -C sfcbd || echo "stopped." 
 	;;
     restart)
     	stop

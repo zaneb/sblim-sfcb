@@ -30,19 +30,19 @@ fi
 
 start() {
 	echo -n "Starting sfcb: "
-	startproc @bindir@/sfcBroker -d
+	startproc @bindir@/sfcbd -d
 	rcstatus -v
 }	
 
 stop() {
 	echo -n "Shutting down sfcb: "
-	killproc sfcBroker
+	killproc sfcbd
 	rcstatus -v
 }
 
 reload() {
 	echo -n "Reloading sfcb configuration: "
-	killproc -HUP sfcBroker
+	killproc -HUP sfcbd
 	rcstatus -v
 }
 
@@ -54,7 +54,7 @@ case "$1" in
 	stop
 	;;
     status)
-	checkproc sfcBroker
+	checkproc sfcbd
 	rc_status -v
 	;;
     restart)

@@ -2,7 +2,7 @@
 
 function usage() 
 {
-    echo "usage: $0 [-h] [ -s stagingdir] [ -r regfile ] mof ...  " 1>&2 
+    echo "usage: $0 [-h] [ -s stagingdir] [ -r regfile ] [ mof ... ]  " 1>&2 
 }
 
 
@@ -42,7 +42,7 @@ then
     exit 0
 fi
 
-if [ -z "$*" ]
+if [ -z "$*" ] && [ -z "$regfile" ]
 then
     usage $0
     exit 1
@@ -55,18 +55,20 @@ fi
 
 if [ -n "$regfile" ]
 then
-    cp $regfile $stagingdir/regs ||
-    (echo "Error: could not copy registration files to $stagingdir" 1>&2 &&
-    exit 1)
+    test -d $stagingdir/regs || mkdir $stagingdir/regs
+    if ! cp $regfile $stagingdir/regs
+    then
+	echo "Error: could not copy registration files " 1>&2
+	exit 1
+    fi
 fi
 
 if [ -n "$*" ]
 then
-    (cp $* $stagingdir/mofs && exit 0) ||
-    echo "Error: could not find registration files" 1>&2    
-    exit 1
+    test -d $stagingdir/mofs || mkdir $stagingdir/mofs
+    if ! cp $* $stagingdir/mofs
+    then
+	echo "Error: could not copy schema files " 1>&2    
+	exit 1
+    fi
 fi
-
-
-
-

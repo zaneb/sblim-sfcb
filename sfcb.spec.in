@@ -1,7 +1,7 @@
 #
-# sfcb.spec
+# $Id$
 #
-# Package spec for wbemcli
+# Package spec for @PACKAGE@
 #
 
 BuildRoot: /var/tmp/buildroot
@@ -14,6 +14,8 @@ Group: Systems Management/Base
 License: Common Public License 1.0
 
 Source0: ftp://www-126.ibm.com/pub/sblim/%{name}-%{version}.tar.bz2
+
+Provides: cimserver
 
 %Description
 Small Footprint CIM Broker.

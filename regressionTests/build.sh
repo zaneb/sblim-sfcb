@@ -24,7 +24,7 @@ dirs='FilesAndDirectories BigOutput ProcessIndications'
 if [ ! -e $CIMDIR ] 
 then
     echo --- build.sh cannot continue: $CIMDIR not found. 
-    echo --- You need to download desired CIM Mof files from www.dmtf.org priot to running build.sh.
+    echo --- You need to download the desired CIM Mof files from www.dmtf.org into sfcb/dmtf-mofs prior to running build.sh.
     exit 5
 fi
 

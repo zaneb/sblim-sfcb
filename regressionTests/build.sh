@@ -19,7 +19,7 @@
 # */
 
 
-dirs='FilesAndDirectories BigOutput ProcessIndications'
+dirs='FilesAndDirectories BigOutput ProcessIndications LifeCyleIndications'
 
 sfcbdir=/usr/local/share/sfcb
 if [ -x /usr/bin/curl ] && [ ! -f $sfcbdir/CIM/CIM_Schema.mof ]

@@ -19,7 +19,7 @@
 # */
 
 #dirs=`find -type d -maxdepth 1 \! -name lib \! -name bin \! -name schema \! -name .`
-dirs='FilesAndDirectories BigOutput ProcessIndications'
+dirs='FilesAndDirectories BigOutput ProcessIndications LifeCycleIndications'
 
 if [ $# -gt 0 ] 
 then

@@ -189,6 +189,11 @@ static int propCompare(QLOperand* self, QLOperand* op,
       nop->type=QL_Char;
       nop->value.char16=v.char16;
       break;
+    case QL_Inst:
+      nop=newInstQueryOperand(NULL,v.inst);
+      nop->type=QL_Char;
+      nop->value.char16=v.char16;
+      break;
    case QL_PropertyName:
    case QL_Name:
       fprintf(stderr,"### propCompare(): (QL_PropertyName QL_Name) got a problem\n");
@@ -203,6 +208,7 @@ static int propCompare(QLOperand* self, QLOperand* op,
             self->propertyName->part[0]);
       abort();
    }
+   
    rc=nop->ft->compare(nop,op,src);
    QL_TRACE(fprintf(stderr,"propCompare(%s) %d\n",self->propertyName->part[0],rc));
    return rc;
@@ -219,6 +225,38 @@ static void propAddPart(QLOperand *op, QLStatement* qs, char* p)
    op->propertyName->next++;
 }
 
+extern const char *instGetClassName(CMPIInstance * ci);
+extern int isChild(const char *ns, const char *parent, const char* child);
+
+static int  instCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
+{
+   char *sov;
+   QLOpd type=op->type;
+  
+   sov=(char*)instGetClassName(self->inst);
+   if (type==QL_Name) {
+      if (strcasecmp(sov,op->charsVal)==0) return 0;
+      return isChild(src->sns,sov,op->charsVal)!=0;
+    }
+   return -2;
+}
+
+static char* instToString(QLOperand* op) 
+{
+   return qsStrDup(NULL,"*** instace ***");
+}
+
+static int  nameCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
+{
+   printf("  nameCompare\n");
+   abort();
+   return -2;
+}
+
+static char* nameToString(QLOperand* op) 
+{
+   return qsStrDup(NULL,op->charsVal);
+}
 
 
 static QLOperandFt qLintQueryOperandFt={
@@ -259,6 +297,22 @@ static QLOperandFt qLpropQueryOperandFt={
    propCompare,
    propAddClass,
    propAddPart,
+};
+
+static QLOperandFt qLinstQueryOperandFt={
+   instToString,
+   typeToString,
+   instCompare,
+   NULL,
+   NULL,
+};
+
+static QLOperandFt qLnameQueryOperandFt={
+   nameToString,
+   typeToString,
+   nameCompare,
+   NULL,
+   NULL,
 };
 
 
@@ -304,6 +358,16 @@ QLOperand* newCharsQueryOperand(QLStatement *qs, char* val)
    return op;
 }
 
+QLOperand* newNameQueryOperand(QLStatement *qs, char* val) 
+{
+   QLOperand *op=qsAllocNew(qs,QLOperand);
+   QL_TRACE(fprintf(stderr,"--- newNameQueryOperand %s\n",val));
+   op->charsVal=val;
+   op->type=QL_Name;
+   op->ft=&qLnameQueryOperandFt;
+   return op;
+}
+
 QLOperand* newPropQueryOperand(QLStatement *qs, QLPropertyNameData* val) 
 {
    QLOperand *op=qsAllocNew(qs,QLOperand);
@@ -311,6 +375,16 @@ QLOperand* newPropQueryOperand(QLStatement *qs, QLPropertyNameData* val)
    op->propertyName=val;
    op->type=QL_PropertyName;
    op->ft=&qLpropQueryOperandFt;
+   return op;
+}
+
+QLOperand* newInstQueryOperand(QLStatement *qs, CMPIInstance* ci) 
+{
+   QLOperand *op=qsAllocNew(qs,QLOperand);
+   QL_TRACE(fprintf(stderr,"--- newInstQueryOperand %p\n",ci));
+   op->inst=ci;
+   op->type=QL_Inst;
+   op->ft=&qLinstQueryOperandFt;
    return op;
 }
 
@@ -1042,7 +1116,7 @@ static int _isaEvaluate(QLOperation *op, QLPropertySource* source)
    int rc=0;
    if (op->flag.invert) rc=op->lhod->ft->compare(op->lhod,op->rhod,source)!=0;
    else rc=op->lhod->ft->compare(op->lhod,op->rhod,source)==0;
-   QL_TRACE(fprintf(stderr,"_eqEvaluate() rc: %d\n",rc));
+   QL_TRACE(fprintf(stderr,"_isaEvaluate() rc: %d\n",rc));
    return rc;
 }
 

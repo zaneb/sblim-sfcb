@@ -149,6 +149,7 @@ static int qsTestPropertyClass(QLStatement *st, char *cl)
 
 static void qsRelease(QLStatement *st)
 {
+   if (st->sns) free(st->sns);
 }
 
 static CMPIInstance* qsCloneAndFilter(QLStatement *st, CMPIInstance *ci, CMPIObjectPath *cop, 
@@ -233,7 +234,7 @@ static QLStatementFt stmtFt={
 };   
    
 
-QLStatement *parseQuery(int mode, char *query, char *lang, int *rc)
+QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc)
 {
    QLStatement *qs=NULL;
    QLCollector ctlFt={
@@ -257,6 +258,8 @@ QLStatement *parseQuery(int mode, char *query, char *lang, int *rc)
    else ctl.statement->wql=0;
    
    *rc=sfcQueryparse(&ctl);
+   if (sns) qs->sns=strdup(sns);
+   else sns=NULL;
    
    return qs;
 }

@@ -212,7 +212,8 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
    struct native_instance *i = (struct native_instance *) instance;
    ClInstance *inst = (ClInstance *) instance->hdl;
    CMPIData data = { type, CMPI_goodValue, {0} };
-//if (strcasecmp(name,"Dedicated")==0) asm("int $3");
+   int rc;
+
    if (type == CMPI_chars)
       data.value.chars = (char *) value;
    else if (type == CMPI_string) {
@@ -228,7 +229,8 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
        __contained_list(i->property_list, name) ||
        __contained_list(i->key_list, name)) {
 
-      ClInstanceAddProperty(inst, name, data);
+      rc=ClInstanceAddProperty(inst, name, data);
+      if (rc<0) CMReturn(-rc);      
    }
    CMReturn(CMPI_RC_OK);
 }

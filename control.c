@@ -43,6 +43,8 @@ typedef struct control {
 
 static UtilHashTable *ct = NULL;
 
+char * configfile = NULL;
+
 Control init[] = {
    {"httpPort",         1, "5988"},
    {"enableHttp",       2, "true"},

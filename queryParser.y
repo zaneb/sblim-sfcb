@@ -147,6 +147,7 @@ extern void yyerror(char*);
 %type <strValue>  propertyIdentifier
 %type <strValue> classAlias
 
+%type <comparisonTerm>  classId
 %type <comparisonTerm>  comparisonTerm
 %type <searchCondition> searchCondition
 %type <whereClause> whereClause
@@ -343,7 +344,7 @@ comparisonPredicate
     {
        $$=newNeOperation(QS,$1,$3);
     }
-    | comparisonTerm TOK_ISA comparisonTerm
+    | comparisonTerm TOK_ISA classId
     {
        $$=newIsaOperation(QS,$1,$3);
     }
@@ -432,6 +433,13 @@ className : TOK_IDENTIFIER
 classAlias : TOK_IDENTIFIER
     {
        $$ = $1;
+    }
+
+
+classId
+    : className
+    {
+       $$=newNameQueryOperand(QS,$1);
     }
 
 comparisonTerm

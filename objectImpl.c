@@ -26,10 +26,11 @@
 
 #include "objectImpl.h"
 #include "array.h"
+#include "utilft.h"
 #include "trace.h" 
 
 //#define DEB(x) x
-#define DEB(x)
+#define DEB(x) 
 
 //static ClSection *newClSection();
 
@@ -733,6 +734,8 @@ int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p,
       p->quals |= ClProperty_Q_Propagated;
    else if (strcasecmp(id, "deprecated") == 0)
       p->quals |= ClProperty_Q_Deprecated;
+   else if (strcasecmp(id, "embeddedobject") == 0)
+      p->quals |= ClProperty_Q_EmbeddedObject;
 
    else
       return ClClassAddQualifier(hdr, &p->qualifiers, id, d);
@@ -874,15 +877,28 @@ static char *addPropertyToString(stringControl * sc, ClObjectHdr * hdr,
    return sc->str + o;
 }
 
+int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb);
+
 static long sizeProperties(ClObjectHdr * hdr, ClSection * s)
 {
    int l;
    long sz = s->used * sizeof(ClProperty);
    ClProperty *p = (ClProperty *) ClObjectGetClSection(hdr, s);
+   UtilStringBuffer *sb;
 
-   for (l = s->used; l > 0; l--, p++)
+   for (l = s->used; l > 0; l--, p++) {
+      if (hdr->type & HDR_Instance && p->quals & ClProperty_Q_EmbeddedObject) {
+         if ((p->flags & ClProperty_EmbeddedObjectAsString)==0) {
+            p->flags|=ClProperty_EmbeddedObjectAsString;
+            sb = UtilFactory->newStrinBuffer(1024);
+            instance2xml(p->data.value.inst,sb);
+            p->data.value.dataPtr.length = addClString(hdr, sb->ft->getCharPtr(sb));
+            sb->ft->release(sb);
+         }
+      }
       if (p->qualifiers.used)
          sz += sizeQualifiers(hdr, &p->qualifiers);
+   }      
    DEB(printf("--- sizeProperties: %lu-%p\n", sz, (void *) sz));
    return sz;
 }
@@ -979,6 +995,8 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       p = p + (prps->used++);
       clearClSection(&p->qualifiers);
       p->id.id = addClString(hdr, id);
+      p->quals = p->flags = 0;
+      
       if (d.type == CMPI_chars && (d.state & CMPI_nullValue) == 0) {
          p->data = d; 
          p->data.value.chars = (char *) addClString(hdr, d.value.chars);
@@ -999,8 +1017,16 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          p->data = d;
          p->data.value.chars = (char *) addClArray(hdr, d);
       }
+      else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
+         (d.state & CMPI_nullValue) == 0) {
+//      printf("added embedded object %d %s\n",getpid(),id);
+         p->data = d;
+         p->data.value.dataPtr.length=-1; 
+         p->quals |= ClProperty_Q_EmbeddedObject;
+         p ->flags &= ~ClProperty_EmbeddedObjectAsString;
+         hdr->flags |= HDR_ContainsEmbeddedObject;
+      }
       else p->data = d;
-      p->quals = 0;
       _SFCB_RETURN(prps->used);
    }
 
@@ -1009,7 +1035,12 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       if MALLOCED (prps->offset) p = (ClProperty *) prps->offset;
       else p = (ClProperty *) ((char*)hdr + abs(prps->offset));
       od = (p + i - 1)->data;
+      
       if (od.type == CMPI_chars && (d.state & CMPI_nullValue) == 0) {
+      
+         if ((p + i - 1)->quals && ClProperty_Q_EmbeddedObject) 
+            _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
+            
          if (d.type != CMPI_chars) {
             replaceClString(hdr, (int) od.value.chars, "");
             (p + i - 1)->data = d;
@@ -1043,6 +1074,16 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       else if ((od.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
          (p + i - 1)->data = d;
          replaceClArray(hdr, (int) od.value.array, d);
+      }
+      
+      else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
+         (d.state & CMPI_nullValue) == 0) {
+         if (((p + i - 1)->quals && ClProperty_Q_EmbeddedObject) == 0 ) 
+            _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
+         (p + i - 1)->flags &= ~ClProperty_EmbeddedObjectAsString;
+         (p + i - 1)->data = d;
+         hdr->flags |= HDR_ContainsEmbeddedObject;
+         (p + i - 1)->data.value.dataPtr.length=-1; 
       }
       else(p + i - 1)->data = d;
       
@@ -1285,7 +1326,7 @@ ClInstance *ClInstanceNew(const char *ns, const char *cn)
 static long sizeInstanceH(ClObjectHdr * hdr, ClInstance * inst)
 {
    long sz = sizeof(*inst);
-
+   
    sz += sizeQualifiers(hdr, &inst->qualifiers);
    sz += sizeProperties(hdr, &inst->properties);
    sz += sizeStringBuf(hdr);
@@ -1442,6 +1483,13 @@ const char *ClInstanceGetClassName(ClInstance * inst)
 const char *ClInstanceGetNameSpace(ClInstance * inst)
 {
    return ClObjectGetClString(&inst->hdr, &inst->nameSpace);
+}
+
+const char *ClGetStringData(CMPIInstance * ci, int id)
+{
+   ClInstance *inst = (ClInstance *) ci->hdl;   
+   ClString sid={id};
+   return ClObjectGetClString(&inst->hdr, &sid);
 }
 
 

@@ -63,7 +63,7 @@ extern void closeProviderContext(BinRequestContext* ctx);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 extern int testNameSpace(char *ns, CMPIStatus *st);
 
-extern QLStatement *parseQuery(int mode, char *query, char *lang, int *rc);
+extern QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
 
 static CMPIBroker *_broker;
 static int firstTime=1;
@@ -75,6 +75,7 @@ typedef struct filter {
    int useCount;
    char *query;
    char *lang;
+   char *type;
    char *sns;
 } Filter;
 
@@ -259,6 +260,7 @@ static int isa(const char *sns, const char *child, const char *parent)
 {
    int rv;
    _SFCB_ENTER(TRACE_INDPROVIDER, "isa");
+   
    if (strcasecmp(child,parent)==0) return 1;
    rv=isChild(sns,parent,child);
    _SFCB_RETURN(rv);
@@ -269,7 +271,7 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
 {
    CMPIObjectPath *path;
    CMPIStatus st={CMPI_RC_OK,NULL};
-   IndicationReq sreq = BINREQ(OPS_DeactivateFilter, 4);
+   IndicationReq sreq = BINREQ(OPS_DeactivateFilter, 6);
    BinResponseHdr *resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = {OPS_IndicationLookup, 2};
@@ -284,6 +286,8 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.query = setCharsMsgSegment(NULL);
    sreq.language = setCharsMsgSegment(NULL);
+   sreq.type = setCharsMsgSegment(NULL);
+   sreq.sns = setCharsMsgSegment(NULL);
    sreq.filterId=fi;
 
    req.nameSpace = setCharsMsgSegment((char*) ns);
@@ -325,14 +329,17 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
 
 
 #define CREATE_INST 1
+#define DELETE_INST 2
+#define MODIFY_INST 3
+
 extern CMPISelectExp *TempCMPISelectExp(QLStatement *qs);
 
-CMPIStatus activateSubscription(char *principle, const char *cn,
+CMPIStatus activateSubscription(char *principle, const char *cn, const char *type,
              Filter *fi, int *rrc)
 {
    CMPIObjectPath *path;
    CMPIStatus st={CMPI_RC_OK,NULL},rc;
-   IndicationReq sreq = BINREQ(OPS_ActivateFilter, 4);
+   IndicationReq sreq = BINREQ(OPS_ActivateFilter, 6);
    BinResponseHdr *resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = {OPS_IndicationLookup, 2};
@@ -347,6 +354,8 @@ CMPIStatus activateSubscription(char *principle, const char *cn,
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.query = setCharsMsgSegment(fi->query);
    sreq.language = setCharsMsgSegment(fi->lang);
+   sreq.type = setCharsMsgSegment((char*)type);
+   sreq.sns = setCharsMsgSegment(fi->sns);
    sreq.filterId=fi;
 
    req.nameSpace = setCharsMsgSegment(fi->sns);
@@ -361,7 +370,7 @@ CMPIStatus activateSubscription(char *principle, const char *cn,
    _SFCB_TRACE(1, ("--- getProviderContext for %s-%s",fi->sns,cn));
    
    irc = getProviderContext(&binCtx, &req);
- 
+
    if (irc == MSG_X_PROVIDER) {      
       _SFCB_TRACE(1, ("--- Invoking Provider"));
       resp = invokeProvider(&binCtx);
@@ -406,7 +415,7 @@ CMPIStatus activateLifeCycleSubscription(char *principle, const char *cn,
    if (cond) { 
       cm=CMGetSubCondCountAndType(cond,NULL,NULL);
       if (cm) for (c=0; c<cm; c++) {
-         printf("subcondition %d\n",c);
+         _SFCB_TRACE(1,("subcondition %d",c));
          sc=CMGetSubCondAt(cond,c,NULL);
          int ok=0;
          if (sc) {
@@ -416,9 +425,9 @@ CMPIStatus activateLifeCycleSubscription(char *principle, const char *cn,
                   CMGetPredicateData(pr,NULL,&predOp,&lhs,&rhs);
                   if (predOp==CMPI_PredOp_Isa) {
                      ok=1;
-                     printf("lhs: %s\n",(char*)lhs->hdl); 
-                     printf("rhs: %s\n",(char*)rhs->hdl);
-                     st=activateSubscription(principle,(char*)rhs->hdl,fi,&irc);
+                     _SFCB_TRACE(1,("lhs: %s",(char*)lhs->hdl)); 
+                     _SFCB_TRACE(1,("rhs: %s\n",(char*)rhs->hdl));
+                     st=activateSubscription(principle,(char*)rhs->hdl,cn,fi,&irc);
                      if (irc==MSG_X_INVALID_CLASS) 
                         st.rc=CMPI_RC_ERR_INVALID_CLASS;
                      if (st.rc!=CMPI_RC_OK) break;
@@ -437,7 +446,7 @@ CMPIStatus activateLifeCycleSubscription(char *principle, const char *cn,
    else setStatus(&st,CMPI_RC_ERR_INVALID_QUERY,"CMGetDoc failed"); 
      
    free(exp);
-   return st;
+   _SFCB_RETURN(st);
 }
 
 
@@ -456,11 +465,16 @@ int fowardSubscription(CMPIContext * ctx, Filter *fi, CMPIStatus *st)
 
    for ( ; *fClasses; fClasses++) {
       if (isa(fi->sns,*fClasses,"cim_processindication")) {
-         *st=activateSubscription(principle, *fClasses, fi, &irc);
+         *st=activateSubscription(principle, *fClasses, *fClasses, fi, &irc);
       }
-      else if (isa(fi->sns,*fClasses,"CIM_InstCreation")) {
-          printf("--- CIM_InstCreation\n");
+      else if (isa("root/interop",*fClasses,"CIM_InstCreation")) {
          *st=activateLifeCycleSubscription(principle, *fClasses, fi,CREATE_INST);
+      }
+      else if (isa("root/interop",*fClasses,"CIM_InstDeletion")) {
+         *st=activateLifeCycleSubscription(principle, *fClasses, fi,DELETE_INST);
+      }
+      else if (isa("root/interop",*fClasses,"CIM_InstModification")) {
+         *st=activateLifeCycleSubscription(principle, *fClasses, fi,MODIFY_INST);
       }
       else {
          setStatus(st,CMPI_RC_ERR_NOT_SUPPORTED,"Lifecycle indications not supported");
@@ -551,7 +565,7 @@ void initInterOp(CMPIBroker *broker, CMPIContext *ctx)
       query=(char*)CMGetProperty(ci,"query",&st).value.string->hdl;
       lng=(char*)CMGetProperty(ci,"querylanguage",&st).value.string->hdl;
       sns=(char*)CMGetProperty(ci,"SourceNamespace",&st).value.string->hdl;
-      qs=parseQuery(MEM_NOT_TRACKED,query,lng,&rc);
+      qs=parseQuery(MEM_NOT_TRACKED,query,lng,sns,&rc);
       key=internalProviderNormalizeObjectPath(cop);
       addFilter(ci,key,qs,query,lng,sns);
    }   
@@ -690,7 +704,7 @@ CMPIStatus InteropProviderCreateInstance(CMPIInstanceMI * mi,
          _SFCB_RETURN(st); 
       }
       
-      qs=parseQuery(MEM_NOT_TRACKED,(char*)query->hdl,lng,&rc);
+      qs=parseQuery(MEM_NOT_TRACKED,(char*)query->hdl,lng,(char*)sns->hdl,&rc);
       if (rc) {
          free(key);
          setStatus(&st,CMPI_RC_ERR_INVALID_QUERY,"Query parse error");

@@ -47,6 +47,7 @@ typedef struct {
    short flags;
 #define HDR_Rebuild 1
 #define HDR_RebuildStrings 2
+#define HDR_ContainsEmbeddedObject 4
    short type;
 #define HDR_Class 1
 #define HDR_Instance 2
@@ -132,10 +133,13 @@ typedef struct {
 typedef struct {
    ClString id;
    CMPIData data;
-   unsigned long quals;
+   unsigned short flags;
+#define ClProperty_EmbeddedObjectAsString 1
+   unsigned short quals;
 #define ClProperty_Q_Key 1
 #define ClProperty_Q_Propagated 2
 #define ClProperty_Q_Deprecated 4
+#define ClProperty_Q_EmbeddedObject 8
    ClSection qualifiers;
 } ClProperty;
 

@@ -34,6 +34,7 @@ struct native_selectexp {
    NativeSelectExp *next;
    char *queryString;
    char *language;
+   char *sns;
    void *filterId;
    QLStatement *qs;
 };

@@ -29,15 +29,15 @@
 #include "queryOperation.h"
 #include "selectexp.h"
 
-QLStatement *parseQuery(int mode, char *query, char *lang, int *rc);
+QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
 static NativeSelectExp *__new_exp(int node,
-         const char *queryString, const char *language,
+         const char *queryString, const char *language, const char *sns, 
          CMPIArray ** projection, CMPIStatus * rc);
 extern CMPIValue queryGetValue(QLPropertySource* src, char* name, QLOpd *type);
 extern CMPISelectCond *TrackedCMPISelectCond(CMPIArray *conds, int type, CMPIStatus * rc);
 
 
-static NativeSelectExp *__new_exp(int, const char *,  const char *,
+static NativeSelectExp *__new_exp(int, const char *,  const char *, const char *sns,
                                           CMPIArray **, CMPIStatus *);
 
 
@@ -50,6 +50,7 @@ static CMPIStatus __eft_release(CMPISelectExp * exp)
    if (e->mem_state && e->mem_state != MEM_RELEASED) {
       free(e->queryString);
       free(e->language);
+      if (e->sns) free(e->sns);
       memUnlinkEncObj(e->mem_state);
       e->mem_state = MEM_RELEASED;
       free(e);
@@ -64,7 +65,7 @@ static CMPISelectExp *__eft_clone(CMPISelectExp * exp, CMPIStatus * rc)
    NativeSelectExp *e = (NativeSelectExp *) exp;
 
    return (CMPISelectExp *) __new_exp(MEM_NOT_TRACKED,
-         e->queryString, e->language, NULL, rc);
+         e->queryString, e->language, e->sns, NULL, rc);
 }
 
 
@@ -74,11 +75,12 @@ CMPIBoolean __eft_evaluate(CMPISelectExp * exp,
 {
    int irc;
    NativeSelectExp *e = (NativeSelectExp *) exp;
-   struct qlPropertySource src={inst,queryGetValue};
+   struct qlPropertySource src={inst,NULL,queryGetValue};
    
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    if (e->qs->where==NULL) return 1;
-   
+
+   src.sns=e->qs->sns;   
    irc=e->qs->where->ft->evaluate(e->qs->where,&src);
    return irc;
 }
@@ -140,7 +142,7 @@ static CMPISelectExp eFt = {
 };
 
 static NativeSelectExp *__new_exp(int mode, const char *queryString,
-               const char *language, CMPIArray ** projection, CMPIStatus * rc)
+               const char *language, const char *sns, CMPIArray ** projection, CMPIStatus * rc)
 {               
    int state,irc;
    NativeSelectExp exp,*tExp;
@@ -148,7 +150,7 @@ static NativeSelectExp *__new_exp(int mode, const char *queryString,
    memset(&exp, 0, sizeof(exp));
    exp.exp = eFt;
    
-   exp.qs=parseQuery(mode,(char*)queryString, (char*)language, &irc);
+   exp.qs=parseQuery(mode,(char*)queryString, (char*)language, (char*) sns, &irc);
    if (irc) {
       if (rc) CMSetStatus(rc, CMPI_RC_ERR_INVALID_QUERY);
       return NULL;
@@ -156,6 +158,7 @@ static NativeSelectExp *__new_exp(int mode, const char *queryString,
 
    exp.queryString = strdup(queryString);
    exp.language = strdup(language);
+   if (sns) exp.sns = strdup(sns);
    
    if (projection) {
       char **list=exp.qs->spNames;
@@ -180,16 +183,16 @@ CMPISelectExp *TrackedCMPISelectExp(const char *queryString,
                                         CMPIStatus * rc)
 {
    return (CMPISelectExp*) __new_exp(MEM_TRACKED,
-          queryString, language, projection, rc);
+          queryString, language, NULL, projection, rc);
 }
 
 CMPISelectExp *NewCMPISelectExp(const char *queryString,
-                                        const char *language,
+                                        const char *language, char *sns,
                                         CMPIArray ** projection,
                                         CMPIStatus * rc)
 {
    return (CMPISelectExp*) __new_exp(MEM_NOT_TRACKED,
-          queryString, language, projection, rc);
+          queryString, language, sns, projection, rc);
 }
 
 CMPISelectExp *TempCMPISelectExp(QLStatement *qs)

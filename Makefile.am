@@ -83,7 +83,8 @@ libsfcBrokerCore_la_SOURCES = \
     queryParser.y \
     queryLexer.l \
     queryOperation.c \
-    queryStatement.c
+    queryStatement.c \
+    cimXmlGen.c
 
 libsfcBrokerCore_la_CFLAGS = @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
 
@@ -142,7 +143,7 @@ sfcBroker_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter
 
 noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \
-	cimXmlParser.h    native.h       support.h \
+	cimXmlParser.h    native.h       support.h cimXmlGen.h \
 	cimXmlRequest.h  genericlist.h  objectImpl.h   trace.h \
 	hashtable.h      utilft.h \
 	cmpidt.h cmpift.h cmpimacs.h  cmpios.h fileRepository.h \

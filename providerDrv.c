@@ -65,14 +65,14 @@ extern void dump(char *msg, void *a, int l);
 extern void showClHdr(void *ihdr);
 extern ProvIds getProvIds(ProviderInfo *info);
 extern int xferLastResultBuffer(CMPIResult *result, int to, int rc);
-extern QLStatement *parseQuery(int mode, char *query, char *lang, int *rc);
+extern QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
 extern void setResultQueryFilter(CMPIResult * result, QLStatement *qs);
 extern CMPIArray *getKeyListAndVerifyPropertyList(CMPIObjectPath*, 
                 char **props, int *ok,CMPIStatus * rc);
 extern void dumpTiming(int pid);
                 
 extern CMPISelectExp *NewCMPISelectExp(const char *queryString, const char *language, 
-           CMPIArray ** projection, CMPIStatus * rc);
+           const char *sns, CMPIArray ** projection, CMPIStatus * rc);
 NativeSelectExp *activFilters=NULL;
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
@@ -1048,6 +1048,7 @@ CMPIValue queryGetValue(QLPropertySource* src, char* name, QLOpd *type)
          else v.uint64=d.value.uint64;
          *type=QL_UInteger;
       }
+    
       else switch(d.type) {
       case CMPI_string:
          *type=QL_Chars;
@@ -1068,6 +1069,10 @@ CMPIValue queryGetValue(QLPropertySource* src, char* name, QLOpd *type)
       case CMPI_char16:   
          *type=QL_Char;
          v.char16=d.value.char16;
+         break;
+      case CMPI_instance:   
+         *type=QL_Inst;
+         v.inst=d.value.inst;
          break;
       default:
          *type=QL_Invalid;            
@@ -1103,7 +1108,7 @@ static BinResponseHdr *execQuery(BinRequestHdr * hdr, ProviderInfo * info, int r
       CMPICount i,c;
       int ok=1;
        
-      qs=parseQuery(MEM_TRACKED,(char*)req->query.data,(char*)req->queryLang.data,&irc);   
+      qs=parseQuery(MEM_TRACKED,(char*)req->query.data,(char*)req->queryLang.data,NULL,&irc);   
       if (irc) {
          rci.rc=CMPI_RC_ERR_INVALID_QUERY;
          resp = errorResp(&rci);
@@ -1111,6 +1116,7 @@ static BinResponseHdr *execQuery(BinRequestHdr * hdr, ProviderInfo * info, int r
       }   
       
       qs->propSrc.getValue=queryGetValue;
+      qs->propSrc.sns=qs->sns;
       qs->cop=CMNewObjectPath(Broker,"*",qs->fClasses[0],NULL);
       
       if (qs->allProps) kar=Broker->eft->getKeyList(Broker, NULL, qs->cop, NULL);
@@ -1305,11 +1311,12 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
    CMPIFlags flgs=0;
    int makeActive=0,mustPoll=0;
+   char *type;
    
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
    ctx->ft->addEntry(ctx,CMPIPrinciple,(CMPIValue*)&req->principle.data,CMPI_chars);
 
-   printf("--- activateFilter() pid: %d activFilters %p %s\n",currentProc,activFilters,processName);
+   _SFCB_TRACE(1,("--- pid: %d activFilters %p %s",currentProc,activFilters,processName));
    for (se = activFilters; se; se = se->next) {
      if (se->filterId == req->filterId) break;
    }
@@ -1318,7 +1325,9 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    if (se==NULL) {
       char *query=(char*)req->query.data;
       char *lang=(char*)req->language.data;
-      se=(NativeSelectExp*)NewCMPISelectExp(query,lang,NULL,&rci);
+      type=(char*)req->type.data;
+      char *sns=(char*)req->sns.data;
+      se=(NativeSelectExp*)NewCMPISelectExp(query,lang,sns,NULL,&rci);
       makeActive=1;
       se->filterId=req->filterId;
       prev=se->next=activFilters;
@@ -1336,20 +1345,20 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    
    _SFCB_TRACE(1, ("--- Calling authorizeFilter %s",info->providerName));
    rci = info->indicationMI->ft->authorizeFilter(info->indicationMI, ctx, result,
-                                               (CMPISelectExp*)se, "", path,
+                                               (CMPISelectExp*)se, type, path,
                                                PROVCHARS(req->principle.data));
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
    
    if (rci.rc==CMPI_RC_OK) {
       _SFCB_TRACE(1, ("--- Calling mustPoll %s",info->providerName));
       rci = info->indicationMI->ft->mustPoll(info->indicationMI, ctx, result, 
-                                               (CMPISelectExp*)se, "", path);
+                                               (CMPISelectExp*)se, type, path);
       _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
       
       if (rci.rc==CMPI_RC_OK) {
          _SFCB_TRACE(1, ("--- Calling activateFilter %s",info->providerName));
          rci = info->indicationMI->ft->activateFilter(info->indicationMI, ctx, result, 
-                                               (CMPISelectExp*)se, "", path, 1);
+                                               (CMPISelectExp*)se, type, path, 1);
          _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
    
          if (indicationEnabled==0 && rci.rc==CMPI_RC_OK) {
@@ -1397,7 +1406,6 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
    resp->rc=1;
 
-   printf("--- deactivateFilter() pid: %d activFilters %p\n",currentProc,activFilters);
    _SFCB_TRACE(1, ("---  pid: %d activFilters %p",currentProc,activFilters));
    if (activFilters==NULL) _SFCB_RETURN(resp); 
    

@@ -952,3 +952,10 @@ void setStatus(CMPIStatus *st, CMPIrc rc, char *msg)
    else st->msg=NULL;
 }   
 
+void showStatus(CMPIStatus *st, char *msg)
+{
+   char *m=NULL;
+   if (st->msg) m=(char*)st->msg->hdl;
+   printf("--- showStatus (%s): %d %s\n",msg,st->rc,m);
+}   
+

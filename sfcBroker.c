@@ -65,7 +65,7 @@ extern void dumpTiming(int pid);
 static char **restartArgv;
 static int restartArgc;
 
-char * configfile = NULL;
+extern char * configfile;
 
 static char * copyright = "(C) Copyright IBM Corp. 2005";
 
@@ -131,6 +131,7 @@ static void handleSigHup(int sig)
   pthread_attr_t tattr;
   
   if (sfcBrokerPid==currentProc) {    
+ //     setSignal(SIGHUP,SIG_DFL,0);
       pthread_attr_init(&tattr);
       pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
       

@@ -393,6 +393,8 @@ typedef union indicationReq {
       MsgSegment objectPath;
       MsgSegment query;
       MsgSegment language;
+      MsgSegment type;
+      MsgSegment sns;
       void* filterId;
     };
 } IndicationReq;

@@ -64,6 +64,7 @@ typedef enum qlOpd {
     QL_Char,
     QL_PropertyName, 
     QL_Name, 
+    QL_Inst, 
 } QLOpd;
 
 struct qlPropertyNameData {
@@ -89,6 +90,7 @@ struct qLqueryOperand {
      double  doubleVal;
      unsigned char booleanVal;
      char* charsVal;
+     CMPIInstance *inst;
      QLPropertyNameData *propertyName;
    };
 };
@@ -97,6 +99,7 @@ QLOperand* newIntQueryOperand(QLStatement*, long long val);
 QLOperand* newDoubleQueryOperand(QLStatement*, double val);
 QLOperand* newBooleanQueryOperand(QLStatement*, unsigned char val);
 QLOperand* newCharsQueryOperand(QLStatement*, char* val);
+QLOperand* newInstQueryOperand(QLStatement*, CMPIInstance* val);
 QLOperand* newPropQueryOperand(QLStatement*, QLPropertyNameData* val);
 QLPropertyNameData* newPropertyNameData(QLStatement*);
 
@@ -181,6 +184,7 @@ QLOperation* newIsNotNullOperation(QLStatement*,QLOperand* lo);
 
 struct qlPropertySource {
    void* data;
+   char *sns;
    CMPIValue (*getValue)(QLPropertySource*, char* name, QLOpd *type);
 };
 
@@ -215,6 +219,7 @@ struct qlStatement {
    QLPropertySource propSrc;
    unsigned int allocMode,allocNext,allocMax;
    void **allocList;
+   char *sns;
 };
 
 struct qlCollector {

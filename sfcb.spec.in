@@ -58,8 +58,9 @@ fi
 %files
 %defattr(-,root,root)
 %config %{_sysconfdir}/%{name}
-%doc %{_datadir}/doc/sfcb/*
-#%{_datadir}/%{name}
-#%{_localstatedir}/lib/%{name}
-#%{_bindir}/*
-#%{_libdir}/*.so*
+%doc %{_datadir}/doc
+%{_sysconfdir}
+%{_datadir}/%{name}
+%{_localstatedir}/lib/%{name}
+%{_bindir}/*
+%{_libdir}/*.so*

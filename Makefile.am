@@ -22,7 +22,7 @@
 
 sfcbstatedir=$(localstatedir)/lib/sfcb
 sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
-initdir=/etc/init.d
+initdir=$(sysconfdir)/init.d
 
 BUILT_SOURCES=queryParser.c queryLexer.c authorizationParser.c \
 	authorizationLexer.c
@@ -181,7 +181,7 @@ providerRegister: providerRegister.c
 unittest:
 	cd test && sh check_all.sh
 
-install-data-local: sfcb.cfg sfcb.init
+install-data-local: sfcb.cfg
 	test -d $(DESTDIR)$(sysconfdir)/sfcb || $(mkdir_p) $(DESTDIR)$(sysconfdir)/sfcb
 	$(INSTALL_DATA) sfcb.cfg $(DESTDIR)$(sysconfdir)/sfcb
 	test -d $(DESTDIR)$(sfcbstatedir)/registration || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/registration
@@ -189,8 +189,10 @@ install-data-local: sfcb.cfg sfcb.init
 	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
 	test -d $(DESTDIR)$(sfcbdocdir) || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)
 	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
+
+install-exec-local:sfcb.init
 	test -d $(DESTDIR)$(initdir) || $(mkdir_p) $(DESTDIR)$(initdir)
-	$(INSTALL_DATA) sfcb.init $(DESTDIR)$(initdir)/sfcb
+	$(INSTALL_SCRIPT) sfcb.init $(DESTDIR)$(initdir)/sfcb
 
 uninstall-local:
 	rm -f $(DESTDIR)$(sysconfdir)/sfcb/sfcb.cfg

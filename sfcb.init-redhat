@@ -24,9 +24,8 @@ start() {
 	echo -n "Starting sfcb: "
 	daemon @bindir@/sfcBroker -d &&
 	touch /var/lock/subsys/sfcb &&
-	success sfcb startup &&
 	return 0 ||
-	fail && return 1
+	return 1
 }	
 
 stop() {
@@ -60,10 +59,10 @@ case "$1" in
 	reload
 	;;
     condrestart)
-	[ -f /var/lock/subsys/<service> ] && restart || :
+	[ -f /var/lock/subsys/sfcb ] && restart || :
 	;;
     *)
-	echo "Usage: sfcb {start|stop|status|reload|restart}"
+	echo "Usage: sfcb {start|stop|status|reload|restart|condrestart}"
 	exit 1
 	;;
 esac

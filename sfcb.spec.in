@@ -37,7 +37,8 @@ then
 # paranoia check 
 	rm -rf $RPM_BUILD_ROOT 
 fi
-%makeinstall
+
+make DESTDIR=$RPM_BUILD_ROOT install
 
 # remove unused libtool files
 rm -f $RPM_BUILD_ROOT/%{_libdir}/*a
@@ -59,7 +60,7 @@ fi
 %defattr(-,root,root)
 %config %{_sysconfdir}/%{name}
 %doc %{_datadir}/doc
-%{_sysconfdir}
+%{_sysconfdir}/init.d/%{name}
 %{_datadir}/%{name}
 %{_localstatedir}/lib/%{name}
 %{_bindir}/*

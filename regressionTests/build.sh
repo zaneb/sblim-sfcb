@@ -50,8 +50,8 @@ do
    make -C $x install
 done   
 
-echo mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof
-mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof
+echo sfcbmof -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof
+sfcbmof -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof
 
 mofs=''
 for x in $dirs
@@ -59,8 +59,8 @@ do
    mofs=$mofs' '$x'/schema/*.mof'
 done   
 
-echo mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/tests/classSchemas $mofs
-mofc -I $CIMDIR -i CIM_Schema.mof -o repository/root/tests/classSchemas $mofs
+echo sfcbmof -I $CIMDIR -i CIM_Schema.mof -o repository/root/tests/classSchemas $mofs
+sfcbmof -I $CIMDIR -i CIM_Schema.mof -o repository/root/tests/classSchemas $mofs
 
 regs='schema/baseProvider.reg'
 for x in $dirs

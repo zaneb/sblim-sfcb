@@ -15,7 +15,6 @@
  * Author:       Adrian Schuur <schuur@de.ibm.com>
  *
  * Description:
- * CMPI broker encapsulated functionality.
  *
  * CIM XML grammar for sfcb.
  *
@@ -103,6 +102,33 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
    else qs->first=nq;
    qs->last=nq;
 }
+
+static void addMethod(XtokMethods *ms, XtokMethod *m)
+{
+   XtokMethod *nm;
+   nm=(XtokMethod*)malloc(sizeof(XtokMethod));
+   memcpy(nm,m,sizeof(XtokMethod));
+   nm->next=NULL;
+   if (ms->last) {
+      ms->last->next=nm;
+   }
+   else ms->first=nm;
+   ms->last=nm;
+}
+
+static void addParam(XtokParams *ps, XtokParam *p)
+{
+   XtokParam *np;
+   np=(XtokParam*)malloc(sizeof(XtokParam));
+   memcpy(np,p,sizeof(XtokParam));
+   np->next=NULL;
+   if (ps->last) {
+      ps->last->next=np;
+   }
+   else ps->first=np;
+   ps->last=np;
+}
+
 %}
 
 %pure_parser
@@ -141,6 +167,7 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
    XtokKeyBindings               xtokKeyBindings;
    XtokKeyValue                  xtokKeyValue;
 
+   XtokClass                     xtokClass;
    XtokInstance                  xtokInstance;
    XtokNamedInstance             xtokNamedInstance;
 
@@ -148,10 +175,17 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
    XtokPropertyPart              xtokPropertyPart;
    XtokPropertyPartList          xtokPropertyPartList;
 
+   XtokMethod                    xtokMethod;
+   XtokMethodPart                xtokMethodPart;
+   XtokMethodPartList            xtokMethodPartList;
+
    XtokQualifier                 xtokQualifier;
    
-   XtokParamValue                xtokParamValue;
-  
+   XtokParamValue                xtokParamValue;  
+   XtokParam                     xtokParam;
+/*   XtokParamPart                 xtokParamPart;
+   XtokParamPartList             xtokParamPartList;
+*/   
    XtokMethodCall                xtokMethodCall;
 
    XtokGetClassParmsList         xtokGetClassParmsList;
@@ -176,6 +210,9 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
    XtokDeleteInstance            xtokDeleteInstance;
    XtokDeleteInstanceParm        xtokDeleteInstanceParm;
 
+   XtokCreateClass               xtokCreateClass;
+   XtokCreateClassParm           xtokCreateClassParm;
+ 
    XtokCreateInstance            xtokCreateInstance;
    XtokCreateInstanceParm        xtokCreateInstanceParm;
 
@@ -235,6 +272,10 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
 %type  <xtokEnumClasses>         enumClasses
 %type  <xtokEnumClassesParmsList> enumClassesParmsList
 %type  <xtokEnumClassesParms>    enumClassesParms
+
+%token <xtokCreateClass>         XTOK_CREATECLASS
+%type  <xtokCreateClass>         createClass
+%type  <xtokCreateClassParm>     createClassParm
 
 %token <xtokCreateInstance>      XTOK_CREATEINSTANCE
 %type  <xtokCreateInstance>      createInstance
@@ -358,6 +399,7 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
 %token <className>               XTOK_IP_RESULTROLE
 %token <className>               XTOK_IP_QUERY
 %token <className>               XTOK_IP_QUERYLANG
+%token <clasz>                   XTOK_IP_CLASS
 
 %token <xtokPropertyList>        XTOK_IP_PROPERTYLIST
 %type  <boolValue>               boolValue
@@ -382,6 +424,33 @@ static void addQualifier(XtokQualifiers *qs, XtokQualifier *q)
 %type  <xtokPropertyPart>        propertyReferencePart
 %type  <xtokPropertyPartList>    propertyPartList
 %type  <xtokPropertyPartList>    propertyReferencePartList
+
+%token <xtokParam>               XTOK_PARAM
+%type  <xtokParam>               param
+%token <intValue>                ZTOK_PARAM
+%token <xtokParam>               XTOK_PARAMARRAY
+%token <intValue>                ZTOK_PARAMARRAY
+%token <xtokParam>               XTOK_PARAMREF
+%token <intValue>                ZTOK_PARAMREF
+%token <xtokParam>               XTOK_PARAMREFARRAY
+%token <intValue>                ZTOK_PARAMREFARRAY
+
+%token <xtokMethodPart>          XTOK_METHODPART
+%type  <xtokMethodPart>          methodPart
+%token <intValue>                ZTOK_METHODPART
+
+%token <xtokMethodPartList>      XTOK_METHODPARTLIST
+%type  <xtokMethodPartList>      methodPartList
+%token <intValue>                ZTOK_METHODPARTLIST
+
+%token <xtokMethod>              XTOK_METHODDEF
+//%type  <xtokMethod>            methodDef
+%token <intValue>                ZTOK_METHODDEF
+
+%token <xtokClass>               XTOK_CLASS
+%token <intValue>                ZTOK_CLASS
+%type  <xtokClass>               clasz
+%type  <xtokClassParts>          classParts
 
 %token <xtokInstance>            XTOK_INSTANCE
 %token <intValue>                ZTOK_INSTANCE
@@ -442,9 +511,6 @@ iMethodCall
     : XTOK_GETCLASS getClass ZTOK_IMETHODCALL
     {
     }
-    | XTOK_DELETECLASS deleteClass ZTOK_IMETHODCALL
-    {
-    }
     | XTOK_ENUMCLASSNAMES enumClassNames ZTOK_IMETHODCALL
     {
     }
@@ -485,6 +551,12 @@ iMethodCall
     {
     }
     | XTOK_METHODCALL methodCall ZTOK_METHODCALL
+    {
+    }
+    | XTOK_DELETECLASS deleteClass ZTOK_IMETHODCALL
+    {
+    }
+    | XTOK_CREATECLASS createClass ZTOK_IMETHODCALL
     {
     }
 ;
@@ -884,6 +956,43 @@ getInstanceParms
        $$.properties=$2.list.next;
        $$.instNameSet=0;
        $$.flags = $$.flagsSet = 0 ;
+    }
+;
+
+
+/*
+ *    createClass
+*/
+
+
+createClass
+    : localNameSpacePath
+    {
+       $$.op.count = 3;
+       $$.op.type = OPS_CreateClass;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment(NULL);
+       $$.superClass=NULL;
+
+       setRequest(parm,&$$,sizeof(XtokCreateClass),OPS_CreateClass);
+    }
+    | localNameSpacePath createClassParm
+    {
+       $$.op.count = 3;
+       $$.op.type = OPS_CreateClass;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment($2.cls.className);
+       $$.superClass=$2.cls.superClass;
+       $$.cls = $2.cls;
+
+       setRequest(parm,&$$,sizeof(XtokCreateClass),OPS_CreateClass);
+    }
+;
+
+createClassParm
+    : XTOK_IP_CLASS clasz ZTOK_IPARAMVALUE
+    {
+       $$.cls = $2;
     }
 ;
 
@@ -1690,6 +1799,117 @@ namedInstance
 
 
 /*
+ *    class
+*/
+
+
+clasz
+    : XTOK_CLASS ZTOK_CLASS
+    {
+       memset(&$$.properties,0,sizeof($$.properties));
+       memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       memset(&$$.methods,0,sizeof($$.methods));
+   }
+    | XTOK_CLASS classPartsList ZTOK_CLASS
+    {
+       $$.properties=((ParserControl*)parm)->properties;
+       $$.qualifiers=((ParserControl*)parm)->qualifiers;
+       $$.methods=((ParserControl*)parm)->methods;
+    }
+;
+   
+classPartsList
+    : classParts
+    {
+       printf("classPartsList: \n");
+    }
+    | classPartsList classParts
+    {
+       printf("classPartsList classParts: \n");
+    }
+;
+
+
+classParts
+    : qualifier
+    {
+       printf("classParts qualifier: \n");
+       addQualifier(&(((ParserControl*)parm)->qualifiers),&$1);
+    }
+    | XTOK_PROPERTY propertyPartList ZTOK_PROPERTY
+    {
+       $1.value=$2.value;
+       $1.propType=typeProperty_Value;
+       addProperty(&(((ParserControl*)parm)->properties),&$1);
+    }
+    | XTOK_PROPERTYREFERENCE propertyReferencePartList ZTOK_PROPERTYREFERENCE
+    {
+       $1.ref=$2.ref;
+       $1.propType=typeProperty_Reference;
+       addProperty(&(((ParserControl*)parm)->properties),&$1);
+    } 
+    | XTOK_METHODDEF methodPartList 
+    {
+       printf("classParts: method ?\n");
+       addMethod(&(((ParserControl*)parm)->methods),&$1);
+    } 
+;
+
+methodPartList
+    : methodPart
+    {
+       printf("methodPartList: \n");
+       if ($1.qPart==1) 
+          addQualifier(&($$.qualifiers),&$1.qualifier);
+       else addParam(&($$.params), &$1.param);
+    }
+    | methodPartList methodPart
+    {
+       printf("methodPartList methodPart: \n");
+       if ($2.qPart==1) 
+          addQualifier(&($$.qualifiers),&$2.qualifier);
+       else addParam(&($$.params), &$2.param);
+    }
+;
+
+methodPart 
+    : ZTOK_METHODDEF
+    {
+       printf("methodPart: ZTOK_METHODDEF\n");              
+       $$.qPart=-1;
+    }
+    | qualifier
+    {
+       printf("methodPart: qualifier\n");              
+       $$.qPart=1;
+       $$.qualifier=$1;
+    }
+    | XTOK_PARAM param
+    {
+       $$.qPart=0;
+       $$.param=$1;
+    }
+;
+
+param
+    : ZTOK_PARAM
+    {
+       printf("param:  ZTOK_PARAM\n");
+    }
+    | qualifier
+    {
+       printf("param: qualifier\n");
+       addQualifier(&($$.qualifiers),&$1);
+    }
+    | param qualifier
+    {
+       printf("param qualifier: \n");
+       addQualifier(&($$.qualifiers),&$2);        
+    }
+;
+
+
+/*
  *    instance
 */
 
@@ -1753,7 +1973,7 @@ propertyPartList
           addQualifier(&($$.qualifiers),&$2.qualifier);
        }
        else {
-          $$.value=$1.value;
+          $$.value=$1.value; // should this be $$.value=$2.value;
        }
     }
 ;
@@ -1788,7 +2008,7 @@ propertyReferencePartList
           addQualifier(&($$.qualifiers),&$2.qualifier);
        }
        else {
-          $$.ref=$1.ref;
+          $$.ref=$1.ref; // should this be $$.ref=$2.ref; ?
        }
     }
 ;
@@ -1825,6 +2045,7 @@ propertyList
 qualifier
     : XTOK_QUALIFIER value ZTOK_QUALIFIER
     {
+       $$.value=$2.value;
     }
 ;
 
@@ -1969,7 +2190,13 @@ className
 
 
 instanceName
-    : XTOK_INSTANCENAME keyBindings ZTOK_INSTANCENAME
+    : XTOK_INSTANCENAME ZTOK_INSTANCENAME
+    {
+       $$.className=$1.className;
+       $$.bindings.next=0;
+       $$.bindings.keyBindings=NULL;
+    }
+    | XTOK_INSTANCENAME keyBindings ZTOK_INSTANCENAME
     {
        $$.className=$1.className;
        $$.bindings=$2;

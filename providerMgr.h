@@ -143,7 +143,7 @@ typedef union getClassReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment properties[1];
    };
@@ -157,7 +157,7 @@ typedef union enumClassNamesReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
    };
 } EnumClassNamesReq;
@@ -170,7 +170,7 @@ typedef union enumClassesReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
    };
 } EnumClassesReq;
@@ -183,7 +183,7 @@ typedef union enumInstanceNamesReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
    };
 } EnumInstanceNamesReq;
@@ -196,7 +196,7 @@ typedef union enumInstancesReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment properties[1];
   };
@@ -210,7 +210,7 @@ typedef union execQueryReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment query;
       MsgSegment queryLang;
@@ -225,7 +225,7 @@ typedef union associatorsReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment resultClass;
       MsgSegment role;
@@ -243,7 +243,7 @@ typedef union referencesReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment resultClass;
       MsgSegment role;
@@ -259,7 +259,7 @@ typedef union associatorNamesReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment resultClass;
       MsgSegment role;
@@ -276,7 +276,7 @@ typedef union referenceNamesReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment resultClass;
       MsgSegment role;
@@ -291,11 +291,25 @@ typedef union getInstanceReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment properties[1];
    };
 } GetInstanceReq;
+
+typedef union createClassReq {
+   BinRequestHdr hdr;
+   struct {
+      unsigned short operation;
+      unsigned short options;
+      void *provId;
+      unsigned int flags;
+      unsigned long count;      // maps to MsgList
+      MsgSegment principal;
+      MsgSegment path;
+      MsgSegment cls;
+   };
+} CreateClassReq;
 
 typedef union createInstanceReq {
    BinRequestHdr hdr;
@@ -305,7 +319,7 @@ typedef union createInstanceReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment path;
       MsgSegment instance;
    };
@@ -319,7 +333,7 @@ typedef union modifyInstanceReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment path;
       MsgSegment instance;
       MsgSegment properties[1];
@@ -334,7 +348,7 @@ typedef union deleteInstanceReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
    };
 } DeleteInstanceReq;
@@ -347,7 +361,7 @@ typedef union invokeMethodReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment method;
       MsgSegment in;
@@ -389,7 +403,7 @@ typedef union indicationReq {
       void *provId;
       unsigned int flags;
       unsigned long count;      // maps to MsgList
-      MsgSegment principle;
+      MsgSegment principal;
       MsgSegment objectPath;
       MsgSegment query;
       MsgSegment language;

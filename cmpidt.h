@@ -370,7 +370,7 @@ extern "C" {
    #define CMPI_FLAG_IncludeClassOrigin 8
 
    #define CMPIInvocationFlags "CMPIInvocationFlags"
-   #define CMPIPrinciple "CMPIPrinciple"
+   #define CMPIPrincipal "CMPIPrincipal"
 
    typedef enum _CMPIrc {
      CMPI_RC_OK                               =0,

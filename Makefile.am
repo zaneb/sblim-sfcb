@@ -84,7 +84,8 @@ libsfcBrokerCore_la_SOURCES = \
     queryLexer.l \
     queryOperation.c \
     queryStatement.c \
-    cimXmlGen.c
+    cimXmlGen.c \
+    mrwlock.c
 
 libsfcBrokerCore_la_CFLAGS = @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
 
@@ -150,7 +151,8 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	hashtable.h      utilft.h \
 	cmpidt.h cmpift.h cmpiftx.h cmpimacs.h cmpimacsx.h cmpios.h fileRepository.h \
 	selectexp.h queryOperation.h authorizationUtil.h authorizationEnum.c \
-	sfcVersion.h
+	sfcVersion.h mrwlock.h
+
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcb.init-redhat sfcb.init-suse sfcb.init-none regressionTests doc

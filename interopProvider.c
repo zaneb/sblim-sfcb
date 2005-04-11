@@ -275,7 +275,7 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
    BinResponseHdr *resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = {OPS_IndicationLookup, 2};
-   char *principle=ctx->ft->getEntry(ctx,CMPIPrinciple,NULL).value.string->hdl;;
+   char *principal=ctx->ft->getEntry(ctx,CMPIPrincipal,NULL).value.string->hdl;;
    int irc;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "deactivateFilter"); 
@@ -283,7 +283,7 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
    
    path = TrackedCMPIObjectPath(ns, cn, &st);
    
-   sreq.principle = setCharsMsgSegment(principle);
+   sreq.principal = setCharsMsgSegment(principal);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.query = setCharsMsgSegment(fi->query);
    sreq.language = setCharsMsgSegment(fi->lang);
@@ -337,7 +337,7 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
 
 extern CMPISelectExp *TempCMPISelectExp(QLStatement *qs);
 
-CMPIStatus activateSubscription(char *principle, const char *cn, const char *type,
+CMPIStatus activateSubscription(char *principal, const char *cn, const char *type,
              Filter *fi, int *rrc)
 {
    CMPIObjectPath *path;
@@ -353,7 +353,7 @@ CMPIStatus activateSubscription(char *principle, const char *cn, const char *typ
    if (rrc) *rrc=0;
    path = TrackedCMPIObjectPath(fi->sns, cn, &rc);
    
-   sreq.principle = setCharsMsgSegment(principle);
+   sreq.principal = setCharsMsgSegment(principal);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.query = setCharsMsgSegment(fi->query);
    sreq.language = setCharsMsgSegment(fi->lang);
@@ -401,7 +401,7 @@ CMPIStatus activateSubscription(char *principle, const char *cn, const char *typ
    _SFCB_RETURN(st);
 }
 
-CMPIStatus activateLifeCycleSubscription(char *principle, const char *cn,
+CMPIStatus activateLifeCycleSubscription(char *principal, const char *cn,
              Filter *fi, int type)
 {
    CMPIStatus st={CMPI_RC_OK,NULL};
@@ -431,7 +431,7 @@ CMPIStatus activateLifeCycleSubscription(char *principle, const char *cn,
                      ok=1;
                      _SFCB_TRACE(1,("lhs: %s",(char*)lhs->hdl)); 
                      _SFCB_TRACE(1,("rhs: %s\n",(char*)rhs->hdl));
-                     st=activateSubscription(principle,(char*)rhs->hdl,cn,fi,&irc);
+                     st=activateSubscription(principal,(char*)rhs->hdl,cn,fi,&irc);
                      if (irc==MSG_X_INVALID_CLASS) 
                         st.rc=CMPI_RC_ERR_INVALID_CLASS;
                      if (st.rc!=CMPI_RC_OK) break;
@@ -457,28 +457,28 @@ CMPIStatus activateLifeCycleSubscription(char *principle, const char *cn,
 int fowardSubscription(CMPIContext * ctx, Filter *fi, CMPIStatus *st)
 {
    CMPIStatus rc;
-   char *principle=NULL;
+   char *principal=NULL;
    char **fClasses=fi->qs->ft->getFromClassList(fi->qs);
-   CMPIData principleP=ctx->ft->getEntry(ctx,CMPIPrinciple,&rc);
+   CMPIData principalP=ctx->ft->getEntry(ctx,CMPIPrincipal,&rc);
    int irc;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "fowardSubscription");
    
    if (rc.rc==CMPI_RC_OK) 
-      principle=(char*)principleP.value.string->hdl;
+      principal=(char*)principalP.value.string->hdl;
 
    for ( ; *fClasses; fClasses++) {
       if (isa(fi->sns,*fClasses,"cim_processindication")) {
-         *st=activateSubscription(principle, *fClasses, *fClasses, fi, &irc);
+         *st=activateSubscription(principal, *fClasses, *fClasses, fi, &irc);
       }
       else if (isa("root/interop",*fClasses,"CIM_InstCreation")) {
-         *st=activateLifeCycleSubscription(principle, *fClasses, fi,CREATE_INST);
+         *st=activateLifeCycleSubscription(principal, *fClasses, fi,CREATE_INST);
       }
       else if (isa("root/interop",*fClasses,"CIM_InstDeletion")) {
-         *st=activateLifeCycleSubscription(principle, *fClasses, fi,DELETE_INST);
+         *st=activateLifeCycleSubscription(principal, *fClasses, fi,DELETE_INST);
       }
       else if (isa("root/interop",*fClasses,"CIM_InstModification")) {
-         *st=activateLifeCycleSubscription(principle, *fClasses, fi,MODIFY_INST);
+         *st=activateLifeCycleSubscription(principal, *fClasses, fi,MODIFY_INST);
       }
       else {
          setStatus(st,CMPI_RC_ERR_NOT_SUPPORTED,"Lifecycle indications not supported");

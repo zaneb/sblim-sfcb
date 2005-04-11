@@ -87,12 +87,14 @@ int setupControl(char *fn)
 
    if (fn) {
      strcpy(fin,fn);
-   } else {
-     strcpy(fin, SFCB_CONFDIR);
-     
-     strcat(fin, "/sfcb.cfg");
+   } 
+   else {
+      strcpy(fin, SFCB_CONFDIR);  
+      strcat(fin, "/sfcb.cfg");
    }
    
+   if (fin[0]=='/') printf("--- Using %s\n",fin);
+   else printf("--- Using ./%s\n",fin);
    in = fopen(fin, "r");
    if (in == NULL) {
       fprintf(stderr, "--- %s not found\n", fin);

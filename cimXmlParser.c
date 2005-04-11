@@ -27,6 +27,7 @@
 #include "cimXmlParser.h"
 #include "cimXmlOps.h"
 #include "cimXmlRequest.h"
+#include "trace.h"
 
 
 static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
@@ -469,6 +470,9 @@ static int procImethodCall(YYSTYPE * lvalp, ParserControl * parm)
          if (strcasecmp(attr[0].attr, "execQuery") == 0)
             return XTOK_EXECQUERY;
 
+         if (strcasecmp(attr[0].attr, "createClass") == 0)
+            return XTOK_CREATECLASS;
+            
          if (strcasecmp(attr[0].attr, "deleteClass") == 0)
             return unsupported(parm);
          if (strcasecmp(attr[0].attr, "getProperty") == 0)
@@ -609,6 +613,7 @@ static IParm iParms[] = {
    {"propertylist", XTOK_IP_PROPERTYLIST},
    {"querylanguage", XTOK_IP_QUERYLANG},
    {"query", XTOK_IP_QUERY},
+   {"newclass", XTOK_IP_CLASS},
 };
 
 static int procIParamValue(YYSTYPE * lvalp, ParserControl * parm)
@@ -700,6 +705,26 @@ static int procInstance(YYSTYPE * lvalp, ParserControl * parm)
       if (attrsOk(parm->xmb, elm, attr, "INSTANCE", ZTOK_INSTANCE)) {
          lvalp->xtokInstance.className = attr[0].attr;
          return XTOK_INSTANCE;
+      }
+   }
+   return 0;
+}
+
+static int procClass(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {"NAME"},
+      {"SUPERCLASS"},
+      {NULL}
+   };
+   XmlAttr attr[2];
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "CLASS")) {
+      if (attrsOk(parm->xmb, elm, attr, "CLASS", ZTOK_CLASS)) {
+         lvalp->xtokClass.className = attr[0].attr;
+         lvalp->xtokClass.superClass = attr[1].attr;
+         return XTOK_CLASS;
       }
    }
    return 0;
@@ -966,7 +991,6 @@ static int procPropertyReference(YYSTYPE * lvalp, ParserControl * parm)
    {NULL}
    };
    XmlAttr attr[4];
-   int i, m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PROPERTY.REFERENCE")) {
@@ -985,6 +1009,151 @@ static int procPropertyReference(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
+static int procMethod(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = { {"NAME"},
+   {"TYPE"},
+   {"CLASSORIGIN"},
+   {"PROPAGATED"},
+   {NULL}
+   };
+   XmlAttr attr[4];
+   int i, m;
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "METHOD")) {
+      attr[1].attr = NULL;
+      if (attrsOk(parm->xmb, elm, attr, "METHOD", ZTOK_METHODDEF)) {
+         memset(&lvalp->xtokMethod, 0, sizeof(XtokMethod));
+         lvalp->xtokMethod.name = attr[0].attr;
+         lvalp->xtokMethod.type = (CMPIType) - 1;
+         if (attr[1].attr)
+            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
+                  lvalp->xtokMethod.type = types[i].type;
+                  break;
+               }
+            }
+         lvalp->xtokMethod.classOrigin = attr[2].attr;
+         if (attr[3].attr)
+            lvalp->xtokMethod.propagated = !strcasecmp(attr[3].attr, "true");
+         return XTOK_METHODDEF;
+      }
+   }
+   return 0;
+}
+
+static int procParam(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = 
+   { {"NAME"},
+     {"TYPE"},
+     {NULL}
+   };
+   XmlAttr attr[2];
+   int i,m;
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "PARAMETER")) {
+      attr[1].attr = NULL;
+      if (attrsOk(parm->xmb, elm, attr, "PARAMETER", ZTOK_PARAM)) {
+         memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
+         lvalp->xtokParam.pType = ZTOK_PARAM;
+         lvalp->xtokParam.name = attr[0].attr;
+         lvalp->xtokParam.type = (CMPIType) - 1;
+         if (attr[1].attr)
+            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
+                  lvalp->xtokParam.type = types[i].type;
+                  break;
+               }
+            }
+         return XTOK_PARAM;
+      }
+   }
+   return 0;
+}
+
+static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = 
+   { {"NAME"},
+     {"TYPE"},
+     {"ARRAYSIZE"},
+     {NULL}
+   };
+   XmlAttr attr[3];
+   int i,m;
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "PARAMETER.ARRAY")) {
+      attr[1].attr = NULL;
+      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.ARRAY", ZTOK_PARAM)) {
+         memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
+         lvalp->xtokParam.pType = ZTOK_PARAMARRAY;
+         lvalp->xtokParam.name = attr[0].attr;
+         lvalp->xtokParam.type = (CMPIType) - 1;
+         if (attr[1].attr)
+            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
+                  lvalp->xtokParam.type = types[i].type;
+                  break;
+               }
+            }
+         lvalp->xtokParam.arraySize = attr[2].attr;
+         return XTOK_PARAM;
+      }
+   }
+   return 0;
+}
+
+static int procParamRef(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = 
+   { {"NAME"},
+     {"REFERENCECLASS"},
+     {NULL}
+   };
+   XmlAttr attr[2];
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "PARAMETER.REFERENCE")) {
+      attr[1].attr = NULL;
+      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.REFERENCE", ZTOK_PARAM)) {
+         memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
+         lvalp->xtokParam.pType = ZTOK_PARAMREF;
+         lvalp->xtokParam.name = attr[0].attr;
+         lvalp->xtokParam.refClass = attr[1].attr;
+         return XTOK_PARAM;
+      }
+   }
+   return 0;
+}
+
+static int procParamRefArray(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = 
+   { {"NAME"},
+     {"REFERENCECLASS"},
+     {"ARRAYSIZE"},
+     {NULL}
+   };
+   XmlAttr attr[3];
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "PARAMETER.REFARRAY")) {
+      attr[1].attr = NULL;
+      if (attrsOk(parm->xmb, elm, attr, "PARAMETER.REFARRAY", ZTOK_PARAM)) {
+         memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
+         lvalp->xtokParam.pType = ZTOK_PARAMREFARRAY;
+         lvalp->xtokParam.name = attr[0].attr;
+         lvalp->xtokParam.refClass = attr[1].attr;
+         lvalp->xtokParam.arraySize = attr[2].attr;
+         return XTOK_PARAM;
+      }
+   }
+   return 0;
+}
 
 
 static Tags tags[] = {
@@ -1015,29 +1184,38 @@ static Tags tags[] = {
    {"PROPERTY.ARRAY", procPropertyArray, ZTOK_PROPERTYARRAY},
    {"PROPERTY", procProperty, ZTOK_PROPERTY},
    {"QUALIFIER", procQualifier, ZTOK_QUALIFIER},
+   {"PARAMETER.ARRAY", procParamArray, ZTOK_PARAMARRAY},
+   {"PARAMETER.REFERENCE", procParamRef, ZTOK_PARAMREF},
+   {"PARAMETER.REFARRAY", procParamRefArray, ZTOK_PARAMREFARRAY},
+   {"PARAMETER", procParam, ZTOK_PARAM},
+   {"METHOD", procMethod, ZTOK_METHODDEF},
+   {"CLASS", procClass, ZTOK_CLASS},
    {"?xml", procXml, ZTOK_XML},
 };
 
 int yylex(YYSTYPE * lvalp, ParserControl * parm)
 {
-   int i, m;
+   int i, m, rc;
    char *next;
 
+   _SFCB_ENTER(TRACE_XMLPARSING, "yylex");
+   
    for (;;) {
       next = nextTag(parm->xmb);
-      if (next == NULL)
-         return 0;
-   //printf(">> %.32s\n",next);
+      if (next == NULL) {
+         _SFCB_RETURN(0);
+      }   
+      _SFCB_TRACE(1, ("--- token: %.32s\n",next));
       if (parm->xmb->eTagFound) {
          parm->xmb->eTagFound = 0;
-         return parm->xmb->etag;
+         _SFCB_RETURN(parm->xmb->etag);
       }
 
       if (*next == '/') {
          for (i = 0, m = sizeof(tags); i < m; i++) {
             if (nextEquals(next + 1, tags[i].tag) == 1) {
                skipTag(parm->xmb);
-               return tags[i].etag;
+               _SFCB_RETURN(tags[i].etag);
             }
          }
       }
@@ -1050,13 +1228,14 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
          for (i = 0, m = sizeof(tags); i < m; i++) {
             if (nextEquals(next, tags[i].tag) == 1) {
    //printf("+++ %d\n",i);
-               return tags[i].process(lvalp, parm);
+               rc=tags[i].process(lvalp, parm);
+               _SFCB_RETURN(rc);
             }
          }
       }
       break;
    }
-   return 0;
+   _SFCB_RETURN(0);
 }
 
 int yyerror(char *s)

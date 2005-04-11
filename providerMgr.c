@@ -996,7 +996,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    _SFCB_ENTER(TRACE_PROVIDERMGR, "getConstClass");
    
    path = TrackedCMPIObjectPath(ns, cn, &rc);
-   sreq.principle = setCharsMsgSegment("$$");
+   sreq.principal = setCharsMsgSegment("$$");
    sreq.objectPath = setObjectPathMsgSegment(path);
 
    req.nameSpace = setCharsMsgSegment((char *) ns);
@@ -1048,7 +1048,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    
    path = NewCMPIObjectPath(ns, cn, st);
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principle = setCharsMsgSegment("$$");
+   sreq.principal = setCharsMsgSegment("$$");
 
    req.nameSpace = setCharsMsgSegment((char *) ns);
    req.className = setCharsMsgSegment((char *) cn);
@@ -1101,7 +1101,7 @@ static CMPIData localInvokeMethod(BinRequestContext * binCtx,
    sreq.out = setArgsMsgSegment(NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.method = setCharsMsgSegment(method);
-   sreq.principle = setCharsMsgSegment("$$");
+   sreq.principal = setCharsMsgSegment("$$");
 
    binCtx->oHdr = &req;
    binCtx->bHdr = &sreq.hdr;

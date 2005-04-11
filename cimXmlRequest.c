@@ -75,6 +75,7 @@ extern CMPIConstClass *relocateSerializedConstClass(void *area);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
 extern MsgSegment setCharsMsgSegment(char *str);
 extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
+extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
 extern void closeProviderContext(BinRequestContext * ctx);
 extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
              CMPICount index, CMPIValue * val, CMPIType type);
@@ -526,7 +527,7 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq->objectPath = setObjectPathMsgSegment(path);
-   sreq->principle = setCharsMsgSegment(ctx->principle);
+   sreq->principal = setCharsMsgSegment(ctx->principal);
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -563,6 +564,104 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
 }
 
+extern int ClClassAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
+			       const char *id, CMPIData d);
+extern int ClClassAddProperty(ClClass * cls, const char *id, CMPIData d);
+extern void *ClObjectGetClSection(ClObjectHdr * hdr, ClSection * s);
+extern int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p,
+				       const char *id, CMPIData d);
+extern ClClass *ClClassNew(const char *cn, const char *pa);
+extern ClClass *ClClassRebuildClass(ClClass * cls, void *area);
+extern void ClClassFreeClass(ClClass * cls);
+extern char *ClClassToString(ClClass * cls);
+extern CMPIConstClass initConstClass(ClClass *cl);
+
+static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "createClass");
+   CMPIObjectPath *path;
+   CMPIConstClass cls;
+   ClClass *cl;
+   int irc;
+   BinRequestContext binCtx;
+   BinResponseHdr *resp;
+   CreateClassReq sreq = BINREQ(OPS_CreateClass, 3);
+   
+   XtokProperty *p = NULL;
+   XtokProperties *ps = NULL;
+   XtokQualifiers *qs = NULL;
+   XtokQualifier *q = NULL;
+   XtokClass *c;
+   CMPIData d;
+   
+   printf("--- createClass request\n");
+   
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   XtokCreateClass *req = (XtokCreateClass *) hdr->cimRequest;
+
+   path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
+   
+   cl = ClClassNew(req->op.className.data, req->superClass ? req->superClass : NULL);
+   cls=initConstClass(cl);
+   c=&req->cls;
+   
+   qs=&c->qualifiers;
+   for (q=qs->first; q; q=q->next) {
+      d.state=CMPI_goodValue;
+      d.value=str2CMPIValue(q->type,q->value,NULL);
+      d.type=q->type;
+      ClClassAddQualifier(&cl->hdr, &cl->qualifiers, q->name, d);
+   }
+                  
+   ps=&c->properties;
+   for (p=ps->first; p; p=p->next) {
+      ClProperty *prop;
+      int propId;
+      d.state=CMPI_goodValue;
+      d.value=str2CMPIValue(p->valueType,p->value,NULL);       
+      d.type=p->valueType;
+      propId=ClClassAddProperty(cl, p->name, d);
+     
+      qs=&p->qualifiers;
+      prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;
+      for (q=qs->first; q; q=q->next) {
+         d.state=CMPI_goodValue;
+         d.value=str2CMPIValue(q->type,q->value,NULL);
+         d.type=q->type;
+         ClClassAddPropertyQualifier(&cl->hdr, prop, q->name, d);
+      }
+   }
+
+   sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.path = setObjectPathMsgSegment(path);
+   sreq.cls = setConstClassMsgSegment(&cls);
+
+   binCtx.oHdr = (OperationHdr *) req;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.rHdr = hdr;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) req);
+   printf("--- Getting Provider context %d\n",irc);
+
+   _SFCB_TRACE(1, ("--- Provider context gotten"));
+   if (irc == MSG_X_PROVIDER) {
+      resp = invokeProvider(&binCtx);
+      closeProviderContext(&binCtx);
+      resp->rc--;
+      if (resp->rc == CMPI_RC_OK) {
+         _SFCB_RETURN(iMethodResponse(hdr, NULL));
+      }
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc, 
+         (char*)resp->object[0].data)));
+   }
+   closeProviderContext(&binCtx);
+   _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
+}
+
 static RespSegments enumClassNames(CimXmlRequestContext * ctx,
                                       RequestHdr * hdr)
 {
@@ -579,7 +678,7 @@ static RespSegments enumClassNames(CimXmlRequestContext * ctx,
    
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
    sreq.flags = req->flags;
 
    binCtx.oHdr = (OperationHdr *) req;
@@ -630,7 +729,7 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
    
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
    sreq.flags = req->flags;
 
    binCtx.oHdr = (OperationHdr *) req;
@@ -708,7 +807,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
       CMAddKey(path, req->instanceName.bindings.keyBindings[i].name, valp, type);
    }
    sreq->objectPath = setObjectPathMsgSegment(path);
-   sreq->principle = setCharsMsgSegment(ctx->principle);
+   sreq->principal = setCharsMsgSegment(ctx->principal);
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -770,7 +869,7 @@ static RespSegments deleteInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
                type);
    }
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -822,7 +921,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
                   
    sreq.instance = setInstanceMsgSegment(inst);
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
 
    path = inst->ft->getObjectPath(inst,NULL);
    sreq.path = setObjectPathMsgSegment(path);
@@ -900,7 +999,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    sreq->instance = setInstanceMsgSegment(inst);
    sreq->path = setObjectPathMsgSegment(path);
-   sreq->principle = setCharsMsgSegment(ctx->principle);
+   sreq->principal = setCharsMsgSegment(ctx->principal);
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq->hdr;
@@ -945,7 +1044,7 @@ static RespSegments enumInstanceNames(CimXmlRequestContext * ctx,
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -997,7 +1096,7 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->count=req->properties+2;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
-   sreq->principle = setCharsMsgSegment(ctx->principle);
+   sreq->principal = setCharsMsgSegment(ctx->principal);
    sreq->objectPath = setObjectPathMsgSegment(path);
 
    for (i=0; i<req->properties; i++) {
@@ -1077,7 +1176,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    path = NewCMPIObjectPath(req->op.nameSpace.data, *fCls, NULL);
    
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
    sreq.query = setCharsMsgSegment((char*)req->op.query.data);
    sreq.queryLang = setCharsMsgSegment((char*)req->op.queryLang.data);
 
@@ -1163,7 +1262,7 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
    sreq.role = req->op.role;
    sreq.assocClass = req->op.assocClass;
    sreq.resultRole = req->op.resultRole;
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
 
    req->op.className = req->op.assocClass;
 
@@ -1239,7 +1338,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->assocClass = req->op.assocClass;
    sreq->resultRole = req->op.resultRole;
    sreq->flags = req->flags;
-   sreq->principle = setCharsMsgSegment(ctx->principle);
+   sreq->principal = setCharsMsgSegment(ctx->principal);
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -1325,7 +1424,7 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    sreq.resultClass = req->op.resultClass;
    sreq.role = req->op.role;
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
 
    req->op.className = req->op.resultClass;
 
@@ -1400,7 +1499,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->resultClass = req->op.resultClass;
    sreq->role = req->op.role;
    sreq->flags = req->flags;
-   sreq->principle = setCharsMsgSegment(ctx->principle);
+   sreq->principal = setCharsMsgSegment(ctx->principal);
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -1481,7 +1580,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
       CMAddKey(path, req->instanceName.bindings.keyBindings[i].name, valp, type);
    }
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principle = setCharsMsgSegment(ctx->principle);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
 
    for (p = req->paramValues.first; p; p = p->next) {
       CMPIValue val = str2CMPIValue(p->type, p->value.value, &p->valueRef);
@@ -1539,7 +1638,7 @@ static Handler handlers[] = {
    {getInstance},               //OPS_GetInstance 2
    {notSupported},              //OPS_DeleteClass 3
    {deleteInstance},            //OPS_DeleteInstance 4
-   {notSupported},              //OPS_CreateClass 5
+   {createClass},               //OPS_CreateClass 5
    {createInstance},            //OPS_CreateInstance 6
    {notSupported},              //OPS_ModifyClass 7
    {modifyInstance},            //OPS_ModifyInstance 8

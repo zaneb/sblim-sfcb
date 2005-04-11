@@ -453,7 +453,7 @@ CMPIInstance *internal_new_CMPIInstance(int mode, CMPIObjectPath * cop,
    else {
       j=0;
       asm("int $3");
-      ns = "'NoNameSpace*";
+      ns = "*NoNameSpace*";
       cn = "*NoClassName*";
       tmp1.rc=tmp2.rc=tmp3.rc=CMPI_RC_OK;
    }   

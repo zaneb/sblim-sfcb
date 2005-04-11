@@ -241,6 +241,7 @@ typedef struct xtokPropertyList {
    XtokValueArray list;
 } XtokPropertyList;
 
+
 typedef struct xtokParamValue {
   struct xtokParamValue *next;
   char *name;
@@ -256,6 +257,56 @@ typedef struct xtokParamValues {
    XtokParamValue *last, *first;  // must be free'd
 } XtokParamValues;
 
+
+typedef struct xtokParam {
+   struct xtokParam *next;
+   XtokQualifiers qualifiers;
+   XtokQualifier qualifier;
+   int qPart;
+   int pType;
+   char *name;
+   char *refClass;
+   char *arraySize;
+   CMPIType type;
+} XtokParam;
+
+typedef struct xtokParams {
+   XtokParam *last, *first;  // must be free'd
+} XtokParams;
+
+
+typedef struct xtokMethod {
+   struct xtokMethod *next;
+   XtokParams params;
+   char *name;
+   char *classOrigin;
+   int propagated;
+   CMPIType type;
+} XtokMethod;
+
+typedef struct xtokMethodPart {
+   XtokParam param;
+   int  qPart;
+   XtokQualifier qualifier;
+} XtokMethodPart;
+
+typedef struct xtokMethodPartList {
+   XtokQualifiers qualifiers;
+   XtokParams params;
+} XtokMethodPartList;
+
+typedef struct xtokMethods {
+   XtokMethod *last, *first;  // must be free'd
+} XtokMethods;
+
+
+typedef struct xtokClass {
+   char *className;
+   char *superClass;
+   XtokProperties properties;
+   XtokQualifiers qualifiers;
+   XtokMethods    methods;
+} XtokClass;
 
 
 /*
@@ -381,6 +432,22 @@ typedef struct xtokGetInstance {
    int instNameSet,properties;
    char **propertyList;
 } XtokGetInstance;
+
+
+/*
+ *    createClass
+*/
+
+typedef struct xtokCreateClassParm {
+   XtokClass cls;
+} XtokCreateClassParm;
+
+typedef struct xtokCreateClass {
+   OperationHdr op;
+   XtokClass cls;
+   char *className;
+   char *superClass;
+} XtokCreateClass;
 
 
 /*
@@ -622,6 +689,7 @@ typedef struct parser_control {
    RequestHdr reqHdr;
    XtokProperties properties;
    XtokQualifiers qualifiers;
+   XtokMethods     methods;
    XtokParamValues paramValues;
    jmp_buf env;
 } ParserControl;

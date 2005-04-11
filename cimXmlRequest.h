@@ -49,7 +49,7 @@ typedef struct expSegments {
 
 typedef struct cimXmlRequestContext {
    char *cimXmlDoc;
-   char *principle;
+   char *principal;
    char *host;
    unsigned long cimXmlDocLength;
    struct commHndl *commHndl;

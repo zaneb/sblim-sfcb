@@ -331,3 +331,11 @@ int verifyPropertyList(CMPIConstClass *cl, char **list)
    }
    return count;
 }
+
+CMPIConstClass initConstClass(ClClass *cl)
+{
+   CMPIConstClass c;
+   c.hdl=cl;
+   c.ft=&ift;
+   return c;
+}

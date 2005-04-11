@@ -1151,6 +1151,12 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
                                 &val, &type);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
+   
+   if (req->objectName.bindings.next==0) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
+           "AssociatorNames operation for classes not supported")));
+   }
+   
    sreq.objectPath = setObjectPathMsgSegment(path);
 
    sreq.resultClass = req->op.resultClass;
@@ -1220,6 +1226,12 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
                                 &val, &type);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
+   
+   if (req->objectName.bindings.next==0) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
+           "Associator operation for classes not supported")));
+   }
+   
    sreq->objectPath = setObjectPathMsgSegment(path);
 
    sreq->resultClass = req->op.resultClass;
@@ -1303,6 +1315,12 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
                                 &val, &type);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
+   
+   if (req->objectName.bindings.next==0) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
+           "ReferenceNames operation for classes not supported")));
+   }
+   
    sreq.objectPath = setObjectPathMsgSegment(path);
 
    sreq.resultClass = req->op.resultClass;
@@ -1371,6 +1389,12 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
                                 &val, &type);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
+   
+   if (req->objectName.bindings.next==0) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
+           "References operation for classes not supported")));
+   }
+   
    sreq->objectPath = setObjectPathMsgSegment(path);
 
    sreq->resultClass = req->op.resultClass;

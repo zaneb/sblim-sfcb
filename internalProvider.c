@@ -235,6 +235,7 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
                                              CMPIObjectPath * ref)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIStatus sti = { CMPI_RC_OK, NULL };
    BlobIndex *bi;
    CMPIString *cn = CMGetClassName(ref, NULL);
    CMPIString *ns = CMGetNameSpace(ref, NULL);
@@ -256,8 +257,8 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    in=CMNewArgs(Broker,NULL);
    out=CMNewArgs(Broker,NULL);
    CMAddArg(in,"class",cns,CMPI_chars);
-   op=CMNewObjectPath(Broker,nss,"$ClassProvider$",&st);
-   rv=CBInvokeMethod(Broker,ctx,op,"getallchildren",in,out,&st);     
+   op=CMNewObjectPath(Broker,nss,"$ClassProvider$",&sti);
+   rv=CBInvokeMethod(Broker,ctx,op,"getallchildren",in,out,&sti);     
    ar=CMGetArg(out,"children",NULL).value.array;
    if (ar) ac=CMGetArrayCount(ar,NULL);
    
@@ -296,6 +297,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi, CMPIContext * ctx, void *rs
                                          void(*retFnc)(void*,CMPIInstance*), int ignprov)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIStatus sti = { CMPI_RC_OK, NULL };
    BlobIndex *bi;
    CMPIString *cn = CMGetClassName(ref, NULL);
    CMPIString *ns = CMGetNameSpace(ref, NULL);
@@ -316,10 +318,12 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi, CMPIContext * ctx, void *rs
    out=CMNewArgs(Broker,NULL);
    if (ignprov) CMAddArg(in,"classignoreprov",cns,CMPI_chars);
    else CMAddArg(in,"class",cns,CMPI_chars);
-   op=CMNewObjectPath(Broker,nss,"$ClassProvider$",&st);
+   
+   op=CMNewObjectPath(Broker,nss,"$ClassProvider$",&sti);
    _SFCB_TRACE(1,("--- getallchildren"));
-   rv=CBInvokeMethod(Broker,ctx,op,"getallchildren",in,out,&st);     
-   _SFCB_TRACE(1,("--- getallchildren rc: %d",st.rc));
+   rv=CBInvokeMethod(Broker,ctx,op,"getallchildren",in,out,&sti);     
+   _SFCB_TRACE(1,("--- getallchildren rc: %d",sti.rc));
+   
    ar=CMGetArg(out,"children",NULL).value.array;
    if (ar) ac=CMGetArrayCount(ar,NULL);
    _SFCB_TRACE(1,("--- getallchildren ar: %p count: %d",ar,ac));
@@ -337,6 +341,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi, CMPIContext * ctx, void *rs
       if (i<ac) cns=(char*)CMGetArrayElementAt(ar,i,NULL).value.string->hdl;
       else cns=NULL;  
    }
+   
    _SFCB_RETURN(st);
 }
 

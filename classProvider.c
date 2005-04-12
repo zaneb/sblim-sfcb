@@ -331,7 +331,7 @@ static int addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
    return 0;
 }
 
-static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns)
+static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
 {
    DIR *dir;
    struct dirent *de;
@@ -346,7 +346,7 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns)
    }          
        
    dir=opendir(dn);
-   while ((de=readdir(dir))!=NULL) {
+   if (dir) while ((de=readdir(dir))!=NULL) {
       if (de->d_type==DT_DIR) {
          if (strcmp(de->d_name,".")==0) continue;
          if (strcmp(de->d_name,"..")==0) continue;
@@ -358,9 +358,12 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns)
          cr=newClassRegister(n);
          if (cr) {
             ns->ft->put(ns, n+nsBaseLen, cr);
-            gatherNameSpaces(n,ns);
+            gatherNameSpaces(n,ns,0);
          }   
       } 
+   }
+   else if (first) {
+      fprintf(stderr,"--- Repository %s not found\n",dn);
    }
    closedir(dir);  
    return ns;     
@@ -381,7 +384,7 @@ static UtilHashTable *buildClassRegisters()
    strcpy(dn,dir);
    if (dir[strlen(dir)-1]!='/') strcat(dn,"/");
    strcat(dn,"repository");
-   return gatherNameSpaces(dn,NULL);   
+   return gatherNameSpaces(dn,NULL,1);   
 }    
 
 

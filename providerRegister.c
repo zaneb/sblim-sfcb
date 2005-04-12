@@ -75,117 +75,116 @@ ProviderRegister *newProviderRegister(char *fn)
    strcpy(fin, dir);
    strcat(fin, "/providerRegister");
    in = fopen(fin, "r");
-   if (in == NULL) {
+   if (in == NULL) 
       fprintf(stderr, "--- %s not found\n", fin);
-      return NULL;
-   }
+      
+   else {
 
-   br->hdl = bb;
-   br->ft = ProviderRegisterFT;
-   bb->fn = strdup(fin);
-   bb->ht = UtilFactory->newHashTable(61,
-               UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
+      br->hdl = bb;
+      br->ft = ProviderRegisterFT;
+      bb->fn = strdup(fin);
+      bb->ht = UtilFactory->newHashTable(61,
+                  UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
 
-   while (fgets(fin, 1024, in)) {
-      n++;
-      if (stmt)
-         free(stmt);
-      stmt = strdup(fin);
-      switch (cntlParseStmt(fin, &rv)) {
-      case 0:
-         printf("--- registration statement not recognized: \n\t%d: %s\n", n,
-                stmt);
-         err = 1;
-         break;
-      case 1:
-         if (info) {
-            if (classProvInfoPtr==NULL) {
-               if (strcmp(info->className,"$ClassProvider$")==0) classProvInfoPtr=info;
-            }   
-            else if (defaultProvInfoPtr==NULL) {
-               if (strcmp(info->className,"$DefaultProvider$")==0) defaultProvInfoPtr=info;
-            }   
-            else if (interOpProvInfoPtr==NULL) {
-               if (strcmp(info->className,"$InterOpProvider$")==0) {
-                  if (exFlags & 2) interOpProvInfoPtr=info;
-                  else interopFound=1;
-               }   
-            }   
-            bb->ht->ft->put(bb->ht, info->className, info);
-         }
-         info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
-         info->className = strdup(rv.id);
-         info->id= ++id;
-         break;
-      case 2:
-         if (strcmp(rv.id, "provider") == 0)
-            info->providerName = strdup(cntlGetVal(&rv));
-         else if (strcmp(rv.id, "location") == 0)
-            info->location = strdup(cntlGetVal(&rv));
-         else if (strcmp(rv.id, "group") == 0)
-            info->group = strdup(cntlGetVal(&rv));
-         else if (strcmp(rv.id, "unload") == 0) {
-            char *u;
-            info->unload = 0;
-            while ((u = cntlGetVal(&rv)) != NULL) {
-               if (strcmp(u, "never") == 0) {
-                  info->unload =-1;
-               }   
-               else {
-                  printf("--- invalid unload specification: \n\t%d: %s\n", n, stmt);
-                  err = 1;
-               }
-            }   
-         }   
-         else if (strcmp(rv.id, "type") == 0) {
-            char *t;
-            info->type = 0;
-            while ((t = cntlGetVal(&rv)) != NULL) {
-               if (strcmp(t, "instance") == 0)
-                  info->type |= INSTANCE_PROVIDER;
-               else if (strcmp(t, "association") == 0)
-                  info->type |= ASSOCIATION_PROVIDER;
-               else if (strcmp(t, "method") == 0)
-                  info->type |= METHOD_PROVIDER;
-               else if (strcmp(t, "indication") == 0)
-                  info->type |= INDICATION_PROVIDER;
-               else if (strcmp(t, "class") == 0)
-                  info->type |= CLASS_PROVIDER;
-               else {
-                  printf("--- invalid type specification: \n\t%d: %s\n", n, stmt);
-                  err = 1;
-               }
-            }
-         }
-         else if (strcmp(rv.id, "namespace") == 0) {
-            int max=1,next=0;
-            char *t;
-            info->ns=(char**)malloc(sizeof(char*)*(max+1));
-            while ((t = cntlGetVal(&rv)) != NULL) {
-               if (next==max) {
-                  max++;
-                  info->ns=(char**)realloc(info->ns,sizeof(char*)*(max+1));
-               }
-               info->ns[next]=strdup(t);
-               info->ns[++next]=NULL;
-            }
-         }
-         else {
-            printf("--- invalid registration statement: \n\t%d: %s\n", n, stmt);
+      while (fgets(fin, 1024, in)) {
+         n++;
+         if (stmt) free(stmt);
+         stmt = strdup(fin);
+         switch (cntlParseStmt(fin, &rv)) {
+         case 0:
+            printf("--- registration statement not recognized: \n\t%d: %s\n", n,stmt);
             err = 1;
+            break;
+         case 1:
+            if (info) {
+               if (classProvInfoPtr==NULL) {
+                  if (strcmp(info->className,"$ClassProvider$")==0) classProvInfoPtr=info;
+               }   
+               else if (defaultProvInfoPtr==NULL) {
+                  if (strcmp(info->className,"$DefaultProvider$")==0) defaultProvInfoPtr=info;
+               }   
+               else if (interOpProvInfoPtr==NULL) {
+                  if (strcmp(info->className,"$InterOpProvider$")==0) {
+                     if (exFlags & 2) interOpProvInfoPtr=info;
+                     else interopFound=1;
+                  }   
+               }   
+               bb->ht->ft->put(bb->ht, info->className, info);
+            }
+            info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
+            info->className = strdup(rv.id);
+            info->id= ++id;
+            break;
+         case 2:
+            if (strcmp(rv.id, "provider") == 0)
+               info->providerName = strdup(cntlGetVal(&rv));
+            else if (strcmp(rv.id, "location") == 0)
+               info->location = strdup(cntlGetVal(&rv));
+            else if (strcmp(rv.id, "group") == 0)
+               info->group = strdup(cntlGetVal(&rv));
+            else if (strcmp(rv.id, "unload") == 0) {
+               char *u;
+               info->unload = 0;
+               while ((u = cntlGetVal(&rv)) != NULL) {
+                  if (strcmp(u, "never") == 0) {
+                     info->unload =-1;
+                  }   
+                  else {
+                     printf("--- invalid unload specification: \n\t%d: %s\n", n, stmt);
+                     err = 1;
+                  }
+               }   
+            }   
+            else if (strcmp(rv.id, "type") == 0) {
+               char *t;
+               info->type = 0;
+               while ((t = cntlGetVal(&rv)) != NULL) {
+                  if (strcmp(t, "instance") == 0)
+                     info->type |= INSTANCE_PROVIDER;
+                  else if (strcmp(t, "association") == 0)
+                     info->type |= ASSOCIATION_PROVIDER;
+                  else if (strcmp(t, "method") == 0)
+                     info->type |= METHOD_PROVIDER;
+                  else if (strcmp(t, "indication") == 0)
+                     info->type |= INDICATION_PROVIDER;
+                  else if (strcmp(t, "class") == 0)
+                     info->type |= CLASS_PROVIDER;
+                  else {
+                     printf("--- invalid type specification: \n\t%d: %s\n", n, stmt);
+                     err = 1;
+                     }
+            }
+            }
+            else if (strcmp(rv.id, "namespace") == 0) {
+               int max=1,next=0;
+               char *t;
+               info->ns=(char**)malloc(sizeof(char*)*(max+1));
+               while ((t = cntlGetVal(&rv)) != NULL) {
+                  if (next==max) {
+                     max++;
+                     info->ns=(char**)realloc(info->ns,sizeof(char*)*(max+1));
+                  }
+                  info->ns[next]=strdup(t);
+                  info->ns[++next]=NULL;
+               }
+            }
+            else {
+               printf("--- invalid registration statement: \n\t%d: %s\n", n, stmt);
+               err = 1;
+            }
+            break;
+         case 3:
+            break;
          }
-         break;
-      case 3:
-         break;
       }
-   }
 
-   if (info) {
-      bb->ht->ft->put(bb->ht, info->className, info);
-   }
+      if (info) {
+         bb->ht->ft->put(bb->ht, info->className, info);
+      }
+   }   
 
    if (classProvInfoPtr==NULL) {
-      printf("--- Class provider definition not found\n");
+      printf("--- Class provider definition not found - sfcbd will terminate\n");
       err=1;
    }
    
@@ -202,7 +201,7 @@ ProviderRegister *newProviderRegister(char *fn)
    
    if (err) {
       printf("--- Broker terminated because of previous error(s)\n");
-      abort();
+      exit(5);
    }
    if (stmt) free(stmt);
    return br;

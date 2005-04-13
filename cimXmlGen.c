@@ -118,10 +118,10 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
       else if (strcasecmp(type, "numeric") == 0) {
          if (value[0] == '+' || value[0] == '-') {
             *typ = CMPI_sint64;
-            sscanf(value, "%llu", &val->uint64);
+            sscanf(value, "%lld", &val->uint64);
          }
          else {
-            sscanf(value, "%lld", &val->sint64);
+            sscanf(value, "%llu", &val->sint64);
             *typ = CMPI_uint64;
          }
          return val;

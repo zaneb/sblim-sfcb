@@ -62,6 +62,8 @@ int sfcbSSLMode = 0;
 static int hBase;
 static int hMax;
 static int httpProcId;
+static int stopAccepting=0;
+static int running=0;
 
 #if defined USE_SSL
 SSL_CTX *ctx;
@@ -189,11 +191,17 @@ static void handleSigChld(int sig)
          break;
       }
       else {
+         running--;
          // fprintf(stderr, "%s: SIGCHLD signal %d - %s(%d)\n", name, pid,
          //        __FILE__, __LINE__);
       }
    }
    errno = oerrno;
+}
+
+static void handleSigUsr1(int sig)
+{
+   stopAccepting=1;
 }
 
 static void freeBuffer(Buffer * b)
@@ -737,6 +745,7 @@ static void handleHttpRequest(int connFd)
          }
       }
       else if (r>0) {
+         running++;
          _SFCB_EXIT();
       }
    }
@@ -889,6 +898,10 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 //   memInit();
     currentProc=getpid();
     setSignal(SIGCHLD, handleSigChld,0);
+    setSignal(SIGUSR1, handleSigUsr1,0);
+    setSignal(SIGINT, SIG_IGN,0);
+    setSignal(SIGTERM, SIG_IGN,0);
+    setSignal(SIGHUP, SIG_IGN,0);
 
     commInit();
 
@@ -909,8 +922,10 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
       listen(listenFd, 1);
       sz = sizeof(sin);
       if ((connFd = accept(listenFd, (__SOCKADDR_ARG) & sin, &sz))<0) {
-         if (errno == EINTR || errno == EAGAIN)
+         if (errno == EINTR || errno == EAGAIN) {
+            if (stopAccepting) break;
             continue;
+         }   
          perror("accept error");
          _SFCB_ABORT();
       }
@@ -919,5 +934,14 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
       handleHttpRequest(connFd);
       close(connFd);
    }
+   
+//   printf("--- %s draining %d\n",processName,running);
+   for (;;) {
+      if (running==0) {
+         printf("--- %s terminating %d\n",processName,getpid());
+         exit(0);
+      }   
+      sleep(1);
+   }   
 
 }

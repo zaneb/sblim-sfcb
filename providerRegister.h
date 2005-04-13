@@ -60,6 +60,7 @@ typedef struct _ProviderInfo {
    pthread_t idleThread;
    pthread_mutex_t initMtx;
    time_t lastActivity;
+   int startSeq;
    struct _ProviderInfo *next;
    struct providerProcess *proc;
    CMPIInstanceMI *instanceMI;

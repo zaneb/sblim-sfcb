@@ -173,7 +173,7 @@ static int spHandleError(int *s, char *m)
  *              spGetMsg
  */
 
-static int spGetMsg(int *s, void *data, unsigned length)
+static int spGetMsg(int *s, void *data, unsigned length, MqgStat* mqg)
 {
    static char *em = "spGetMsg receiving from";
    ssize_t n,ol,r=0;
@@ -183,9 +183,14 @@ static int spGetMsg(int *s, void *data, unsigned length)
 
    ol = length;
    for (;;) {
+      if (mqg) mqg->teintr=0;
       if ((n = recv(*s, data+r, length-r, 0)) < 0) {
          if (errno == EINTR) {
             _SFCB_TRACE(1, (" Receive interrupted %d",currentProc));
+            if (mqg) {
+               mqg->teintr=1;
+               return 0;
+            }
             continue;
          }
          return spHandleError(s, em);
@@ -208,26 +213,40 @@ static int spGetMsg(int *s, void *data, unsigned length)
  *              spRcvMsg
  */
 
-static int spRcvMsg(int *s, int *from, void **data, unsigned long *length)
+static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgStat* mqg)
 {
    SpMessageHdr spMsg;
    static char *em = "rcvMsg receiving from";
+   MqgStat imqg;
 
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRcvMsg");
    _SFCB_TRACE(1, ("--- Receiving from %d", *s));
 
-   if ((spGetMsg(s, &spMsg, sizeof(spMsg))) == -1)
+   if ((spGetMsg(s, &spMsg, sizeof(spMsg), mqg)) == -1)
       return spHandleError(s, em);
+      
+   if (mqg && mqg->teintr) {
+      mqg->eintr=1;    
+      mqg->rdone=0;
+      return 0;  
+   }   
    *from=spMsg.returnS;   
 
    _SFCB_TRACE(1, ("--- Received info segment %d bytes", sizeof(spMsg)));
 
    *length = spMsg.totalSize;
 
+   if (mqg==NULL) mqg=&imqg;
+   mqg->rdone=1;
+   mqg->eintr=0;
+   
    if (*length) {
       *data = malloc(spMsg.totalSize + 8);
-      if ((spGetMsg(s, *data, *length)) == -1)
-         return spHandleError(s, em);
+      do {
+         if ((spGetMsg(s, *data, *length, mqg)) == -1)
+            return spHandleError(s, em);
+         if (mqg->teintr) mqg->eintr=1;    
+      } while (mqg->teintr) ;       
       _SFCB_TRACE(1, ("--- Received data segment %d bytes", *length));
    }
 
@@ -239,8 +258,11 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length)
    if (spMsg.type.ctl.xtra == MSG_X_EXTENDED_CTL_MSG) {
       *data = malloc(256);
       *length = 256;
-      if ((spGetMsg(s, *data, *length)) == -1)
-         return spHandleError(s, em);
+      do {
+         if ((spGetMsg(s, *data, *length, mqg)) == -1)
+            return spHandleError(s, em);
+         if (mqg->teintr) mqg->eintr=1;    
+      } while (mqg->teintr) ;       
    }
 
    switch (spMsg.type.ctl.xtra) {
@@ -257,14 +279,15 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length)
              spMsg.type.ctl.xtra);
       abort();
    }
+   
    _SFCB_RETURN(spMsg.type.ctl.xtra);
 }
 
-int spRecvReq(int *s, int *from, void **data, unsigned long *length)
+int spRecvReq(int *s, int *from, void **data, unsigned long *length, MqgStat *mqg)
 {
    int rc;
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRecvReq");
-   rc = spRcvMsg(s, from, data, length);
+   rc = spRcvMsg(s, from, data, length, mqg);
    _SFCB_RETURN(rc);
 }
 
@@ -272,7 +295,7 @@ int spRecvResult(int *s, int *from, void **data, unsigned long *length)
 {
    int rc;
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRecvResult");
-   rc = spRcvMsg(s, from, data, length);
+   rc = spRcvMsg(s, from, data, length, NULL);
    _SFCB_RETURN(rc);
 }
 
@@ -280,7 +303,7 @@ int spRecvCtlResult(int *s, int *from, void **data, unsigned long *length)
 {
    int rc;
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRecvCtlResult");
-   rc = spRcvMsg(s, from, data, length);
+   rc = spRcvMsg(s, from, data, length, NULL);
    _SFCB_RETURN(rc);
 }
 

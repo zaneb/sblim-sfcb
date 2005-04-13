@@ -86,6 +86,7 @@ int indicationEnabled=0;
 
 unsigned long provSampleInterval=10;
 unsigned long provTimeoutInterval=25;
+static int stopping=0;
 
 void libraryName(const char *location, char *fullName)
 {
@@ -119,31 +120,84 @@ void libraryName(const char *location, char *fullName)
 #endif
 }
 
-static void handleSigChld(int sig)
+int testStartedProc(int pid, int *left) 
 {
-   const int oerrno = errno;
-   pid_t pid;
-   int status;
+   ProviderProcess *pp=provProc;
+   int i,stopped=0;
+   
+   *left=0;
+   for (i=0; i<provProcMax; i++) {
+      if ((pp+i)->pid==pid) {
+         stopped=1;
+         (pp+i)->pid=0;
+      }   
+      if ((pp+i)->pid!=0) (*left)++;
+   }
+   
+   if (pid==classProvInfoPtr->pid) {
+      stopped=1;
+      classProvInfoPtr->pid=0;
+   }
+   if (classProvInfoPtr->pid!=0) (*left)++;
+   
+   return stopped;
+}         
 
-   for (;;) {
-      pid = wait3(&status, WNOHANG, (struct rusage *) 0);
-      if ((int) pid == 0)
-         break;
-      if ((int) pid < 0) {
-         if (errno == EINTR || errno == EAGAIN) {
-            fprintf(stderr, "pid: %d continue \n", pid);
-            continue;
-         }
-         if (errno != ECHILD)
-            perror("child wait");
-         break;
-      }
-      else {
- //        fprintf(stderr,"--- Provider process terminated - %d \n",pid);
+int stopNextProc()
+{
+   ProviderProcess *pp=provProc;
+   int i,done=0,t;
+   
+   for (i=provProcMax-1; i; i--) {
+      if ((pp+i)->pid) {
+//         printf("killing 1 %d\n",(pp+i)->pid);
+         kill((pp+i)->pid,SIGUSR1);
+         return (pp+i)->pid;
       }
    }
-   errno = oerrno;
+   
+   if (done==0) {
+      if (classProvInfoPtr && classProvInfoPtr->pid) {
+         t=classProvInfoPtr->pid;
+  //       printf("killing 2 %d\n",t);
+         kill(classProvInfoPtr->pid,SIGUSR1);
+         done=1;
+         return t;
+      }
+   }   
+   
+//   printf("done\n");
+   return 0;
 }
+
+static void stopProc(void *p)
+{
+   ProviderInfo *pInfo;
+   CMPIContext *ctx = NULL;
+   
+   ctx = native_new_CMPIContext(TOOL_MM_ADD,NULL);
+   for (pInfo=curProvProc->firstProv; pInfo; pInfo=pInfo->next) {
+      if (pInfo->classMI) pInfo->classMI->ft->cleanup(pInfo->classMI, ctx);
+      if (pInfo->instanceMI) pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx);
+      if (pInfo->associationMI) pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx);
+      if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx);
+      if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx);
+   }
+   exit(0);
+} 
+  
+
+static void handleSigUsr1(int sig)
+{
+   pthread_t t;
+   pthread_attr_t tattr;
+ 
+   stopping=1;  
+   pthread_attr_init(&tattr);
+   pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
+   pthread_create(&t, &tattr, (void *(*)(void *))stopProc,NULL);
+}
+
 
 
 /* -------------
@@ -187,6 +241,7 @@ void* providerIdleThread()
       _SFCB_TRACE(1, ("--- providerIdleThread cycle restarted %d",currentProc));
       pthread_mutex_lock(&idleMtx);
       rc=pthread_cond_timedwait(&idleCnd,&idleMtx,&idleTime);
+      if (stopping) return NULL;
       if (rc==ETIMEDOUT) {
          time_t now;
          time(&now);
@@ -310,6 +365,7 @@ static int getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
 static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
 {
    int i;
+   static int seq=0;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getProcess");
 
@@ -355,6 +411,9 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
 
             currentProc=getpid();
             setSignal(SIGCHLD, SIG_DFL,0);
+            setSignal(SIGTERM, SIG_IGN,0);
+            setSignal(SIGHUP, SIG_IGN,0);
+            setSignal(SIGUSR1, handleSigUsr1,0);
             
             curProvProc=(*proc);
             resultSockets=sPairs[(*proc)->id+ptBase];
@@ -377,7 +436,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
          }
 
          else {
-    //        closeSocket(&providerSockets,cRcv,"getProcess");         
+           info->startSeq=++seq;
          }
          _SFCB_TRACE(1,("--- Fork provider OK %s %d %d\n", info->providerName,
                       info->pid, i));
@@ -1847,6 +1906,7 @@ void processProviderInvocationRequests(char *name)
    int rc,debugMode=0,once=1;
    pthread_t t;
    pthread_attr_t tattr;
+   MqgStat mqg;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "processProviderInvocationRequests");
 
@@ -1861,26 +1921,31 @@ void processProviderInvocationRequests(char *name)
       parms = (Parms *) malloc(sizeof(*parms));
       
       rc = spRecvReq(&providerSockets.receive, &parms->requestor,
-                     (void **) &parms->req, &rl);
-      if (rc!=0) fprintf(stderr,"oops\n");               
+                     (void **) &parms->req, &rl, &mqg);
+      if (mqg.rdone) {               
+         if (rc!=0) fprintf(stderr,"oops\n");               
 
-      _SFCB_TRACE(1, ("--- Got something %d-%p on %d-%lu", 
-         parms->req->operation,parms->req->provId,
-         providerSockets.receive,getInode(providerSockets.receive)));
+         _SFCB_TRACE(1, ("--- Got something %d-%p on %d-%lu", 
+            parms->req->operation,parms->req->provId,
+            providerSockets.receive,getInode(providerSockets.receive)));
 
-      if (once && debugMode && parms->req->operation != OPS_LoadProvider) for (;;) {
-         fprintf(stdout,"-#- Pausing for provider: %s -pid: %d\n",name,currentProc);
-         once=0;      
-         sleep(5);
-      }
+         if (once && debugMode && parms->req->operation != OPS_LoadProvider) for (;;) {
+            fprintf(stdout,"-#- Pausing for provider: %s -pid: %d\n",name,currentProc);
+            once=0;      
+            sleep(5);
+         }
 
-      if (parms->req->operation == OPS_LoadProvider || debugMode) {
-         processProviderInvocationRequestsThread(parms);
+         if (parms->req->operation == OPS_LoadProvider || debugMode) {
+            processProviderInvocationRequestsThread(parms);
+         }
+         else {
+            pthread_create(&t, &tattr, (void *(*)(void *))
+                processProviderInvocationRequestsThread, (void *) parms);
+         }
       }
       else {
-         pthread_create(&t, &tattr, (void *(*)(void *))
-             processProviderInvocationRequestsThread, (void *) parms);
-      }
+//            printf("-------- eintr ?\n");
+      }   
    }
    _SFCB_EXIT();
 }

@@ -49,6 +49,9 @@ extern void initHttpProcCtl(int);
 extern void initProvProcCtl(int);
 extern void processTerminated(int pid);
 
+extern int stopNextProc();
+extern int testStartedProc(int pid, int *left);
+
 extern TraceId traceIds[];
 extern int sfcBrokerPid;
 
@@ -64,6 +67,7 @@ extern void dumpTiming(int pid);
 
 static char **restartArgv;
 static int restartArgc;
+static int adaptersStopped=0,providersStopped=0,restartBroker=0;
 
 extern char * configfile;
 
@@ -75,11 +79,143 @@ void clean_up(int sd, const char *the_file)
    unlink(the_file);
 }
 
+typedef struct startedAdapter {
+   struct startedAdapter *next;
+   int stopped;
+   int pid;
+} StartedAdapter;
+
+StartedAdapter *lastStartedAdapter=NULL;
+
+void addStartedAdapter(int pid)
+{
+   StartedAdapter *sa=(StartedAdapter*)malloc(sizeof(StartedAdapter));
+
+   sa->stopped=0;
+   sa->pid=pid;
+   sa->next=lastStartedAdapter;
+   lastStartedAdapter=sa;
+}
+
+int testStartedAdapter(int pid, int *left) 
+{
+   StartedAdapter *sa=lastStartedAdapter;
+   int stopped=0;
+   
+   *left=0;
+   while (sa) {
+      if (sa->pid==pid) stopped=sa->stopped=1;
+      if (sa->stopped==0) (*left)++;
+      sa=sa->next;
+   }
+   return stopped;
+}         
+
+int stopNextAdapter()
+{
+   StartedAdapter *sa=lastStartedAdapter;
+   
+   while (sa) {
+      if (sa->stopped==0) {
+         sa->stopped=1;
+         kill(sa->pid,SIGUSR1);
+         return sa->pid;
+      }   
+      sa=sa->next;
+   }
+   return 0;
+}
+
+static pthread_mutex_t sdMtx=PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t  sdCnd=PTHREAD_COND_INITIALIZER;
+static int stopping=0;
+   
+static void stopBroker(void *p)
+{
+   struct timespec waitTime;
+   int rc,sa=0,sp=0;
+   
+   stopping=1;
+   
+   for(;;) {
+      waitTime.tv_sec=time(NULL)+5;
+      waitTime.tv_nsec=0;
+
+      if (adaptersStopped==0) {
+         pthread_mutex_lock(&sdMtx);
+         if (sa==0) printf("--- Stopping adapters\n");
+         sa++;
+         if (stopNextAdapter()) {
+            rc=pthread_cond_timedwait(&sdCnd,&sdMtx,&waitTime);
+         }
+//         else adaptersStopped=1;
+         pthread_mutex_unlock(&sdMtx);
+      }
+      
+      if (adaptersStopped) {
+         pthread_mutex_lock(&sdMtx);
+         if (sp==0) printf("--- Stopping providers\n");
+         sp++;
+         if (stopNextProc()) {
+            rc=pthread_cond_timedwait(&sdCnd,&sdMtx,&waitTime);
+         }   
+         //else providersStopped=1;
+         pthread_mutex_unlock(&sdMtx);
+      }
+      if (providersStopped) break;
+   }
+   
+   if (restartBroker) {
+      printf("---\n");   
+      execvp("sfcbd",restartArgv);
+      perror("--- execv for restart problem:");
+      abort();
+   }
+
+   else exit(0);
+}   
+
+static void signalBroker(void *p)
+{
+     pthread_mutex_lock(&sdMtx);
+     pthread_cond_signal(&sdCnd);
+     pthread_mutex_unlock(&sdMtx);
+} 
+  
+static void handleSigquit(int sig)
+{
+   pthread_t t;
+   pthread_attr_t tattr;
+   
+   if (sfcBrokerPid==currentProc) {    
+      fprintf(stderr, "--- Winding down %s\n", processName);
+      pthread_attr_init(&tattr);
+      pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
+      pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
+   } 
+}
+
+static void handleSigHup(int sig)
+{
+  pthread_t t;
+  pthread_attr_t tattr;
+  
+   if (sfcBrokerPid==currentProc) {    
+      restartBroker=1;
+      fprintf(stderr, "--- Restarting %s\n", processName);
+      pthread_attr_init(&tattr);
+      pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
+      pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
+   } 
+}
+
 static void handleSigChld(int sig)
 {
    const int oerrno = errno;
    pid_t pid;
-   int status;
+   int status,left;
+   pthread_t t;
+   pthread_attr_t tattr;
 
    for (;;) {
       pid = wait3(&status, WNOHANG, (struct rusage *) 0);
@@ -95,7 +231,25 @@ static void handleSigChld(int sig)
          break;
       }
       else {
- //        fprintf(stderr,"--- Provider process terminated - %d \n",pid);
+//         printf("sigchild %d\n",pid);
+         if (testStartedAdapter(pid,&left)) { 
+            if (left==0) {
+               fprintf(stderr,"--- Adapters stopped\n");
+               adaptersStopped=1;
+            }   
+            pthread_attr_init(&tattr);
+            pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
+            pthread_create(&t, &tattr, (void *(*)(void *))signalBroker,NULL);   
+         }
+         else if (testStartedProc(pid,&left)) {
+            if (left==0) {
+               fprintf(stderr,"--- Providers stopped\n");
+               providersStopped=1;
+            }   
+            pthread_attr_init(&tattr);
+            pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
+            pthread_create(&t, &tattr, (void *(*)(void *))signalBroker,NULL);
+         }
       }
    }
    errno = oerrno;
@@ -111,38 +265,6 @@ static void handleSigterm(int sig)
    if (providerProcess) 
       kill(currentProc,SIGKILL);
    exit(1);
-}
-
-static void restartSfcBroker(void *p)
-{
-   sleep(1);
-   printf("\n--- \n--- Restarting sfcbd\n---\n");
-   
-   execvp("sfcbd",restartArgv);
-   perror("--- execv for restart problem:");
-   abort();
-}
-
-//SIGHUP
-//static void handleSigUser(int sig)
-static void handleSigHup(int sig)
-{
-  pthread_t t;
-  pthread_attr_t tattr;
-  
-  if (sfcBrokerPid==currentProc) {    
- //     setSignal(SIGHUP,SIG_DFL,0);
-      pthread_attr_init(&tattr);
-      pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
-      
-      pthread_create(&t, &tattr, (void *(*)(void *))
-         restartSfcBroker,NULL);
-
-   } 
-   else {
-      fprintf(stderr, "--- %s - %d exiting due to signal %d\n", processName, currentProc, sig);
-      kill(currentProc,SIGKILL);
-   }   
 }
 
 static void handleSigSegv(int sig)
@@ -176,6 +298,7 @@ int startHttpd(int argc, char *argv[], int sslMode)
       closeSocket(&resultSockets,cAll,"startHttpd");
    }
    else {
+      addStartedAdapter(pid);
       return 0;
    }
    return 0;
@@ -294,10 +417,12 @@ int main(int argc, char *argv[])
    init_sfcBroker(NULL);
    initSocketPairs(pSockets,dSockets,0);
 
-   setSignal(SIGTERM, handleSigterm,SA_ONESHOT);
-   setSignal(SIGINT,  handleSigterm,0);
+   setSignal(SIGQUIT, handleSigquit,0);
+   setSignal(SIGTERM, handleSigquit,0);
+   setSignal(SIGINT,  handleSigquit,0);
+   
    setSignal(SIGKILL, handleSigterm,0);
-   setSignal(SIGHUP, handleSigHup,SA_NOMASK);
+   setSignal(SIGHUP,  handleSigHup,0);
    
    if (startHttp) {
       if (sslMode)

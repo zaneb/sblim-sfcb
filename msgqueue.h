@@ -115,6 +115,9 @@ typedef struct comSockets {
    int send;
 } ComSockets;
 
+typedef struct mqgStat {
+  char teintr,eintr,rdone;
+} MqgStat;
 
 extern MsgSegment setCharsMsgSegment(char *);
 
@@ -131,7 +134,7 @@ extern int spSendCtlResult(int *to, int *from, short code, unsigned long count,
                            void *data);
 extern int spSendReq(int *to, int *from, void *data, unsigned long size);
 extern int spRecvResult(int *q, int *from, void **data, unsigned long *length);
-extern int spRecvReq(int *q, int *from, void **data, unsigned long *length);
+extern int spRecvReq(int *q, int *from, void **data, unsigned long *length, MqgStat *mqg);
 extern int spSendResult(int *to, int *from, void *data, unsigned long size);
 extern unsigned long getInode(int fd);
 

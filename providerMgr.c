@@ -22,7 +22,7 @@
 
 
 #define SFCB_INCL_INDICATION_SUPPORT 1
-
+  
 #include <signal.h>
 #include <time.h>
 
@@ -712,6 +712,7 @@ void processProviderMgrRequests()
    unsigned long rl;
    int rc;
    char *cn, *ns;
+   MqgStat mqg;
  
    _SFCB_ENTER(TRACE_PROVIDERMGR, "processProviderMgrRequests");
 
@@ -723,26 +724,31 @@ void processProviderMgrRequests()
    }   
       
    for (;;) {
-      MgrHandler hdlr;
+      MgrHandler hdlr; 
 
       _SFCB_TRACE(1,("--- Waiting for mgr request to %d ", sfcbSockets.receive));
 
-      if ((rc = spRecvReq(&sfcbSockets.receive, &requestor, (void **) &req, &rl)) == 0) {
-         req->nameSpace.data=(void*)((int)req->nameSpace.data+(char*)req);
-         if (req->className.length)
-            req->className.data=(void*)((int)req->className.data+(char*)req);
-         else req->className.data=NULL;
-         cn = (char *) req->className.data;
-         ns = (char *) req->nameSpace.data;
+      if ((rc = spRecvReq(&sfcbSockets.receive, &requestor, (void **) &req, &rl, &mqg)) == 0) {
+         if (mqg.rdone) {
+            req->nameSpace.data=(void*)((int)req->nameSpace.data+(char*)req);
+            if (req->className.length)
+               req->className.data=(void*)((int)req->className.data+(char*)req);
+            else req->className.data=NULL;
+            cn = (char *) req->className.data;
+            ns = (char *) req->nameSpace.data;
 
-        _SFCB_TRACE(1,("--- Mgr request for %s-%s (%d) from %d", req->nameSpace.data,
+           _SFCB_TRACE(1,("--- Mgr request for %s-%s (%d) from %d", req->nameSpace.data,
                 req->className.data,req->type,requestor));
                 
-        hdlr = mHandlers[req->type];
-        hdlr.handler(&requestor, req);
-        _SFCB_TRACE(1,("--- Mgr request for %s-%s DONE", req->nameSpace.data,
+           hdlr = mHandlers[req->type];
+           hdlr.handler(&requestor, req);
+           _SFCB_TRACE(1,("--- Mgr request for %s-%s DONE", req->nameSpace.data,
               req->className.data));
-         free(req);
+            free(req);
+         }
+         else {
+//            printf("-------- eintr ?\n");
+         }
       }
       else {
          _SFCB_ABORT();

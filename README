@@ -52,3 +52,57 @@ on your build system. IMPORTANT: libtool 1.5.8 or higher is required. As of
 the date of this writing (March 2005) this version was not yet shipped with
 the usual distributions. Please make sure, you have the right version of
 libtool installed!
+
+Step by Step Instructions
+-------------------------
+
+This is a description of the minimum number of steps to get sfcb up and
+running:
+
+If you have received as tarball, invoke
+  tar xvjd sfcb-<version>.tar.bz2 
+
+If you want to check out from CVS, invoke (with CVSROOT set correctly)
+  cvs co sfcb
+  cd sfcb
+  cvs co mofc
+  ./autoconfiscate.sh
+
+In both cases continue with
+  ./configure
+  make
+  make install (need superuser rights)
+  make install-cimschema (superuser, need access to internet)
+
+Make sure that /usr/local/bin is in the path and /usr/local/lib either in 
+LD_LIBRARY_PATH or /etc/ld.so.conf and invoke
+  sfcbrepos -f (superuser, ignore error message)
+
+Start the sfcb by either invoking sfcbd or /usr/local/etc/init.d/sfcb start
+
+Execute a CIM client request, i.e. with SBLIM wbemcli:
+  wbemcli -dx ec http://localhost/root/cimv2
+you should see an output similar to:
+
+
+To server: <?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<MESSAGE ID="4711" PROTOCOLVERSION="1.0"><SIMPLEREQ><IMETHODCALL NAME="EnumerateClasses"><LOCALNAMESPACEPATH><NAMESPACE NAME="root"></NAMESPACE><NAMESPACE NAME="cimv2"></NAMESPACE></LOCALNAMESPACEPATH>
+<IPARAMVALUE NAME="ClassName"><CLASSNAME NAME=""/></IPARAMVALUE>
+<IPARAMVALUE NAME="DeepInheritance"><VALUE>TRUE</VALUE></IPARAMVALUE>
+<IPARAMVALUE NAME="LocalOnly"><VALUE>FALSE</VALUE></IPARAMVALUE>
+<IPARAMVALUE NAME="IncludeQualifiers"><VALUE>FALSE</VALUE></IPARAMVALUE>
+<IPARAMVALUE NAME="IncludeClassOrigin"><VALUE>TRUE</VALUE></IPARAMVALUE>
+</IMETHODCALL></SIMPLEREQ>
+</MESSAGE></CIM>
+From server: <?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="1.1">
+<MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+<SIMPLERSP>
+<IMETHODRESPONSE NAME="EnumerateClasses">
+<IRETURNVALUE>
+</IRETURNVALUE>
+</IMETHODRESPONSE>
+</SIMPLERSP>
+</MESSAGE>
+</CIM>

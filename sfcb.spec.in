@@ -24,6 +24,8 @@ Small Footprint CIM Broker.
 Summary: CIM Schema Files
 Copyright: (C) Distributed Management Task Force
 Group: Systems Management/Base
+Requires: %{name}
+
 %Description schema
 DMTF CIM Schema files that can be used with the Small Footprint CIM Broker.
 
@@ -80,6 +82,10 @@ fi
 
 %postun
 /sbin/ldconfig
+
+%post schema
+sfcbrepos -f 2> /dev/null
+exit 0
 
 %files schema
 %{_datadir}/%{name}/CIM

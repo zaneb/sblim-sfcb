@@ -81,15 +81,31 @@ fi
 if [ -d $stagingdir ] && [ -f $stagingdir/default.reg ] &&
 	[ -f $cimschemadir/CIM_Schema.mof ] 
 then
-    if rm -rf $registrationdir/repository &&
+    if rm -rf $registrationdir/repository.previous &&
+	mv -f $registrationdir/repository $registrationdir/repository.previous &&
+	mv -f $registrationdir/providerRegister $registrationdir/providerRegister.previous &&
 	mkdir -p $registrationdir/repository/root/cimv2 &&
-	cp $stagingdir/default.reg $registrationdir/providerRegister &&
-	cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister &&
-	sfcbmof -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof 
-	then 	
+	cp $stagingdir/default.reg $registrationdir/providerRegister
+    then
+	if ls $stagingdir/regs/*.reg > /dev/null 2>&1
+	then
+	    if ! cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister
+	    then
+		echo Failed copying the registration files. >&2
+		exit 1
+	    fi
+	fi
+	if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
+	then
+	    if ! sfcbmof -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof
+	    then
+		echo Failed compiling the MOF files. >&2
+		exit 1
+	    fi
+	fi
 	exit 0
     else	
-	echo Failed to create sfcb registration. >&2 
+	echo Failed to write sfcb registration files. >&2 
 	exit 1
     fi
 else

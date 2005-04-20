@@ -155,18 +155,22 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
-	sfcb.init-redhat sfcb.init-suse sfcb.init-none regressionTests doc
+	sfcbunstage.sh.in sfcb.init-redhat sfcb.init-suse sfcb.init-none \
+	regressionTests doc
 
 dist_pkgdata_SCRIPTS=genSslCert.sh getSchema.sh
 
 dist_pkgdata_DATA=default.reg
 
-nodist_bin_SCRIPTS=sfcbrepos sfcbstage
+nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage 
 
 sfcbrepos: sfcbrepos.sh
 	sed s?$$\{prefix\}?$(prefix)?g $< > $@
 
 sfcbstage: sfcbstage.sh
+	sed s?$$\{prefix\}?$(prefix)?g $< > $@
+
+sfcbunstage: sfcbunstage.sh
 	sed s?$$\{prefix\}?$(prefix)?g $< > $@
 
 sfcb.cfg: sfcb.cfg.pre
@@ -207,7 +211,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(initdir)/sfcb
 
 clean-local:
-	rm -f sfcbrepos sfcbstage sfcb.cfg getSchema.sh sfcb.init
+	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb.init
 
 dist-hook:
 	test -d "$(distdir)" &&	rm -rf `find $(distdir) -type d -name CVS`

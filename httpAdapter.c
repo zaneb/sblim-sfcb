@@ -882,8 +882,8 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    if (bind(listenFd, (struct sockaddr *) &sin, sin_len) ||
        listen(listenFd, 0)) {
       printf("--- Cannot listen on port %ld\n", port);
-      kill(sfcbPid,2);
-      exit(3);
+      kill(sfcbPid,3);
+//      exit(3);
    }
 
   if (!debug) {

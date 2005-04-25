@@ -840,7 +840,7 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    unsigned long size = ctx->bHdrSize;
    char *buf;
    BinRequestHdr *hdr = ctx->bHdr;
-   BinResponseHdr *resp;
+   BinResponseHdr *resp=NULL;
    int fromS;
    void *heapCtl=markHeap();
 
@@ -921,8 +921,8 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
          void *hc=markHeap();
          
          if (resp) free(resp);
+         resp=NULL;
          spRecvResult(&resultSockets.receive, &fromS, (void**) &resp, &size);
-//         dump("result: ",resp,size); //asm("int $3");
          for (i = 0; i < resp->count; i++) {
             resp->object[i].data=(void*)((int)resp->object[i].data+(char*)resp);
          }
@@ -936,7 +936,8 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
          releaseHeap(hc);
          
       } while (resp->moreChunks);
-      if (resp) free(resp);
+//      if (resp) free(resp);
+//      resp=NULL;
    }
 
    else if ((ctx->noResp & 1)==0) {

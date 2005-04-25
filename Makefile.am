@@ -193,8 +193,9 @@ unittest:
 install-data-local: sfcb.cfg
 	test -d $(DESTDIR)$(sysconfdir)/sfcb || $(mkdir_p) $(DESTDIR)$(sysconfdir)/sfcb
 	$(INSTALL_DATA) sfcb.cfg $(DESTDIR)$(sysconfdir)/sfcb
-	test -d $(DESTDIR)$(sfcbstatedir)/registration || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/registration
-	test -d $(DESTDIR)$(sfcbstatedir)/stage || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage
+	test -d $(DESTDIR)$(sfcbstatedir)/registration/repository || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/registration/repository
+	test -d $(DESTDIR)$(sfcbstatedir)/stage/mofs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/mofs
+	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
 	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
 	test -d $(DESTDIR)$(sfcbdocdir) || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)
 	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
@@ -219,3 +220,7 @@ dist-hook:
 install-cimschema: getSchema.sh
 	test -d $(DESTDIR)$(pkgdatadir) || $(mkdir_p) $(DESTDIR)$(pkgdatadir)
 	sh getSchema.sh $(DESTDIR)$(pkgdatadir)
+
+postinstall: install-cimschema
+	test -f $(DESTDIR)$(sfcbstatedir)/registration/providerRegister || $(INSTALL_DATA) $(DESTDIR)$(sfcbstatedir)/stage/default.reg $(DESTDIR)$(sfcbstatedir)/registration/providerRegister 
+

@@ -618,11 +618,15 @@ CMPIStatus getRefs(CMPIContext * ctx,  CMPIResult * rslt,
       CMAddContextEntry(ctx, CMPIInvocationFlags,&newFlgs,CMPI_uint32);  
       CMPIEnumeration *enm=CBEnumInstanceNames(Broker,ctx,op,&st); 
       
-      while (CMHasNext(enm,NULL)) {      
+      if (enm) while (CMHasNext(enm,NULL)) {      
          CMPIObjectPath *cop=CMGetNext(enm,NULL).value.ref;
          if (assocForName((char*)CMGetNameSpace(cop,NULL)->hdl,(char*)CMGetClassName(cop,NULL)->hdl,
                role,resultRole) != NULL)
             SafeInternalProviderAddEnumInstances(refs, NULL, ctx, cop, propertyList, &st, 1);  
+      }
+      else {
+         st.rc=CMPI_RC_OK;
+         _SFCB_RETURN(st);
       }
    }
 

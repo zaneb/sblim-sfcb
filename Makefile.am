@@ -164,6 +164,8 @@ dist_pkgdata_DATA=default.reg
 
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage 
 
+dist_bin_SCRIPTS=wbemcat
+
 sfcbrepos: sfcbrepos.sh
 	sed s?$$\{prefix\}?$(prefix)?g $< > $@
 

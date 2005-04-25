@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
          daemon(0,0);
       else if (strcmp(argv[i], "-v") == 0)
          exFlags |= 1;
-      else if (strcmp(argv[i], "-tm") == 0) {
+      else if (strcmp(argv[i], "-tm") == 0 && i<(argc-1)) {
          if (*argv[i+1]=='?') {
             fprintf(stdout,"--- -tm values:\n");
             for (i=0; traceIds[i].id; i++)  
@@ -346,7 +346,7 @@ int main(int argc, char *argv[])
             tmask = atoi(argv[++i]);
          }
       }
-      else if (strcmp(argv[i], "-c") == 0) {
+      else if (strcmp(argv[i], "-c") == 0 && i<(argc-1)) {
 	configfile = strdup(argv[++i]);
       }
       else if (strcmp(argv[i], "-F") == 0);

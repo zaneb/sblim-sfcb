@@ -31,23 +31,6 @@
 #include "native.h"
 #include "msgqueue.h"
 
-extern int ClObjectPathGetKeyAt(ClObjectPath * op, int id, CMPIData * data,
-                                char **name, unsigned long *quals);
-extern int ClObjectLocateProperty(ClObjectHdr * hdr, ClSection * prps,
-                                  const char *id);
-extern int ClObjectPathGetKeyCount(ClObjectPath * op);
-extern int ClObjectPathAddKey(ClObjectPath * op, const char *id, CMPIData d);
-extern ClObjectPath *ClObjectPathNew(const char *ns, const char *cn);
-extern ClObjectPath *ClObjectPathRebuild(ClObjectPath * op, void *area);
-extern void ClObjectPathRelocateObjectPath(ClObjectPath *);
-extern void ClObjectPathFree(ClObjectPath * op);
-extern const char *ClObjectPathGetHostName(ClObjectPath * op);
-extern const char *ClObjectPathGetNameSpace(ClObjectPath * op);
-extern const char *ClObjectPathGetClassName(ClObjectPath * op);
-extern void ClObjectPathSetHostName(ClObjectPath * op, const char *hn);
-extern void ClObjectPathSetNameSpace(ClObjectPath * op, const char *ns);
-extern void ClObjectPathSetClassName(ClObjectPath * op, const char *cn);
-extern unsigned long ClSizeObjectPath(ClObjectPath * op);
 extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc);
 extern CMPIObjectPath *interal_new_CMPIObjectPath(int mode, const char *,
                                                   const char *, CMPIStatus *);
@@ -161,18 +144,18 @@ CMPIData opGetKeyCharsAt(CMPIObjectPath * op,
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    CMPIData rv = { 0, CMPI_notFound, {0} };
 
-   if (ClObjectPathGetKeyAt(cop, i, &rv, name ? name : NULL, NULL)) {
+   if (ClObjectPathGetKeyAt(cop, i, &rv, name ? name : NULL)) {
       if (rc)
          CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
       return rv;
    }
-
+ 
    if (rv.type == CMPI_chars) {
       rv.value.string = native_new_CMPIString(rv.value.chars, NULL);
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) {
-      char *msg;
+      char *msg="";
       rv.value.ref = getObjectPath(ClObjectGetClString
           (&cop->hdr, (ClString *) & rv.value.chars), &msg);
    }

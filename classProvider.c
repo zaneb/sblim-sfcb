@@ -56,11 +56,13 @@ typedef struct _Class_Register_FT Class_Register_FT;
 struct _ClassRegister {
    void *hdl;
    Class_Register_FT *ft;
+   ClVersionRecord *vr;
+   int assocs,topAssocs;
+   char *fn;
 };
 typedef struct _ClassRegister ClassRegister;
 
 typedef struct _ClassBase {
-   char *fn;
    UtilHashTable *ht;
    UtilHashTable *it;
    MRWLOCK mrwLock;
@@ -83,27 +85,6 @@ extern Class_Register_FT *ClassRegisterFT;
 
 
 static CMPIConstClass *getClass(ClassRegister * cr, const char *clsName);
-extern ClClass *ClClassNew(const char *cn, const char *pa);
-extern int ClClassAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
-			       const char *id, CMPIData d);
-extern int ClClassAddProperty(ClClass * cls, const char *id, CMPIData d);
-extern void *ClObjectGetClSection(ClObjectHdr * hdr, ClSection * s);
-extern int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p,
-				       const char *id, CMPIData d);
-extern ClClass *ClClassRebuildClass(ClClass * cls, void *area);
-extern void ClClassFreeClass(ClClass * cls);
-extern char *ClClassToString(ClClass * cls);
-extern CMPIConstClass initConstClass(ClClass *cl);
-extern int ClClassGetQualifierAt(ClClass * cls, int id, CMPIData * data, char **name);
-extern int ClClassGetQualifierCount(ClClass * cls);
-extern int ClClassGetPropertyCount(ClClass * cls);
-extern int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
-                         unsigned long *quals);
-extern int ClClassGetPropQualifierCount(ClClass * cls, int id);
-extern int ClClassGetPropQualifierAt(ClClass * cls, int id, int qid, CMPIData * data,
-                              char **name);
-
-int assocs = 0, topAssocs = 0;
 
 typedef struct nameSpaces {
    int next,max,blen;
@@ -142,7 +123,7 @@ void buildInheritanceTable(ClassRegister * cr)
 static void release(ClassRegister * cr)
 {
    ClassBase *cb = (ClassBase *) cr->hdl;
-   free(cb->fn);
+   free(cr->fn);
    cb->ht->ft->release(cb->ht);
    free(cr);
 }
@@ -187,9 +168,13 @@ static ClassRegister *newClassRegister(char *fname)
    char fin[1024];
    long s, total=0;
    ClObjectHdr hdr;
+   ClVersionRecord *vrp=(ClVersionRecord*)&hdr;
+   int vRec=0,first=1;
    
    cr->hdl = cb;
    cr->ft = ClassRegisterFT;
+   cr->vr = NULL;
+   cr->assocs = cr->topAssocs = 0;
    
    strcpy(fin, fname);
    strcat(fin, "/classSchemas");
@@ -205,18 +190,23 @@ static ClassRegister *newClassRegister(char *fname)
       return cr;
    }
 
-   cb->fn = strdup(fin);
+   cr->fn = strdup(fin);
    cb->ht = UtilFactory->newHashTable(61,
                UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
    MRWInit(&cb->mrwLock);
 
    while ((s = fread(&hdr, 1, sizeof(hdr), in)) == sizeof(hdr)) {
-//   while ((s = fread(&size, 1, 4, in)) == 4) {
       CMPIConstClass *cc=NULL;
       char *buf=NULL;
       char *cn;
       
-      if (hdr.type!=HDR_Class) {
+      if (first) {
+         if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version &&
+            strcmp(vrp->id,"sfcd-rep")==0) vRec=1;
+         first=0;
+      }
+      
+      if (vRec==0 && hdr.type!=HDR_Class) {
          fprintf(stderr,"--- %s contains non-class record(s) - directory skipped\n",fin);
          return NULL;
      }
@@ -231,15 +221,21 @@ static ClassRegister *newClassRegister(char *fname)
       *((ClObjectHdr *) buf) = hdr;
       
       if (fread(buf + sizeof(hdr), 1, hdr.size - sizeof(hdr), in) == hdr.size - sizeof(hdr)) {
+         if (vRec) {
+            cr->vr=(ClVersionRecord*)buf;
+            continue;
+         }
          cc = NEW(CMPIConstClass);
          cc->hdl = buf;
          cc->ft = CMPIConstClassFT;
          cc->ft->relocate(cc);
          cn=(char*)cc->ft->getCharClassName(cc);
-         if (strncmp(cn,"DMY_",4)) {
+         if (strncmp(cn,"DMY_",4)!=0) {
             cb->ht->ft->put(cb->ht, cn, cc);
-            if (cc->ft->isAssociation(cc)) assocs++;
-            if (cc->ft->getCharSuperClassName(cc) == NULL) topAssocs++;
+            if (cc->ft->isAssociation(cc)) {
+               cr->assocs++;
+               if (cc->ft->getCharSuperClassName(cc) == NULL) cr->topAssocs++;
+            }   
          }   
       }
       else {
@@ -248,27 +244,35 @@ static ClassRegister *newClassRegister(char *fname)
       }
    }
  
-   printf("--- ClassProvider for %s using %ld bytes\n", fname, total);
+   if (cr->vr) {
+      printf("--- ClassProvider for %s (%d.%d) using %ld bytes\n", 
+          fname, cr->vr->version, cr->vr->level, total);
+   }
+   else printf("--- ClassProvider for %s (no-version) using %ld bytes\n", fname, total);
 
    buildInheritanceTable(cr);
    
    return cr;
 }
 
-int cpyClass(ClClass *cl, CMPIConstClass *cc)
+int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
 {
    ClClass *ccl=(ClClass*)cc->hdl;  
    CMPIData d;
+   CMPIParameter p;
+   CMPIType t;
    char *name;
-   int i,m,iq,mq,propId;
+   int i,m,iq,mq,ip,mp,propId,methId,parmId;
    unsigned long quals;
    ClProperty *prop;
+   ClMethod *meth;
+   ClParameter *parm;
    
    cl->quals |= ccl->quals;
    for (i=0,m=ClClassGetQualifierCount(ccl); i<m; i++) {
       ClClassGetQualifierAt(ccl,i,&d,&name);
       ClClassAddQualifier(&cl->hdr, &cl->qualifiers, name, d);
-   } 
+   }  
    
    for (i=0,m=ClClassGetPropertyCount(ccl); i<m; i++) {
       ClClassGetPropertyAt(ccl,i,&d,&name,&quals);
@@ -280,6 +284,28 @@ int cpyClass(ClClass *cl, CMPIConstClass *cc)
          ClClassAddPropertyQualifier(&cl->hdr, prop, name, d);
       }   
    } 
+   
+   for (i=0,m=ClClassGetMethodCount(ccl); i<m; i++) {
+      ClClassGetMethodAt(ccl,i,&t,&name,&quals);
+      methId=ClClassAddMethod(cl, name, t);
+      meth=((ClMethod*)ClObjectGetClSection(&cl->hdr,&cl->methods))+methId-1;
+      
+      for (iq=0,mq=ClClassGetMethQualifierCount(ccl,methId-1); iq<mq; iq++) {
+         ClClassGetMethQualifierAt(ccl, meth, iq, &d, &name);
+         ClClassAddMethodQualifier(&cl->hdr, meth, name, d);
+      }   
+      
+      for (ip=0,mp=ClClassGetMethParameterCount(ccl,methId-1); ip<mp; ip++) {
+         ClClassGetMethParameterAt(ccl, meth, ip, &p, &name);
+         parmId=ClClassAddMethParameter(&cl->hdr, meth, name, p);
+         parm=((ClParameter*)ClObjectGetClSection(&cl->hdr,&meth->parameters))+parmId-1;
+     
+         for (iq=0,mq=ClClassGetMethParamQualifierCount(ccl,parm); iq<mq; iq++) {
+            ClClassGetMethParamQualifierAt(ccl, parm, iq, &d, &name);
+            ClClassAddMethParamQualifier(&cl->hdr, parm, name, d);
+         }   
+      }   
+   } 
    return 0;
 }
 
@@ -287,14 +313,16 @@ CMPIStatus mergeParents(ClassRegister * cr, ClClass *cl, char *p, CMPIConstClass
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIConstClass *pcc=getClass(cr,p);
+   unsigned char originId=0;
    
    if (p) {
       char* np=(char*)cc->ft->getCharSuperClassName(pcc);     
+      if (np) originId=ClClassAddGrandParent(cl,np);  
       st=mergeParents(cr,cl,np,NULL);
    }
    
-   if (cc) cpyClass(cl,cc);
-   else cpyClass(cl,pcc);
+   if (cc) cpyClass(cl,cc,originId);
+   else cpyClass(cl,pcc,originId);
    
    return st;
 }
@@ -305,21 +333,29 @@ static int addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
    UtilHashTable *it=cb->it;
    UtilList *ul;
    char *pn=p;
-   ClClass *mc;
    CMPIConstClass *cc=ccp;
-   
+   ClClass *mc;
+   FILE *rep;
+      
    if (p) {
      mc=ClClassNew(cn,p);
-     mergeParents(cr,mc,pn,cc);
+     mergeParents(cr,mc,pn,ccp);
+     ccp->hdl=mc;
    }  
-    
-   cb->ht->ft->put(cb->ht, cn, cc);
-   if (cc->ft->isAssociation(cc)) assocs++;
-   if (p == NULL) topAssocs++;
-   
-   
-   
-   else {
+   cc=ccp->ft->clone(ccp,NULL);
+   mc=(ClClass*)cc->hdl;
+
+   cb->ht->ft->put(cb->ht, strdup(cn), cc);
+   rep = fopen(cr->fn, "a");
+   fwrite(mc,1,mc->hdr.size,rep);
+   fclose(rep);
+      
+   if (cc->ft->isAssociation(cc)) {
+      cr->assocs++;
+      if (p == NULL) cr->topAssocs++;
+   }   
+      
+   if (p) {
       ul = it->ft->get(it, p);
       if (ul == NULL) {
          ul = UtilFactory->newList();
@@ -684,7 +720,7 @@ CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
    
    char *pn = (char*)cc->ft->getCharSuperClassName(cc);
    char *cn = (char*)cc->ft->getCharClassName(cc);
-   
+
    cl = getClass(cReg,cn);
    if (cl) {
       st.rc = CMPI_RC_ERR_ALREADY_EXISTS;
@@ -864,7 +900,7 @@ CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
    }
 
    else if (strcasecmp(methodName, "getassocs") == 0) {
-      ar = CMNewArray(_broker, topAssocs, CMPI_string, NULL);
+      ar = CMNewArray(_broker, cReg->topAssocs, CMPI_string, NULL);
       ClassBase *cb = (ClassBase *) (cReg + 1);
       UtilHashTable *ct = cb->ht;
       HashTableIterator *i;

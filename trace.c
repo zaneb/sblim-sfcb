@@ -64,6 +64,8 @@ TraceId traceIds[]={
   {"sockets",           TRACE_SOCKETS},
   {"memoryMgr",         TRACE_MEMORYMGR},
   {"msgQueue",          TRACE_MSGQUEUE},
+  {"msgQueue",          TRACE_MSGQUEUE},
+  {"xmlParsing",        TRACE_XMLPARSING},
   {NULL,0}
 };   
 

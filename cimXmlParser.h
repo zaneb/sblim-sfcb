@@ -185,22 +185,32 @@ typedef struct xtokQualifiers {
 } XtokQualifiers;
 
 
+
+typedef struct xtokPropertyData {
+   union {
+      char *value;
+      XtokValueReference ref;
+   };   
+   XtokQualifiers qualifiers;
+} XtokPropertyData;
+
 typedef struct xtokProperty {
    struct xtokProperty *next;
-   XtokQualifiers qualifiers;
+ //  XtokQualifiers qualifiers;
    char *name;
    char *classOrigin;
    char propagated;
+   char *referenceClass;
    CMPIType valueType;
-   union {
+   XtokPropertyData val;
+/*   union {
       struct {
          char *value;
       };
       struct {
          XtokValueReference ref;
-         char *referenceClass;
       };
-   };      
+   }; */      
    TypeProperty propType;
 } XtokProperty;
 
@@ -208,29 +218,16 @@ typedef struct xtokProperties {
    XtokProperty *last, *first;  // must be free'd
 } XtokProperties;
 
-typedef struct xtokPropertyPartList {
-   union {
-      char *value;
-      XtokValueReference ref;
-   };   
-   int  qPart;
-   XtokQualifiers qualifiers;
-} XtokPropertyPartList;
-
-typedef struct xtokPropertyPart {
-   char *value;
-   int  refValue;
-   XtokValueReference ref;
-   int  qPart;
-   XtokQualifier qualifier;
-} XtokPropertyPart;
-
-
 typedef struct xtokInstance {
    char *className;
    XtokProperties properties;
    XtokQualifiers qualifiers;
 } XtokInstance;
+
+typedef struct xtokInstanceData { 
+   XtokProperties properties;
+   XtokQualifiers qualifiers;
+} XtokInstanceData;
 
 typedef struct xtokNamedInstance {
    XtokInstanceName path;
@@ -277,6 +274,7 @@ typedef struct xtokParams {
 
 typedef struct xtokMethod {
    struct xtokMethod *next;
+   XtokQualifiers qualifiers;
    XtokParams params;
    char *name;
    char *classOrigin;
@@ -284,16 +282,10 @@ typedef struct xtokMethod {
    CMPIType type;
 } XtokMethod;
 
-typedef struct xtokMethodPart {
-   XtokParam param;
-   int  qPart;
-   XtokQualifier qualifier;
-} XtokMethodPart;
-
-typedef struct xtokMethodPartList {
+typedef struct xtokMethodData {
    XtokQualifiers qualifiers;
    XtokParams params;
-} XtokMethodPartList;
+} XtokMethodData;
 
 typedef struct xtokMethods {
    XtokMethod *last, *first;  // must be free'd
@@ -691,6 +683,7 @@ typedef struct parser_control {
    XtokQualifiers qualifiers;
    XtokMethods     methods;
    XtokParamValues paramValues;
+   int Qs,Ps,Ms,MPs,MQs,MPQs;
    jmp_buf env;
 } ParserControl;
 

@@ -183,6 +183,7 @@ static void stopProc(void *p)
       if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx);
       if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx);
    }
+   printf("---  stopped %s %d\n",processName,getpid());
    exit(0);
 } 
   
@@ -756,8 +757,6 @@ static BinResponseHdr *createClass(BinRequestHdr * hdr, ProviderInfo * info,
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
    ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
    
-   printf("--- Calling provider %s\n",info->providerName);
-
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
    rci = info->classMI->ft->createClass(info->classMI, ctx, result, path, cls);
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));

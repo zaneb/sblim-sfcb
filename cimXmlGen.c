@@ -38,25 +38,10 @@
 #include "queryOperation.h"
 
 extern const char *instGetClassName(CMPIInstance * ci);
-extern int ClClassGetPropertyAt(ClClass * inst, int id, CMPIData * data,
-                                char **name, unsigned long *quals);
-extern int ClClassGetPropertyCount(ClClass * inst);
-extern int ClClassGetQualifierCount(ClClass * cls);
-extern int ClClassGetQualifierAt(ClClass * cls, int id, CMPIData * data,
-                                 char **name);
-extern int ClInstanceGetPropertyCount(ClInstance * inst);
-extern int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
-                                   char **name, unsigned long *quals);
-extern int ClClassGetPropQualifierCount(ClClass * cls, int p);
-extern int ClClassGetPropQualifierAt(ClClass * cls, int p, int id,
-                                     CMPIData * data, char **name);
-extern const char *ClGetStringData(CMPIInstance * ci, int id);
-
 extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
                                 const char **name, CMPIStatus * rc);
 
 const char *opGetClassNameChars(CMPIObjectPath * cop);
-
 
 
 char *XMLEscape(char *in)
@@ -442,6 +427,21 @@ int instanceName2xml(CMPIObjectPath * cop, UtilStringBuffer * sb)
    _SFCB_RETURN(0);
 }
 
+static void method2xml(CMPIType type, CMPIString *name, char *bTag, char *eTag,
+   UtilStringBuffer * sb, UtilStringBuffer * qsb)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "method2xml");
+   sb->ft->appendChars(sb, bTag);
+   sb->ft->appendChars(sb, (char *) name->hdl);
+   sb->ft->appendChars(sb, "\" TYPE=\"");
+   sb->ft->appendChars(sb, dataType(type));
+   sb->ft->appendChars(sb, "\">\n");
+   if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
+   sb->ft->appendChars(sb, eTag);
+
+   _SFCB_EXIT();
+}
+
 static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, char *eTag,
                      UtilStringBuffer * sb, UtilStringBuffer * qsb, int inst, int param)
 {
@@ -459,8 +459,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
       else sb->ft->appendChars(sb, "\" TYPE=\"");
       sb->ft->appendChars(sb, dataType(data->type));
       sb->ft->appendChars(sb, "\">\n");
-      if (qsb)
-         sb->ft->appendChars(sb, (char *) qsb->hdl);
+      if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
       if (data->state == 0) {
          sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");
          for (j = 0; j < ac; j++) {
@@ -480,8 +479,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
          sb->ft->appendChars(sb, opGetClassNameChars(data->value.ref));
          sb->ft->appendChars(sb, "\">\n");
-         if (qsb)
-            sb->ft->appendChars(sb, (char *) qsb->hdl);
+         if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (inst) {
             sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
             sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
@@ -505,7 +503,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb,"<QUALIFIER NAME=\"EmbeddedObject\" TYPE=\"boolean\">\n"
               "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
          sb->ft->appendChars(sb, "<VALUE>");
-         sp = XMLEscape(eo);
+         sp = XMLEscape((char*)eo);
          if (sp) freesp = 1;
          sb->ft->appendChars(sb, "<![CDATA[");
          sb->ft->appendChars(sb, sp);
@@ -521,10 +519,8 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          else sb->ft->appendChars(sb, "\" TYPE=\"");
          sb->ft->appendChars(sb, type);
          sb->ft->appendChars(sb, "\">\n");
-         if (qsb)
-            sb->ft->appendChars(sb, (char *) qsb->hdl);
-         if (data->state == 0)
-            value2xml(*data, sb, 1);
+         if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
+         if (data->state == 0) value2xml(*data, sb, 1);
          sb->ft->appendChars(sb, eTag);
       }
    }
@@ -560,13 +556,72 @@ static void quals2xml(unsigned long quals, UtilStringBuffer * sb)
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
 }
 
+static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *parm, CMPIString *pname, 
+      UtilStringBuffer * sb, unsigned int flags)
+{
+   ClClass *cl = (ClClass *) cls->hdl;
+   int i, m;
+   CMPIData data;
+   CMPIString qname;
+   char *etag="</PARAMETER>\n";
+   UtilStringBuffer *qsb = NULL;
+   
+   if (flags & FL_includeQualifiers) {   
+      m = ClClassGetMethParamQualifierCount(cl,parm);
+      if (m) qsb = UtilFactory->newStrinBuffer(1024);
+      for (i = 0; i < m; i++) {
+         ClClassGetMethParamQualifierAt(cl, parm, i, &data, (char**)&qname.hdl);
+         data2xml(&data,cls,&qname,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+      }
+   }
+   
+   if (pdata->type==CMPI_ref) {
+      sb->ft->appendChars(sb, "<PARAMETER.REFERENCE NAME=\"");
+      sb->ft->appendChars(sb, (char*)pname->hdl);
+      if (pdata->refName) {         
+         sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+         sb->ft->appendChars(sb, pdata->refName);
+      }
+      sb->ft->appendChars(sb, "\"\n");
+      etag="</PARAMETER.REFERENCE>\n";
+   }
+   else if (pdata->type==CMPI_refA) {
+      sb->ft->appendChars(sb, "<PARAMETER.REFARRAY NAME=\"");
+      sb->ft->appendChars(sb, (char*)pname->hdl);
+      fprintf(stderr,"*** PARAMETER.REFARRAY not implemenetd\n");
+      abort();  
+      etag="</PARAMETER.REFARRAY>\n";
+   }   
+   else {
+      if (pdata->type&CMPI_ARRAY) {
+      char size[128];
+         sb->ft->appendChars(sb, "<PARAMETER.ARRAY NAME=\"");
+         sb->ft->appendChars(sb, (char*)pname->hdl);
+         sprintf(size,"\" ARRAYSIZE=\"%d\"",pdata->arraySize);
+         sb->ft->appendChars(sb, size);
+         etag="</PARAMETER.ARRAY>\n";
+      }
+      else {
+         sb->ft->appendChars(sb, "<PARAMETER NAME=\"");
+         sb->ft->appendChars(sb, (char*)pname->hdl);
+      }
+      sb->ft->appendChars(sb, "\" TYPE=\"");
+      sb->ft->appendChars(sb, dataType(pdata->type));
+      sb->ft->appendChars(sb, "\"\n");
+   } 
+ 
+   if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
+   sb->ft->appendChars(sb, etag);
+}
+
 int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
 {
    ClClass *cl = (ClClass *) cls->hdl;
-   int i, q, m, qm;
+   int i, m, q, qm, p, pm;
    char *type, *superCls;
    CMPIString *name, *qname;
-   CMPIData data, qdata;static 
+   CMPIData data, qdata;
+   CMPIType mtype;
    unsigned long quals;
    UtilStringBuffer *qsb = UtilFactory->newStrinBuffer(1024);
 
@@ -608,6 +663,32 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       }
       CMRelease(name);
    }
+   
+   for (i = 0, m = ClClassGetMethodCount(cl); i < m; i++) {
+      ClMethod *meth;
+      ClParameter *parm;
+      CMPIString name,mname;
+      qsb->ft->reset(qsb);
+      ClClassGetMethodAt(cl, i, &mtype, (char**)&mname.hdl, &quals);
+      meth=((ClMethod*)ClObjectGetClSection(&cl->hdr,&cl->methods))+i;
+      
+      if (flags & FL_includeQualifiers) {
+         for (q = 0, qm = ClClassGetMethQualifierCount(cl, i); q < qm; q++) {
+            ClClassGetMethQualifierAt(cl, meth, q, &qdata, (char**)&name.hdl);
+            data2xml(&qdata,cls,&name,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+         }
+      }   
+      
+      for (p = 0, pm = ClClassGetMethParameterCount(cl, i); p < pm; p++) {
+         CMPIParameter pdata;
+         ClClassGetMethParameterAt(cl, meth, p, &pdata, (char**)&name.hdl);
+         parm=((ClParameter*)ClObjectGetClSection(&cl->hdr,&meth->parameters))+p;
+         param2xml(&pdata,cls,parm,&name,qsb,flags);
+      }
+ 
+      method2xml(mtype,&mname,"<METHOD NAME=\"", "</METHOD>\n",sb, qsb);
+   }
+   
    sb->ft->appendChars(sb, "</CLASS>\n");
 
    _SFCB_RETURN(0);

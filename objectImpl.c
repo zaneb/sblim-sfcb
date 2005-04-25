@@ -108,8 +108,8 @@ const CMPIData *ClObjectGetClArray(ClObjectHdr * hdr, ClArray * id)
 {
    ClArrayBuf *buf;
 
-   if MALLOCED
-      (hdr->arrayBufOffset) buf = (ClArrayBuf *) hdr->arrayBufOffset;
+   if MALLOCED (hdr->arrayBufOffset) 
+      buf = (ClArrayBuf *) hdr->arrayBufOffset;
    else
       buf = (ClArrayBuf *) ((char *) hdr + abs(hdr->arrayBufOffset));
    return &(buf->buf[buf->index[id->id - 1]]);
@@ -117,8 +117,8 @@ const CMPIData *ClObjectGetClArray(ClObjectHdr * hdr, ClArray * id)
 
 void *ClObjectGetClSection(ClObjectHdr * hdr, ClSection * s)
 {
-   if MALLOCED
-      (s->offset) return (void *) s->offset;
+   if MALLOCED(s->offset) 
+      return (void *) s->offset;
    return (void *) ((char *) hdr + abs(s->offset));
 }
 
@@ -696,6 +696,7 @@ static ClQualifier makeClQualifier(ClObjectHdr * hdr, const char *id,
       d.type = CMPI_chars;
       d.value.chars = (char *) addClString(hdr, (char *) d.value.string->hdl);
    }
+
    q.data = d;
    return q;
 }
@@ -740,6 +741,18 @@ int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p,
    else
       return ClClassAddQualifier(hdr, &p->qualifiers, id, d);
    return 0;
+}
+
+int ClClassAddMethodQualifier(ClObjectHdr * hdr, ClMethod * m,
+                                const char *id, CMPIData d)
+{
+   return ClClassAddQualifier(hdr, &m->qualifiers, id, d);
+}
+
+int ClClassAddMethParamQualifier(ClObjectHdr * hdr, ClParameter * p,
+                                const char *id, CMPIData d)
+{
+   return ClClassAddQualifier(hdr, &p->qualifiers, id, d);
 }
 
 static void freeQualifiers(ClObjectHdr * hdr, ClSection * s)
@@ -791,17 +804,25 @@ static int copyQualifiers(int ofs, int max, char *to, ClSection * ts,
    return l;
 }
 
+static int ClGetQualifierAt(ClClass * cls, ClQualifier *q, int id, CMPIData * data, char **name)
+{
+   if (data) *data = (q + id)->data;
+   if (data->type== CMPI_chars) {
+      const char *str =
+          ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
+      data->value.string = native_new_CMPIString(str, NULL);
+      data->type = CMPI_string;
+   }
+   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(q + id)->id));
+   return 0;
+}
+
 int ClClassGetQualifierAt(ClClass * cls, int id, CMPIData * data, char **name)
 {
    ClQualifier *q;
    q = (ClQualifier *) ClObjectGetClSection(&cls->hdr, &cls->qualifiers);
-   if (id < 0 || id > cls->qualifiers.used)
-      return 1;
-   if (data)
-      *data = (q + id)->data;
-   if (name)
-      *name = strdup(ClObjectGetClString(&cls->hdr, &(q + id)->id));
-   return 0;
+   if (id < 0 || id > cls->qualifiers.used) return 1;
+   return ClGetQualifierAt(cls,q,id,data,name);   
 }
 
 int ClClassGetQualifierCount(ClClass * cls)
@@ -814,7 +835,266 @@ int ClClassGetQualifierCount(ClClass * cls)
 
 //-------------------------------------------------------
 //-----
-//-- property support
+//-- parameter support
+//-----
+//-------------------------------------------------------
+
+static int locateParameter(ClObjectHdr * hdr, ClSection * prms, const char *id)
+{
+   int i;
+   ClParameter *p;
+
+   if MALLOCED(prms->offset) 
+      p = (ClParameter *) prms->offset;
+   else p = (ClParameter *) (((char *) hdr) + abs(prms->offset));
+
+   for (i = 0; i > prms->used; i++) {
+      if (strcasecmp(id, ClObjectGetClString(hdr, &(p + i)->id)) == 0)
+         return i + 1;
+   }
+   return 0;
+}
+
+int ClClassGetMethParamQualifierCount(ClClass * cls, ClParameter *p)
+{
+   return p->qualifiers.used;
+}
+
+static int addClParameter(ClObjectHdr * hdr, ClSection * prms, ClParameter * np)
+{
+   int i;
+   ClParameter *p;
+
+   if ((i = locateParameter(hdr, prms, ClObjectGetClString(hdr, &np->id))) == 0) {
+      p = (ClParameter *) ensureClSpace(hdr, prms, sizeof(*p), 4);
+      p = p + (prms->used++);
+      *p = *np;
+      return prms->used;
+   }
+   else return 0;
+}
+
+static ClParameter makeClParameter(ClObjectHdr * hdr, const char *id,
+                                   CMPIParameter cp)
+{
+   ClParameter p;
+
+   memset(&p,0,sizeof(p));
+   p.id.id = addClString(hdr, id);
+   p.parameter = cp;
+   return p;
+}
+
+int ClClassAddMethParameter(ClObjectHdr * hdr, ClMethod * m,
+                        const char *id, CMPIParameter cp)
+{
+   ClParameter p;
+
+   p = makeClParameter(hdr, id, cp);
+   return addClParameter(hdr, &m->parameters, &p);
+}
+
+static long sizeParameters(ClObjectHdr * hdr, ClSection * s)
+{
+   int l;
+   long sz = s->used * sizeof(ClParameter);
+   ClParameter *p = (ClParameter *) ClObjectGetClSection(hdr, s);
+
+   for (l = s->used; l > 0; l--, p++) {
+      if (p->qualifiers.used)
+         sz += sizeQualifiers(hdr, &p->qualifiers);
+   }      
+   DEB(printf("--- sizeParameters: %lu-%p\n", sz, (void *) sz));
+   return sz;
+}
+
+static long copyParameters(int ofs, int max, char *to, ClSection * ts,
+                           ClObjectHdr * from, ClSection * fs)
+{
+   ClParameter *fp = (ClParameter *) ClObjectGetClSection(from, fs);
+   ClParameter *tp = (ClParameter *) (to + ofs);
+   int i;
+   int l = ts->used * sizeof(ClParameter);
+   if (l == 0)
+      return 0;
+   ts->max = ts->used;
+
+   memcpy(tp, fp, l);
+   ts->offset = -ofs;
+
+   for (i = ts->used; i > 0; i--, fp++, tp++) {
+      if (tp->qualifiers.used)
+         l += copyQualifiers(ofs + l, max, to, &tp->qualifiers, from,
+                             &fp->qualifiers);
+   }                          
+
+   return l;
+}
+
+static void freeParameters(ClObjectHdr * hdr, ClSection * s)
+{
+   ClParameter *p;
+   int i, l;
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "freeParameters");
+
+   p = (ClParameter *) ClObjectGetClSection(hdr, s);
+   
+   if (p) for (i = 0, l = p->qualifiers.used; i < l; i++)
+         freeQualifiers(hdr, &p->qualifiers);
+   if MALLOCED(s->offset) free((void *) s->offset);
+   
+   _SFCB_EXIT();
+}
+
+//-------------------------------------------------------
+//-----
+//-- method support
+//-----
+//-------------------------------------------------------
+
+int ClClassLocateMethod(ClObjectHdr * hdr, ClSection * mths, const char *id)
+{
+   int i;
+   ClMethod *m;
+
+   if MALLOCED
+      (mths->offset) m = (ClMethod *) mths->offset;
+   else
+      m = (ClMethod *) (((char *) hdr) + abs(mths->offset));
+
+   for (i = 0; i < mths->used; i++) {
+      if (strcasecmp(id, ClObjectGetClString(hdr, &(m + i)->id)) == 0)
+         return i + 1;
+   }
+   return 0;
+}
+
+static int addClassMethodH(ClObjectHdr * hdr, ClSection * mths,
+                              const char *id, CMPIType t)
+{
+   int i;
+   ClMethod *m;
+
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "addClassMethodH");
+
+   if ((i = ClClassLocateMethod(hdr, mths, id)) == 0) {
+      m = (ClMethod *) ensureClSpace(hdr, mths, sizeof(*m), 8);
+      m = m + (mths->used++);
+      clearClSection(&m->qualifiers);
+      m->id.id = addClString(hdr, id);
+      m->quals = 0;
+      m->originId=0;
+      m->type = t;
+      _SFCB_RETURN(mths->used);
+   }
+
+   else {
+      if MALLOCED (mths->offset) m = (ClMethod *) mths->offset;
+      else m = (ClMethod *) ((char*)hdr + abs(mths->offset));
+      (m + i - 1)->type = t;
+      _SFCB_RETURN(i);
+   }
+}
+
+static long sizeMethods(ClObjectHdr * hdr, ClSection * s)
+{
+   int l;
+   long sz = s->used * sizeof(ClMethod);
+   ClMethod *m = (ClMethod *) ClObjectGetClSection(hdr, s);
+
+   for (l = s->used; l > 0; l--, m++) {
+      if (m->qualifiers.used)
+         sz += sizeQualifiers(hdr, &m->qualifiers);
+      if (m->parameters.used)
+         sz += sizeParameters(hdr, &m->parameters);
+   }      
+   DEB(printf("--- sizeMethods: %lu-%p\n", sz, (void *) sz));
+   return sz;
+}
+
+static long copyMethods(int ofs, int max, char *to, ClSection * ts,
+                           ClObjectHdr * from, ClSection * fs)
+{
+   ClMethod *fp = (ClMethod *) ClObjectGetClSection(from, fs);
+   ClMethod *tp = (ClMethod *) (to + ofs);
+   int i;
+   int l = ts->used * sizeof(ClMethod);
+   if (l == 0)
+      return 0;
+   ts->max = ts->used;
+
+   memcpy(tp, fp, l);
+   ts->offset = -ofs;
+
+   for (i = ts->used; i > 0; i--, fp++, tp++) {
+      if (tp->qualifiers.used)
+         l += copyQualifiers(ofs + l, max, to, &tp->qualifiers, from,
+                             &fp->qualifiers);
+      if (tp->parameters.used)
+         l += copyParameters(ofs + l, max, to, &tp->parameters, from,
+                             &fp->parameters);
+   }                          
+
+   return l;
+}
+
+static void freeMethods(ClObjectHdr * hdr, ClSection * s)
+{
+   ClMethod *m;
+   int i, l;
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "freeMethods");
+
+   m = (ClMethod *) ClObjectGetClSection(hdr, s);
+   
+   if (m) for (i = 0, l = m->qualifiers.used; i < l; i++)
+         freeQualifiers(hdr, &m->qualifiers);
+   if (m) for (i = 0, l = m->parameters.used; i < l; i++)
+         freeParameters(hdr, &m->parameters);
+   if MALLOCED(s->offset) free((void *) s->offset);
+   
+   _SFCB_EXIT();
+}
+
+int ClClassGetMethQualifierCount(ClClass * cls, int id)
+{
+   ClMethod *m;
+
+   m = (ClMethod *) ClObjectGetClSection(&cls->hdr, &cls->methods);
+   if (id < 0 || id > cls->methods.used) return 1;
+   return (m + id)->qualifiers.used;
+}
+
+int ClClassGetMethParameterCount(ClClass * cls, int id)
+{
+   ClMethod *m;
+
+   m = (ClMethod *) ClObjectGetClSection(&cls->hdr, &cls->methods);
+   if (id < 0 || id > cls->methods.used) return 1;
+   return (m + id)->parameters.used;
+}
+
+int ClClassGetMethParmQualifierCount(ClClass * cls, ClMethod *m, int id)
+{
+   ClParameter *p;
+
+   p = (ClParameter *) ClObjectGetClSection(&cls->hdr, &m->parameters);
+   if (id < 0 || id > p->qualifiers.used) return 1;
+   return (p + id)->qualifiers.used;
+}
+
+int ClClassGetMethParamQualifierAt(ClClass * cls, ClParameter *parm, int id, CMPIData *data, char **name)
+{
+   ClQualifier *q;
+   q = (ClQualifier *) ClObjectGetClSection(&cls->hdr, &parm->qualifiers);
+   if (id < 0 || id > parm->qualifiers.used) return 1;
+   return ClGetQualifierAt(cls,q,id,data,name); 
+}
+
+
+
+//-------------------------------------------------------
+//-----
+//--  Class/Instance Property support
 //-----
 //-------------------------------------------------------
 
@@ -943,43 +1223,6 @@ void showClHdr(void *ihdr)
 }
 
 
-//-------------------------------------------------------
-//-----
-//--  Class support
-//-----
-//-------------------------------------------------------
-
-
-static ClClass *newClassH(ClObjectHdr * hdr, const char *cn, const char *pa)
-{
-   ClClass *cls = (ClClass *) malloc(sizeof(ClClass));
-   if (hdr == NULL)
-      hdr = &cls->hdr;
-
-   memset(cls, 0, sizeof(ClClass));
-   hdr->type = HDR_Class;
-   if (cn)
-      cls->name.id = addClString(hdr, cn);
-   else
-      cls->name = nls;
-   if (pa)
-      cls->parent.id = addClString(hdr, pa);
-   else
-      cls->parent = nls;
-   cls->quals = 0;
-
-   clearClSection(&cls->qualifiers);
-   clearClSection(&cls->properties);
-   clearClSection(&cls->methods);
-
-   return cls;
-}
-
-ClClass *ClClassNew(const char *cn, const char *pa)
-{
-   return newClassH(NULL, cn, pa);
-}
-
 static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
                               const char *id, CMPIData d)
 {
@@ -996,6 +1239,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       clearClSection(&p->qualifiers);
       p->id.id = addClString(hdr, id);
       p->quals = p->flags = 0;
+      p->originId=0;
       
       if (d.type == CMPI_chars && (d.state & CMPI_nullValue) == 0) {
          p->data = d; 
@@ -1031,7 +1275,6 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
    }
 
    else {
-      char *array;
       if MALLOCED (prps->offset) p = (ClProperty *) prps->offset;
       else p = (ClProperty *) ((char*)hdr + abs(prps->offset));
       od = (p + i - 1)->data;
@@ -1091,53 +1334,6 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
    }
 }
 
-int ClClassAddProperty(ClClass * cls, const char *id, CMPIData d)
-{
-   ClSection *prps = &cls->properties;
-   return addObjectPropertyH(&cls->hdr, prps, id, d);
-}
-
-static long sizeClassH(ClObjectHdr * hdr, ClClass * cls)
-{
-   long sz = sizeof(*cls);
-
-   sz += sizeQualifiers(hdr, &cls->qualifiers);
-   sz += sizeProperties(hdr, &cls->properties);
-   sz += sizeStringBuf(hdr);
-   sz += sizeArrayBuf(hdr);
-
-   return sz;
-}
-
-unsigned long ClSizeClass(ClClass * cls)
-{
-   return sizeClassH(&cls->hdr, cls);
-}
-
-static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area)
-{
-   int ofs = sizeof(ClClass);
-   int sz = ClSizeClass(cls);
-   ClClass *nc = area ? (ClClass *) area : (ClClass *) malloc(sz);
-
-   *nc = *cls;
-   ofs += copyQualifiers(ofs, sz, (char *) nc, &nc->qualifiers, hdr,
-                         &cls->qualifiers);
-   ofs += copyProperties(ofs, sz, (char *) nc, &nc->properties, hdr,
-                         &cls->properties);
-   //ofs+=copyMethods(ofs,sz,(char*)nc,&nc->methods,&cls->hdr,&cls->methods);
-   ofs += copyStringBuf(ofs, sz, &nc->hdr, hdr);
-   ofs += copyArrayBuf(ofs, sz, &nc->hdr, hdr);
-   nc->hdr.size = sz;
-
-   return nc;
-}
-
-ClClass *ClClassRebuildClass(ClClass * cls, void *area)
-{
-   return rebuildClassH(&cls->hdr, cls, area);
-}
-
 static void ClObjectRelocateStringBuffer(ClObjectHdr * hdr, ClStrBuf * buf)
 {
    if (buf == NULL)
@@ -1160,6 +1356,99 @@ static void ClObjectRelocateArrayBuffer(ClObjectHdr * hdr, ClArrayBuf * buf)
    buf->index = (long *) ((char *) hdr + abs(buf->iOffset));
 }
 
+
+//-------------------------------------------------------
+//-----
+//--  Class support
+//-----
+//-------------------------------------------------------
+
+
+static ClClass *newClassH(ClObjectHdr * hdr, const char *cn, const char *pa)
+{
+   ClClass *cls = (ClClass *) malloc(sizeof(ClClass));
+   if (hdr == NULL)
+      hdr = &cls->hdr;
+
+   memset(cls, 0, sizeof(ClClass));
+   hdr->type = HDR_Class;
+   if (cn) cls->name.id = addClString(hdr, cn);
+   else cls->name = nls;
+   
+   cls->parents=0;
+   if (pa) {
+      cls->parent.id = addClString(hdr, pa);
+      cls->parents=1;
+   }   
+   else cls->parent = nls;
+   cls->quals = 0;
+   cls->reserved=0;
+
+   clearClSection(&cls->qualifiers);
+   clearClSection(&cls->properties);
+   clearClSection(&cls->methods);
+
+   return cls;
+}
+
+unsigned char ClClassAddGrandParent(ClClass * cls, char *gp)
+{
+   long id;
+   
+   id=addClString(&cls->hdr, gp);
+   cls->parents++;
+   return (unsigned char)id;
+} 
+
+ClClass *ClClassNew(const char *cn, const char *pa)
+{
+   return newClassH(NULL, cn, pa);
+}
+
+static long sizeClassH(ClObjectHdr * hdr, ClClass * cls)
+{
+   long sz = sizeof(*cls);
+
+   sz += sizeQualifiers(hdr, &cls->qualifiers);
+   sz += sizeProperties(hdr, &cls->properties);
+   sz += sizeMethods(hdr, &cls->methods);
+   sz += sizeStringBuf(hdr);
+   sz += sizeArrayBuf(hdr);
+
+   return sz;
+}
+
+unsigned long ClSizeClass(ClClass * cls)
+{
+   return sizeClassH(&cls->hdr, cls);
+}
+
+static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area)
+{
+   int ofs = sizeof(ClClass);
+   int sz = ClSizeClass(cls);
+   ClClass *nc = area ? (ClClass *) area : (ClClass *) malloc(sz);
+
+   *nc = *cls;
+   ofs += copyQualifiers(ofs, sz, (char *) nc, &nc->qualifiers, hdr,
+                         &cls->qualifiers);
+   ofs += copyProperties(ofs, sz, (char *) nc, &nc->properties, hdr,
+                         &cls->properties);
+   ofs += copyMethods(ofs, sz, (char*)nc, &nc->methods, hdr,
+                         &cls->methods);
+                         
+   ofs += copyStringBuf(ofs, sz, &nc->hdr, hdr);
+   ofs += copyArrayBuf(ofs, sz, &nc->hdr, hdr);
+   nc->hdr.size = sz;
+
+   return nc;
+}
+
+ClClass *ClClassRebuildClass(ClClass * cls, void *area)
+{
+   return rebuildClassH(&cls->hdr, cls, area);
+}
+
 void ClClassRelocateClass(ClClass * cls)
 {
    ClObjectRelocateStringBuffer(&cls->hdr, (ClStrBuf *) cls->hdr.strBufOffset);
@@ -1172,7 +1461,7 @@ void ClClassFreeClass(ClClass * cls)
    if (cls->hdr.flags & HDR_Rebuild) {
       freeQualifiers(&cls->hdr, &cls->qualifiers);
       freeProperties(&cls->hdr, &cls->properties);
-//      freeMethods(&cls->hdr,&cls->methods);
+      freeMethods(&cls->hdr,&cls->methods);
       freeStringBuf(&cls->hdr);
       freeArrayBuf(&cls->hdr);
    }
@@ -1228,6 +1517,17 @@ char *ClClassToString(ClClass * cls)
    return sc.str;
 }
 
+
+//
+//--- Class Properties
+//
+
+int ClClassAddProperty(ClClass * cls, const char *id, CMPIData d)
+{
+   ClSection *prps = &cls->properties;
+   return addObjectPropertyH(&cls->hdr, prps, id, d);
+}
+
 int ClClassGetPropertyCount(ClClass * cls)
 {
    return cls->properties.used;
@@ -1240,12 +1540,9 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
    if (id < 0 || id > cls->properties.used)
       return 1;
-   if (data)
-      *data = (p + id)->data;
-   if (name)
-      *name = strdup(ClObjectGetClString(&cls->hdr, &(p + id)->id));
-   if (quals)
-      *quals = (p + id)->quals;
+   if (data) *data = (p + id)->data;
+   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(p + id)->id));
+   if (quals) *quals = (p + id)->quals;
    return 0;
 }
 
@@ -1254,8 +1551,7 @@ int ClClassGetPropQualifierCount(ClClass * cls, int id)
    ClProperty *p;
 
    p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
-   if (id < 0 || id > cls->properties.used)
-      return 1;
+   if (id < 0 || id > cls->properties.used) return 1;
    return (p + id)->qualifiers.used;
 }
 
@@ -1265,20 +1561,62 @@ int ClClassGetPropQualifierAt(ClClass * cls, int id, int qid, CMPIData * data,
    ClProperty *p;
    ClQualifier *q;
    p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
-   if (id < 0 || id > cls->properties.used)
-      return 1;
+   if (id < 0 || id > cls->properties.used) return 1;
    p = p + id;
 
    q = (ClQualifier *) ClObjectGetClSection(&cls->hdr, &p->qualifiers);
-   if (qid < 0 || qid > p->qualifiers.used)
-      return 1;
-   if (data)
-      *data = (q + qid)->data;
-   if (name)
-      *name = strdup(ClObjectGetClString(&cls->hdr, &(q + qid)->id));
+   if (qid < 0 || qid > p->qualifiers.used) return 1;
+   return ClGetQualifierAt(cls,q,qid,data,name); 
+}
+
+//
+//--- Class Methods
+//
+
+int ClClassAddMethod(ClClass * cls, const char *id, CMPIType t)
+{
+   ClSection *mths = &cls->methods;
+   return addClassMethodH(&cls->hdr, mths, id, t);
+}
+
+int ClClassGetMethodCount(ClClass * cls)
+{
+   return cls->methods.used;
+}
+
+int ClClassGetMethodAt(ClClass * cls, int id, CMPIType * data, char **name,
+                         unsigned long *quals)
+{
+   ClMethod *m;
+   m = (ClMethod *) ClObjectGetClSection(&cls->hdr, &cls->methods);
+   if (id < 0 || id > cls->methods.used) return 1;
+   if (data) *data = (m + id)->type;
+   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(m + id)->id));
+   if (quals) *quals = (m + id)->quals;
    return 0;
 }
 
+int ClClassGetMethQualifierAt(ClClass * cls, ClMethod *m, int qid, CMPIData * data,
+                              char **name)
+{
+   ClQualifier *q;
+
+   q = (ClQualifier *) ClObjectGetClSection(&cls->hdr, &m->qualifiers);
+   if (qid < 0 || qid > m->qualifiers.used) return 1;
+   return ClGetQualifierAt(cls,q,qid,data,name); 
+}
+
+int ClClassGetMethParameterAt(ClClass * cls, ClMethod *m, int pid, CMPIParameter * parm,
+                              char **name)
+{
+   ClParameter *p;
+
+   p = (ClParameter *) ClObjectGetClSection(&cls->hdr, &m->parameters);
+   if (pid < 0 || pid > m->parameters.used) return 1;
+   if (parm) *parm = (p + pid)->parameter;
+   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(p + pid)->id));
+   return 0;
+}
 
 
 
@@ -1301,15 +1639,13 @@ static ClInstance *newInstanceH(const char *ns, const char *cn)
 
    memset(inst, 0, sizeof(ClInstance));
    inst->hdr.type = HDR_Instance;
-   if (ns)
-      inst->nameSpace.id = addClString(&inst->hdr, ns);
-   else
-      inst->nameSpace = nls;
-   if (cn)
-      inst->className.id = addClString(&inst->hdr, cn);
-   else
-      inst->className = nls;
+   if (ns) inst->nameSpace.id = addClString(&inst->hdr, ns);
+   else inst->nameSpace = nls;
+   if (cn) inst->className.id = addClString(&inst->hdr, cn);
+   else inst->className = nls;
    inst->quals = 0;
+   inst->parents=0;
+   inst->reserved=0;
    inst->path = NULL;
 
    clearClSection(&inst->qualifiers);
@@ -1615,7 +1951,7 @@ int ClObjectPathGetKeyCount(ClObjectPath * op)
 int ClObjectPathGetKeyAt(ClObjectPath * op, int id, CMPIData * data,
                          char **name)
 {
-   ClProperty *p;
+   ClProperty *p; 
 
    p = (ClProperty *) ClObjectGetClSection(&op->hdr, &op->properties);
    if (id < 0 || id > op->properties.used)

@@ -172,20 +172,14 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokNamedInstance             xtokNamedInstance;
 
    XtokProperty                  xtokProperty;
-   XtokPropertyPart              xtokPropertyPart;
-   XtokPropertyPartList          xtokPropertyPartList;
+   XtokPropertyData              xtokPropertyData;
 
    XtokMethod                    xtokMethod;
-   XtokMethodPart                xtokMethodPart;
-   XtokMethodPartList            xtokMethodPartList;
-
+   XtokMethodData                xtokMethodData;
    XtokQualifier                 xtokQualifier;
    
    XtokParamValue                xtokParamValue;  
    XtokParam                     xtokParam;
-/*   XtokParamPart                 xtokParamPart;
-   XtokParamPartList             xtokParamPartList;
-*/   
    XtokMethodCall                xtokMethodCall;
 
    XtokGetClassParmsList         xtokGetClassParmsList;
@@ -223,7 +217,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokEnumInstanceNames         xtokEnumInstanceNames;
 
    XtokEnumInstances             xtokEnumInstances;
-   XtokEnumInstancesParmsList	 xtokEnumInstancesParmsList;
+   XtokEnumInstancesParmsList    xtokEnumInstancesParmsList;
    XtokEnumInstancesParms        xtokEnumInstancesParms;
 
    XtokExecQuery                 xtokExecQuery;
@@ -399,7 +393,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <className>               XTOK_IP_RESULTROLE
 %token <className>               XTOK_IP_QUERY
 %token <className>               XTOK_IP_QUERYLANG
-%token <clasz>                   XTOK_IP_CLASS
+%token <class>                   XTOK_IP_CLASS
 
 %token <xtokPropertyList>        XTOK_IP_PROPERTYLIST
 %type  <boolValue>               boolValue
@@ -420,13 +414,11 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <xtokProperty>            XTOK_PROPERTYREFERENCE
 %token <intValue>                ZTOK_PROPERTYREFERENCE
 
-%type  <xtokPropertyPart>        propertyPart
-%type  <xtokPropertyPart>        propertyReferencePart
-%type  <xtokPropertyPartList>    propertyPartList
-%type  <xtokPropertyPartList>    propertyReferencePartList
+%type  <xtokPropertyData>        propertyData
+%type  <xtokProperty>            property
 
 %token <xtokParam>               XTOK_PARAM
-%type  <xtokParam>               param
+%type  <xtokParam>               parameter
 %token <intValue>                ZTOK_PARAM
 %token <xtokParam>               XTOK_PARAMARRAY
 %token <intValue>                ZTOK_PARAMARRAY
@@ -435,27 +427,20 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <xtokParam>               XTOK_PARAMREFARRAY
 %token <intValue>                ZTOK_PARAMREFARRAY
 
-%token <xtokMethodPart>          XTOK_METHODPART
-%type  <xtokMethodPart>          methodPart
-%token <intValue>                ZTOK_METHODPART
-
-%token <xtokMethodPartList>      XTOK_METHODPARTLIST
-%type  <xtokMethodPartList>      methodPartList
-%token <intValue>                ZTOK_METHODPARTLIST
-
-%token <xtokMethod>              XTOK_METHODDEF
-//%type  <xtokMethod>            methodDef
-%token <intValue>                ZTOK_METHODDEF
+%token <xtokMethod>              XTOK_METHOD
+%type  <xtokMethod>              method
+%token <intValue>                ZTOK_METHOD
+%type  <xtokMethodData>          methodData
 
 %token <xtokClass>               XTOK_CLASS
 %token <intValue>                ZTOK_CLASS
-%type  <xtokClass>               clasz
-%type  <xtokClassParts>          classParts
+%type  <xtokClass>               class
+%type  <xtokClassData>           classData
 
 %token <xtokInstance>            XTOK_INSTANCE
 %token <intValue>                ZTOK_INSTANCE
 %type  <xtokInstance>            instance
-%type  <xtokInstanceParts>       instanceParts
+%type  <xtokInstanceData>        instanceData
 
 %type  <xtokParamValue>          paramValue
 %token <xtokParamValue>          XTOK_PARAMVALUE
@@ -990,7 +975,7 @@ createClass
 ;
 
 createClassParm
-    : XTOK_IP_CLASS clasz ZTOK_IPARAMVALUE
+    : XTOK_IP_CLASS class ZTOK_IPARAMVALUE
     {
        $$.cls = $2;
     }
@@ -1802,109 +1787,83 @@ namedInstance
  *    class
 */
 
-
-clasz
-    : XTOK_CLASS ZTOK_CLASS
+class
+    : XTOK_CLASS classData ZTOK_CLASS
     {
-       memset(&$$.properties,0,sizeof($$.properties));
-       memset(&$$.qualifiers,0,sizeof($$.qualifiers));
-       memset(&$$.methods,0,sizeof($$.methods));
-   }
-    | XTOK_CLASS classPartsList ZTOK_CLASS
-    {
-       $$.properties=((ParserControl*)parm)->properties;
-       $$.qualifiers=((ParserControl*)parm)->qualifiers;
-       $$.methods=((ParserControl*)parm)->methods;
-    }
-;
-   
-classPartsList
-    : classParts
-    {
-       printf("classPartsList: \n");
-    }
-    | classPartsList classParts
-    {
-       printf("classPartsList classParts: \n");
+       if (((ParserControl*)parm)->Qs) 
+          $$.qualifiers=((ParserControl*)parm)->qualifiers;
+       else memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       if (((ParserControl*)parm)->Ps) 
+          $$.properties=((ParserControl*)parm)->properties;
+       else memset(&$$.properties,0,sizeof($$.properties));
+       if (((ParserControl*)parm)->Ms) 
+          $$.methods=((ParserControl*)parm)->methods;
+       else memset(&$$.methods,0,sizeof($$.methods));
     }
 ;
 
-
-classParts
-    : qualifier
+classData
+    : /* empty */ {;}
+    | classData qualifier
     {
-       printf("classParts qualifier: \n");
-       addQualifier(&(((ParserControl*)parm)->qualifiers),&$1);
+       ((ParserControl*)parm)->Qs++;
+       addQualifier(&(((ParserControl*)parm)->qualifiers),&$2);
     }
-    | XTOK_PROPERTY propertyPartList ZTOK_PROPERTY
-    {
-       $1.value=$2.value;
-       $1.propType=typeProperty_Value;
-       addProperty(&(((ParserControl*)parm)->properties),&$1);
+    | classData property     {
+       ((ParserControl*)parm)->Ps++;
+       addProperty(&(((ParserControl*)parm)->properties),&$2);
     }
-    | XTOK_PROPERTYREFERENCE propertyReferencePartList ZTOK_PROPERTYREFERENCE
-    {
-       $1.ref=$2.ref;
-       $1.propType=typeProperty_Reference;
-       addProperty(&(((ParserControl*)parm)->properties),&$1);
-    } 
-    | XTOK_METHODDEF methodPartList 
-    {
-       printf("classParts: method ?\n");
-       addMethod(&(((ParserControl*)parm)->methods),&$1);
-    } 
-;
-
-methodPartList
-    : methodPart
-    {
-       printf("methodPartList: \n");
-       if ($1.qPart==1) 
-          addQualifier(&($$.qualifiers),&$1.qualifier);
-       else addParam(&($$.params), &$1.param);
-    }
-    | methodPartList methodPart
-    {
-       printf("methodPartList methodPart: \n");
-       if ($2.qPart==1) 
-          addQualifier(&($$.qualifiers),&$2.qualifier);
-       else addParam(&($$.params), &$2.param);
+    | classData method     {
+        ((ParserControl*)parm)->Ms++;
+        addMethod(&(((ParserControl*)parm)->methods),&$2);
     }
 ;
 
-methodPart 
-    : ZTOK_METHODDEF
+method
+    : XTOK_METHOD methodData ZTOK_METHOD
     {
-       printf("methodPart: ZTOK_METHODDEF\n");              
-       $$.qPart=-1;
-    }
-    | qualifier
-    {
-       printf("methodPart: qualifier\n");              
-       $$.qPart=1;
-       $$.qualifier=$1;
-    }
-    | XTOK_PARAM param
-    {
-       $$.qPart=0;
-       $$.param=$1;
-    }
+       if (((ParserControl*)parm)->MQs) 
+          $$.qualifiers=$2.qualifiers;
+       else memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       if (((ParserControl*)parm)->MPs) 
+          $$.params=$2.params;
+       else memset(&$$.params,0,sizeof($$.params));
+       ((ParserControl*)parm)->MQs=0; 
+       ((ParserControl*)parm)->MPs=0; 
+       ((ParserControl*)parm)->MPQs=0; 
+    }   
 ;
 
-param
-    : ZTOK_PARAM
+methodData 
+    : /* empty */ {;}
+    | methodData qualifier
     {
-       printf("param:  ZTOK_PARAM\n");
-    }
-    | qualifier
+       if (((ParserControl*)parm)->MQs==0) 
+          memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       ((ParserControl*)parm)->MQs++;
+       addQualifier(&($$.qualifiers),&$2);
+    }      
+    | methodData XTOK_PARAM parameter ZTOK_PARAM 
     {
-       printf("param: qualifier\n");
-       addQualifier(&($$.qualifiers),&$1);
-    }
-    | param qualifier
+       if (((ParserControl*)parm)->MPs==0) 
+          memset(&$$.params,0,sizeof($$.params));
+       ((ParserControl*)parm)->MPs++;
+       if (((ParserControl*)parm)->MPQs) 
+          $2.qualifiers=$3.qualifiers;
+       else memset(&$2.qualifiers,0,sizeof($2.qualifiers));
+       addParam(&($$.params),&$2);
+       ((ParserControl*)parm)->MPQs=0; 
+    }      
+;  
+
+parameter 
+    : /* empty */ {;}
+    | parameter qualifier
     {
-       printf("param qualifier: \n");
-       addQualifier(&($$.qualifiers),&$2);        
+       if (((ParserControl*)parm)->MPQs==0) 
+          memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       ((ParserControl*)parm)->MPQs++; 
+       addQualifier(&($$.qualifiers),&$2);
     }
 ;
 
@@ -1913,117 +1872,86 @@ param
  *    instance
 */
 
-
 instance
-    : XTOK_INSTANCE ZTOK_INSTANCE
+    : XTOK_INSTANCE instanceData ZTOK_INSTANCE
     {
-       memset(&$$.properties,0,sizeof($$.properties));
-       memset(&$$.qualifiers,0,sizeof($$.qualifiers));
-    }
-    | XTOK_INSTANCE instancePartsList ZTOK_INSTANCE
-    {
-       $$.properties=((ParserControl*)parm)->properties;
-       $$.qualifiers=((ParserControl*)parm)->qualifiers;
-    }
-;
-
-instancePartsList
-    : instanceParts
-    {
-    }
-    | instancePartsList instanceParts
-    {
+       if (((ParserControl*)parm)->Qs) 
+          $$.qualifiers=((ParserControl*)parm)->qualifiers;
+       else memset(&$$.qualifiers,0,sizeof($$.qualifiers));
+       if (((ParserControl*)parm)->Ps) 
+          $$.properties=((ParserControl*)parm)->properties;
+       else memset(&$$.properties,0,sizeof($$.properties)); 
     }
 ;
 
-
-instanceParts
-    : qualifier
+instanceData 
+    : /* empty */ {;}
+    | instanceData qualifier 
     {
-       addQualifier(&(((ParserControl*)parm)->qualifiers),&$1);
+       ((ParserControl*)parm)->Qs++;
+       addQualifier(&(((ParserControl*)parm)->qualifiers),&$2);
     }
-    | XTOK_PROPERTY propertyPartList ZTOK_PROPERTY
+    | instanceData property 
     {
-       $1.value=$2.value;
-       $1.propType=typeProperty_Value;
-       addProperty(&(((ParserControl*)parm)->properties),&$1);
-    }
-    | XTOK_PROPERTYREFERENCE propertyReferencePartList ZTOK_PROPERTYREFERENCE
-    {
-       $1.ref=$2.ref;
-       $1.propType=typeProperty_Reference;
-       addProperty(&(((ParserControl*)parm)->properties),&$1);
-    } 
-;
-
-
-propertyPartList
-    : propertyPart
-    {
-       if ($1.qPart) {
-          addQualifier(&($$.qualifiers),&$1.qualifier);
-       }
-       else {
-          $$.value=$1.value;
-       }
-    }
-    | propertyPartList propertyPart 
-    {
-       if ($2.qPart) {
-          addQualifier(&($$.qualifiers),&$2.qualifier);
-       }
-       else {
-          $$.value=$1.value; // should this be $$.value=$2.value;
-       }
+       ((ParserControl*)parm)->Ps++;
+       addProperty(&(((ParserControl*)parm)->properties),&$2);
     }
 ;
 
-propertyPart
-    : qualifier
+
+/*
+ *    property
+*/
+
+property
+    : XTOK_PROPERTY propertyData ZTOK_PROPERTY
     {
-       $$.qPart=1;
-       $$.qualifier=$1;
+       $$.val=$2;
+    }   
+;
+
+propertyData 
+    : propertyData qualifier
+    {
+       addQualifier(&(((ParserControl*)parm)->qualifiers),&$2);
     }
     | value
     {
+//       printf("--- value: %s\n",$1.value);
        $$.value=$1.value;
-       $$.qPart=0;
     }
-;
-
-
-propertyReferencePartList
-    : propertyReferencePart
-    {
-       if ($1.qPart) {
-          addQualifier(&($$.qualifiers),&$1.qualifier);
-       }
-       else {
-          $$.ref=$1.ref;
-       }
-    }
-    | propertyReferencePartList propertyReferencePart
-    {
-       if ($2.qPart) {
-          addQualifier(&($$.qualifiers),&$2.qualifier);
-       }
-       else {
-          $$.ref=$1.ref; // should this be $$.ref=$2.ref; ?
-       }
-    }
-;
-
-propertyReferencePart
-    : qualifier
-    {
-       $$.qPart=1;
-       $$.qualifier=$1;
-    }   
     | valueReference
     {
-       $$.qPart=0;
        $$.ref=$1;
-    }      
+    }
+;  
+
+propertyArray
+    : XTOK_PROPERTYARRAY  ZTOK_PROPERTYARRAY
+    {
+    printf("--- propertyArray\n");
+    }
+;
+
+propertyList
+    : XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY
+    {
+       $2.values[$2.next]=NULL;
+       $$.list=$2;
+    }
+;
+
+
+/*
+ *    qualifier
+*/
+
+qualifier
+    : XTOK_QUALIFIER value ZTOK_QUALIFIER
+    {
+//       printf("--- qualifier %s: %s\n",$1.name,$2.value);
+       $$.value=$2.value;
+    }
 ;
 
 
@@ -2042,12 +1970,7 @@ propertyList
     }
 ;
 
-qualifier
-    : XTOK_QUALIFIER value ZTOK_QUALIFIER
-    {
-       $$.value=$2.value;
-    }
-;
+
 
 /*
  *    localNameSpacePath 

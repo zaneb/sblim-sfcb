@@ -1023,10 +1023,10 @@ static int procMethod(YYSTYPE * lvalp, ParserControl * parm)
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "METHOD")) {
       attr[1].attr = NULL;
-      if (attrsOk(parm->xmb, elm, attr, "METHOD", ZTOK_METHODDEF)) {
+      if (attrsOk(parm->xmb, elm, attr, "METHOD", ZTOK_METHOD)) {
          memset(&lvalp->xtokMethod, 0, sizeof(XtokMethod));
          lvalp->xtokMethod.name = attr[0].attr;
-         lvalp->xtokMethod.type = (CMPIType) - 1;
+         lvalp->xtokMethod.type = CMPI_null;
          if (attr[1].attr)
             for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
@@ -1037,7 +1037,7 @@ static int procMethod(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokMethod.classOrigin = attr[2].attr;
          if (attr[3].attr)
             lvalp->xtokMethod.propagated = !strcasecmp(attr[3].attr, "true");
-         return XTOK_METHODDEF;
+         return XTOK_METHOD;
       }
    }
    return 0;
@@ -1060,7 +1060,7 @@ static int procParam(YYSTYPE * lvalp, ParserControl * parm)
          memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
          lvalp->xtokParam.pType = ZTOK_PARAM;
          lvalp->xtokParam.name = attr[0].attr;
-         lvalp->xtokParam.type = (CMPIType) - 1;
+         lvalp->xtokParam.type = CMPI_null;
          if (attr[1].attr)
             for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
@@ -1092,11 +1092,12 @@ static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
          memset(&lvalp->xtokParam, 0, sizeof(XtokParam));
          lvalp->xtokParam.pType = ZTOK_PARAMARRAY;
          lvalp->xtokParam.name = attr[0].attr;
-         lvalp->xtokParam.type = (CMPIType) - 1;
+         lvalp->xtokParam.type = CMPI_null;
          if (attr[1].attr)
             for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
                   lvalp->xtokParam.type = types[i].type;
+                  lvalp->xtokParam.type |=CMPI_ARRAY;
                   break;
                }
             }
@@ -1124,6 +1125,7 @@ static int procParamRef(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.pType = ZTOK_PARAMREF;
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.refClass = attr[1].attr;
+         lvalp->xtokParam.type = CMPI_ref;
          return XTOK_PARAM;
       }
    }
@@ -1149,6 +1151,7 @@ static int procParamRefArray(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.refClass = attr[1].attr;
          lvalp->xtokParam.arraySize = attr[2].attr;
+         lvalp->xtokParam.type = CMPI_refA;
          return XTOK_PARAM;
       }
    }
@@ -1188,7 +1191,7 @@ static Tags tags[] = {
    {"PARAMETER.REFERENCE", procParamRef, ZTOK_PARAMREF},
    {"PARAMETER.REFARRAY", procParamRefArray, ZTOK_PARAMREFARRAY},
    {"PARAMETER", procParam, ZTOK_PARAM},
-   {"METHOD", procMethod, ZTOK_METHODDEF},
+   {"METHOD", procMethod, ZTOK_METHOD},
    {"CLASS", procClass, ZTOK_CLASS},
    {"?xml", procXml, ZTOK_XML},
 };
@@ -1254,6 +1257,13 @@ RequestHdr scanCimXmlRequest(char *xmlData)
    control.paramValues.last = control.paramValues.first = NULL;
    control.properties.last = control.properties.first = NULL;
    control.qualifiers.last = control.qualifiers.first = NULL;
+   control.methods.last = control.methods.first = NULL;
+   control.Qs=0;
+   control.Ps=0;
+   control.Ms=0;
+   control.MPs=0;
+   control.MQs=0;
+   control.MPQs=0;
 
    if (setjmp(control.env)) {
 //      printf("--- setjmp caught !!\n");

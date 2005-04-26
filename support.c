@@ -370,12 +370,12 @@ static managed_thread *__memInit()
    if (mt==NULL) mt=__init_mt();
    return mt;
 }
-
+/*
 static void memInit(int newProc)
 {
    __memInit();
 }
-
+*/
 
 
 /**

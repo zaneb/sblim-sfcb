@@ -65,12 +65,16 @@
 
 #define YYPARSE_PARAM parm
 #define YYLEX_PARAM parm
-#define YYERROR_VERBOSE 1
+#define YYERROR_VERBOSE 1 
  
 extern int yylex();
 extern void sfcQueryErr(char*,char*,char*);
 extern void yyError(char*);
 extern void yyerror(char*);
+extern void sfcQueryError(char* s1);
+extern char * qsStrDup(QLStatement *qs, char *str);
+extern QLOperand* newNameQueryOperand(QLStatement *qs, char* val);
+
 
 #define sfcQueryerror sfcQueryError
 #define yyErr sfcQueryErr

@@ -748,11 +748,8 @@ static BinResponseHdr *createClass(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
    CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
-   CMPIArray *r;
-   CMPICount count;
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
-   int i;
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
    ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
@@ -1418,7 +1415,7 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
    CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
    CMPIFlags flgs=0;
-   int makeActive=0,mustPoll=0;
+   int makeActive=0;
    char *type;
    
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);

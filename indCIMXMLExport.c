@@ -314,16 +314,16 @@ int exportIndication(char *url, char *payload, char **resp, char **msg)
    }
       
    init(&cd);
-   if ((rc=genRequest(&cd,url,&msg))==0) {
-      if ((rc=addPayload(&cd,payload,&msg))==0) {
-         if ((rc=getResponse(&cd,&msg))==0) {
+   if ((rc=genRequest(&cd,url,msg))==0) {
+      if ((rc=addPayload(&cd,payload,msg))==0) {
+         if ((rc=getResponse(&cd,msg))==0) {
             *resp=strdup(cd.mResponse->ft->getCharPtr(cd.mResponse));
          }
       }
    } 
    
  //  _SFCB_TRACE(1,("--- url: %s rc: %d %s",url,rc,msg));
-   printf("--- url: %s rc: %d %s\n",url,rc,msg);
+   printf("--- url: %s rc: %d %s\n",url,rc,*msg);
    
    uninit(&cd);
    

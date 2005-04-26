@@ -201,7 +201,7 @@ CMPISelectExp *TempCMPISelectExp(QLStatement *qs)
    exp->exp = eFt;   
    exp->qs=qs;
    
-   return exp;
+   return (CMPISelectExp*)exp;
 }
 
 

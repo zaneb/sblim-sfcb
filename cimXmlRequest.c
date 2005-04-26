@@ -90,7 +90,7 @@ static char *cimMsg[] = {
    "The extrinsic Method could not be executed",
    "The specified extrinsic Method does not exist"
 };
-
+/*
 static char *cimMsgId[] = {
    "",
    "CIM_ERR_FAILED",
@@ -111,7 +111,7 @@ static char *cimMsgId[] = {
    "CIM_ERR_METHOD_NOT_AVAILABLE",
    "CIM_ERR_METHOD_NOT_FOUND",
 };
-
+*/
 static char iResponseIntro1[] =
   "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"
   "<CIM CIMVERSION=\"2.0\" DTDVERSION=\"1.1\">\n" 
@@ -221,7 +221,7 @@ static char *getErrSegment(int rc, char *m)
    else  snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\"/>\n", rc);
    return strdup(msg);
 }
-
+/*
 static char *getErrorSegment(CMPIStatus rc)
 {
    if (rc.msg && rc.msg->hdl) {
@@ -229,7 +229,7 @@ static char *getErrorSegment(CMPIStatus rc)
    }
    return getErrSegment(rc.rc, NULL);
 }
-
+*/
 char *getErrTrailer(int id, int rc, char *m)
 {
    char msg[1024];

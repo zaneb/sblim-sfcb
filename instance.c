@@ -163,8 +163,8 @@ CMPIData __ift_getPropertyAt(CMPIInstance * ci, CMPICount i, CMPIString ** name,
    }
    else if (rv.type == CMPI_ref) {
       char *msg;
-      rv.value.ref = getObjectPath(ClObjectGetClString
-                        (&inst->hdr, (ClString *) & rv.value.chars), &msg);
+      rv.value.ref = getObjectPath(
+         (char*)ClObjectGetClString(&inst->hdr, (ClString*)&rv.value.chars), &msg);
    }
    else if (rv.type & CMPI_ARRAY) {
       rv.value.array =
@@ -240,7 +240,6 @@ static CMPIObjectPath *__ift_getObjectPath(CMPIInstance * instance,
                                            CMPIStatus * rc)
 {
    static UtilHashTable *klt = NULL;
-   struct native_instance *i = (struct native_instance *) instance;
    int j, f = 0;
    CMPIStatus tmp;
    const char *cn = ClInstanceGetClassName((ClInstance *) instance->hdl);
@@ -272,7 +271,6 @@ static CMPIObjectPath *__ift_getObjectPath(CMPIInstance * instance,
       CMPIData d;
       CMPIContext *ctx;
       unsigned int e, m;
-      static int count=0;
 
       if (klt == NULL) klt = UtilFactory->newHashTable(61,
                  UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);

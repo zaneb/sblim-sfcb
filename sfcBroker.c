@@ -48,6 +48,8 @@ extern CMPIBroker *Broker;
 extern void initHttpProcCtl(int);
 extern void initProvProcCtl(int);
 extern void processTerminated(int pid);
+extern int httpDaemon(int argc, char *argv[], int sslMode, int pid);
+extern void processProviderMgrRequests();
 
 extern int stopNextProc();
 extern int testStartedProc(int pid, int *left);
@@ -71,7 +73,7 @@ static int adaptersStopped=0,providersStopped=0,restartBroker=0;
 
 extern char * configfile;
 
-static char * copyright = "(C) Copyright IBM Corp. 2005";
+char * copyright = "(C) Copyright IBM Corp. 2005";
 
 void clean_up(int sd, const char *the_file)
 {
@@ -272,15 +274,13 @@ static void handleSigSegv(int sig)
    fprintf(stderr, "-#- %s - %d exiting due to a SIGSEGV signal\n",
            processName, currentProc);
 }
-
+/*
 static void handleSigAbort(int sig)
 {
    fprintf(stderr, "%s: exiting due to a SIGABRT signal - %d\n", processName, currentProc);
    kill(0, SIGTERM);
 }
-
-extern int httpDaemon(int argc, char *argv[], int sslMode, int pid);
-extern void processProviderMgrRequests();
+*/
 
 int startHttpd(int argc, char *argv[], int sslMode)
 {

@@ -504,7 +504,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
               "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
          sb->ft->appendChars(sb, "<VALUE>");
          sp = XMLEscape((char*)eo);
-         if (sp) freesp = 1;
+         if (sp) freesp = 1; 
          sb->ft->appendChars(sb, "<![CDATA[");
          sb->ft->appendChars(sb, sp);
          sb->ft->appendChars(sb, "]]>");

@@ -33,6 +33,8 @@
 static ProviderInfo forceNotFound={"",FORCE_PROVIDER_NOTFOUND};
 extern int exFlags;
 extern char * configfile;
+extern int setupControl(char *fn);
+extern int getControlChars(char *id, char **val);
 
 ProviderInfo *classProvInfoPtr = NULL;
 ProviderInfo *defaultProvInfoPtr = NULL;

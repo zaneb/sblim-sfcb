@@ -779,6 +779,7 @@ CMPIStatus InteropProviderDeleteInstance(CMPIInstanceMI * mi,
       
       if ((fi=getFilter(key))) {
          if (fi->useCount) setStatus(&st,CMPI_RC_ERR_FAILED,"Filter in use");
+         else removeFilter(fi,key);
       }
       else setStatus(&st,CMPI_RC_ERR_NOT_FOUND,NULL);
    }
@@ -818,7 +819,7 @@ CMPIStatus InteropProviderInvokeMethod(CMPIMethodMI * mi,
                                      CMPIContext * ctx,
                                      CMPIResult * rslt,
                                      CMPIObjectPath * ref,
-                                     char *methodName,
+                                     const char *methodName,
                                      CMPIArgs * in, CMPIArgs * out)
 { 
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -896,7 +897,7 @@ CMPIStatus InteropProviderInvokeMethod(CMPIMethodMI * mi,
  * Association MI Functions
  * ------------------------------------------------------------------ */
 
-CMPIStatus InteropProviderAssociationCleanup(CMPIInstanceMI * mi,
+CMPIStatus InteropProviderAssociationCleanup(CMPIAssociationMI * mi,
                                               CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };

@@ -147,8 +147,8 @@ static void* nextResultBufferPos(NativeResult *nr, int type, int length)
    pos=nr->dNext;
    nr->dNext+=length;
 
-   npos=nr->data+pos;
-   _SFCB_RETURN(npos);
+   npos=(int)(nr->data+pos);
+   _SFCB_RETURN((void*)npos);
 }
 
 /*****************************************************************************/

@@ -156,8 +156,8 @@ CMPIData opGetKeyCharsAt(CMPIObjectPath * op,
    }
    else if (rv.type == CMPI_ref) {
       char *msg="";
-      rv.value.ref = getObjectPath(ClObjectGetClString
-          (&cop->hdr, (ClString *) & rv.value.chars), &msg);
+      rv.value.ref = getObjectPath(
+         (char*)ClObjectGetClString(&cop->hdr, (ClString *) & rv.value.chars), &msg);
    }
    else if (rv.type & CMPI_ARRAY) {     // should nor occcur
       rv.value.array =
@@ -179,7 +179,7 @@ CMPIData __oft_getKeyAt(CMPIObjectPath * op, CMPICount i, CMPIString ** name,
    if (name)
       *name = native_new_CMPIString(n, NULL);
 
-   return rv;
+   return rv; 
 }
 
 CMPIData __oft_getKey(CMPIObjectPath * op, const char *id, CMPIStatus * rc)

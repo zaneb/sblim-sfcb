@@ -33,7 +33,7 @@ extern CMPIObjectPathFT *CMPI_ObjectPath_FT;
 extern CMPIInstanceFT *CMPI_Instance_FT;
 extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
 extern CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc);
-extern int verifyPropertyList(CMPIObjectPath * cop, char **list);
+extern int verifyPropertyList(CMPIConstClass * cls, char **list);
 extern CMPISelectExp *TrackedCMPISelectExp(const char *queryString,
           const char *language, CMPIArray ** projection, CMPIStatus * rc);
 

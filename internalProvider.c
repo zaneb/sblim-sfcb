@@ -20,7 +20,7 @@
  *
 */
 
-
+ 
 
 #include "cmpidt.h"
 #include "cmpift.h"
@@ -61,14 +61,14 @@ static int qCompare(const void *arg1, const void *arg2)
    return strcasecmp((char *) ((KeyIds *) arg1)->key->hdl,
                      (char *) ((KeyIds *) arg2)->key->hdl);
 }
-
+/*
 static int cpy2lower(char *in, char *out)
 {
    int i = 0;
    while ((out[i] = tolower(in[i++])) != 0);
    return i - 1;
 }
-
+*/
 static char copKey[8192];
 
 static UtilStringBuffer *normalize_ObjectPath(CMPIObjectPath * cop)
@@ -599,7 +599,6 @@ CMPIStatus getRefs(CMPIContext * ctx,  CMPIResult * rslt,
    char *ns=(char*)CMGetNameSpace(cop,NULL)->hdl;
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIUint32 newFlgs=FL_assocsOnly || CMPI_FLAG_DeepInheritance;
-   CMPIUint32 flgs=CMGetContextEntry(ctx,CMPIInvocationFlags,NULL).value.uint32;
    
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "getRefs");
    
@@ -712,7 +711,8 @@ CMPIStatus getRefs(CMPIContext * ctx,  CMPIResult * rslt,
                   CMPIString *tns=CMGetNameSpace(ref,NULL);
                   if (tns==NULL || tns->hdl==NULL) CMSetNameSpace(ref,ns);
                   UtilStringBuffer *an=NULL;
-                  CMPIString *pn=CMObjectPathToString(ref,NULL);
+          //        CMPIString *pn=CMObjectPathToString(ref,NULL);
+                  pn=normalize_ObjectPath(ref);
                   printf("ref::::: %s %s\n",(char*)tns->hdl,(char*)pn->hdl);
                   if (objectPathEquals(pn,ref,&an,0)==0) {
          
@@ -746,7 +746,7 @@ CMPIStatus getRefs(CMPIContext * ctx,  CMPIResult * rslt,
    }
 }
 
-CMPIStatus InternalProviderAssociationCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
+CMPIStatus InternalProviderAssociationCleanup(CMPIAssociationMI * mi, CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderAssociationCleanup");
@@ -824,7 +824,7 @@ CMPIStatus InternalProviderReferenceNames(CMPIAssociationMI * mi,
  * Method MI Functions
  * ------------------------------------------------------------------ */
 
-CMPIStatus InternalProviderMethodCleanup(CMPIInstanceMI * mi,
+CMPIStatus InternalProviderMethodCleanup(CMPIMethodMI * mi,
                                               CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };   
@@ -835,7 +835,7 @@ CMPIStatus InternalProviderInvokeMethod(CMPIMethodMI * mi,
                                      CMPIContext * ctx,
                                      CMPIResult * rslt,
                                      CMPIObjectPath * ref,
-                                     char *methodName,
+                                     const char *methodName,
                                      CMPIArgs * in, CMPIArgs * out)
 {
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderInvokeMethod");
@@ -854,3 +854,4 @@ CMInstanceMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);
 CMAssociationMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);
 
 CMMethodMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);
+

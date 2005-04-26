@@ -88,7 +88,7 @@ CMPIValue native_clone_CMPIValue(CMPIType type,
 
       case CMPI_class:
          cl=(CMPIConstClass*)val->inst;
-         v.inst = CMClone(cl, rc);
+         v.inst = (CMPIInstance*)CMClone(cl, rc);
          break;
 
       case CMPI_ref:

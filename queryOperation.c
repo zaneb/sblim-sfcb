@@ -28,6 +28,7 @@
 #include "queryOperation.h"
 
 extern CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
+extern void native_array_increase_size(CMPIArray * array, CMPICount increment);
 
 static char *types[]={
   "-inv-",
@@ -478,11 +479,6 @@ static int _andEvaluate(QLOperation *op, QLPropertySource* source)
          (op->rhon ? op->rhon->ft->evaluate(op->rhon,source) : 1)) :
       (op->lhon->ft->evaluate(op->lhon,source) && 
          (op->rhon ? op->rhon->ft->evaluate(op->rhon,source) : 1));
-}
-
-static int andEvaluate(QLOperation *op, QLPropertySource* source) 
-{
-   return op->ft->_evaluate(op,source); 
 }
 
 static char *andToString(QLOperation *op) 

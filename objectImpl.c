@@ -1954,13 +1954,9 @@ int ClObjectPathGetKeyAt(ClObjectPath * op, int id, CMPIData * data,
    ClProperty *p; 
 
    p = (ClProperty *) ClObjectGetClSection(&op->hdr, &op->properties);
-   if (id < 0 || id > op->properties.used)
-      return 1;
-   if (data)
-      *data = (p + id)->data;
-   if (name)
-//      *name = strdup(ClObjectGetClString(&op->hdr, &(p + id)->id));
-      *name = ClObjectGetClString(&op->hdr, &(p + id)->id);
+   if (id < 0 || id > op->properties.used) return 1;
+   if (data) *data = (p + id)->data;
+   if (name) *name = (char*)ClObjectGetClString(&op->hdr, &(p + id)->id);
    if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
@@ -2216,7 +2212,7 @@ int main()
       CMPIArgs *narg = CMClone(arg, NULL);
       s = getArgsSerializedSize(arg);
    }
-
+ 
    {
       CMPIObjectPath *cop = NewCMPIObjectPath("root", "myClass", NULL);
       CMPIInstance *inst = NewCMPIInstance(cop, NULL);

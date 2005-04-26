@@ -224,7 +224,7 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
                                      CMPIContext * ctx,
                                      CMPIResult * rslt,
                                      CMPIObjectPath * ref,
-                                     char *methodName,
+                                     const char *methodName,
                                      CMPIArgs * in, CMPIArgs * out)
 { 
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -252,7 +252,7 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
       sprintf(strId,"%d",id++);
       xs=exportIndicationReq(ind,strId);
       sb=segments2stringBuffer(xs.segments);
-      exportIndication((char*)dest->hdl,sb->ft->getCharPtr(sb), &resp, &msg);
+      exportIndication((char*)dest->hdl,(char*)sb->ft->getCharPtr(sb), &resp, &msg);
    }
    
    else {

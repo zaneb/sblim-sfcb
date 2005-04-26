@@ -95,7 +95,7 @@ static void notSupported(int *requestor, OperationHdr * req)
    free(req);
 }
 
-
+/*
 static void handleSigterm(int sig)
 {
    fprintf(stderr, "%s: exiting due to signal %d\n", "provider", sig);
@@ -108,7 +108,7 @@ static void handleSigSegv(int sig)
            currentProc, sig, __FILE__, __LINE__);
    abort();
 }
-
+*/
 
 
 /* -------------

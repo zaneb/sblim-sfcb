@@ -27,7 +27,7 @@
 #define M_SHOW  1
 #define M_QUIET 0
 
-void m_start_logging(const char *name);
-void m_log(int priority, int errout, const char* fmt, ...);
+void startLogging(const char *name);
+void mlogf(int priority, int errout, const char* fmt, ...);
 
 #endif

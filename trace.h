@@ -23,6 +23,8 @@
 #ifndef _trace_h
 #define _trace_h
 
+#include "mlog.h"
+
 #ifdef SFCB_DEBUG
 #define _SFCB_TRACE(LEVEL,STR) \
   if ((_sfcb_trace_mask & __traceMask) && (LEVEL<=_sfcb_debug) && (LEVEL>0) ) \

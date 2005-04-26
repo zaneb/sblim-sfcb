@@ -104,17 +104,16 @@ void initHttpProcCtl(int p)
 {
    httpProcSemKey=ftok(".",'H');
    httpWorkSemKey=ftok(".",'W');
-   char emsg[256];
    union semun sun;
    int i;
 
-   printf("--- Max Http procs: %d\n",p);
+   mlogf(M_INFO,M_SHOW,"--- Max Http procs: %d\n",p);
    if ((httpProcSem=semget(httpProcSemKey,1,0666))!=-1) 
       semctl(httpProcSem,0,IPC_RMID,sun);
       
    if ((httpProcSem=semget(httpProcSemKey,1+p,IPC_CREAT | 0666))==-1) {
-      sprintf(emsg,"Http Proc semaphore create %d",currentProc);
-      perror(emsg);
+      char *emsg=strerror(errno);
+      mlogf(M_ERROR,M_SHOW,"--- Http Proc semaphore create %d: %s\n",currentProc,emsg);
       abort();
    }
    sun.val=p;
@@ -128,8 +127,8 @@ void initHttpProcCtl(int p)
       semctl(httpWorkSem,0,IPC_RMID,sun);
       
    if ((httpWorkSem=semget(httpWorkSemKey,1,IPC_CREAT | 0666))==-1) {
-      sprintf(emsg,"Http ProcWork semaphore create %d",currentProc);
-      perror(emsg);
+      char *emsg=strerror(errno);
+      mlogf(M_ERROR,M_SHOW,"--- Http ProcWork semaphore create %d: %s\n",currentProc,emsg);
       abort();
    }
    sun.val=1;
@@ -163,7 +162,7 @@ int baValidate(char *cred, char **principle)
             if (authenticate) err=0;
          }
       }
-      if (err) printf("--- Authentication exit %s not found\n",dlName);
+      if (err) mlogf(M_ERROR,M_SHOW,"--- Authentication exit %s not found\n",dlName);
    }
 
    *principle=strdup(auth);
@@ -183,7 +182,7 @@ static void handleSigChld(int sig)
          break;
       if ((int) pid < 0) {
          if (errno == EINTR || errno == EAGAIN) {
-            fprintf(stderr, "pid: %d continue \n", pid);
+    //        fprintf(stderr, "pid: %d continue \n", pid);
             continue;
          }
          if (errno != ECHILD)
@@ -752,7 +751,8 @@ static void handleHttpRequest(int connFd)
    else r = 0;
 
    if (r < 0) {
-      perror("fork handler");
+      char *emsg=strerror(errno);
+      mlogf(M_ERROR,M_SHOW,"--- fork handler: %s\n",emsg);
       exit(1);
    }
 
@@ -859,13 +859,13 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    else  cp = name;
    name = cp;
 
-   if (sslMode)
-      printf("--- %s HTTPS Daemon V" sfcHttpDaemonVersion " started - %d - port %ld\n", name, currentProc,port);
-   else
-      printf("--- %s HTTP  Daemon V" sfcHttpDaemonVersion " started - %d - port %ld\n", name, currentProc,port);
+   if (sslMode) mlogf(M_INFO,M_SHOW,"--- %s HTTPS Daemon V" sfcHttpDaemonVersion " started - %d - port %ld\n", 
+         name, currentProc,port);
+   else mlogf(M_INFO,M_SHOW,"--- %s HTTP  Daemon V" sfcHttpDaemonVersion " started - %d - port %ld\n", 
+         name, currentProc,port);
 
 
-   if (doBa) printf("--- Using Basic Authentication\n");
+   if (doBa) mlogf(M_INFO,M_SHOW,"--- Using Basic Authentication\n");
 
    listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
    sin_len = sizeof(sin);
@@ -881,15 +881,15 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
    if (bind(listenFd, (struct sockaddr *) &sin, sin_len) ||
        listen(listenFd, 0)) {
-      printf("--- Cannot listen on port %ld\n", port);
+      mlogf(M_ERROR,M_SHOW,"--- Cannot listen on port %ld\n", port);
       kill(sfcbPid,3);
-//      exit(3);
    }
 
   if (!debug) {
       int rc = fork();
       if (rc == -1) {
-         perror("fork daemon");
+         char *emsg=strerror(errno);
+         mlogf(M_ERROR,M_SHOW,"--- fork daemon: %s",emsg);
          exit(1);
       }
       else if (rc)
@@ -919,6 +919,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 #endif
 
    for (;;) {
+   char *emsg;
       listen(listenFd, 1);
       sz = sizeof(sin);
       if ((connFd = accept(listenFd, (__SOCKADDR_ARG) & sin, &sz))<0) {
@@ -926,7 +927,8 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
             if (stopAccepting) break;
             continue;
          }   
-         perror("accept error");
+         emsg=strerror(errno);
+         mlogf(M_ERROR,M_SHOW,"--- accept error %s\n",emsg);
          _SFCB_ABORT();
       }
       _SFCB_TRACE(1, ("--- Processing http request"));
@@ -938,7 +940,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 //   printf("--- %s draining %d\n",processName,running);
    for (;;) {
       if (running==0) {
-         printf("--- %s terminating %d\n",processName,getpid());
+         mlogf(M_INFO,M_SHOW,"--- %s terminating %d\n",processName,getpid());
          exit(0);
       }   
       sleep(1);

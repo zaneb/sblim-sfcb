@@ -21,6 +21,7 @@
 
 
 #include "utilft.h"
+#include "mlog.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -93,11 +94,11 @@ int setupControl(char *fn)
       strcat(fin, "/sfcb.cfg");
    }
    
-   if (fin[0]=='/') printf("--- Using %s\n",fin);
-   else printf("--- Using ./%s\n",fin);
+   if (fin[0]=='/') mlogf(M_INFO,M_SHOW,"--- Using %s\n",fin);
+   else mlogf(M_INFO,M_SHOW,"--- Using ./%s\n",fin);
    in = fopen(fin, "r");
    if (in == NULL) {
-      fprintf(stderr, "--- %s not found\n", fin);
+      mlogf(M_ERROR,M_SHOW, "--- %s not found\n", fin);
       return -2;
    }
 
@@ -108,7 +109,7 @@ int setupControl(char *fn)
       switch (cntlParseStmt(fin, &rv)) {
       case 0:
       case 1:
-         printf("--- control statement not recognized: \n\t%d: %s\n", n, stmt);
+         mlogf(M_ERROR,M_SHOW,"--- control statement not recognized: \n\t%d: %s\n", n, stmt);
          err = 1;
          break;
       case 2:
@@ -118,7 +119,7 @@ int setupControl(char *fn)
                goto ok;
             }
          }
-         printf("--- invalid control statement: \n\t%d: %s\n", n, stmt);
+         mlogf(M_ERROR,M_SHOW,"--- invalid control statement: \n\t%d: %s\n", n, stmt);
          err = 1;
       ok:
          break;
@@ -135,7 +136,7 @@ int setupControl(char *fn)
    }
 
    if (err) {
-      printf("--- Broker termintaed because of previous error(s)\n");
+      mlogf(M_INFO,M_SHOW,"--- Broker terminated because of previous error(s)\n");
       abort();
    }
 

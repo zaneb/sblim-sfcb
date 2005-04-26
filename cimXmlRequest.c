@@ -1182,7 +1182,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    fCls=qs->ft->getFromClassList(qs);
    if (fCls==NULL || *fCls==NULL) {
-     fprintf(stderr,"--- from clause\n");
+     mlogf(M_ERROR,M_SHOW,"--- from clause missing\n");
      abort();
    }
    req->op.className = setCharsMsgSegment(*fCls);

@@ -122,8 +122,8 @@ static CMPIData __aft_getArgAt(CMPIArgs * args,
    }
    else if (rv.type == CMPI_ref) {
       char *msg;
-      rv.value.ref = getObjectPath(ClObjectGetClString
-         (&ca->hdr, (ClString *) & rv.value.chars), &msg);
+      rv.value.ref = getObjectPath(
+         (char*)ClObjectGetClString(&ca->hdr, (ClString *) & rv.value.chars), &msg);
    }
    else if (rv.type & CMPI_ARRAY) {
       rv.value.array =

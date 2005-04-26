@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include "queryOperation.h"
+#include "mlog.h"
 
 extern CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
 extern void native_array_increase_size(CMPIArray * array, CMPICount increment);
@@ -212,15 +213,15 @@ static int propCompare(QLOperand* self, QLOperand* op,
       break;
    case QL_PropertyName:
    case QL_Name:
-      fprintf(stderr,"### propCompare(): (QL_PropertyName QL_Name) got a problem\n");
+      mlogf(M_ERROR,M_SHOW,"### propCompare(): (QL_PropertyName QL_Name) got a problem\n");
       abort();
       break;
    case QL_Invalid:
-      fprintf(stderr,"### propCompare(): got a problem\n");
+      mlogf(M_ERROR,M_SHOW,"### propCompare(): got a problem\n");
       abort();
       break;
    case QL_NotFound:
-      fprintf(stderr,"### propCompare(): %s not found\n",
+      mlogf(M_ERROR,M_SHOW,"### propCompare(): %s not found\n",
             self->propertyName->part[0]);
       abort();
    }
@@ -268,7 +269,7 @@ static char* instToString(QLOperand* op)
 
 static int  nameCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
 {
-   printf("  nameCompare\n");
+   mlogf(M_ERROR,M_SHOW,"--- nameCompare\n");
    abort();
    return -2;
 }

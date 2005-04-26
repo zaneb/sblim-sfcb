@@ -62,6 +62,7 @@
 
 #include <stdio.h>
 #include "queryOperation.h"
+#include "mlog.h"
 
 #define YYPARSE_PARAM parm
 #define YYLEX_PARAM parm
@@ -368,7 +369,7 @@ classPropertyName
     : className '.' classPropertyNameList
     {
        if (QS->wql) {
-          printf("components ?\n"); 
+          mlogf(M_ERROR,M_SHOW,"components ?\n"); 
 //          yyErr("Bad property-identifier-1: ",$1,"...");
 //          YYERROR;
           $$=QC->addPnClass(QC,QS,$1,0);

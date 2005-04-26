@@ -145,7 +145,7 @@ static void stopBroker(void *p)
 
       if (adaptersStopped==0) {
          pthread_mutex_lock(&sdMtx);
-         if (sa==0) printf("--- Stopping adapters\n");
+         if (sa==0) mlogf(M_INFO,M_SHOW,"--- Stopping adapters\n");
          sa++;
          if (stopNextAdapter()) {
             rc=pthread_cond_timedwait(&sdCnd,&sdMtx,&waitTime);
@@ -156,7 +156,7 @@ static void stopBroker(void *p)
       
       if (adaptersStopped) {
          pthread_mutex_lock(&sdMtx);
-         if (sp==0) printf("--- Stopping providers\n");
+         if (sp==0) mlogf(M_INFO,M_SHOW,"--- Stopping providers\n");
          sp++;
          if (stopNextProc()) {
             rc=pthread_cond_timedwait(&sdCnd,&sdMtx,&waitTime);
@@ -168,9 +168,10 @@ static void stopBroker(void *p)
    }
    
    if (restartBroker) {
-      printf("---\n");   
+      char *emsg=strerror(errno);
+      mlogf(M_INFO,M_SHOW,"---\n");   
       execvp("sfcbd",restartArgv);
-      perror("--- execv for restart problem:");
+      mlogf(M_ERROR,M_SHOW,"--- execv for restart problem: %s\n",emsg);
       abort();
    }
 
@@ -190,7 +191,7 @@ static void handleSigquit(int sig)
    pthread_attr_t tattr;
    
    if (sfcBrokerPid==currentProc) {    
-      fprintf(stderr, "--- Winding down %s\n", processName);
+      mlogf(M_INFO,M_SHOW, "--- Winding down %s\n", processName);
       pthread_attr_init(&tattr);
       pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
       pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
@@ -204,7 +205,7 @@ static void handleSigHup(int sig)
   
    if (sfcBrokerPid==currentProc) {    
       restartBroker=1;
-      fprintf(stderr, "--- Restarting %s\n", processName);
+      mlogf(M_INFO,M_SHOW, "--- Restarting %s\n", processName);
       pthread_attr_init(&tattr);
       pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
       pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
@@ -225,7 +226,7 @@ static void handleSigChld(int sig)
          break;
       if ((int) pid < 0) {
          if (errno == EINTR || errno == EAGAIN) {
-            fprintf(stderr, "pid: %d continue \n", pid);
+       //     mlogf(M_INFO,M_SHOW, "pid: %d continue \n", pid);
             continue;
          }
          if (errno != ECHILD)
@@ -233,10 +234,10 @@ static void handleSigChld(int sig)
          break;
       }
       else {
-//         printf("sigchild %d\n",pid);
+//         mlogf(M_INFO,M_SHOW,"sigchild %d\n",pid);
          if (testStartedAdapter(pid,&left)) { 
             if (left==0) {
-               fprintf(stderr,"--- Adapters stopped\n");
+               mlogf(M_INFO,M_SHOW,"--- Adapters stopped\n");
                adaptersStopped=1;
             }   
             pthread_attr_init(&tattr);
@@ -245,7 +246,7 @@ static void handleSigChld(int sig)
          }
          else if (testStartedProc(pid,&left)) {
             if (left==0) {
-               fprintf(stderr,"--- Providers stopped\n");
+               mlogf(M_INFO,M_SHOW,"--- Providers stopped\n");
                providersStopped=1;
             }   
             pthread_attr_init(&tattr);
@@ -260,7 +261,7 @@ static void handleSigChld(int sig)
 static void handleSigterm(int sig)
 {
    if (!terminating) {
-      fprintf(stderr, "--- %s - %d exiting due to signal %d\n", processName, currentProc, sig);
+      mlogf(M_ERROR,M_SHOW, "--- %s - %d exiting due to signal %d\n", processName, currentProc, sig);
       dumpTiming(currentProc);
    }   
    terminating=1; 
@@ -271,13 +272,13 @@ static void handleSigterm(int sig)
 
 static void handleSigSegv(int sig)
 {
-   fprintf(stderr, "-#- %s - %d exiting due to a SIGSEGV signal\n",
+   mlogf(M_ERROR,M_SHOW, "-#- %s - %d exiting due to a SIGSEGV signal\n",
            processName, currentProc);
 }
 /*
 static void handleSigAbort(int sig)
 {
-   fprintf(stderr, "%s: exiting due to a SIGABRT signal - %d\n", processName, currentProc);
+   mlogf(M_INFO,M_SHOW, "%s: exiting due to a SIGABRT signal - %d\n", processName, currentProc);
    kill(0, SIGTERM);
 }
 */
@@ -288,7 +289,8 @@ int startHttpd(int argc, char *argv[], int sslMode)
 
    pid= fork();
    if (pid < 0) {
-      perror("httpd fork");
+      char *emsg=strerror(errno);
+      mlogf(M_ERROR,M_SHOW, "-#- http fork: %s",emsg);
       exit(2);
    }
    if (pid == 0) {
@@ -327,8 +329,10 @@ int main(int argc, char *argv[])
    restartArgc=argc;
    restartArgv=argv;
 
-   printf("--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
-   printf("--- (C) Copyright IBM Corp. 2004\n");
+   startLogging("sfcb");
+   
+   mlogf(M_INFO,M_SHOW,"--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
+   mlogf(M_INFO,M_SHOW,"--- (C) Copyright IBM Corp. 2004\n");
 
    for (c = 0, i = 1; i < argc; i++) {
       if (strcmp(argv[i], "-d") == 0)
@@ -355,7 +359,7 @@ int main(int argc, char *argv[])
       else if (strcmp(argv[i], "-I") == 0) exFlags|=2;
 
       else {
-         printf("--- Bad parameter: %s\n", argv[i]);
+         mlogf(M_ERROR,M_SHOW,"--- Bad parameter: %s\n", argv[i]);
          exit(3);
       }
    }
@@ -368,7 +372,7 @@ int main(int argc, char *argv[])
 //        SFCB_DEBUG
 #ifndef SFCB_DEBUG
    if (tmask)
-      printf("--- SCFB_DEBUG not configured. -tm %d ignored\n",tmask);
+      mlogf(M_ERROR,M_SHOW,"--- SCFB_DEBUG not configured. -tm %d ignored\n",tmask);
 #endif
 
    if ((pauseStr=getenv("SFCB_PAUSE_PROVIDER"))) {
@@ -383,7 +387,7 @@ int main(int argc, char *argv[])
    sslMode=enableHttps;
    sslOMode=sslMode & !enableHttp;
 #else
-   printf("--- SSL not configured\n");
+   mlogf(M_INFO,M_SHOW,"--- SSL not configured\n");
    enableHttps=0;
    sslMode=0;
    sslOMode=0;
@@ -392,12 +396,12 @@ int main(int argc, char *argv[])
    if (getControlBool("useChunking", &useChunking))
       useChunking=0;
    if (useChunking==0)
-         printf("--- Chunking disabled\n");
+         mlogf(M_INFO,M_SHOW,"--- Chunking disabled\n");
 
    if (getControlBool("doBasicAuth", &doBa))
       doBa=0;
    if (!doBa)
-      printf("--- User authentication disabled\n");
+      mlogf(M_INFO,M_SHOW,"--- User authentication disabled\n");
 
    if (getControlNum("httpProcs", &dSockets))
       dSockets = 10;

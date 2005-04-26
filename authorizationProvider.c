@@ -460,7 +460,7 @@ CMPIStatus SFC_AuthorizationInvokeMethod(
 		CMPIContext * context,
 		CMPIResult * results,
 		CMPIObjectPath * reference,
-		char * methodname,
+		const char * methodname,
 		CMPIArgs * argsin,
 		CMPIArgs * argsout)
 {

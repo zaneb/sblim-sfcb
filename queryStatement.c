@@ -25,6 +25,7 @@
 #include <malloc.h>
 
 #include "queryOperation.h"
+#include "mlog.h"
 
 extern int sfcQueryparse(QLControl*);
 extern CMPIBroker *Broker;
@@ -61,12 +62,12 @@ char * sfcQueryStrcpy(char *txt, int n)
 
 void sfcQueryErr(char* s1, char* s2, char* s3)
 {
-   fprintf(stderr,"--- %s %s %s\n",s1,s2,s3);
+   mlogf(M_ERROR,M_SHOW,"--- %s %s %s\n",s1,s2,s3);
 }
 
 void sfcQueryError(char* s1)
 {
-   fprintf(stderr,"--- %s\n",s1);
+   mlogf(M_ERROR,M_SHOW,"--- %s\n",s1);
 }
 
 static char** ensureCharsListSpace(QLStatement *qs, char ***in, int *max, int nxt)

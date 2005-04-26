@@ -24,13 +24,13 @@ const char *_mlog_id = "$Id$";
 #include <stdarg.h>
 #include <stdio.h>
 
-void m_start_logging(const char *name)
+void startLogging(const char *name)
 {
   openlog(name,LOG_PID,LOG_DAEMON);
   setlogmask(LOG_UPTO(LOG_INFO));
 }
 
-void m_log(int priority, int errout, const char *fmt, ...)
+void mlogf(int priority, int errout, const char *fmt, ...)
 {
   va_list ap;
   int priosysl;

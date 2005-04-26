@@ -98,7 +98,7 @@ void _sfcb_trace_init()
    err = getenv("SFCB_TRACE_FILE");
    if (err != NULL) {
       if ((((ferr = fopen(err, "a")) == NULL) || fclose(ferr))) {
-         fprintf(stderr, "Couldn't create trace file\n");
+         mlogf(M_ERROR,M_SHOW, "--- Couldn't create trace file\n");
          return;
       }
       _SFCB_TRACE_FILE = strdup(err);
@@ -132,7 +132,7 @@ void _sfcb_trace(int level, char *file, int line, char *msg)
 
    if ((_SFCB_TRACE_FILE != NULL)) {
       if ((ferr = fopen(_SFCB_TRACE_FILE, "a")) == NULL) {
-         fprintf(stderr, "Couldn't open trace file");
+         mlogf(M_ERROR,M_SHOW, "--- Couldn't open trace file");
          return;
       }
    }
@@ -165,7 +165,6 @@ void _sfcb_trace(int level, char *file, int line, char *msg)
 extern void _sfcb_set_trace_mask(int n)
 {
    _sfcb_trace_mask = n;
-//   printf("mask: %x\n",n);
 }
 
 void _sfcb_trap(int tn)

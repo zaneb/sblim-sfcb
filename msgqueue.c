@@ -112,7 +112,6 @@ int semSetValue(int semid, int semnum, int value)
 int initSem(int https, int shttps, int provs)
 {
    union semun sun;
-   char emsg[256];
    int i;
    
    sfcbSemKey=ftok(".",'S');
@@ -121,8 +120,8 @@ int initSem(int https, int shttps, int provs)
       semctl(sfcbSem,0,IPC_RMID,sun);
    
    if ((sfcbSem=semget(sfcbSemKey,4+(provs*3)+3,IPC_CREAT | IPC_EXCL | 0666))==-1) {
-      sprintf(emsg,"SFCB semaphore create %d",currentProc);
-      perror(emsg);
+      char *emsg=strerror(errno);
+      mlogf(M_ERROR,M_SHOW,"SFCB semaphore create %d: %s\n",currentProc,emsg);
       abort();
    }
 
@@ -160,10 +159,8 @@ MsgSegment setCharsMsgSegment(char *str)
 static int spHandleError(int *s, char *m)
 {
    _SFCB_ENTER(TRACE_MSGQUEUE, "handleError");
-   char emsg[256];
-
-   sprintf(emsg, "%s %d %d-%d", m, *s, currentProc, errno);
-   perror(emsg);
+   char *emsg=strerror(errno);
+   mlogf(M_ERROR,M_SHOW,"%s %d %d-%d %s\n", m, *s, currentProc, errno,emsg);
    _SFCB_ABORT();
    return errno;
 }
@@ -197,7 +194,8 @@ static int spGetMsg(int *s, void *data, unsigned length, MqgStat* mqg)
       }
 
       if (n == 0) {
-         perror("Warning: fd is closed:");
+         char *emsg=strerror(errno);
+         mlogf(M_ERROR,M_SHOW,"--- Warning: fd is closed: %s\n",emsg);
          break;
       }
 
@@ -275,7 +273,7 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
       _SFCB_RETURN(spMsg.type.ctl.xtra);
    default:
       *data = NULL;
-      fprintf(stderr,"### %d ??? %ld-%d\n", currentProc, spMsg.type.type,
+      mlogf(M_ERROR,M_SHOW,"### %d ??? %ld-%d\n", currentProc, spMsg.type.type,
              spMsg.type.ctl.xtra);
       abort();
    }
@@ -481,10 +479,9 @@ void initSocketPairs(int provs, int https, int shttps)
    int i,t=(provs*2)+https; //,shttps;
    
    sPairs=(ComSockets*)malloc(sizeof(ComSockets)*t);
-   fprintf(stderr,"--- initSocketPairs: %d\n",t);
+   mlogf(M_INFO,M_SHOW,"--- initSocketPairs: %d\n",t);
    for (i=0; i<t; i++) {
       socketpair(PF_LOCAL, SOCK_STREAM, 0, &sPairs[i].receive);
- //     fprintf(stderr,"--- initSocketPairs sock[%d]: %d\n",i,sPairs[i].receive);
    }   
    ptBase=provs;
    htBase=ptBase+provs;

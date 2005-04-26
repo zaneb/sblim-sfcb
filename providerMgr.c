@@ -90,7 +90,7 @@ static UtilList *_getAssocClassNames(const char *ns);
 
 static void notSupported(int *requestor, OperationHdr * req)
 {
-   fprintf(stderr,"--- MSG_X_NOT_SUPPORTED\n");
+   mlogf(M_ERROR,M_SHOW,"--- MSG_X_NOT_SUPPORTED\n");
    spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_NOT_SUPPORTED, 0, NULL);
    free(req);
 }
@@ -98,13 +98,13 @@ static void notSupported(int *requestor, OperationHdr * req)
 /*
 static void handleSigterm(int sig)
 {
-   fprintf(stderr, "%s: exiting due to signal %d\n", "provider", sig);
+   mlogf(M_ERROR,M_SHOW, "%s: exiting due to signal %d\n", "provider", sig);
    exit(1);
 }
 
 static void handleSigSegv(int sig)
 {
-   fprintf(stderr, "()%d): exiting due to a SIGSEGV signal %d - %s(%d)\n",
+   mlogf(M_ERROR,M_SHOW, "()%d): exiting due to a SIGSEGV signal %d - %s(%d)\n",
            currentProc, sig, __FILE__, __LINE__);
    abort();
 }
@@ -747,7 +747,6 @@ void processProviderMgrRequests()
             free(req);
          }
          else {
-//            printf("-------- eintr ?\n");
          }
       }
       else {
@@ -888,7 +887,7 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
          l += ol;
          break;
       default:
-         fprintf(stderr,"--- bad invokeProvider request %d-%d\n", i,hdr->object[i].type);
+         mlogf(M_ERROR,M_SHOW,"--- bad invokeProvider request %d-%d\n", i,hdr->object[i].type);
          abort();
       }
    }
@@ -902,7 +901,7 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    for (;;) {
       rc=spSendReq(&ctx->provA.socket, &resultSockets.send, buf, l);
       if (rc==-2) {
-         fprintf(stderr,"need to reload provider\n");
+         mlogf(M_ERROR,M_SHOW,"--- need to reload provider ??\n");
          asm("int $3");
    //      reloadProviderRequest(ctx);
          exit(3);

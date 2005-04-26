@@ -1929,7 +1929,7 @@ propertyData
 propertyArray
     : XTOK_PROPERTYARRAY  ZTOK_PROPERTYARRAY
     {
-    printf("--- propertyArray\n");
+  //  printf("--- propertyArray\n");
     }
 ;
 
@@ -1958,7 +1958,7 @@ qualifier
 propertyArray
     : XTOK_PROPERTYARRAY  ZTOK_PROPERTYARRAY
     {
-    printf("--- propertyArray\n");
+ //   printf("--- propertyArray\n");
     }
 ;
 

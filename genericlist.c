@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "genericlist.h"
+#include "mlog.h"
 
 #ifdef THINK_C
 #define malloc NewPtr
@@ -146,7 +147,7 @@ static void add_to_beginning(Generic_list list, void *pointer)
    Generic_list_element *element;
 
    if (!pointer) {
-      fprintf(stderr, "%s: NULL pointer passed 1\n", module);
+      mlogf(M_ERROR,M_SHOW, "%s: NULL pointer passed 1\n", module);
       return;
       exit(EXIT_FAILURE);
    }
@@ -169,7 +170,7 @@ static void add_to_end(Generic_list list, void *pointer)
    Generic_list_element *element;
 
    if (!pointer) {
-      fprintf(stderr, "%s: NULL pointer passed 2\n", module);
+      mlogf(M_ERROR,M_SHOW, "%s: NULL pointer passed 2\n", module);
   //    abort();
       return;
       exit(EXIT_FAILURE);
@@ -194,7 +195,7 @@ static void add_to_list(Generic_list list, void *pointer)
 
     if (list.info->lt) {
         if (!pointer) {
-            fprintf(stderr, "%s: NULL pointer passed\n", module);
+            mlogf(M_ERROR,M_SHOW, "%s: NULL pointer passed\n", module);
             exit(EXIT_FAILURE);
         }
 
@@ -595,7 +596,7 @@ static void *emalloc(unsigned int n)
 
    ptr = (void *) malloc(n);
    if (ptr == NULL) {
-      fprintf(stderr, "%s: error allocating memory\n", module);
+      mlogf(M_ERROR,M_SHOW, "%s: error allocating memory\n", module);
       exit(EXIT_FAILURE);
    }
    return ptr;

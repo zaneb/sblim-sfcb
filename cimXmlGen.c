@@ -129,7 +129,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
             in=&ref->instanceName;
             break;   
          default:
-            printf("%s(%d): unexpected reference type %d %x\n", __FILE__, __LINE__, 
+            mlogf(M_ERROR,M_SHOW,"%s(%d): unexpected reference type %d %x\n", __FILE__, __LINE__, 
                (int) type, (int) type);
             abort();   
          }
@@ -193,7 +193,7 @@ static char *dataType(CMPIType type)
    case CMPI_instance:
       return "%";
    }
-   printf("%s(%d): invalid data type %d %x\n", __FILE__, __LINE__, (int) type,
+   mlogf(M_ERROR,M_SHOW,"%s(%d): invalid data type %d %x\n", __FILE__, __LINE__, (int) type,
           (int) type);
    asm("int $3");
    abort();
@@ -220,7 +220,7 @@ static char *keyType(CMPIType type)
    case CMPI_ref:
       return "*";
    }
-   printf("%s(%d): invalid key data type %d %x\n", __FILE__, __LINE__,
+   mlogf(M_ERROR,M_SHOW,"%s(%d): invalid key data type %d %x\n", __FILE__, __LINE__,
           (int) type, (int) type);
    asm("int $3");
    abort();
@@ -303,7 +303,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t);
       break;
   default:
-      printf("%s(%d): invalid value %d-%s\n", __FILE__, __LINE__, (int) type, val);
+      mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value %d-%s\n", __FILE__, __LINE__, (int) type, val);
       abort();
    }
    return value;
@@ -388,7 +388,7 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
          else sp = "";
       }
       else {
-         printf("%s(%d): invalid value2xml %d-%x\n", __FILE__, __LINE__,
+         mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value2xml %d-%x\n", __FILE__, __LINE__,
                 (int) d.type, (int) d.type);
          abort();
       }
@@ -588,7 +588,7 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
    else if (pdata->type==CMPI_refA) {
       sb->ft->appendChars(sb, "<PARAMETER.REFARRAY NAME=\"");
       sb->ft->appendChars(sb, (char*)pname->hdl);
-      fprintf(stderr,"*** PARAMETER.REFARRAY not implemenetd\n");
+      mlogf(M_ERROR,M_SHOW,"*** PARAMETER.REFARRAY not implemenetd\n");
       abort();  
       etag="</PARAMETER.REFARRAY>\n";
    }   
@@ -756,7 +756,7 @@ int args2xml(CMPIArgs * args, UtilStringBuffer * sb)
       data = CMGetArgAt(args, i, &name, NULL);
       
       if (data.type & CMPI_ARRAY) {
-         fprintf(stderr,"-#- args2xml: arrays in CMPIArgs not yet supported\n");
+         mlogf(M_ERROR,M_SHOW,"-#- args2xml: arrays in CMPIArgs not yet supported\n");
          abort();
 //         data2xml(&data,args,name,"<PROPERTY.ARRAY NAME=\"", "</PROPERTY.ARRAY>\n",
 //                  sb, qsb, 1);
@@ -764,7 +764,7 @@ int args2xml(CMPIArgs * args, UtilStringBuffer * sb)
       else {
          type = dataType(data.type);
          if (*type == '*') {
-           fprintf(stderr,"-#- args2xml: references in CMPIArgs not yet supported\n");
+           mlogf(M_ERROR,M_SHOW,"-#- args2xml: references in CMPIArgs not yet supported\n");
            abort();
 //              data2xml(&data,args,name,"<PROPERTY.REFERENCE NAME=\"",
 //                     "</PROPERTY.REFERENCE>\n", sb, qsb, 1);

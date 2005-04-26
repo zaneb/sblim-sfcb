@@ -150,7 +150,6 @@ int stopNextProc()
    
    for (i=provProcMax-1; i; i--) {
       if ((pp+i)->pid) {
-//         printf("killing 1 %d\n",(pp+i)->pid);
          kill((pp+i)->pid,SIGUSR1);
          return (pp+i)->pid;
       }
@@ -159,14 +158,12 @@ int stopNextProc()
    if (done==0) {
       if (classProvInfoPtr && classProvInfoPtr->pid) {
          t=classProvInfoPtr->pid;
-  //       printf("killing 2 %d\n",t);
          kill(classProvInfoPtr->pid,SIGUSR1);
          done=1;
          return t;
       }
    }   
    
-//   printf("done\n");
    return 0;
 }
 
@@ -183,7 +180,7 @@ static void stopProc(void *p)
       if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx);
       if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx);
    }
-   printf("---  stopped %s %d\n",processName,getpid());
+   mlogf(M_INFO,M_SHOW,"---  stopped %s %d\n",processName,getpid());
    exit(0);
 } 
   
@@ -212,7 +209,7 @@ void initProvProcCtl(int p)
 {
    int i;
 
-   printf("--- Max provider procs: %d\n",p);
+   mlogf(M_INFO,M_SHOW,"--- Max provider procs: %d\n",p);
    provProcMax=p;
    provProc=(ProviderProcess*)calloc(p,sizeof(*provProc));
    for (i=0; i<p; i++) provProc[i].id=i;
@@ -555,7 +552,7 @@ int sendResponse(int requestor, BinResponseHdr * hdr)
          rvl=hdr->rvEnc.length;
          break;
       case CMPI_ref:
-         fprintf(stderr,"-#- not supporting refs\n");
+         mlogf(M_ERROR,M_SHOW,"-#- not supporting refs\n");
          abort();
       default: ;
       }
@@ -613,7 +610,7 @@ int sendResponse(int requestor, BinResponseHdr * hdr)
          l += ol;
          break;
       default:
-         fprintf(stderr,"--- bad sendResponee request %d\n", hdr->object[i].type);
+         mlogf(M_ERROR,M_SHOW,"--- bad sendResponee request %d\n", hdr->object[i].type);
          *((char *) (void *) 0) = 0;
          _SFCB_ABORT();
       }
@@ -680,7 +677,6 @@ char **makePropertyList(int n, MsgSegment *ms)
    int i;
 
    if (n==1 && ms[0].data==NULL) return NULL;
-   printf("makePropertyList %d %s\n",n,(char*)ms[0].data);
    l=(char**)malloc(sizeof(char*)*(n+1));
 
    for (i=0; i<n; i++)
@@ -1443,7 +1439,6 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    if (info->indicationMI==NULL) {
       CMPIStatus st;
       setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"Provider does not support indications");
-      printf("Provider does not support indications %s\n",info->providerName);
       resp = errorResp(&st);
       _SFCB_RETURN(resp);  
    }
@@ -1544,7 +1539,7 @@ static BinResponseHdr *enableIndications(BinRequestHdr *hdr, ProviderInfo* info,
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    _SFCB_ENTER(TRACE_PROVIDERDRV, "enableIndications");
 
-   fprintf(stderr,"--- enableIndications not yet supported\n");
+   mlogf(M_ERROR,M_SHOW,"--- enableIndications not yet supported\n");
    resp = errorResp(&rci);
    _SFCB_RETURN(resp);
 }
@@ -1556,7 +1551,7 @@ static BinResponseHdr *disableIndications(BinRequestHdr *hdr, ProviderInfo* info
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    _SFCB_ENTER(TRACE_PROVIDERDRV, "");
 
-   fprintf(stderr,"--- disableIndications not yet supported\n");
+   mlogf(M_ERROR,M_SHOW,"--- disableIndications not yet supported\n");
    resp = errorResp(&rci);
    _SFCB_RETURN(resp);
 }
@@ -1571,7 +1566,7 @@ static BinResponseHdr *opNotSupported(BinRequestHdr * hdr, ProviderInfo * info, 
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    _SFCB_ENTER(TRACE_PROVIDERDRV, "opNotSupported");
 
-   fprintf(stderr,"--- opNotSupported\n");
+   mlogf(M_ERROR,M_SHOW,"--- opNotSupported\n");
    resp = errorResp(&rci);
    _SFCB_RETURN(resp);
 }
@@ -1622,7 +1617,7 @@ static int doLoadProvider(ProviderInfo *info, char *dlName)
    info->library = dlopen(dlName, RTLD_NOW);
 
    if (info->library == NULL) {
-      fprintf(stderr,"*** dlopen error: %s\n",dlerror());
+      mlogf(M_ERROR,M_SHOW,"*** dlopen error: %s\n",dlerror());
       _SFCB_RETURN(-1);
    }   
 
@@ -1659,7 +1654,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
       char msg[740];
       sprintf(msg, "*** Failed to load %s for %s\n", dlName,
               info->providerName);
-      fprintf(stderr,msg);
+      mlogf(M_ERROR,M_SHOW,msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
       _SFCB_RETURN(resp);
    }
@@ -1667,7 +1662,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
       char msg[740];
       sprintf(msg, "*** Inconsistent provider registration for %s (2)\n",
               info->providerName);
-      fprintf(stderr,msg);
+      mlogf(M_ERROR,M_SHOW,msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
       _SFCB_RETURN(resp);
    }
@@ -1796,7 +1791,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
       
       if (pInfo && pInfo->library==NULL) { 
          char dlName[512];
-         fprintf(stderr,"--- Reloading provider\n");
+         mlogf(M_INFO,M_SHOW,"--- Reloading provider\n");
          doLoadProvider(pInfo,dlName);
       }  
       
@@ -1815,7 +1810,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
       char msg[1024];
       snprintf(msg,1023, "*** Inconsistent provider registration for %s (2)\n",
               pInfo->providerName);
-      fprintf(stderr,msg);
+      mlogf(M_ERROR,M_SHOW,msg);
       _SFCB_TRACE(1, (msg));
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
    }
@@ -1919,7 +1914,7 @@ void processProviderInvocationRequests(char *name)
       rc = spRecvReq(&providerSockets.receive, &parms->requestor,
                      (void **) &parms->req, &rl, &mqg);
       if (mqg.rdone) {               
-         if (rc!=0) fprintf(stderr,"oops\n");               
+         if (rc!=0)mlogf(M_ERROR,M_SHOW,"oops\n");               
 
          _SFCB_TRACE(1, ("--- Got something %d-%p on %d-%lu", 
             parms->req->operation,parms->req->provId,
@@ -1940,7 +1935,6 @@ void processProviderInvocationRequests(char *name)
          }
       }
       else {
-//            printf("-------- eintr ?\n");
       }   
    }
    _SFCB_EXIT();

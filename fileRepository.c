@@ -28,7 +28,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <errno.h>
 #include "fileRepository.h"
+#include "mlog.h"
 
 #define BASE "repository"
 
@@ -354,8 +356,9 @@ void *getBlob(char *ns, char *cls, char *id, int *len)
       if (indxLocate(bi,id)) {
          bi->fd=fopen(bi->fnd,"rb");
          if (bi->fd==NULL) {
-            fprintf(stderr,"*** Repository error for %s \n",bi->fnd);
-            perror("Repository error: ");
+            char *emsg=strerror(errno);
+            mlogf(M_ERROR,M_SHOW,"*** Repository error for %s\n",bi->fnd);
+            mlogf(M_ERROR,M_SHOW,"Repository error: %s\n",emsg);
             exit(5);
          }
          fseek(bi->fd,bi->bofs,SEEK_SET);

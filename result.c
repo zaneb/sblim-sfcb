@@ -26,6 +26,7 @@
 #include "constClass.h"
 #include "queryOperation.h"
 #include "utilft.h"
+#include "mlog.h"
 
 extern void native_array_reset_size(CMPIArray * array, CMPICount increment);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
@@ -214,8 +215,7 @@ static CMPIStatus __rft_returnData(CMPIResult * result,
 //   NativeResult *r = (NativeResult*) result;
 
    if (type==CMPI_ref) {
-      fprintf(stderr,
-         "--- CMPIResult does not yet support returning references\n");
+      mlogf(M_ERROR,M_SHOW,"--- CMPIResult does not yet support returning references\n");
       abort();   
    }
    

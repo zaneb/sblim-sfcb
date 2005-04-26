@@ -181,7 +181,6 @@ static ClassRegister *newClassRegister(char *fname)
    in = fopen(fin, "r");
    
    if (in == NULL) {
-   //   fprintf(stderr, "--- %s not found\n", fin);
       cb->ht = UtilFactory->newHashTable(61,
                UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
       cb->it = UtilFactory->newHashTable(61,
@@ -207,13 +206,13 @@ static ClassRegister *newClassRegister(char *fname)
       }
       
       if (vRec==0 && hdr.type!=HDR_Class) {
-         fprintf(stderr,"--- %s contains non-class record(s) - directory skipped\n",fin);
+         mlogf(M_ERROR,M_SHOW,"--- %s contains non-class record(s) - directory skipped\n",fin);
          return NULL;
      }
       
       buf = (char *) malloc(hdr.size);
       if (buf==NULL) {
-         fprintf(stderr,"--- %s contains record(s) that are too long - directory skipped\n",fin);
+         mlogf(M_ERROR,M_SHOW,"--- %s contains record(s) that are too long - directory skipped\n",fin);
          return NULL;
       }
       
@@ -239,16 +238,16 @@ static ClassRegister *newClassRegister(char *fname)
          }   
       }
       else {
-         fprintf(stderr,"--- %s contains invalid record(s) - directory skipped\n",fin);
+         mlogf(M_ERROR,M_SHOW,"--- %s contains invalid record(s) - directory skipped\n",fin);
          return NULL;
       }
    }
  
    if (cr->vr) {
-      printf("--- ClassProvider for %s (%d.%d) using %ld bytes\n", 
+      mlogf(M_INFO,M_SHOW,"--- ClassProvider for %s (%d.%d) using %ld bytes\n", 
           fname, cr->vr->version, cr->vr->level, total);
    }
-   else printf("--- ClassProvider for %s (no-version) using %ld bytes\n", fname, total);
+   else mlogf(M_INFO,M_SHOW,"--- ClassProvider for %s (no-version) using %ld bytes\n", fname, total);
 
    buildInheritanceTable(cr);
    
@@ -399,7 +398,7 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
       } 
    }
    else if (first) {
-      fprintf(stderr,"--- Repository %s not found\n",dn);
+      mlogf(M_ERROR,M_SHOW,"--- Repository %s not found\n",dn);
    }
    closedir(dir);  
    return ns;     
@@ -946,7 +945,7 @@ CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
   }
    
    else {
-      fprintf(stderr,"--- ClassProvider: Invalid request %s\n", methodName);
+      mlogf(M_ERROR,M_SHOW,"--- ClassProvider: Invalid invokeMethod request %s\n", methodName);
       st.rc = CMPI_RC_ERR_METHOD_NOT_FOUND;
    }
    return st;

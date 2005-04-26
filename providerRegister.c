@@ -22,6 +22,7 @@
 
 
 #include "utilft.h"
+#include "mlog.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -78,7 +79,7 @@ ProviderRegister *newProviderRegister(char *fn)
    strcat(fin, "/providerRegister");
    in = fopen(fin, "r");
    if (in == NULL) 
-      fprintf(stderr, "--- %s not found\n", fin);
+      mlogf(M_ERROR,M_SHOW, "--- %s not found\n", fin);
       
    else {
 
@@ -94,7 +95,7 @@ ProviderRegister *newProviderRegister(char *fn)
          stmt = strdup(fin);
          switch (cntlParseStmt(fin, &rv)) {
          case 0:
-            printf("--- registration statement not recognized: \n\t%d: %s\n", n,stmt);
+            mlogf(M_ERROR,M_SHOW,"--- registration statement not recognized: \n\t%d: %s\n", n,stmt);
             err = 1;
             break;
          case 1:
@@ -132,7 +133,7 @@ ProviderRegister *newProviderRegister(char *fn)
                      info->unload =-1;
                   }   
                   else {
-                     printf("--- invalid unload specification: \n\t%d: %s\n", n, stmt);
+                     mlogf(M_ERROR,M_SHOW,"--- invalid unload specification: \n\t%d: %s\n", n, stmt);
                      err = 1;
                   }
                }   
@@ -152,7 +153,7 @@ ProviderRegister *newProviderRegister(char *fn)
                   else if (strcmp(t, "class") == 0)
                      info->type |= CLASS_PROVIDER;
                   else {
-                     printf("--- invalid type specification: \n\t%d: %s\n", n, stmt);
+                     mlogf(M_ERROR,M_SHOW,"--- invalid type specification: \n\t%d: %s\n", n, stmt);
                      err = 1;
                      }
             }
@@ -171,7 +172,7 @@ ProviderRegister *newProviderRegister(char *fn)
                }
             }
             else {
-               printf("--- invalid registration statement: \n\t%d: %s\n", n, stmt);
+               mlogf(M_ERROR,M_SHOW,"--- invalid registration statement: \n\t%d: %s\n", n, stmt);
                err = 1;
             }
             break;
@@ -186,23 +187,23 @@ ProviderRegister *newProviderRegister(char *fn)
    }   
 
    if (classProvInfoPtr==NULL) {
-      printf("--- Class provider definition not found - sfcbd will terminate\n");
+      mlogf(M_ERROR,M_SHOW,"--- Class provider definition not found - sfcbd will terminate\n");
       err=1;
    }
    
    if (defaultProvInfoPtr==NULL) 
-      printf("--- Default provider definition not found - no instance repository available\n");
+      mlogf(M_INFO,M_SHOW,"--- Default provider definition not found - no instance repository available\n");
    
    if (interOpProvInfoPtr==NULL) {
       if (exFlags & 2 && interopFound==0)
-         printf("--- InterOp provider definition not found - no InterOp support available\n");
+         mlogf(M_INFO,M_SHOW,"--- InterOp provider definition not found - no InterOp support available\n");
       else if (interopFound)    
-         printf("--- InterOp provider definition found but not started - no InterOp support available\n");
+         mlogf(M_INFO,M_SHOW,"--- InterOp provider definition found but not started - no InterOp support available\n");
       interOpProvInfoPtr=&forceNotFound;
    }   
    
    if (err) {
-      printf("--- Broker terminated because of previous error(s)\n");
+      mlogf(M_ERROR,M_SHOW,"--- Broker terminated because of previous error(s)\n");
       exit(5);
    }
    if (stmt) free(stmt);

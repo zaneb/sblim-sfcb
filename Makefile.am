@@ -21,7 +21,7 @@
 # 
 
 sfcbstatedir=$(localstatedir)/lib/sfcb
-sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
+sfcbdocdir=$(datadir)/doc/$(PACKAGE)-$(VERSION)
 initdir=$(sysconfdir)/init.d
 
 BUILT_SOURCES=queryParser.c queryLexer.c authorizationParser.c \
@@ -29,7 +29,7 @@ BUILT_SOURCES=queryParser.c queryLexer.c authorizationParser.c \
 
 AM_YFLAGS=-d
 
-AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sysconfdir)/sfcb\" \
+AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sysconfdir)/$(PACKAGE)\" \
 	-DSFCB_STATEDIR=\"$(sfcbstatedir)\"
 
 SUBDIRS=. $(MOFC_DIR)
@@ -221,7 +221,7 @@ dist-hook:
 
 install-cimschema: getSchema.sh
 	test -d $(DESTDIR)$(pkgdatadir) || $(mkdir_p) $(DESTDIR)$(pkgdatadir)
-	sh getSchema.sh $(DESTDIR)$(pkgdatadir)
+	sh getSchema.sh -f $(DESTDIR)$(pkgdatadir)
 
 postinstall: install-cimschema
 	test -f $(DESTDIR)$(sfcbstatedir)/registration/providerRegister || $(INSTALL_DATA) $(DESTDIR)$(sfcbstatedir)/stage/default.reg $(DESTDIR)$(sfcbstatedir)/registration/providerRegister 

@@ -60,10 +60,10 @@ echo "%defattr(-,root,root)" > _pkg_list
 find $RPM_BUILD_ROOT/%{_datadir}/%{name} -type f | grep -v $RPM_BUILD_ROOT/%{_datadir}/%{name}/CIM >> _pkg_list
 sed s?$RPM_BUILD_ROOT??g _pkg_list > _pkg_list_2
 mv -f _pkg_list_2 _pkg_list
-echo "%config %{_sysconfdir}/%{name}" >> _pkg_list
+echo "%config %{_sysconfdir}/sfcb" >> _pkg_list
 echo "%doc %{_datadir}/doc" >> _pkg_list
-echo "%{_sysconfdir}/init.d/%{name}" >> _pkg_list
-echo "%{_localstatedir}/lib/%{name}" >> _pkg_list
+echo "%{_sysconfdir}/init.d/sfcb" >> _pkg_list
+echo "%{_localstatedir}/lib/sfcb" >> _pkg_list
 echo "%{_bindir}/*" >> _pkg_list
 echo "%{_libdir}/*.so*" >> _pkg_list
 

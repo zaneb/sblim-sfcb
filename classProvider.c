@@ -74,6 +74,7 @@ struct _Class_Register_FT {
    ClassRegister *(*clone) (ClassRegister * br);
    CMPIConstClass *(*getClass) (ClassRegister * br, const char *clsName);
    int (*putClass) (ClassRegister * br, CMPIConstClass * cls);
+   int (*removeClass) (ClassRegister * br, const char *className);
    UtilList *(*getChildren) (ClassRegister * br, const char *className);
    void (*rLock)(ClassRegister * cr);
    void (*wLock)(ClassRegister * cr);
@@ -157,6 +158,20 @@ static UtilList *getChildren(ClassRegister * cr, const char *className)
 {
    ClassBase *cb = (ClassBase *) (cr + 1);
    return cb->it->ft->get(cb->it, className);
+}
+
+static void removeChild(ClassRegister * cr, const char* pn, const char *chd)
+{
+   ClassBase *cb = (ClassBase *) (cr + 1);
+   char *child;
+   UtilList *ul=cb->it->ft->get(cb->it, pn);
+   
+   if (ul) for (child =(char*)ul->ft->getFirst(ul); child; child=(char*)ul->ft->getNext(ul)) {
+      if (strcasecmp(child,chd)==0) {
+         ul->ft->removeCurrent(ul);
+         break;
+      }      
+   }
 }
 
 static ClassRegister *newClassRegister(char *fname)
@@ -450,6 +465,54 @@ static int putClass(ClassRegister * cr, CMPIConstClass * cls)
    return cb->ht->ft->put(cb->ht, cls->ft->getCharClassName(cls), cls);
 }
 
+static void removeClass(ClassRegister * cr,  const char *clsName)
+{
+   FILE *repold,*repnew;
+   char *tmpfn;
+   int s;
+   ClObjectHdr hdr;
+   ClassBase *cb = (ClassBase *) cr->hdl;
+   
+   cb->ht->ft->remove(cb->ht, clsName);
+   
+   repold = fopen(cr->fn, "r");
+   tmpfn=malloc(strlen(cr->fn)+8);
+   strcpy(tmpfn,cr->fn);
+   strcat(tmpfn,".tmp");
+   repnew = fopen(tmpfn, "w");
+   
+   while ((s = fread(&hdr, 1, sizeof(hdr), repold)) == sizeof(hdr)) {
+      CMPIConstClass cc;
+      char *buf=NULL;
+      char *cn;
+      
+      buf = (char *) malloc(hdr.size);
+      *((ClObjectHdr *) buf) = hdr;
+      
+      if (fread(buf + sizeof(hdr), 1, hdr.size - sizeof(hdr), repold) == hdr.size - sizeof(hdr)) {
+         if (hdr.type==HDR_Class) {
+            cc.hdl = buf;
+            cc.ft = CMPIConstClassFT;
+            cc.ft->relocate(&cc);
+            cn=(char*)cc.ft->getCharClassName(&cc);
+            if (strcasecmp(clsName,cn)==0) {
+               free(buf);
+               continue;
+            }   
+         }
+         fwrite(buf,1,hdr.size,repnew);
+         free(buf);
+      }   
+   }
+   fclose(repold);
+   fclose(repnew);
+   
+   unlink(cr->fn);
+   rename(tmpfn, cr->fn);
+   
+   free(tmpfn);
+}
+
 
 static CMPIConstClass *getClass(ClassRegister * cr, const char *clsName)
 {
@@ -466,6 +529,7 @@ static Class_Register_FT ift = {
    regClone,
    getClass,
    putClass,
+   removeClass,
    getChildren,
    rLock, 
    wLock, 
@@ -725,12 +789,13 @@ CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
       st.rc = CMPI_RC_ERR_ALREADY_EXISTS;
       _SFCB_RETURN(st);
    }
-   if (pn && (cl=getClass(cReg,cn))==NULL) {
+   if (pn && (cl=getClass(cReg,pn))==NULL) {
       st.rc = CMPI_RC_ERR_INVALID_SUPERCLASS;
       _SFCB_RETURN(st);
    }
    
    cReg->ft->wLock(cReg);
+   
    addClass(cReg,cc,cn,pn);
    
    cReg->ft->wUnLock(cReg);
@@ -752,8 +817,44 @@ CMPIStatus ClassProviderDeleteClass(CMPIClassMI * mi,
                                        CMPIContext * ctx,
                                        CMPIResult * rslt, CMPIObjectPath * cop)
 {
-   CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   return st;
+   ClassRegister *cReg;
+   CMPIConstClass * cl;
+   int rc;
+   
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   
+   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderDeleteClass");
+   
+   cReg=getNsReg(cop, &rc);
+   if (cReg==NULL) {
+      CMPIStatus st = { CMPI_RC_ERR_INVALID_NAMESPACE, NULL };
+      _SFCB_RETURN(st);
+   }
+   
+   char *cn = (char*)cop->ft->getClassName(cop,NULL)->hdl;
+
+   cl = getClass(cReg,cn);
+   if (cl==NULL) {
+      st.rc = CMPI_RC_ERR_NOT_FOUND;
+      _SFCB_RETURN(st);
+   }
+      
+   UtilList *ul = getChildren(cReg,cn);
+   if (ul) {
+      st.rc = CMPI_RC_ERR_CLASS_HAS_CHILDREN;
+      _SFCB_RETURN(st);
+   }
+   
+   char *pn = (char*)cl->ft->getCharSuperClassName(cl);
+  
+   cReg->ft->wLock(cReg);
+   
+   if (pn) removeChild(cReg, pn, cn);
+   removeClass(cReg, cn);
+   
+   cReg->ft->wUnLock(cReg);
+   
+   _SFCB_RETURN(st);
 }
 
 /* ---------------------------------------------------------------------------*/

@@ -472,6 +472,8 @@ static int procImethodCall(YYSTYPE * lvalp, ParserControl * parm)
 
          if (strcasecmp(attr[0].attr, "createClass") == 0)
             return XTOK_CREATECLASS;
+         if (strcasecmp(attr[0].attr, "deleteClass") == 0)
+            return XTOK_DELETECLASS;
             
          if (strcasecmp(attr[0].attr, "deleteClass") == 0)
             return unsupported(parm);

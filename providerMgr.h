@@ -353,6 +353,19 @@ typedef union deleteInstanceReq {
    };
 } DeleteInstanceReq;
 
+typedef union deleteClassReq {
+   BinRequestHdr hdr;
+   struct {
+      unsigned short operation;
+      unsigned short options;
+      void *provId;
+      unsigned int flags;
+      unsigned long count;      // maps to MsgList
+      MsgSegment principal;
+      MsgSegment objectPath;
+   };
+} DeleteClassReq;
+
 typedef union invokeMethodReq {
    BinRequestHdr hdr;
    struct {

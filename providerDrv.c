@@ -685,6 +685,35 @@ char **makePropertyList(int n, MsgSegment *ms)
    return l;
 }
 
+static BinResponseHdr *deleteClass(BinRequestHdr * hdr, ProviderInfo * info, int requestor)
+{
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "deleteClass");
+   DeleteClassReq *req = (DeleteClassReq *) hdr;
+   CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
+   CMPIStatus rci = { CMPI_RC_OK, NULL };
+   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
+   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   BinResponseHdr *resp;
+   CMPIFlags flgs=0;
+
+   ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+
+   _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
+   rci =  info->classMI->ft->deleteClass(info->classMI, ctx, result,path);
+   _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
+
+   if (rci.rc == CMPI_RC_OK) {
+      resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+      resp->count = 0;
+      resp->moreChunks=0;
+      resp->rc = 1;
+   }
+   else resp = errorResp(&rci);
+
+   _SFCB_RETURN(resp);
+}
+
 static BinResponseHdr *getClass(BinRequestHdr * hdr, ProviderInfo * info, int requestor)
 {
    GetClassReq *req = (GetClassReq *) hdr;
@@ -1685,7 +1714,7 @@ static ProvHandler pHandlers[] = {
    {opNotSupported},            //dummy
    {getClass},                  //OPS_GetClass 1
    {getInstance},               //OPS_GetInstance 2
-   {opNotSupported},            //OPS_DeleteClass 3
+   {deleteClass},               //OPS_DeleteClass 3
    {deleteInstance},            //OPS_DeleteInstance 4
    {createClass},               //OPS_CreateClass 5
    {createInstance},            //OPS_CreateInstance 6

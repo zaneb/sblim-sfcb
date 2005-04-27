@@ -13,7 +13,7 @@
 # Source function library.
 . /etc/init.d/functions
 
-echo $PATH | grep -q @bindir@ ||PATH=@bindir@:$PATH
+echo $PATH | grep -q @sbindir@ ||PATH=@sbindir@:$PATH
 
 if [ -z "$LD_LIBRARY_PATH" ] || echo $LD_LIBRARY_PATH | grep -qv @libdir@
 then
@@ -30,7 +30,7 @@ fi
 
 start() {
 	echo -n "Starting sfcb: "
-	daemon @bindir@/sfcbd -d &&
+	daemon @sbindir@/sfcbd -d &&
 	touch /var/lock/subsys/sfcb &&
 	return 0 ||
 	return 1

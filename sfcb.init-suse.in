@@ -1,10 +1,19 @@
 #!/bin/bash
 #
 # $Id$
-# 
-# Generic System V Init Script
+#
+### BEGIN INIT INFO
+# Provides:          sfcb
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Short-Description: Small Footprint CIM Broker Service
+# Description:       Manage the sfcb Service
+### END INIT INFO
 
-echo $PATH | grep -q @bindir@ ||PATH=@bindir@:$PATH
+# Source function library.
+. /etc/rc.status
+
+echo $PATH | grep -q @sbindir@ ||PATH=@sbindir@:$PATH
 
 if [ -z "$LD_LIBRARY_PATH" ] || echo $LD_LIBRARY_PATH | grep -qv @libdir@
 then
@@ -21,23 +30,20 @@ fi
 
 start() {
 	echo -n "Starting sfcb: "
-	@bindir@/sfcbd -d && echo "done." && return 0 ||
-	echo "failed."
-	return 1
+	startproc @sbindir@/sfcbd -d
+	rcstatus -v
 }	
 
 stop() {
 	echo -n "Shutting down sfcb: "
-	killall -9 sfcbd && echo "done." && return 0 ||
-	echo "failed."
-	return 1
+	killproc sfcbd
+	rcstatus -v
 }
 
 reload() {
 	echo -n "Reloading sfcb configuration: "
-	killall -HUP sfcbd && echo "done." && return 0 ||
-	echo "failed."
-	return 1
+	killproc -HUP sfcbd
+	rcstatus -v
 }
 
 case "$1" in
@@ -48,8 +54,8 @@ case "$1" in
 	stop
 	;;
     status)
-	echo -n "Checking SFCB status: "
-	ps --noheaders -C sfcbd || echo "stopped." 
+	checkproc sfcbd
+	rc_status -v
 	;;
     restart)
     	stop
@@ -58,8 +64,17 @@ case "$1" in
     reload)
 	reload
 	;;
+    condrestart)
+	$0 status
+	if test $? = 0; then
+		$0 restart
+	else
+		rc_reset
+	fi
+	rc_status
+	;;
     *)
-	echo "Usage: sfcb {start|stop|status|reload|restart}"
+	echo "Usage: sfcb {start|stop|status|reload|restart|condrestart}"
 	exit 1
 	;;
 esac

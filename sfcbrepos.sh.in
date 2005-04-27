@@ -81,32 +81,47 @@ fi
 if [ -d $stagingdir ] && [ -f $stagingdir/default.reg ] &&
 	[ -f $cimschemadir/CIM_Schema.mof ] 
 then
-    if rm -rf $registrationdir/repository.previous &&
-	mv -f $registrationdir/repository $registrationdir/repository.previous &&
-	mv -f $registrationdir/providerRegister $registrationdir/providerRegister.previous &&
-	mkdir -p $registrationdir/repository/root/cimv2 &&
-	cp $stagingdir/default.reg $registrationdir/providerRegister
+    if [ -d $registrationdir/repository ]
     then
-	if ls $stagingdir/regs/*.reg > /dev/null 2>&1
-	then
-	    if ! cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister
-	    then
-		echo Failed copying the registration files. >&2
-		exit 1
-	    fi
+	rm -rf $registrationdir/repository.previous 2> /dev/null
+	mv -f $registrationdir/repository $registrationdir/repository.previous
+	if [ $? != 0 ]
+        then
+	    echo "Failed to remove old repository" >&2
+	    exit 1
 	fi
-	if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
+    fi
+    if [ -f $registrationdir/providerRegister ]
+    then
+	mv -f $registrationdir/providerRegister $registrationdir/providerRegister.previous 
+	if [ $? != 0 ]
 	then
-	    if ! sfcbmof -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof
-	    then
-		echo Failed compiling the MOF files. >&2
-		exit 1
-	    fi
+	    echo "Failed to remove old provider registry" >&2
+	    exit 1
 	fi
-	exit 0
-    else	
-	echo Failed to write sfcb registration files. >&2 
+    fi
+    mkdir -p $registrationdir/repository/root/cimv2 &&
+    cp $stagingdir/default.reg $registrationdir/providerRegister
+    if [ $? != 0 ]
+    then
+	echo "Failed to create default repository and registry" >&2
 	exit 1
+    fi
+    if ls $stagingdir/regs/*.reg > /dev/null 2>&1
+    then
+	if ! cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister
+	then
+	    echo Failed copying the registration files. >&2
+	    exit 1
+	fi
+    fi
+    if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
+    then
+	if ! sfcbmof -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof
+	then
+	    echo Failed compiling the MOF files. >&2
+	    exit 1
+	fi
     fi
 else
     echo Could not find required staging files. Please check your setup. >&2

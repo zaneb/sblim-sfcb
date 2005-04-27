@@ -45,7 +45,7 @@ lib_LTLIBRARIES = \
    libsfcBasicAuthentication.la \
    libsfcIndCIMXMLHandler.la
 
-bin_PROGRAMS = \
+sbin_PROGRAMS = \
    sfcbd 
 
 libsfcBrokerCore_la_SOURCES = \
@@ -156,7 +156,8 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
-	sfcbunstage.sh.in sfcb.init-redhat sfcb.init-suse sfcb.init-none \
+	sfcbunstage.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
+	sfcb.init-none.in \
 	regressionTests doc
 
 dist_pkgdata_SCRIPTS=genSslCert.sh getSchema.sh
@@ -168,24 +169,28 @@ nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage
 dist_bin_SCRIPTS=wbemcat
 
 sfcbrepos: sfcbrepos.sh
-	sed s?$$\{prefix\}?$(prefix)?g $< > $@
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 sfcbstage: sfcbstage.sh
-	sed s?$$\{prefix\}?$(prefix)?g $< > $@
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 sfcbunstage: sfcbunstage.sh
-	sed s?$$\{prefix\}?$(prefix)?g $< > $@
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 sfcb.cfg: sfcb.cfg.pre
-	sed s?$$\{prefix\}?$(prefix)?g $< > $@
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 getSchema.sh: getSchema.sh.pre
-	sed s?$$\{prefix\}?$(prefix)?g $< > $@
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 sfcb.init: sfcb.$(INIT_STYLE)
-	sed -e "s?@sysconfdir\@?$(sysconfdir)?g" \
-		-e "s?@bindir\@?$(bindir)?g" \
-		-e "s?@libdir\@?$(libdir)?g" $< > $@
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 providerRegister: providerRegister.c
 	touch $@
@@ -213,6 +218,8 @@ uninstall-local:
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
 	rm -f $(DESTDIR)$(sfcbdocdir)/*
 	rm -f $(DESTDIR)$(initdir)/sfcb
+	-rmdir $(sysconfdir)/sfcb
+	-rmdir $(sfcbdocdir)
 
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb.init

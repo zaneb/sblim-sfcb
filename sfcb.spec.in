@@ -4,7 +4,7 @@
 # Package spec for @PACKAGE@
 #
 
-BuildRoot: /var/tmp/buildroot
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 
 Summary: Small Footprint CIM Broker
 Name: @PACKAGE_TARNAME@
@@ -65,6 +65,7 @@ echo "%doc %{_datadir}/doc" >> _pkg_list
 echo "%{_sysconfdir}/init.d/sfcb" >> _pkg_list
 echo "%{_localstatedir}/lib/sfcb" >> _pkg_list
 echo "%{_bindir}/*" >> _pkg_list
+echo "%{_sbindir}/*" >> _pkg_list
 echo "%{_libdir}/*.so*" >> _pkg_list
 
 echo =======================================

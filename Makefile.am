@@ -20,6 +20,7 @@
 # 
 # 
 
+sfcbconfdir=$(sysconfdir)/sfcb
 sfcbstatedir=$(localstatedir)/lib/sfcb
 sfcbdocdir=$(datadir)/doc/$(PACKAGE)-$(VERSION)
 initdir=$(sysconfdir)/init.d
@@ -29,7 +30,7 @@ BUILT_SOURCES=queryParser.c queryLexer.c authorizationParser.c \
 
 AM_YFLAGS=-d
 
-AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sysconfdir)/sfcb\" \
+AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfdir)\" \
 	-DSFCB_STATEDIR=\"$(sfcbstatedir)\"
 
 SUBDIRS=. $(MOFC_DIR)
@@ -160,6 +161,8 @@ EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcb.init-none.in \
 	regressionTests doc
 
+sfcbconf_DATA=sfcb.cfg
+
 dist_pkgdata_SCRIPTS=genSslCert.sh getSchema.sh
 
 dist_pkgdata_DATA=default.reg
@@ -167,6 +170,8 @@ dist_pkgdata_DATA=default.reg
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage 
 
 dist_bin_SCRIPTS=wbemcat
+
+init_SCRIPTS=sfcb
 
 sfcbrepos: sfcbrepos.sh
 	sed -e s?$$\{prefix\}?$(prefix)?g \
@@ -188,7 +193,7 @@ getSchema.sh: getSchema.sh.pre
 	sed -e s?$$\{prefix\}?$(prefix)?g \
 	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
-sfcb.init: sfcb.$(INIT_STYLE)
+sfcb: sfcb.$(INIT_STYLE)
 	sed -e s?$$\{prefix\}?$(prefix)?g \
 	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
@@ -198,9 +203,7 @@ providerRegister: providerRegister.c
 unittest:
 	cd test && sh check_all.sh
 
-install-data-local: sfcb.cfg
-	test -d $(DESTDIR)$(sysconfdir)/sfcb || $(mkdir_p) $(DESTDIR)$(sysconfdir)/sfcb
-	$(INSTALL_DATA) sfcb.cfg $(DESTDIR)$(sysconfdir)/sfcb
+install-data-local:
 	test -d $(DESTDIR)$(sfcbstatedir)/registration/repository || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/registration/repository
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/mofs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/mofs
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
@@ -209,20 +212,16 @@ install-data-local: sfcb.cfg
 	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
 	$(INSTALL_DATA) $(srcdir)/doc/sfcb.html $(DESTDIR)$(sfcbdocdir)
 
-install-exec-local:sfcb.init
-	test -d $(DESTDIR)$(initdir) || $(mkdir_p) $(DESTDIR)$(initdir)
-	$(INSTALL_SCRIPT) sfcb.init $(DESTDIR)$(initdir)/sfcb
-
 uninstall-local:
 	rm -f $(DESTDIR)$(sysconfdir)/sfcb/sfcb.cfg
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
 	rm -f $(DESTDIR)$(sfcbdocdir)/*
-	rm -f $(DESTDIR)$(initdir)/sfcb
 	-rmdir $(sysconfdir)/sfcb
 	-rmdir $(sfcbdocdir)
 
 clean-local:
-	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb.init
+	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb.init \
+		sfcb.init-redhat sfcb.init-suse sfcb.init-none
 
 dist-hook:
 	test -d "$(distdir)" &&	rm -rf `find $(distdir) -type d -name CVS`

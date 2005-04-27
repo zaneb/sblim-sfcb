@@ -20,9 +20,10 @@
 # 
 # 
 
+sfcbdatadir=$(datadir)/sfcb
 sfcbconfdir=$(sysconfdir)/sfcb
 sfcbstatedir=$(localstatedir)/lib/sfcb
-sfcbdocdir=$(datadir)/doc/$(PACKAGE)-$(VERSION)
+sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
 initdir=$(sysconfdir)/init.d
 
 BUILT_SOURCES=queryParser.c queryLexer.c authorizationParser.c \
@@ -163,9 +164,9 @@ EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 
 sfcbconf_DATA=sfcb.cfg
 
-dist_pkgdata_SCRIPTS=genSslCert.sh getSchema.sh
+dist_sfcbdata_SCRIPTS=genSslCert.sh getSchema.sh
 
-dist_pkgdata_DATA=default.reg
+dist_sfcbdata_DATA=default.reg
 
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage 
 
@@ -220,15 +221,15 @@ uninstall-local:
 	-rmdir $(sfcbdocdir)
 
 clean-local:
-	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb.init \
+	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb \
 		sfcb.init-redhat sfcb.init-suse sfcb.init-none
 
 dist-hook:
 	test -d "$(distdir)" &&	rm -rf `find $(distdir) -type d -name CVS`
 
 install-cimschema: getSchema.sh
-	test -d $(DESTDIR)$(pkgdatadir) || $(mkdir_p) $(DESTDIR)$(pkgdatadir)
-	sh getSchema.sh -f $(DESTDIR)$(pkgdatadir)
+	test -d $(DESTDIR)$(sfcbdatadir) || $(mkdir_p) $(DESTDIR)$(sfcbdatadir)
+	sh getSchema.sh -f $(DESTDIR)$(sfcbdatadir)
 
 postinstall: install-cimschema
 	test -f $(DESTDIR)$(sfcbstatedir)/registration/providerRegister || $(INSTALL_DATA) $(DESTDIR)$(sfcbstatedir)/stage/default.reg $(DESTDIR)$(sfcbstatedir)/registration/providerRegister 

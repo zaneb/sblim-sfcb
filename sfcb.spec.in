@@ -57,7 +57,7 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/*a
 
 echo "%defattr(-,root,root)" > _pkg_list
 
-find $RPM_BUILD_ROOT/%{_datadir}/%{name} -type f | grep -v $RPM_BUILD_ROOT/%{_datadir}/%{name}/CIM >> _pkg_list
+find $RPM_BUILD_ROOT/%{_datadir}/sfcb -type f | grep -v $RPM_BUILD_ROOT/%{_datadir}/sfcb/CIM >> _pkg_list
 sed s?$RPM_BUILD_ROOT??g _pkg_list > _pkg_list_2
 mv -f _pkg_list_2 _pkg_list
 echo "%config %{_sysconfdir}/sfcb" >> _pkg_list
@@ -89,6 +89,6 @@ sfcbrepos -f 2> /dev/null
 exit 0
 
 %files schema
-%{_datadir}/%{name}/CIM
+%{_datadir}/sfcb/CIM
 
 %files -f _pkg_list

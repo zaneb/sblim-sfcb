@@ -42,7 +42,7 @@ then
     echo -e "\t-f force repository creation"
     echo -e "\t-s specify staging directory [@localstatedir@/lib/sfcb/stage]"
     echo -e "\t-r specify repository directory [@localstatedir@/lib/sfcb/registration]"
-    echo -e "\t-c specify directory containing CIM Schema MOFs [@datadir@/@PACKAGE@/CIM]"
+    echo -e "\t-c specify directory containing CIM Schema MOFs [@datadir@/sfcb/CIM]"
     echo
     echo "Use to create sfcb provider registration and class repository."
     exit 0
@@ -75,7 +75,7 @@ fi
 
 if [ -z "$cimschemadir" ]
 then
-    cimschemadir=@datadir@/@PACKAGE@/CIM
+    cimschemadir=@datadir@/sfcb/CIM
 fi
 
 if [ -d $stagingdir ] && [ -f $stagingdir/default.reg ] &&

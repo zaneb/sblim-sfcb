@@ -181,7 +181,7 @@ static int spGetMsg(int *s, void *data, unsigned length, MqgStat* mqg)
    ol = length;
    for (;;) {
       if (mqg) mqg->teintr=0;
-      if ((n = recv(*s, data+r, length-r, 0)) < 0) {
+      if ((n = recv(*s, data+r, length-r, MSG_WAITALL)) < 0) {
          if (errno == EINTR) {
             _SFCB_TRACE(1, (" Receive interrupted %d",currentProc));
             if (mqg) {

@@ -123,6 +123,7 @@ void libraryName(const char *location, char *fullName)
 int testStartedProc(int pid, int *left) 
 {
    ProviderProcess *pp=provProc;
+   ProviderInfo *info;
    int i,stopped=0;
    
    *left=0;
@@ -130,6 +131,11 @@ int testStartedProc(int pid, int *left)
       if ((pp+i)->pid==pid) {
          stopped=1;
          (pp+i)->pid=0;
+         info=(pp+i)->firstProv;
+         while (info) {
+            info->pid=0;
+            info=info->next;
+         }   
       }   
       if ((pp+i)->pid!=0) (*left)++;
    }
@@ -421,6 +427,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
                          getInode(providerSockets.receive)));
             processName=info->providerName;
             providerProcess=1;
+            info->proc=*proc;
                          
             semSetValue(sfcbSem,((*proc)->id*3)+provProcGuardId+provProcBaseId,0);
             semSetValue(sfcbSem,((*proc)->id*3)+provProcInuseId+provProcBaseId,0);
@@ -451,11 +458,12 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
    _SFCB_ENTER(TRACE_PROVIDERDRV, "forkProvider");
    ProviderProcess *proc;
    ProviderInfo * pInfo;
+   int val;
 
    if (info->pid ) {
       proc=info->proc;
       semAcquire(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
-      if (semGetValue(sfcbSem,(proc->id*3)+provProcAliveId+provProcBaseId)) {
+      if ((val=semGetValue(sfcbSem,(proc->id*3)+provProcAliveId+provProcBaseId))) {
          semRelease(sfcbSem,(proc->id*3)+provProcInuseId+provProcBaseId);
          semRelease(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
          _SFCB_TRACE(1, ("--- Provider %s still loaded",info->providerName));
@@ -1823,7 +1831,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
          mlogf(M_INFO,M_SHOW,"--- Reloading provider\n");
          doLoadProvider(pInfo,dlName);
       }  
-      
+ 
       if (pInfo->initialized==0) {
          pthread_mutex_lock(&pInfo->initMtx);
          if (pInfo->initialized==0) {

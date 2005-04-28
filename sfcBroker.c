@@ -235,7 +235,7 @@ static void handleSigChld(int sig)
       }
       else {
 //         mlogf(M_INFO,M_SHOW,"sigchild %d\n",pid);
-         if (testStartedAdapter(pid,&left)) { 
+        if (testStartedAdapter(pid,&left)) { 
             if (left==0) {
                mlogf(M_INFO,M_SHOW,"--- Adapters stopped\n");
                adaptersStopped=1;

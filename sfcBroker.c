@@ -223,16 +223,16 @@ static void handleSigChld(int sig)
    for (;;) {
       pid = wait3(&status, WNOHANG, (struct rusage *) 0);
       if ((int) pid == 0)
-         break;
+         break; 
       if ((int) pid < 0) {
          if (errno == EINTR || errno == EAGAIN) {
        //     mlogf(M_INFO,M_SHOW, "pid: %d continue \n", pid);
             continue;
          }
-         if (errno != ECHILD)
+         if (errno != ECHILD) 
             perror("child wait");
          break;
-      }
+      } 
       else {
 //         mlogf(M_INFO,M_SHOW,"sigchild %d\n",pid);
         if (testStartedAdapter(pid,&left)) { 

@@ -243,6 +243,20 @@ static ProviderInfo *locateProvider(ProviderRegister * br, const char *provName)
    return NULL;
 }
 
+static void resetProvider(ProviderRegister * br, int pid)
+{
+   ProviderBase *bb = (ProviderBase *) br->hdl;
+   HashTableIterator *it;
+   char *key = NULL;
+   ProviderInfo *info = NULL;
+   
+   for (it = bb->ht->ft->getFirst(bb->ht, (void **) &key, (void **) &info);
+        key && it && info;
+        it = bb->ht->ft->getNext(bb->ht, it, (void **) &key, (void **) &info)) {
+      if (info->pid==pid) info->pid=0;
+   }     
+}
+
 static void removeProvider(ProviderRegister * br, const char *clsName)
 {
    ProviderBase *bb = (ProviderBase *) br->hdl;
@@ -256,7 +270,8 @@ static Provider_Register_FT ift = {
    getProvider,
    putProvider,
    removeProvider,
-   locateProvider
+   locateProvider,
+   resetProvider
 };
 
 Provider_Register_FT *ProviderRegisterFT = &ift;

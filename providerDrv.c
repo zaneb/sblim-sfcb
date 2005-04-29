@@ -132,10 +132,7 @@ int testStartedProc(int pid, int *left)
          stopped=1;
          (pp+i)->pid=0;
          info=(pp+i)->firstProv;
-         while (info) {
-            info->pid=0;
-            info=info->next;
-         }   
+         pReg->ft->resetProvider(pReg,pid);
       }   
       if ((pp+i)->pid!=0) (*left)++;
    }
@@ -433,7 +430,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
             semSetValue(sfcbSem,((*proc)->id*3)+provProcInuseId+provProcBaseId,0);
             semSetValue(sfcbSem,((*proc)->id*3)+provProcAliveId+provProcBaseId,0);
             semReleaseUnDo(sfcbSem,((*proc)->id*3)+provProcAliveId+provProcBaseId);
-            semRelease(sfcbSem,((*proc)->id*3)+provProcInuseId+provProcBaseId);
+            semReleaseUnDo(sfcbSem,((*proc)->id*3)+provProcInuseId+provProcBaseId);
             semRelease(sfcbSem,((*proc)->id*3)+provProcGuardId+provProcBaseId);
             
             processProviderInvocationRequests(info->providerName);
@@ -738,8 +735,6 @@ static BinResponseHdr *getClass(BinRequestHdr * hdr, ProviderInfo * info, int re
    
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getClass");
    
-   char *cn=CMGetClassName(path,NULL)->hdl;
-   char *ns=CMGetNameSpace(path,NULL)->hdl;
    _SFCB_TRACE(1, ("--- Namespace %s ClassName %s",ns,cn));
    
    if (req->flags & FL_localOnly) flgs|=CMPI_FLAG_LocalOnly;

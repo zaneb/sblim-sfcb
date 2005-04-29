@@ -401,7 +401,7 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
          if (strcmp(de->d_name,".")==0) continue;
          if (strcmp(de->d_name,"..")==0) continue;
          l=strlen(dn)+strlen(de->d_name)+4;
-         n=(char*)malloc(l);
+         n=(char*)malloc(l+8);
          strcpy(n,dn);
          strcat(n,"/");
          strcat(n,de->d_name);

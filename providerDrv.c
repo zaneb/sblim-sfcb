@@ -735,6 +735,8 @@ static BinResponseHdr *getClass(BinRequestHdr * hdr, ProviderInfo * info, int re
    
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getClass");
    
+    char *cn=CMGetClassName(path,NULL)->hdl; 	 
+    char *ns=CMGetNameSpace(path,NULL)->hdl; 	 
    _SFCB_TRACE(1, ("--- Namespace %s ClassName %s",ns,cn));
    
    if (req->flags & FL_localOnly) flgs|=CMPI_FLAG_LocalOnly;

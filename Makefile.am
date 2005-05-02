@@ -26,8 +26,7 @@ sfcbstatedir=$(localstatedir)/lib/sfcb
 sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
 initdir=$(sysconfdir)/init.d
 
-BUILT_SOURCES=queryParser.c queryLexer.c authorizationParser.c \
-	authorizationLexer.c
+BUILT_SOURCES=queryParser.c queryLexer.c
 
 AM_YFLAGS=-d
 
@@ -41,7 +40,6 @@ lib_LTLIBRARIES = \
    libsfcInternalProvider.la \
    libsfcInteropProvider.la \
    libsfcClassProvider.la \
-   libsfcAuthorizationProvider.la \
    libsfcCimXmlCodec.la \
    libsfcHttpAdapter.la \
    libsfcBasicAuthentication.la \
@@ -124,19 +122,6 @@ libsfcClassProvider_la_SOURCES = \
    classProvider.c
 libsfcClassProvider_la_LIBADD=-lsfcBrokerCore
 
-libsfcAuthorizationProvider_la_SOURCES = \
-   authorizationProvider.c \
-   authorizationUtil.c \
-   authorizationParser.y \
-   authorizationLexer.l 
-libsfcAuthorizationProvider_la_LIBADD=-lsfcBrokerCore
-
-authorizationLexer.c: authorizationLexer.l authorizationParser.y
-	lex -t authorizationLexer.l | sed -e "s/yy/sfcAuthyy/g" > authorizationLexer.c
-
-authorizationParser.c: authorizationLexer.l authorizationParser.y
-	yacc -p sfcAuthyy -d -o authorizationParser.c authorizationParser.y 
-
 libsfcCimXmlCodec_la_SOURCES = \
    cimXmlOps.y \
    cimXmlParser.c \
@@ -153,7 +138,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	cimXmlRequest.h  genericlist.h  objectImpl.h   trace.h \
 	hashtable.h      utilft.h mlog.h \
 	cmpidt.h cmpift.h cmpiftx.h cmpimacs.h cmpimacsx.h cmpios.h fileRepository.h \
-	selectexp.h queryOperation.h authorizationUtil.h authorizationEnum.c \
+	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h
 
 

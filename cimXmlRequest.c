@@ -1644,6 +1644,8 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq.principal = setCharsMsgSegment(ctx->principal);
 
    for (p = req->paramValues.first; p; p = p->next) {
+      // this is a problem: - paramvalue without type
+      if (p->type==NULL) p->type=CMPI_string;
       CMPIValue val = str2CMPIValue(p->type, p->value.value, &p->valueRef);
       CMAddArg(in, p->name, &val, p->type);
    }   

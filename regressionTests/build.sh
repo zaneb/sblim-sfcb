@@ -46,8 +46,10 @@ fi
 
 for x in $dirs
 do 
-   echo make -C $x install
-   make -C $x install
+#   echo make -C $x install
+#   make -C $x install
+   echo sh $x/build.sh $x
+   sh $x/build.sh $x
 done   
 
 echo sfcbmof -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof

@@ -643,11 +643,14 @@ static void doHttpRequest(CommHndl conn_fd)
          cp += strspn(cp, " \t");
          inBuf.useragent = cp;
       }
-      else if (strncasecmp(hdr, "TE:", 18) == 0) {
-         char *cp = &hdr[18];
+      else if (strncasecmp(hdr, "TE:", 3) == 0) {
+         char *cp = &hdr[3];
          cp += strspn(cp, " \t");
          if (strncasecmp(cp,"trailers",8)==0)
          inBuf.trailers=1;
+      }
+      else if (strncasecmp(hdr, "Expect:", 7) == 0) {
+         genError(conn_fd, &inBuf, 417, "Expectation Failed", NULL);  //more);
       }
    }
 

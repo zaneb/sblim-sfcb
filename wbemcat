@@ -36,14 +36,14 @@ sub usage {
    print "\nOptions:\n";
    print "  -h, --host=HOSTNAME\tName of host running the CIMOM. Default=$host\n";
    print "  -p, --port=PORT\tPort that the CIMOM is listening on. Default=$port\n";
-   print "\t-?, --help\tDisplay this help and exit\n";
+   print "  -?, --help\t\tDisplay this help and exit\n";
    die "\n";
 }
 
 # Process command line options, if any
 GetOptions("host|h=s" => \$host,
 	   "port|p=i" => \$port,
-	   "help|?" => sub{usage}) || usage;
+           "help|?" => usage) || usage;
 my $file = @ARGV[0];
 
 # Read all the XML data from the input file

@@ -43,7 +43,7 @@ sub usage {
 # Process command line options, if any
 GetOptions("host|h=s" => \$host,
 	   "port|p=i" => \$port,
-           "help|?" => usage) || usage;
+           "help|?" => sub{usage}) || usage;
 my $file = @ARGV[0];
 
 # Read all the XML data from the input file

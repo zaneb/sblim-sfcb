@@ -1,6 +1,0 @@
-[Reef_LogicalVolume]
-   provider: Reef_Provider
-   location: cmpiReefProvider
-   type: instance
-   namespace: root/tests
-#

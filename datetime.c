@@ -131,23 +131,25 @@ void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
-   time_t secs = ndt->msecs / 1000000;
-   unsigned long usecs = ndt->msecs % 1000000;
+   time_t secs = ndt->msecs / 1000000ULL;
+   unsigned long usecs = ndt->msecs % 1000000ULL;
 
    if (ndt->interval) {
 
-      unsigned long mins, hrs, days;
+      unsigned long long useconds, seconds, mins, hrs, days;
+      seconds= ndt->msecs / 1000000ULL;
+      useconds = ndt->msecs % 1000000ULL;
 
-      mins = secs / 60;
-      secs %= 60;
-      hrs = mins / 60;
-      mins %= 60;
-      days = hrs / 24;
-      hrs %= 24;
+      mins = seconds / 60ULL;
+      seconds %= 60ULL;
+      hrs = mins / 60ULL;
+      mins %= 60ULL;
+      days = hrs / 24ULL;
+      hrs %= 24ULL;
 
-      sprintf(str_time, "%8.8ld%2.2ld%2.2ld%2.2ld.%6.6ld:000",
-              days, hrs, mins, secs, usecs);
-
+      sprintf(str_time, "%8.8llu%2.2llu%2.2llu%2.2llu.%6.6llu:000",
+              days, hrs, mins, seconds, useconds);
+//      fprintf(stderr,"Interval: %s\n",str_time);
    }
    else {
 
@@ -169,6 +171,7 @@ void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time)
       strftime(str_time, 26, "%Y%m%d%H%M%S.", &tm_time);
 
       strcat(str_time, us_utc_time);
+//      fprintf(stderr,"DateTime: %s\n",str_time);
    }
 }
 
@@ -302,7 +305,8 @@ CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64 time,
   - for time intervals: ddddddddhhmmss.mmmmmm:000
 
   \param string the time to be converted into internal representation
-  \param rc return code pointer
+  \param rc return code pointer #include <limits.h>
+
 
   \return a pointer to a native CMPIDateTime.
 
@@ -311,23 +315,36 @@ CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64 time,
 CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *string,
                                                 CMPIStatus * rc)
 {
-   CMPIUint64 msecs;
+   CMPIUint64 msecs,secs;
    CMPIBoolean interval = (string[21] == ':');
    char *str = strdup(string);
-
+  
+// 0000000000111111111122222  
+// 0123456789012345678901234
+// yyyymmddhhmmss mmmmmmsutc 
+// 20050503104354.000000:000
+   
+//   fprintf(stderr,"string: %s\n",str);
    str[21] = 0;
-   msecs = atoll(str + 15);
+   msecs = strtoull(str+15,NULL,10);
+//   fprintf(stderr,"micros: %s %llu\n",str+15,msecs);
+   
    str[14] = 0;
-   msecs += atoll(str + 12) * 1000000;
+   secs = strtoull(str+12,NULL,10);
+//   fprintf(stderr,"secnds: %s %llu\n",str+12,secs);
    str[12] = 0;
-   msecs += atoll(str + 10) * 1000000 * 60;
+   secs += strtoull(str+10,NULL,10) * 60ULL;
+//   fprintf(stderr,"minuts: %s %llu\n",str+10,secs);
    str[10] = 0;
-   msecs += atoll(str + 8) * 1000000 * 60 * 60;
+   secs += strtoull(str+8,NULL,10) * 60ULL * 60ULL;
+//   fprintf(stderr,"hours : %s %llu\n",str+8,secs);
    str[8] = 0;
 
    if (interval) {
 
-      msecs += atoll(str) * 1000000 * 60 * 60 * 24;
+      secs += strtoull(str,NULL,10) * 60ULL * 60ULL * 24ULL;
+      msecs=msecs+(secs*1000000ULL);
+//   fprintf(stderr,"intrvl: %s %llu %llu\n",str,msecs,secs);
 
    }
    else {
@@ -344,7 +361,9 @@ CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *string,
       str[4] = 0;
       tmp.tm_year = atoi(str) - 1900;
 
-      msecs += (CMPIUint64) mktime(&tmp) * 1000000;
+      msecs=msecs+(secs*1000000ULL);
+      msecs += (CMPIUint64) mktime(&tmp) * 1000000ULL;
+//      fprintf(stderr,"mktime: %d %d %d %llu\n",tmp.tm_year,tmp.tm_mon,tmp.tm_mday,msecs);
    }
 
    free(str);

@@ -93,6 +93,12 @@ static CMPIStatus __aft_addArg(CMPIArgs * args, const char *name,
 
    if (type == CMPI_chars)
       data.value.chars = (char *) value;
+   else if (type == CMPI_string) {
+      if (value && value->string && value->string->hdl)
+         data.value.chars = (char *) value->string->hdl;
+      else data.value.chars=NULL;
+      data.type=CMPI_chars;
+   }
    else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64)
       data.value = *value;
    else

@@ -216,7 +216,9 @@ static CMPIStatus __oft_addKey(CMPIObjectPath * op,
    if (type == CMPI_chars)
       data.value.chars = (char *) value;
    else if (type == CMPI_string) {
-      data.value.chars = (char *) value->string->hdl;
+      if (value && value->string && value->string->hdl)
+         data.value.chars = (char *) value->string->hdl;
+      else data.value.chars=NULL;
       data.type=CMPI_chars;
    }
    else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64)

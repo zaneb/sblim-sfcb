@@ -91,6 +91,7 @@ then
 	    exit 1
 	fi
     fi
+
     if [ -f $registrationdir/providerRegister ]
     then
 	mv -f $registrationdir/providerRegister $registrationdir/providerRegister.previous 
@@ -100,13 +101,16 @@ then
 	    exit 1
 	fi
     fi
+
     mkdir -p $registrationdir/repository/root/cimv2 &&
+    mkdir -p $registrationdir/repository/root/interop &&
     cp $stagingdir/default.reg $registrationdir/providerRegister
     if [ $? != 0 ]
     then
-	echo "Failed to create default repository and registry" >&2
+	echo "Failed to create default repositories and registry" >&2
 	exit 1
     fi
+
     if ls $stagingdir/regs/*.reg > /dev/null 2>&1
     then
 	if ! cat $stagingdir/regs/*.reg >> $registrationdir/providerRegister
@@ -115,6 +119,7 @@ then
 	    exit 1
 	fi
     fi
+
     if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
     then
 	if ! sfcbmof -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof
@@ -123,6 +128,14 @@ then
 	    exit 1
 	fi
     fi
+
+    # Setup interop class support
+    if ! sfcbmof -o $registrationdir/repository/root/interop/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/interop.mof
+    then 
+        echo Failed compiling interop MOF file. >&2
+        exit 1
+    fi
+
 else
     echo Could not find required staging files. Please check your setup. >&2
     exit 1

@@ -194,6 +194,7 @@ install-data-local:
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/mofs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/mofs
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
 	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
+	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage
 	test -d $(DESTDIR)$(sfcbdocdir) || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)
 	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
 	$(INSTALL_DATA) $(srcdir)/doc/sfcb.html $(DESTDIR)$(sfcbdocdir)
@@ -201,6 +202,7 @@ install-data-local:
 uninstall-local:
 	rm -f $(DESTDIR)$(sysconfdir)/sfcb/sfcb.cfg
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
+	rm -f $(DESTDIR)$(sfcbstatedir)/stage/interop.mof
 	rm -f $(DESTDIR)$(sfcbdocdir)/*
 	-rmdir $(sysconfdir)/sfcb
 	-rmdir $(sfcbdocdir)

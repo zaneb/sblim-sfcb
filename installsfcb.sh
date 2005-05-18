@@ -171,6 +171,12 @@ cd $_SRCROOT
 _installpkg "sfcb" $_PREFIX
 if [[ $? -ne 0 ]]; then exit 1; fi
 
+if [[ -e $_SRCROOT/sfcBroker.c ]]; then
+   export SFCB_HOME=$_SRCROOT
+else
+   export SFCB_HOME=$_SRCROOT/sfcb
+fi
+
 # Add sfcb locations to the search paths
 export PATH=$_PREFIX/bin:$PATH
 export LD_LIBRARY_PATH=$_PREFIX/lib:$LD_LIBRARY_PATH
@@ -192,8 +198,7 @@ if ! ps -C sfcbd > /dev/null; then
 fi
 
 # Run a quick test to make sure the sfcb is running and responding to client requests
-cd $_SRCROOT
-#cd $_SRCROOT/sfcb/test
+cd $SFCB_HOME/test
 _TEST=enumerateclasses.FIRSTTIME
 echo "Running test $_TEST ..."
 $_PREFIX/bin/wbemcat $_TEST.xml > $_TEST.result
@@ -286,9 +291,10 @@ if ! ps -C sfcbd > /dev/null; then
    exit 1
 fi
 
-cd tests
 # Run some simple tests using wbemcat
 if which wbemcat > /dev/null; then
+   cd $SFCB_HOME/test
+
    echo "****************************************"
    _CMD="wbemcat $PWD/enumerateclasses.ALL.xml"
    echo -e "wbemcat test: EnumerateClasses on root/cimv2 namespace ...\n\t$_CMD"

@@ -1,5 +1,5 @@
 export PATH=`pwd`/bin:/usr/local/bin:$PATH
-export LD_LIBRARY_PATH=lib:/usr/local/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=lib:/usr/local/lib:/usr/local/lib/cmpi:$LD_LIBRARY_PATH
 export SFCB_HOME=`pwd`
 export SFCB_TRACE=1
 ulimit -c unlimited

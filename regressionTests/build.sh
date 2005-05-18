@@ -19,7 +19,7 @@
 # */
 
 
-dirs='FilesAndDirectories BigOutput ProcessIndications LifeCycleIndications'
+dirs='ProcessIndications LifeCycleIndications'
 
 sfcbdir=/usr/local/share/sfcb
 if [ -x /usr/bin/curl ] && [ ! -f $sfcbdir/CIM/CIM_Schema.mof ]
@@ -46,10 +46,10 @@ fi
 
 for x in $dirs
 do 
-#   echo make -C $x install
-#   make -C $x install
-   echo sh $x/build.sh $x
-   sh $x/build.sh $x
+   echo make -C $x install
+   make -C $x install
+#   echo sh $x/build.sh $x
+#   sh $x/build.sh $x
 done   
 
 echo sfcbmof -I $CIMDIR -i CIM_Schema.mof -o repository/root/interop/classSchemas schema/interop.mof

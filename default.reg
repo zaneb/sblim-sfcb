@@ -24,8 +24,3 @@
    location: sfcIndCIMXMHandler
    type: instance method
 #
-[SFC_Authorization]
-   provider: SFC_Authorization
-   location: sfcAuthorizationProvider
-   type: instance method
-#

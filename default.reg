@@ -7,7 +7,14 @@
 [$DefaultProvider$]
    provider: InternalProvider
    location: sfcInternalProvider
-   type: instance association
+   type: instance association method
+   unload: never
+#
+[$InterOpProvider$]
+   provider: InteropProvider
+   location: sfcInteropProvider
+   type: instance association method
+   unload: never
 #
 [CIM_IndicationFilter]
    provider: InteropProvider
@@ -20,7 +27,7 @@
    type: instance association method
 #
 [CIM_ListenerDestinationCIMXML]
-   provider: IndCIMXMHandler
-   location: sfcIndCIMXMHandler
+   provider: IndCIMXMLHandler
+   location: sfcIndCIMXMLHandler
    type: instance method
 #

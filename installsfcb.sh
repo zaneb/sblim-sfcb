@@ -77,33 +77,29 @@ function _installpkg {
    typeset _PACKAGE=$1
    if [[ -n $2 ]]; then typeset _PREFIX=$2; fi
 
-   # Check if running this from within sfcb source dir
-   if [[ -e sfcBroker.c ]]; then
-      _ANSWER="N"
-   else
+   # Check if need to download the package source
+   if [[ $_PACKAGE != "sfcb" || ! -e sfcBroker.c ]]; then
+
+      # Check if rebuilding existing package
       _ANSWER="Y"
-   fi
- 
-   # Check if rebuilding existing package
-   if [[ -e $PWD/$_PACKAGE ]]; then
-      echo -n "$PWD/$_PACKAGE already exists. Rebuild and reinstall? y/[N] "; read _ANSWER
-      if [[ -z $_ANSWER || $_ANSWER = "N" || $_ANSWER = "n" ]]; then return 0; fi
+      if [[ -e $PWD/$_PACKAGE ]]; then
+         echo -n "$PWD/$_PACKAGE already exists. Rebuild and reinstall? y/[N] "; read _ANSWER
+         if [[ -z $_ANSWER || $_ANSWER = "N" || $_ANSWER = "n" ]]; then return 0; fi
 
-      echo -n "Download latest $_PACKAGE source from CVS? y/[N] "; read _ANSWER
+         echo -n "Download latest $_PACKAGE source from CVS? y/[N] "; read _ANSWER
+      fi
+
+      # Check if need to download package source from CVS
+      if [[ $_ANSWER = "Y" || $_ANSWER = "y" ]]; then
+         echo "Downloading $_PACKAGE source from CVS. Please wait..."
+         rm -rf $_PACKAGE
+         cvs -z3 -d$CVSROOT -q co -P $_PACKAGE
+        if [[ $? -ne 0 ]]; then return 1; fi
+      fi 
+
+      cd $_PACKAGE
    fi
 
-   # Check if need to download package source from CVS
-   if [[ $_ANSWER = "Y" || $_ANSWER = "y" ]]; then
-      echo "Downloading $_PACKAGE source from CVS. Please wait..."
-      rm -rf $_PACKAGE
-      cvs -z3 -d$CVSROOT -q co -P $_PACKAGE
-      if [[ $? -ne 0 ]]; then return 1; fi
-   fi
-
-   if [[ ! -e sfcBroker.c ]]; then
-      cd $_PACKAGE 
-   fi
- 
    # Special case: if sfcb package then download mofc into it too
    if [[ $_PACKAGE = "sfcb" && ! -e $PWD/mofc ]]; then
       echo "Downloading mofc source from CVS. Please wait..."
@@ -290,6 +286,7 @@ if ! ps -C sfcbd > /dev/null; then
    exit 1
 fi
 
+cd tests
 # Run some simple tests using wbemcat
 if which wbemcat > /dev/null; then
    echo "****************************************"

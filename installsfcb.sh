@@ -32,7 +32,7 @@ echo -n "Continue with sfcb install? [Y]/n "; read _ANSWER
 if [[ $_ANSWER = "N" || $_ANSWER = "n" ]]; then exit 1; fi
 
 # Check if there is an existing install script anywhere that will break autoconf
-for _FILE in ./install-sh ./install.sh ../install-sh ../install.sh; do
+for _FILE in ../install-sh ../install.sh; do
    if [[ -e $_FILE ]]; then
       echo "Existing $_FILE will break autoconf! Please remove/rename it and re-run $0"
       exit 1 
@@ -189,7 +189,12 @@ export SFCB_TRACE=65535
 
 # Start up the sfcbd, albeit without any namespaces or registered classes
 echo -n "Starting sfcb. Enter Root "
-su --preserve-environment --command "killall -q -9 sfcbd; sleep 1; $_PREFIX/etc/init.d/sfcb start"
+su --preserve-environment --command '
+	for _LIB in $( find $_PREFIX/lib -name "libsfc*.0.0.0" ); do
+	  _NEWLIB=${_LIB%.0.0}
+	  if [[ ! -e $_NEWLIB ]]; then ln -s $_LIB $_NEWLIB; fi
+	done;
+	killall -q -9 sfcbd; sleep 1; $_PREFIX/etc/init.d/sfcb start'
 echo
 sleep 1
 if ! ps -C sfcbd > /dev/null; then
@@ -339,17 +344,4 @@ if which wbemcli > /dev/null; then
    eval $_CMD
 fi
 
-
 exit 0
-
-sfcbrepos -f
-
-mkdir -p $_PREFIX/var/lib/sfcb/registration/repository/root/interop
-rm -rf $_PREFIX/var/lib/sfcb/registration/repository/root/interop/*
-
-sfcbmof -I $_PREFIX/share/sfcb/CIM -i CIM_Schema.mof -o $_PREFIX/var/lib/sfcb/registration/repository/root/interop/classSchemas ./interop.mof
-
-sfcbd -tm ?
-
-exit 0
-

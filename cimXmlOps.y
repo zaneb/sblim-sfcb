@@ -1907,7 +1907,11 @@ property
     : XTOK_PROPERTY propertyData ZTOK_PROPERTY
     {
        $$.val=$2;
-    }   
+    }  
+    | XTOK_PROPERTYREFERENCE propertyData ZTOK_PROPERTYREFERENCE
+    {
+       $$.val=$2;
+    }
 ;
 
 propertyData 

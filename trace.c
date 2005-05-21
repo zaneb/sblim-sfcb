@@ -53,8 +53,8 @@ TraceId traceIds[]={
   {"providerDrv",       TRACE_PROVIDERDRV},
   {"cimxmlProc",        TRACE_CIMXMLPROC},
   {"httpDaemon",        TRACE_HTTPDAEMON},
-  {"encCalls",          TRACE_ENCCALLS},
   {"upCalls",           TRACE_UPCALLS},
+  {"encCalls",          TRACE_ENCCALLS},
   {"ProviderInstMgr",   TRACE_PROVIDERINSTMGR},
   {"providerAssocMgr",  TRACE_PROVIDERASSOCMGR},
   {"providers",         TRACE_PROVIDERS},
@@ -63,7 +63,6 @@ TraceId traceIds[]={
   {"objectImpl",        TRACE_OBJECTIMPL},
   {"sockets",           TRACE_SOCKETS},
   {"memoryMgr",         TRACE_MEMORYMGR},
-  {"msgQueue",          TRACE_MSGQUEUE},
   {"msgQueue",          TRACE_MSGQUEUE},
   {"xmlParsing",        TRACE_XMLPARSING},
   {NULL,0}

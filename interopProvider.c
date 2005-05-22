@@ -468,7 +468,9 @@ int fowardSubscription(CMPIContext * ctx, Filter *fi, CMPIStatus *st)
       principal=(char*)principalP.value.string->hdl;
 
    for ( ; *fClasses; fClasses++) {
-      if (isa(fi->sns,*fClasses,"cim_processindication")) {
+      _SFCB_TRACE(1,("--- namespace=\"%s\" indication class=\"%s\"", fi->sns, *fClasses));
+
+      if (isa(fi->sns,*fClasses,"CIM_ProcessIndication")) {
          *st=activateSubscription(principal, *fClasses, *fClasses, fi, &irc);
       }
       else if (isa("root/interop",*fClasses,"CIM_InstCreation")) {
@@ -481,7 +483,7 @@ int fowardSubscription(CMPIContext * ctx, Filter *fi, CMPIStatus *st)
          *st=activateLifeCycleSubscription(principal, *fClasses, fi,MODIFY_INST);
       }
       else {
-         setStatus(st,CMPI_RC_ERR_NOT_SUPPORTED,"Lifecycle indications not supported");
+         setStatus(st,CMPI_RC_ERR_NOT_SUPPORTED,"Unsupported indication class specified in filter query");
         _SFCB_RETURN(-1);
      }
    }

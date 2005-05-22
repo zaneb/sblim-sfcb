@@ -741,7 +741,7 @@ CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
    int rc;
 
    _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderGetClass");
-   _SFCB_TRACE(1,("--- ClassName %s",(char *) cn->hdl));
+   _SFCB_TRACE(1,("--- ClassName=\"%s\"",(char *) cn->hdl));
    
    cReg=getNsReg(ref, &rc);
    if (cReg==NULL) {
@@ -752,8 +752,11 @@ CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
    cReg->ft->rLock(cReg);
    
    cl = getClass(cReg, (char *) cn->hdl);
-   if (cl) CMReturnInstance(rslt, (CMPIInstance *) cl);
-   else {
+   if (cl) {
+      _SFCB_TRACE(1,("--- Class found"));
+      CMReturnInstance(rslt, (CMPIInstance *) cl);
+   } else {
+      _SFCB_TRACE(1,("--- Class not found"));
       st.rc = CMPI_RC_ERR_NOT_FOUND;
    }
    

@@ -160,7 +160,8 @@ int nameSpaceOk(ProviderInfo *info, char *nameSpace)
 
    if (strcasecmp(nameSpace,"root/pg_interop")==0) 
       return nameSpaceOk(info,"root/interop");
-   
+
+   _SFCB_TRACE(1,("--- failed"));
    _SFCB_RETURN(0);
 }
 

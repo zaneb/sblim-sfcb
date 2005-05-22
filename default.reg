@@ -30,4 +30,5 @@
    provider: IndCIMXMLHandler
    location: sfcIndCIMXMLHandler
    type: instance method
+   namespace: root/interop
 #

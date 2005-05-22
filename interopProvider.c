@@ -143,6 +143,8 @@ static Subscription *getSubscription(char *key)
 
 static void removeSubscription(Subscription *su,  char *key)
 {
+   _SFCB_ENTER(TRACE_INDPROVIDER, "removeSubscription");
+
    if (subscriptionHt) {
       filterHt->ft->remove(filterHt,key);
       if (su) {
@@ -153,6 +155,8 @@ static void removeSubscription(Subscription *su,  char *key)
    if (su) {
       free (su);
    }
+
+   _SFCB_EXIT();
 }
 
 
@@ -195,16 +199,21 @@ static Filter *getFilter(char *key)
 
 static void removeFilter(Filter *fi,  char *key)
 {
+   _SFCB_ENTER(TRACE_INDPROVIDER, "removeFilter");
+
    if (filterHt) {
       filterHt->ft->remove(filterHt,key);
    }
    if (fi) {
-      free (fi);
       CMRelease(fi->fci);
       CMRelease(fi->qs);
       free(fi->query);
       free(fi->lang);
+      free(fi->sns);
+      free (fi);
    }   
+
+   _SFCB_EXIT();
 }
 
 static Handler *addHandler(CMPIInstance *ci, CMPIObjectPath *op)
@@ -246,12 +255,16 @@ static Handler *getHandler(char *key)
 
 static void removeHandler(Handler *ha,  char *key)
 {
+   _SFCB_ENTER(TRACE_INDPROVIDER, "removeHandler");
+
    if (handlerHt) {
       handlerHt->ft->remove(handlerHt,key);
    }
    if (ha) {
       free (ha);
    }
+
+   _SFCB_EXIT();
 }
 
 extern int isChild(const char *ns, const char *parent, const char* child);

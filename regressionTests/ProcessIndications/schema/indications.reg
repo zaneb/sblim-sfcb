@@ -1,9 +1,0 @@
-#
-#  Provider registration for indication tests
-#
-[TST_ProcessIndication]
-   provider: IndTestProvider
-   location: IndTestProvider
-   type: indication
-   namespace: root/tests
-#

@@ -19,7 +19,7 @@
 # */
 
 
-dirs='ProcessIndications LifeCycleIndications'
+dirs='LifeCycleIndications'
 
 sfcbdir=/usr/local/share/sfcb
 if [ -x /usr/bin/curl ] && [ ! -f $sfcbdir/CIM/CIM_Schema.mof ]

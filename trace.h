@@ -50,7 +50,7 @@
    _sfcb_trace_start(n);
 
 #define _SFCB_TRACE_STOP() \
-   _sfcb_trace_stop(n);
+   _sfcb_trace_stop();
 
 #define _SFCB_TRACE_FUNCTION(LEVEL,f) \
    _SFCB_TRACE(LEVEL,("Invoking trace function %s",#f)); \

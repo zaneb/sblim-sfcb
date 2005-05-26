@@ -16,16 +16,6 @@
    type: instance association method
    unload: never
 #
-[CIM_IndicationFilter]
-   provider: InteropProvider
-   location: sfcInteropProvider
-   type: instance association method
-#
-[CIM_IndicationSubscription]
-   provider: InteropProvider
-   location: sfcInteropProvider
-   type: instance association method
-#
 [CIM_ListenerDestinationCIMXML]
    provider: IndCIMXMLHandler
    location: sfcIndCIMXMLHandler

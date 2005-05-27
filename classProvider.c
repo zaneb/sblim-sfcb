@@ -843,7 +843,10 @@ CMPIStatus ClassProviderDeleteClass(CMPIClassMI * mi,
    }
       
    UtilList *ul = getChildren(cReg,cn);
-   if (ul) {
+   if (ul && ul->ft->size(ul)) {
+//      char *child;
+//      for (child =(char*)ul->ft->getFirst(ul); child; child=(char*)ul->ft->getNext(ul)) 
+//         printf("child: %s\n",child);
       st.rc = CMPI_RC_ERR_CLASS_HAS_CHILDREN;
       _SFCB_RETURN(st);
    }

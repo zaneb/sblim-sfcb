@@ -267,7 +267,7 @@ fi
 echo "-------------------------------------------------------------------------------"
 echo -n "Do you want to install the SBLIM test CMPI providers? [Y]/n "; read _ANSWER
 if [[ -z $_ANSWER || $_ANSWER = "Y" || $_ANSWER = "y" ]]; then
-   _PACKAGES="cmpi-instancetest cmpi-methodtest cmpi-processindicationtest cmpi-reef"
+   _PACKAGES="cmpi-instancetest cmpi-methodtest cmpi-processindicationtest cmpi-lifecycleindicationtest cmpi-reef"
    for _PACKAGE in $_PACKAGES; do
       cd $_SRCROOT/sblim
       _installpkg cmpi-tests/$_PACKAGE $_PREFIX

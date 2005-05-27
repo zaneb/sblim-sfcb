@@ -155,7 +155,7 @@ dist_sfcbdata_DATA=default.reg
 
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage 
 
-dist_bin_SCRIPTS=wbemcat
+dist_bin_SCRIPTS=wbemcat xmltest.sh
 
 init_SCRIPTS=sfcb
 

@@ -1245,6 +1245,13 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          p->data = d; 
          p->data.value.chars = (char *) addClString(hdr, d.value.chars);
       }
+      else if (d.type == CMPI_string && (d.state & CMPI_nullValue) == 0) {
+         p->data = d; 
+         if (d.value.string) 
+            p->data.value.chars = (char*)addClString(hdr, (char*)d.value.string->hdl);
+         else p->data.value.chars=NULL;
+         p->data.type=CMPI_chars;
+      }
       else if (d.type == CMPI_dateTime && (d.state & CMPI_nullValue) == 0) {
          char chars[26];
          dateTime2chars(d.value.dateTime, NULL, chars);

@@ -255,7 +255,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
    }
    
    switch (type) {
-   case CMPI_chars:
+   case CMPI_char16:
       value.char16 = *val;
       break;
    case CMPI_string:
@@ -289,6 +289,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       break;
    case CMPI_boolean:
       value.boolean = strcasecmp(val, "false");
+      if (value.boolean) value.boolean = 1;
       break;
    case CMPI_real32:
       sscanf(val, "%f", &value.real32);

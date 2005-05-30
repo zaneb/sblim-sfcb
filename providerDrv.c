@@ -538,6 +538,7 @@ int sendResponse(int requestor, BinResponseHdr * hdr)
 {
    _SFCB_ENTER(TRACE_PROVIDERDRV, "sendResponse");
    int i, l, rvl=0, ol, size, dmy;
+   char str_time[26];
    BinResponseHdr *buf;
    
    size = sizeof(BinResponseHdr) + ((hdr->count - 1) * sizeof(MsgSegment));
@@ -556,6 +557,12 @@ int sendResponse(int requestor, BinResponseHdr * hdr)
          hdr->rvEnc=setCharsMsgSegment((char*)hdr->rv.value.string);
          rvl=hdr->rvEnc.length;
          break;
+      case CMPI_dateTime:
+         dateTime2chars(hdr->rv.value.dateTime, NULL, str_time);
+         hdr->rvEnc.type=MSG_SEG_CHARS;
+         hdr->rvEnc.length=rvl=26;
+         hdr->rvEnc.data=&str_time;
+         break;      
       case CMPI_ref:
          mlogf(M_ERROR,M_SHOW,"-#- not supporting refs\n");
          abort();
@@ -578,7 +585,7 @@ int sendResponse(int requestor, BinResponseHdr * hdr)
          buf->rvEnc.data = (void *) l;
          l += ol;
          break;
-      }
+      } 
       size=l;
    }
    

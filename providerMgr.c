@@ -947,6 +947,9 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
      if (resp->rvValue) {
         if (resp->rv.type==CMPI_chars)
            resp->rv.value.chars=(int)resp->rvEnc.data+(char*)resp;
+        else if (resp->rv.type==CMPI_dateTime) 
+           resp->rv.value.dateTime=
+              native_new_CMPIDateTime_fromChars((int)resp->rvEnc.data+(char*)resp,NULL);
      }
      for (i = 0; i < resp->count; i++) {
          resp->object[i].data=(void*)((int)resp->object[i].data+(char*)resp);   

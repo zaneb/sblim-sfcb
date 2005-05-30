@@ -2166,6 +2166,11 @@ int ClArgsGetArgAt(ClArgs * arg, int id, CMPIData * data, char **name)
       data->value.string = native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
    }
+   if (data->type == CMPI_dateTime) {
+      const char *str =
+          ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
+      data->value.dateTime = native_new_CMPIDateTime_fromChars(str, NULL);
+   }
    if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&arg->hdr,
          (ClArray *) & data->value.array);

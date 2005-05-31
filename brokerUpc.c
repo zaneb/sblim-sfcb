@@ -143,6 +143,16 @@ CMPIStatus deliverIndication(CMPIBroker* mb, CMPIContext* ctx,
 #endif
 }
 
+void buildStatus(BinResponseHdr *resp, CMPIStatus *st)
+{
+   if (st==NULL) return;
+   st->rc=resp->rc;
+   if (resp->rc && resp->count==1 &&  resp->object[0].type==MSG_SEG_CHARS && resp->object[0].length) {
+      st->msg=native_new_CMPIString((char*)resp->object[0].data,NULL);
+   }
+   else st->msg=NULL;   
+}
+
 //---------------------------------------------------
 //---
 //-     Instance support
@@ -292,7 +302,7 @@ static CMPIInstance *getInstance(CMPIBroker * broker,
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
-         st.rc = resp->rc;
+         buildStatus(resp,&st);
          if (resp->rc == CMPI_RC_OK) {
             inst = relocateSerializedInstance(resp->object[0].data);
             tInst=inst->ft->clone(inst,NULL);
@@ -358,7 +368,7 @@ static CMPIObjectPath *createInstance(CMPIBroker * broker,
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
-         st.rc = resp->rc;
+         buildStatus(resp,&st);
          if (resp->rc == CMPI_RC_OK) {
             op = relocateSerializedObjectPath(resp->object[0].data);
             tOp=op->ft->clone(op,NULL);
@@ -428,7 +438,7 @@ static CMPIStatus modifyInstance(CMPIBroker * broker,
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
-         st.rc = resp->rc;
+         buildStatus(resp,&st);
          if (resp->rc == CMPI_RC_OK) {
             free(resp);
          }
@@ -479,7 +489,7 @@ static CMPIStatus deleteInstance(CMPIBroker * broker,
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
-         st.rc = resp->rc;
+         buildStatus(resp,&st);
          if (resp->rc == CMPI_RC_OK) {
             free(resp);
          }
@@ -830,7 +840,7 @@ static CMPIData invokeMethod(CMPIBroker * broker, CMPIContext * context,
          closeProviderContext(&binCtx);
          
          resp->rc--;
-         if (rc) st.rc = resp->rc;
+         buildStatus(resp,&st);
          if (resp->rc == CMPI_RC_OK) {
             if (out) {
                tOut = relocateSerializedArgs(resp->object[0].data);

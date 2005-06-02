@@ -1,5 +1,4 @@
 #!/usr/bin/perl 
-# $Id:
 # ============================================================================
 # wbemcat
 #
@@ -14,7 +13,6 @@
 #
 # Author:       Adrian Schuur, <schuur@de.ibm.com>
 # Contributors: Dr. Gareth S. Bestor, <bestorga@us.ibm.com>
-# Last Updated: April 25, 2005 
 # Description:
 #    Utility to send CIM-XML request file to a CIMOM and display
 #    the response/results. Default CIMOM is localhost:5988.

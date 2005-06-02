@@ -1,4 +1,25 @@
 #!/bin/sh
+# ============================================================================
+# xmltest
+#
+# (C) Copyright IBM Corp. 2005
+#
+# THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+# ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+# CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+#
+# You can obtain a current copy of the Common Public License from
+# http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+#
+# Author:       Dr. Gareth S. Bestor, <bestorga@us.ibm.com>
+# Contributors: Adrian Schuur, <schuur@de.ibm.com>
+# Description:
+#    Simple test program to send CIM-XML test request files to a CIMOM and
+#    compare the returned results to an expected response file.
+#    If test file is specified then run only that test. If test directory is
+#    specified then run all tests in the directory in sorted order. If no test
+#    file or directory specified then run all tests in the current directory.
+# ============================================================================
 
 _RC=0
 
@@ -55,11 +76,17 @@ function _runxmltest {
 }
 # ------------------------------------------------------------------------------
 
-if [[ -n $1 ]]; then
+if [[ -f $1 ]]; then
    _runxmltest $1
 else
+   if [[ -d $1 ]]; then
+      _DIR=$1
+   else
+      _DIR=$PWD
+   fi
+
    # Look for all *.xml test files and run them in sorted order (hence tests should be numbered)
-   find -name "*.xml" | sort | while read _TESTXML; do
+   find $_DIR -name "*.xml" | sort | while read _TESTXML; do
       _runxmltest $_TESTXML
       # Wait for the dust to settle before trying the next test...
       sleep 1

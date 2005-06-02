@@ -82,7 +82,7 @@ else
    if [[ -d $1 ]]; then
       _DIR=$1
    else
-      _DIR=$PWD
+      _DIR=./
    fi
 
    # Look for all *.xml test files and run them in sorted order (hence tests should be numbered)

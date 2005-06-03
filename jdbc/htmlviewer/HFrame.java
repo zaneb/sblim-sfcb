@@ -310,6 +310,7 @@ public class HFrame extends JFrame {
 		}
 		catch (IOException e) {
 			// TODO: handle exception
+		    	comandLineBox.addItem("");
 		}
 		
 	}

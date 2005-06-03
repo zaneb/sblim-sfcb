@@ -415,7 +415,6 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
    int i,len,ls[8];
    char str[256];
    RespSegments rs;
-
    _SFCB_ENTER(TRACE_HTTPDAEMON, "writeChunkResponse");
    switch (ctx->chunkedMode) {
    case 1:
@@ -517,6 +516,7 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
 static ChunkFunctions httpChunkFunctions = {
    writeChunkResponse,
 };
+
 
 #undef PrintF
 

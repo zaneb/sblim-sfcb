@@ -339,7 +339,6 @@ RespSegments iMethodResponse(RequestHdr * hdr, UtilStringBuffer * sb)
        {0, iResponseIntro3},
        {2, (char*)sb},
        {0, iResponseTrailer1}} };
-
    _SFCB_ENTER(TRACE_CIMXMLPROC, "iMethodResponse");
    _SFCB_RETURN(rs);
 };
@@ -761,7 +760,6 @@ static RespSegments enumClassNames(CimXmlRequestContext * ctx,
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
       _SFCB_TRACE(1, ("--- Back from Provider"));
-
       closeProviderContext(&binCtx);
       if (err == 0) {
          _SFCB_RETURN(genResponses(&binCtx, resp, l));
@@ -772,7 +770,6 @@ static RespSegments enumClassNames(CimXmlRequestContext * ctx,
    closeProviderContext(&binCtx);
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
 }
-
 
 static RespSegments enumClasses(CimXmlRequestContext * ctx,
                                       RequestHdr * hdr)
@@ -1038,9 +1035,9 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->operation=OPS_ModifyInstance;
    sreq->count=req->properties+3;
 
-   for (i=0; i<req->properties; i++)
+   for (i=0; i<req->properties; i++){
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
-
+   }
    xci = &req->namedInstance.instance;
    xco = &req->namedInstance.path;
 
@@ -1050,6 +1047,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
                                 xco->bindings.keyBindings[i].value,
                                 &xco->bindings.keyBindings[i].ref,
                                 &val, &type);
+                           
       CMAddKey(path, xco->bindings.keyBindings[i].name, valp, type);
    }
 
@@ -1090,6 +1088,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
 }
 
+
 static RespSegments enumInstanceNames(CimXmlRequestContext * ctx,
                                       RequestHdr * hdr)
 {
@@ -1101,8 +1100,8 @@ static RespSegments enumInstanceNames(CimXmlRequestContext * ctx,
    BinRequestContext binCtx;
 
    memset(&binCtx,0,sizeof(BinRequestContext));
-   XtokEnumInstanceNames *req = (XtokEnumInstanceNames *) hdr->cimRequest;
 
+   XtokEnumInstanceNames *req = (XtokEnumInstanceNames *) hdr->cimRequest;
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
@@ -1149,6 +1148,7 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
    BinRequestContext binCtx;
 
    memset(&binCtx,0,sizeof(BinRequestContext));
+
    XtokEnumInstances *req = (XtokEnumInstances *) hdr->cimRequest;
 
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
@@ -1170,9 +1170,11 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
    binCtx.rHdr = hdr;
    binCtx.bHdrSize = sreqSize;
    binCtx.commHndl = ctx->commHndl;
+   
    binCtx.type=CMPI_instance;
    binCtx.xmlAs=binCtx.noResp=0;
    binCtx.chunkFncs=ctx->chunkFncs;
+   
    if (noChunking)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {

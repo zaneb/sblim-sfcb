@@ -306,6 +306,32 @@ int startHttpd(int argc, char *argv[], int sslMode)
    return 0;
 }
 
+
+extern int dbpDaemon(int argc, char *argv[], int sslMode, int sfcbPid);
+int startDbpd(int argc, char *argv[], int sslMode)
+{
+	int pid,sfcPid=currentProc;
+	//sleep(2);
+    pid= fork();
+    if (pid < 0) {
+       perror("dbpd fork");
+       exit(2);
+    }
+    if (pid == 0) {
+    	currentProc=getpid();
+    	dbpDaemon(argc, argv, sslMode, sfcPid);
+    	closeSocket(&sfcbSockets,cRcv,"startHttpd");
+      	closeSocket(&resultSockets,cAll,"startHttpd");
+    }
+    else {
+    	addStartedAdapter(pid);
+       	return 0;
+    }
+    return 0;
+}
+
+
+
 int main(int argc, char *argv[])
 {
    int c, i;
@@ -434,6 +460,15 @@ int main(int argc, char *argv[])
       if (!sslOMode)
          startHttpd(argc, argv,0);
    }
+   
+   	//Start dbProtocol-Daemon
+   	if (startHttp) {
+      if (sslMode)
+         startDbpd(argc, argv,1);
+      if (!sslOMode)
+         startDbpd(argc, argv,0);
+   }
+	
    
    setSignal(SIGSEGV, handleSigSegv,SA_ONESHOT);
    setSignal(SIGCHLD, handleSigChld,0);

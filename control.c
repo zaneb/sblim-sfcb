@@ -48,9 +48,12 @@ char * configfile = NULL;
 
 Control init[] = {
    {"httpPort",         1, "5988"},
+    {"dbpPort",         1, "5980"},
    {"enableHttp",       2, "true"},
    {"httpProcs",        1, "8"},
+   {"dbpProcs",        1, "8"},
    {"httpsPort",        1, "5989"},
+   {"httpsPort",        1, "5981"},
    {"enableHttps",      2, "false"},
    {"httpsProcs",       1, "8"},
    {"provProcs",        1, "32"},

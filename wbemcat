@@ -35,7 +35,7 @@ sub usage {
    print "  -h, --host=HOSTNAME\tName of host running the CIMOM. Default=$host\n";
    print "  -p, --port=PORT\tPort that the CIMOM is listening on. Default=$port\n";
    print "  -?, --help\t\tDisplay this help and exit\n";
-   die "\n";
+   exit;
 }
 
 # Process command line options, if any

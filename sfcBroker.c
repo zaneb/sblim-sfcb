@@ -40,6 +40,10 @@
 #include "sfcVersion.h"
 #include "control.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 extern void setExFlag(unsigned long f);
 extern char *parseTarget(const char *target);
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
@@ -59,6 +63,11 @@ extern int sfcBrokerPid;
 
 extern unsigned long exFlags;
 int startHttp = 0;
+
+#ifdef HAVE_JDBC
+int startDbp = 1;
+#endif
+
 char *name;
 extern int collectStat;
 
@@ -306,6 +315,7 @@ int startHttpd(int argc, char *argv[], int sslMode)
    return 0;
 }
 
+#ifdef HAVE_JDBC
 
 extern int dbpDaemon(int argc, char *argv[], int sslMode, int sfcbPid);
 int startDbpd(int argc, char *argv[], int sslMode)
@@ -330,7 +340,7 @@ int startDbpd(int argc, char *argv[], int sslMode)
     return 0;
 }
 
-
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -461,14 +471,15 @@ int main(int argc, char *argv[])
          startHttpd(argc, argv,0);
    }
    
-   	//Start dbProtocol-Daemon
-   	if (startHttp) {
+#ifdef HAVE_JDBC
+   //Start dbProtocol-Daemon
+   if (startDbp) {
       if (sslMode)
          startDbpd(argc, argv,1);
       if (!sslOMode)
          startDbpd(argc, argv,0);
    }
-	
+#endif	
    
    setSignal(SIGSEGV, handleSigSegv,SA_ONESHOT);
    setSignal(SIGCHLD, handleSigChld,0);

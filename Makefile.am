@@ -48,6 +48,7 @@ lib_LTLIBRARIES = \
 sbin_PROGRAMS = \
    sfcbd 
 
+if JDBC
 libsfcBrokerCore_la_SOURCES = \
     args.c \
     array.c \
@@ -92,14 +93,58 @@ libsfcBrokerCore_la_SOURCES = \
     sqlParser.y \
     sqlStatement.c \
     avltree.c
+ 
+else
+libsfcBrokerCore_la_SOURCES = \
+    args.c \
+    array.c \
+    brokerEnc.c \
+    brokerUpc.c \
+    brokerOs.c \
+    context.c \
+    datetime.c \
+    enumeration.c \
+    instance.c \
+    objectpath.c \
+    result.c \
+    selectexp.c \
+    selectcond.c \
+    subcond.c \
+    predicate.c \
+    string.c \
+    value.c \
+    support.c \
+    providerRegister.c \
+    objectImpl.c \
+    constClass.c \
+    hashtable.c \
+    genericlist.c \
+    utilHashtable.c \
+    utilStringBuffer.c \
+    utilFactory.c \
+    msgqueue.c \
+    providerMgr.c \
+    providerDrv.c \
+    trace.c \
+    control.c \
+    queryParser.y \
+    queryLexer.l \
+    queryOperation.c \
+    queryStatement.c \
+    cimXmlGen.c \
+    mrwlock.c \
+    mlog.c 
+endif
 
 libsfcBrokerCore_la_CFLAGS = @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
 
+if JDBC
 sqlLexer.c: sqlLexer.l sqlParser.y
 	lex -t sqlLexer.l | sed -e "s/yy/sfcSql/g" > sqlLexer.c
 
 sqlParser.c: sqlLexer.l sqlParser.y
 	bison -p sfcSql -d -o sqlParser.c sqlParser.y
+endif
 
 queryLexer.c: queryLexer.l queryParser.y
 	lex -t queryLexer.l | sed -e "s/yy/sfcQuery/g" > queryLexer.c

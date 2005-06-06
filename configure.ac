@@ -35,8 +35,23 @@ AC_ARG_ENABLE(ssl,
 	[AC_HELP_STRING([--enable-ssl],
 		[include ssl support for SFCB.])])
 
-if test "$enable_debug" != "no"; then
+AC_ARG_ENABLE(jdbc,
+	[AC_HELP_STRING([--enable-jdbc],
+		[include server-side JDBC support for SFCB - EXPERIMENTAL.])])
+
+AC_ARG_ENABLE(indications,
+	[AC_HELP_STRING([--disable-indications],
+		[disable indication support for SFCB - currently not working.])],
+	[enable_indications=$enableval],
+	[enable_indications="yes"]
+	)
+
+if test "$enable_debug" == "yes"; then
    CPPFLAGS="-D SFCB_DEBUG $CPPFLAGS"
+fi
+
+if test "$enable_jdbc" == "yes"; then
+   AC_DEFINE(HAVE_JDBC,,[JDBC support enabled.])
 fi
 
 AC_CANONICAL_HOST
@@ -79,6 +94,9 @@ AC_PROG_LIBTOOL
 # Checks for libraries.
 AC_CHECK_LIB(pthread,main)
 AC_CHECK_LIB(dl,main)
+if test "$enable_indications" = "yes"; then
+   AC_CHECK_LIB(curl,main)
+fi
 
 if test "$enable_ssl" = "yes"; then
    AC_CHECK_LIB(ssl,main)
@@ -133,5 +151,16 @@ if test -d mofc; then
    AC_SUBST(MOFC_DIR)
 fi
 
+AM_CONDITIONAL(JDBC,[test "$enable_jdbc" == "yes"]) 
+
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh sfcb.cfg.pre getSchema.sh.pre sfcb.init-redhat sfcb.init-suse sfcb.init-none])
 AC_OUTPUT
+
+echo ======================================================
+echo sfcb configuration complete
+echo configuration features:
+echo -e "debug"\\t"${enable_debug:-no}"
+echo -e "indications"\\t"yes (cannot be disabled currently)"
+echo -e "ssl"\\t"${enable_ssl:-no}"
+echo -e "jdbc"\\t"${enable_jdbc:-no}"
+echo ======================================================

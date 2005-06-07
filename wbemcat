@@ -66,8 +66,9 @@ if ($size == 0) {
 
 # Necessary preamble specifying the length of the CIM-XML data 
 my @preamble = ("POST /cimom HTTP/1.1\n", "Host:\n",
-            "Content-Type: application/xml; charset=\"utf-8\"\n".
-            "Content-Length: ", $size, "\n\n\n");
+            "Content-Type: application/xml; charset=\"utf-8\"\n",
+            "Content-Length: ", $size, "CIMProtocolVersion: 1.0\n",
+	    "CIMOperation: MethodCall\n", "\n\n\n");
 
 # Pipe STDOUT to nc command
 # DEBUG: Comment out this line to see what data gets sent to the CIMOM

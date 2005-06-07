@@ -82,8 +82,6 @@ static int adaptersStopped=0,providersStopped=0,restartBroker=0;
 
 extern char * configfile;
 
-char * copyright = "(C) Copyright IBM Corp. 2005";
-
 void clean_up(int sd, const char *the_file)
 {
    close(sd);
@@ -368,7 +366,6 @@ int main(int argc, char *argv[])
    startLogging("sfcb");
    
    mlogf(M_INFO,M_SHOW,"--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
-   mlogf(M_INFO,M_SHOW,"--- (C) Copyright IBM Corp. 2004\n");
 
    for (c = 0, i = 1; i < argc; i++) {
       if (strcmp(argv[i], "-d") == 0)

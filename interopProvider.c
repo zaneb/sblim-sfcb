@@ -544,37 +544,60 @@ int fowardSubscription(
 	CMPIStatus * st)
 {
    CMPIStatus rc;
-   char *principal=NULL;
-   char **fClasses=fi->qs->ft->getFromClassList(fi->qs);
-   CMPIData principalP=ctx->ft->getEntry(ctx,CMPIPrincipal,&rc);
+   char *principal = NULL;
+   char **fClasses = fi->qs->ft->getFromClassList(fi->qs);
+   CMPIData principalP = ctx->ft->getEntry(ctx,CMPIPrincipal,&rc);
    int irc;
+   int activated = 0;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "fowardSubscription");
    
-   if (rc.rc==CMPI_RC_OK) 
-      principal=(char*)principalP.value.string->hdl;
-
-   for ( ; *fClasses; fClasses++) {
-      _SFCB_TRACE(1,("--- namespace=\"%s\" indication class=\"%s\"", fi->sns, *fClasses));
-
-      if (isa(fi->sns,*fClasses,"CIM_ProcessIndication")) {
-         *st=activateSubscription(principal, *fClasses, *fClasses, fi, &irc);
-      }
-      else if (isa("root/interop",*fClasses,"CIM_InstCreation")) {
-         *st=activateLifeCycleSubscription(principal, *fClasses, fi,CREATE_INST);
-      }
-      else if (isa("root/interop",*fClasses,"CIM_InstDeletion")) {
-         *st=activateLifeCycleSubscription(principal, *fClasses, fi,DELETE_INST);
-      }
-      else if (isa("root/interop",*fClasses,"CIM_InstModification")) {
-         *st=activateLifeCycleSubscription(principal, *fClasses, fi,MODIFY_INST);
-      }
-      else {
-         setStatus(st,CMPI_RC_ERR_NOT_SUPPORTED,"Unsupported indication class specified in filter query");
-        _SFCB_RETURN(-1);
-     }
+   if (rc.rc == CMPI_RC_OK) { 
+      principal = (char*)principalP.value.string->hdl;
+      _SFCB_TRACE(1,("--- principal=\"%s\"", principal));
    }
 
+   /* Go thru all the indication classes specified in the filter query and activate each */
+   for ( ; *fClasses; fClasses++) {
+      _SFCB_TRACE(1,("--- indication class=\"%s\" namespace=\"%s\"", *fClasses, fi->sns));
+
+      /* Check if this is a process indication */
+      if (isa(fi->sns, *fClasses, "CIM_ProcessIndication")) {
+         *st = activateSubscription(principal, *fClasses, *fClasses, fi, &irc);
+         if (st->rc == CMPI_RC_OK) activated++; 
+      }
+
+      /* Check if this is a lifecycle instance creation indication */
+      else if (isa("root/interop", *fClasses, "CIM_InstCreation")) {
+         *st = activateLifeCycleSubscription(principal, *fClasses, fi, CREATE_INST);
+         if (st->rc == CMPI_RC_OK) activated++;
+      }
+
+      /* Check if this is a lifecycle instance deletion indication */
+      else if (isa("root/interop", *fClasses, "CIM_InstDeletion")) {
+         *st = activateLifeCycleSubscription(principal, *fClasses, fi, DELETE_INST);
+         if (st->rc == CMPI_RC_OK) activated++;
+      }
+
+      /* Check if this is a lifecycle instance modification indication */
+      else if (isa("root/interop", *fClasses, "CIM_InstModification")) {
+         *st = activateLifeCycleSubscription(principal, *fClasses, fi, MODIFY_INST);
+         if (st->rc == CMPI_RC_OK) activated++;
+      }
+
+      /* Warn if this indication class is unknown and continue processing the rest, if any */ 
+      else {
+         _SFCB_TRACE(1,("--- Unsupported/unrecognized indication class"));
+      }
+   }
+
+   /* Make sure at least one of the indication classes were successfully activated */
+   if (!activated) {
+      setStatus(st, CMPI_RC_ERR_NOT_SUPPORTED, "No supported indication classes in filter query");
+     _SFCB_RETURN(-1);
+   }
+     
+   setStatus(st, CMPI_RC_OK, NULL);
    _SFCB_RETURN(0);
 }
 

@@ -36,6 +36,8 @@
 
 #define LOCALCLASSNAME "InteropProvider"
 
+/* ------------------------------------------------------------------------- */
+
 extern CMPIInstance *relocateSerializedInstance(void *area);
 extern void getSerializedInstance(CMPIInstance * ci, void *area);
 extern unsigned long getInstanceSerializedSize(CMPIInstance * ci);
@@ -64,6 +66,8 @@ extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 extern int testNameSpace(char *ns, CMPIStatus *st);
 
 extern QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
+
+/* ------------------------------------------------------------------------- */
 
 static CMPIBroker *_broker;
 static int firstTime=1;
@@ -95,27 +99,36 @@ static UtilHashTable *filterHt = NULL;
 static UtilHashTable *handlerHt = NULL;
 static UtilHashTable *subscriptionHt = NULL;
 
+/* ------------------------------------------------------------------------- */
 
-static int interOpNameSpace(CMPIObjectPath *cop, CMPIStatus *st) 
+static int interOpNameSpace(
+	CMPIObjectPath * cop,
+	CMPIStatus * st) 
  {   
-   char *ns=(char*)CMGetNameSpace(cop,NULL)->hdl;   
+   char *ns = (char*)CMGetNameSpace(cop,NULL)->hdl;   
    if (strcasecmp(ns,"root/interop") && strcasecmp(ns,"root/pg_interop")) {
-      if (st) setStatus(st,CMPI_RC_ERR_FAILED,"Object must reside in root/interop");
+      if (st) setStatus(st, CMPI_RC_ERR_FAILED, "Object must reside in root/interop");
       return 0;
    }
    return 1;
 }
    
+/* ------------------------------------------------------------------------- */
 
-static Subscription *addSubscription(CMPIInstance *ci,  char *key, Filter *fi, Handler *ha)
+static Subscription *addSubscription(
+	CMPIInstance * ci,
+	char * key,
+	Filter * fi,
+	Handler * ha)
 {
    Subscription *su;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "addSubscription");
    
-   if (subscriptionHt==NULL)
+   if (subscriptionHt == NULL) {
       subscriptionHt=UtilFactory->newHashTable(61,UtilHashTable_charKey);
-      
+   }
+
    _SFCB_TRACE(1,("-- Subscription: %s\n",key));
    
    su=subscriptionHt->ft->get(subscriptionHt,key);
@@ -132,21 +145,31 @@ static Subscription *addSubscription(CMPIInstance *ci,  char *key, Filter *fi, H
    _SFCB_RETURN(su);
 }
 
-static Subscription *getSubscription(char *key)
+/* ------------------------------------------------------------------------- */
+
+static Subscription *getSubscription(
+	char * key)
 {
    Subscription *su;
+
+   _SFCB_ENTER(TRACE_INDPROVIDER, "getSubscription");
+
    if (subscriptionHt==NULL) return NULL;
-      
-   su=subscriptionHt->ft->get(subscriptionHt,key);
-   return su;
+   su = subscriptionHt->ft->get(subscriptionHt,key);
+
+   _SFCB_RETURN(su);
 }
 
-static void removeSubscription(Subscription *su,  char *key)
+/* ------------------------------------------------------------------------- */
+
+static void removeSubscription(
+	Subscription * su,
+	char * key)
 {
    _SFCB_ENTER(TRACE_INDPROVIDER, "removeSubscription");
 
    if (subscriptionHt) {
-      filterHt->ft->remove(filterHt,key);
+      subscriptionHt->ft->remove(subscriptionHt,key);
       if (su) {
         if (su->fi) su->fi->useCount--;
         if (su->ha) su->ha->useCount--;
@@ -159,11 +182,17 @@ static void removeSubscription(Subscription *su,  char *key)
    _SFCB_EXIT();
 }
 
+/* ------------------------------------------------------------------------- */
 
-static Filter *addFilter(CMPIInstance *ci,  char *key, QLStatement *qs, 
-   char *query, char *lang, char *sns)
+static Filter *addFilter(
+	CMPIInstance * ci,
+	char * key,
+	QLStatement * qs, 
+	char * query,
+	char * lang,
+	char * sns)
 {
-   Filter *fi;
+   Filter * fi;
       
    _SFCB_ENTER(TRACE_INDPROVIDER, "addFilter");
    
@@ -188,16 +217,26 @@ static Filter *addFilter(CMPIInstance *ci,  char *key, QLStatement *qs,
    _SFCB_RETURN(fi);
 }
 
-static Filter *getFilter(char *key)
+/* ------------------------------------------------------------------------- */
+
+static Filter *getFilter(
+	char * key)
 {
-   Filter *fi;
+   Filter * fi;
+
+   _SFCB_ENTER(TRACE_INDPROVIDER, "getFilter");
+
    if (filterHt==NULL) return NULL;
-      
-   fi=filterHt->ft->get(filterHt,key);
-   return fi;
+   fi = filterHt->ft->get(filterHt,key);
+
+   _SFCB_RETURN(fi);
 }
 
-static void removeFilter(Filter *fi,  char *key)
+/* ------------------------------------------------------------------------- */
+
+static void removeFilter(
+	Filter * fi,
+	char * key)
 {
    _SFCB_ENTER(TRACE_INDPROVIDER, "removeFilter");
 
@@ -205,7 +244,7 @@ static void removeFilter(Filter *fi,  char *key)
       filterHt->ft->remove(filterHt,key);
    }
    if (fi) {
-      CMRelease(fi->fci);
+//      CMRelease(fi->fci);
       CMRelease(fi->qs);
       free(fi->query);
       free(fi->lang);
@@ -216,7 +255,11 @@ static void removeFilter(Filter *fi,  char *key)
    _SFCB_EXIT();
 }
 
-static Handler *addHandler(CMPIInstance *ci, CMPIObjectPath *op)
+/* ------------------------------------------------------------------------- */
+
+static Handler *addHandler(
+	CMPIInstance *ci,
+	CMPIObjectPath * op)
 {
    Handler *ha; 
    char *key;
@@ -244,16 +287,26 @@ static Handler *addHandler(CMPIInstance *ci, CMPIObjectPath *op)
    _SFCB_RETURN(ha);
 }
 
-static Handler *getHandler(char *key)
+/* ------------------------------------------------------------------------- */
+
+static Handler *getHandler(
+	char * key)
 {
    Handler *ha;
+
+   _SFCB_ENTER(TRACE_INDPROVIDER, "getFilter");
+
    if (handlerHt==NULL) return NULL;
-      
    ha=handlerHt->ft->get(handlerHt,key);
-   return ha;
+
+   _SFCB_RETURN(ha);
 }
 
-static void removeHandler(Handler *ha,  char *key)
+/* ------------------------------------------------------------------------- */
+
+static void removeHandler(
+	Handler * ha,
+	char * key)
 {
    _SFCB_ENTER(TRACE_INDPROVIDER, "removeHandler");
 
@@ -267,6 +320,8 @@ static void removeHandler(Handler *ha,  char *key)
    _SFCB_EXIT();
 }
 
+/* ------------------------------------------------------------------------- */
+
 extern int isChild(const char *ns, const char *parent, const char* child);
 
 static int isa(const char *sns, const char *child, const char *parent)
@@ -279,8 +334,13 @@ static int isa(const char *sns, const char *child, const char *parent)
    _SFCB_RETURN(rv);
 }
 
+/* ------------------------------------------------------------------------- */
 
-CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
+CMPIStatus deactivateFilter(
+	CMPIContext * ctx,
+	char * ns,
+	char * cn,
+	Filter * fi)
 {
    CMPIObjectPath *path;
    CMPIStatus st={CMPI_RC_OK,NULL};
@@ -343,6 +403,7 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
    _SFCB_RETURN(st);
 }
 
+/* ------------------------------------------------------------------------- */
 
 #define CREATE_INST 1
 #define DELETE_INST 2
@@ -350,8 +411,12 @@ CMPIStatus deactivateFilter(CMPIContext * ctx, char *ns, char *cn, Filter *fi)
 
 extern CMPISelectExp *TempCMPISelectExp(QLStatement *qs);
 
-CMPIStatus activateSubscription(char *principal, const char *cn, const char *type,
-             Filter *fi, int *rrc)
+CMPIStatus activateSubscription(
+	char * principal,
+	const char * cn,
+	const char * type,
+	Filter * fi,
+	int * rrc)
 {
    CMPIObjectPath *path;
    CMPIStatus st={CMPI_RC_OK,NULL},rc;
@@ -414,8 +479,13 @@ CMPIStatus activateSubscription(char *principal, const char *cn, const char *typ
    _SFCB_RETURN(st);
 }
 
-CMPIStatus activateLifeCycleSubscription(char *principal, const char *cn,
-             Filter *fi, int type)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus activateLifeCycleSubscription(
+	char * principal,
+	const char * cn,
+	Filter * fi,
+	int type)
 {
    CMPIStatus st={CMPI_RC_OK,NULL};
    CMPISelectExp *exp=TempCMPISelectExp(fi->qs);
@@ -466,8 +536,12 @@ CMPIStatus activateLifeCycleSubscription(char *principal, const char *cn,
    _SFCB_RETURN(st);
 }
 
+/* ------------------------------------------------------------------------- */
 
-int fowardSubscription(CMPIContext * ctx, Filter *fi, CMPIStatus *st)
+int fowardSubscription(
+	CMPIContext * ctx,
+	Filter * fi,
+	CMPIStatus * st)
 {
    CMPIStatus rc;
    char *principal=NULL;
@@ -500,13 +574,19 @@ int fowardSubscription(CMPIContext * ctx, Filter *fi, CMPIStatus *st)
         _SFCB_RETURN(-1);
      }
    }
+
    _SFCB_RETURN(0);
 }
 
+/* ------------------------------------------------------------------------- */
+
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
 
-static CMPIStatus processSubscription(CMPIBroker *broker, CMPIContext *ctx, 
-         CMPIInstance *ci, CMPIObjectPath *cop)
+static CMPIStatus processSubscription(
+	CMPIBroker *broker,
+	CMPIContext *ctx, 
+	CMPIInstance *ci,
+	CMPIObjectPath *cop)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    Handler *ha;
@@ -516,41 +596,49 @@ static CMPIStatus processSubscription(CMPIBroker *broker, CMPIContext *ctx,
    char *key,*skey;
    CMPIDateTime *dt;
     
-   _SFCB_ENTER(TRACE_INDPROVIDER, "processSubscription");
+   _SFCB_ENTER(TRACE_INDPROVIDER, "processSubscription()");
    
-   skey=internalProviderNormalizeObjectPath(cop);
+   _SFCB_TRACE(1,("--- checking for existing subscription"));
+   skey = internalProviderNormalizeObjectPath(cop);
    if (getSubscription(skey)) {
+      _SFCB_TRACE(1,("--- subscription already exists"));
       free(skey);
-      setStatus(&st,CMPI_RC_ERR_ALREADY_EXISTS,NULL);
+      setStatus(&st, CMPI_RC_ERR_ALREADY_EXISTS, NULL);
       _SFCB_RETURN(st); 
    }      
       
-   op=CMGetProperty(ci,"filter",&st).value.ref;
-   key=internalProviderNormalizeObjectPath(op);
-   fi=getFilter(key);
+   _SFCB_TRACE(1,("--- getting new subscription filter"));
+   op = CMGetProperty(ci, "filter", &st).value.ref;
+   key = internalProviderNormalizeObjectPath(op);
+   fi = getFilter(key);
    free(key);
-      
-   op=CMGetProperty(ci,"handler",&st).value.ref;
-   key=internalProviderNormalizeObjectPath(op);
-   ha=getHandler(key);
-   free(key);
-      
-   if (fi==NULL) {
-      setStatus(&st,CMPI_RC_ERR_NOT_FOUND,"Filter not found");
+   
+   if (fi == NULL) {
+      _SFCB_TRACE(1,("--- cannot find specified subscription filter"));
+      setStatus(&st, CMPI_RC_ERR_NOT_FOUND, "Filter not found");
       _SFCB_RETURN(st);
    }
-   if (ha==NULL) {
-      setStatus(&st,CMPI_RC_ERR_NOT_FOUND,"Handler not found");
+   
+   _SFCB_TRACE(1,("--- getting new subscription handle"));
+   op = CMGetProperty(ci, "handler", &st).value.ref;
+   key = internalProviderNormalizeObjectPath(op);
+   ha = getHandler(key);
+   free(key);
+      
+   if (ha == NULL) {
+      _SFCB_TRACE(1,("--- cannot find specified subscription handler"));
+      setStatus(&st, CMPI_RC_ERR_NOT_FOUND, "Handler not found");
       _SFCB_RETURN(st);
    }
 
-   dt=CMNewDateTime(_broker,NULL);
-   CMSetProperty(ci,"SubscriptionDuration",&dt,CMPI_dateTime);
-         
-   su=addSubscription(ci,skey,fi,ha); 
-   fowardSubscription(ctx,fi,&st);   
+   _SFCB_TRACE(1,("--- setting subscription duration"));
+   dt = CMNewDateTime(_broker,NULL);
+   CMSetProperty(ci, "SubscriptionDuration", &dt, CMPI_dateTime);
+   
+   su=addSubscription(ci, skey, fi, ha); 
+   fowardSubscription(ctx, fi, &st);   
        
-   if (st.rc!=CMPI_RC_OK) removeSubscription(su,skey); 
+   if (st.rc != CMPI_RC_OK) removeSubscription(su, skey); 
       
    _SFCB_RETURN(st); 
 }
@@ -559,7 +647,9 @@ static CMPIStatus processSubscription(CMPIBroker *broker, CMPIContext *ctx,
  * InterOp initialization
  * ------------------------------------------------------------------ */
 
-void initInterOp(CMPIBroker *broker, CMPIContext *ctx)
+void initInterOp(
+	CMPIBroker *broker,
+	CMPIContext *ctx)
 {
    CMPIObjectPath *op;
    UtilList *ul;
@@ -613,71 +703,84 @@ void initInterOp(CMPIBroker *broker, CMPIContext *ctx)
       
    _SFCB_EXIT(); 
 }
- 
-/* ------------------------------------------------------------------ *
- * Instance MI Cleanup
- * ------------------------------------------------------------------ */
 
-CMPIStatus InteropProviderCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
+/* --------------------------------------------------------------------------*/
+/*                       Instance Provider Interface                         */
+/* --------------------------------------------------------------------------*/
+ 
+CMPIStatus InteropProviderCleanup(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderCleanup");
-   
    _SFCB_RETURN(st);
 }
 
-/* ------------------------------------------------------------------ *
- * Instance MI Functions
- * ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------- */
 
-
-CMPIStatus InteropProviderEnumInstanceNames(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref)
+CMPIStatus InteropProviderEnumInstanceNames(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * ref)
 {
-   CMPIStatus st={CMPI_RC_OK,NULL};
+   CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderEnumInstanceNames");
-   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
-   st=InternalProviderEnumInstanceNames(NULL,ctx,rslt,ref);
+
+   if (interOpNameSpace(ref,NULL) != 1) _SFCB_RETURN(st);
+   st=InternalProviderEnumInstanceNames(NULL, ctx, rslt, ref);
+
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderEnumInstances(CMPIInstanceMI * mi,
-                                         CMPIContext * ctx,
-                                         CMPIResult * rslt,
-                                         CMPIObjectPath * ref,
-                                         char **properties)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderEnumInstances(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * ref,
+	char ** properties)
 {
-   CMPIStatus st={CMPI_RC_OK,NULL};
+   CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderEnumInstances");
+
 //   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
-   st=InternalProviderEnumInstances(NULL,ctx,rslt,ref,properties);
+   st=InternalProviderEnumInstances(NULL, ctx, rslt, ref, properties);
+
    _SFCB_RETURN(st);
 }
 
+/* ------------------------------------------------------------------------- */
 
-CMPIStatus InteropProviderGetInstance(CMPIInstanceMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * cop,
-                                       char **properties)
+CMPIStatus InteropProviderGetInstance(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	char ** properties)
 {
-   CMPIStatus st;
+   CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderGetInstance");
-   st=InternalProviderGetInstance(NULL,ctx,rslt,cop,properties);
+
+   st = InternalProviderGetInstance(NULL, ctx, rslt, cop, properties);
+
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderCreateInstance(CMPIInstanceMI * mi,
-                                          CMPIContext * ctx,
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * cop,
-                                          CMPIInstance * ci)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderCreateInstance(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	CMPIInstance * ci)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(cop, NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
+   char *cns = cn->ft->getCharPtr(cn,NULL);
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderCreateInstance");
   
@@ -744,31 +847,36 @@ CMPIStatus InteropProviderCreateInstance(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderSetInstance(CMPIInstanceMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * cop,
-                                       CMPIInstance * ci, char **properties)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderSetInstance(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	CMPIInstance * ci,
+	char ** properties)
 {
    CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderSetInstance");
-   
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderDeleteInstance(CMPIInstanceMI * mi,
-                                          CMPIContext * ctx,
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * cop)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderDeleteInstance(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(cop, NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
-   char *key=internalProviderNormalizeObjectPath(cop);
+   char *cns = cn->ft->getCharPtr(cn,NULL);
+   char *key = internalProviderNormalizeObjectPath(cop);
    Filter *fi;
    Subscription *su;
-   char *ns=(char*)CMGetNameSpace(cop,NULL)->hdl;
+   char *ns = (char*)CMGetNameSpace(cop,NULL)->hdl;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderDeleteInstance");
    
@@ -809,33 +917,44 @@ CMPIStatus InteropProviderDeleteInstance(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderExecQuery(CMPIInstanceMI * mi,
-                                     CMPIContext * ctx,
-                                     CMPIResult * rslt,
-                                     CMPIObjectPath * cop,
-                                     char *lang, char *query)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderExecQuery(
+	CMPIInstanceMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	char * lang,
+	char * query)
 {
    CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   return st;
+   _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderExecQuery");
+   _SFCB_RETURN(st);
 }
 
+/* --------------------------------------------------------------------------*/
+/*                        Method Provider Interface                          */
+/* --------------------------------------------------------------------------*/
 
-/* ---------------------------------------------------------------------------*/
-/*                        Method Provider Interface                           */
-/* ---------------------------------------------------------------------------*/
-
-CMPIStatus InteropProviderMethodCleanup(CMPIMethodMI * mi, CMPIContext * ctx)
+CMPIStatus InteropProviderMethodCleanup(
+	CMPIMethodMI * mi,
+	CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   return st;
+   _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderMethodCleanup");
+   _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderInvokeMethod(CMPIMethodMI * mi,
-                                     CMPIContext * ctx,
-                                     CMPIResult * rslt,
-                                     CMPIObjectPath * ref,
-                                     const char *methodName,
-                                     CMPIArgs * in, CMPIArgs * out)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderInvokeMethod(
+	CMPIMethodMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * ref,
+	const char * methodName,
+	CMPIArgs * in,
+	CMPIArgs * out)
 { 
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char *ns=(char*)CMGetNameSpace(ref,NULL)->hdl;
@@ -879,11 +998,11 @@ CMPIStatus InteropProviderInvokeMethod(CMPIMethodMI * mi,
    else if (strcasecmp(methodName, "_addHandler") == 0) {
       CMPIInstance *ci=in->ft->getArg(in,"handler",&st).value.inst;
       CMPIObjectPath *op=in->ft->getArg(in,"key",&st).value.ref;
-            CMPIString *str=CDToString(_broker,op,NULL);
-            CMPIString *ns=CMGetNameSpace(op,NULL);
-            _SFCB_TRACE(1,("--- _addHandler %s %s",(char*)ns->hdl,(char*)str->hdl));
+      CMPIString *str=CDToString(_broker,op,NULL);
+      CMPIString *ns=CMGetNameSpace(op,NULL);
+      _SFCB_TRACE(1,("--- _addHandler %s %s",(char*)ns->hdl,(char*)str->hdl));
       addHandler(ci,op);     
-  }
+   }
    
    else if (strcasecmp(methodName, "_removeHandler") == 0) {
       CMPIObjectPath *op=in->ft->getArg(in,"key",&st).value.ref;
@@ -901,81 +1020,88 @@ CMPIStatus InteropProviderInvokeMethod(CMPIMethodMI * mi,
 
    else {
       _SFCB_TRACE(1,("--- Invalid request method: %s",methodName));
-      st.rc = CMPI_RC_ERR_METHOD_NOT_FOUND;
+      setStatus(&st, CMPI_RC_ERR_METHOD_NOT_FOUND, "Invalid request method");
    }
    
    _SFCB_RETURN(st);
 }
 
+/* --------------------------------------------------------------------------*/
+/*                     Association Provider Interface                        */
+/* --------------------------------------------------------------------------*/
 
-/* ------------------------------------------------------------------ *
- * Association MI Functions
- * ------------------------------------------------------------------ */
-
-CMPIStatus InteropProviderAssociationCleanup(CMPIAssociationMI * mi,
-                                              CMPIContext * ctx)
+CMPIStatus InteropProviderAssociationCleanup(
+	CMPIAssociationMI * mi,
+	CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderAssociationCleanup");
-   
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderAssociators(CMPIAssociationMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * cop,
-                                       const char *assocClass,
-                                       const char *resultClass,
-                                       const char *role,
-                                       const char *resultRole,
-                                       char **propertyList)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderAssociators(
+	CMPIAssociationMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	const char * assocClass,
+	const char * resultClass,
+	const char * role,
+	const char * resultRole,
+	char ** propertyList)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderAssociators");
-   
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderAssociatorNames(CMPIAssociationMI * mi,
-                                           CMPIContext * ctx,
-                                           CMPIResult * rslt,
-                                           CMPIObjectPath * cop,
-                                           const char *assocClass,
-                                           const char *resultClass,
-                                           const char *role,
-                                           const char *resultRole)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderAssociatorNames(
+	CMPIAssociationMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	const char * assocClass,
+	const char * resultClass,
+	const char * role,
+	const char * resultRole)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderAssociatorNames");
-   
    _SFCB_RETURN(st);
 }
 
-CMPIStatus InteropProviderReferences(CMPIAssociationMI * mi,
-                                      CMPIContext * ctx,
-                                      CMPIResult * rslt,
-                                      CMPIObjectPath * cop,
-                                      const char *assocClass,
-                                      const char *role, char **propertyList)
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus InteropProviderReferences(
+	CMPIAssociationMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	const char * assocClass,
+	const char * role,
+	char ** propertyList)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderReferences");
-   
    _SFCB_RETURN(st);
 }
 
+/* ------------------------------------------------------------------------- */
 
-CMPIStatus InteropProviderReferenceNames(CMPIAssociationMI * mi,
-                                          CMPIContext * ctx,
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * cop,
-                                          const char *assocClass,
-                                          const char *role)
+CMPIStatus InteropProviderReferenceNames(
+	CMPIAssociationMI * mi,
+	CMPIContext * ctx,
+	CMPIResult * rslt,
+	CMPIObjectPath * cop,
+	const char * assocClass,
+	const char * role)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderReferenceNames");
-   
    _SFCB_RETURN(st);
 }
 
@@ -988,5 +1114,8 @@ CMPIStatus InteropProviderReferenceNames(CMPIAssociationMI * mi,
  * ------------------------------------------------------------------ */
 
 CMInstanceMIStub(InteropProvider, InteropProvider, _broker, CMNoHook); 
+
 CMAssociationMIStub(InteropProvider, InteropProvider, _broker, CMNoHook);
+
 CMMethodMIStub(InteropProvider, InteropProvider, _broker, CMNoHook);
+

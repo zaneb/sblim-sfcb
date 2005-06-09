@@ -29,7 +29,7 @@ if ! which wbemcat > /dev/null; then
    exit 1
 fi
 
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 function _runxmltest {
    typeset _TESTXML=$1
 
@@ -49,15 +49,17 @@ function _runxmltest {
    # Remove any old test result file
    rm -f $_TESTRESULT
 
-   # Send the test CIM-XML to the CIMOM and save the response, stripping off the http header
-   wbemcat $_TESTXML | awk "{i++; if (i>7) print}" > $_TESTRESULT
+   # Send the test CIM-XML to the CIMOM and save the response, 
+   # stripping off the http header
+   wbemcat $_TESTXML | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT
    if [[ $? -ne 0 ]]; then
       echo "FAILED"; echo -e "\twbemcat failed to send CIM-XML request"
       _RC=1
       continue
    fi
 
-   # If we dont yet have the expected result file, then save this response as the (new) expected result
+   # If we dont yet have the expected result file, then save this response 
+   # as the (new) expected result
    if [[ ! -f $_TESTOK ]]; then
       echo "OK"; echo -e "\tSaving response as $_TESTOK"
       mv $_TESTRESULT $_TESTOK
@@ -74,7 +76,7 @@ function _runxmltest {
       rm -f $_TESTRESULT
    fi
 }
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 if [[ -f $1 ]]; then
    _runxmltest $1
@@ -85,7 +87,8 @@ else
       _DIR=./
    fi
 
-   # Look for all *.xml test files and run them in sorted order (hence tests should be numbered)
+   # Look for all *.xml test files and run them in sorted order,
+   # hence tests should be numbered
    find $_DIR -name "*.xml" | sort | while read _TESTXML; do
       _runxmltest $_TESTXML
       # Wait for the dust to settle before trying the next test...

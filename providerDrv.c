@@ -419,7 +419,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
             curProvProc=(*proc);
             resultSockets=sPairs[(*proc)->id+ptBase];
 
-            _SFCB_TRACE(1,("--- Forked started for %s %d %d-%lu\n",
+            _SFCB_TRACE(1,("--- Forked started for %s %d %d-%lu",
                          info->providerName, currentProc,providerSockets.receive,
                          getInode(providerSockets.receive)));
             processName=info->providerName;
@@ -440,7 +440,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
          else {
            info->startSeq=++seq;
          }
-         _SFCB_TRACE(1,("--- Fork provider OK %s %d %d\n", info->providerName,
+         _SFCB_TRACE(1,("--- Fork provider OK %s %d %d", info->providerName,
                       info->pid, i));
          _SFCB_RETURN(info->pid);
       }

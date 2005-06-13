@@ -450,10 +450,11 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
 
    char *type;
 
-   if (data->type & CMPI_ARRAY) {
+   if (data->type & CMPI_ARRAY) { 
       CMPIArray *ar = data->value.array;
       CMPIData d;
       int j, ac = CMGetArrayCount(ar, NULL);
+
       sb->ft->appendChars(sb, bTag);
       sb->ft->appendChars(sb, (char *) name->hdl);
       if (param) sb->ft->appendChars(sb, "\" PARAMTYPE=\"");
@@ -475,6 +476,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
    else {
       type = dataType(data->type);
       if (*type == '*') {
+         char *cn;
          sb->ft->appendChars(sb, bTag);
          sb->ft->appendChars(sb, (char *) name->hdl);
          sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
@@ -657,8 +659,15 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
           "</PROPERTY.ARRAY>\n", sb, qsb, 0,0);
       else {
          type = dataType(data.type);
-         if (*type == '*') data2xml(&data,cls,name,"<PROPERTY.REFERENCE NAME=\"",
-                     "</PROPERTY.REFERENCE>\n", sb, qsb, 0,0);
+         if (*type == '*') {
+            if (data.state &CMPI_nullValue) {
+               sb->ft->appendChars(sb, "<PROPERTY.REFERENCE NAME=\"");
+               sb->ft->appendChars(sb, (char*)name->hdl);
+               sb->ft->appendChars(sb, "\"</PROPERTY.REFERENCE>\n");
+            }
+            else data2xml(&data,cls,name,"<PROPERTY.REFERENCE NAME=\"",
+                   "</PROPERTY.REFERENCE>\n", sb, qsb, 0,0);
+         }   
          else  data2xml(&data,cls,name,"<PROPERTY NAME=\"", "</PROPERTY>\n",
             sb, qsb, 0,0);
       }

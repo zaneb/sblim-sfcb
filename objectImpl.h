@@ -126,7 +126,7 @@ typedef struct {
 typedef struct {
    short iUsed, iMax;
    long iOffset;
-   long *index;
+   long *aIndex;
    long bUsed, bMax;
    CMPIData buf[1];
 } ClArrayBuf;
@@ -134,7 +134,7 @@ typedef struct {
 typedef struct {
    short iUsed, iMax;
    long iOffset;
-   long *index;
+   long *sIndex;
    long bUsed, bMax;
    char buf[1];
 } ClStrBuf;

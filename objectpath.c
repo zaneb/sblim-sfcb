@@ -31,7 +31,7 @@
 #include "native.h"
 #include "msgqueue.h"
 
-extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc);
+extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,ClObjectHdr * hdr);
 extern CMPIObjectPath *interal_new_CMPIObjectPath(int mode, const char *,
                                                   const char *, CMPIStatus *);
 extern CMPIBroker *Broker;
@@ -161,7 +161,7 @@ CMPIData opGetKeyCharsAt(CMPIObjectPath * op,
    }
    else if (rv.type & CMPI_ARRAY) {     // should nor occcur
       rv.value.array =
-          native_make_CMPIArray((CMPIData *) & rv.value.array, NULL);
+          native_make_CMPIArray((CMPIData *) & rv.value.array, NULL,&cop->hdr);
    }
 
    if (rc)

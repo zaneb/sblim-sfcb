@@ -250,7 +250,7 @@ static ClassRegister *newClassRegister(char *fname)
                cr->assocs++;
                if (cc->ft->getCharSuperClassName(cc) == NULL) cr->topAssocs++;
             }   
-         }   
+         } 
       }
       else {
          mlogf(M_ERROR,M_SHOW,"--- %s contains invalid record(s) - directory skipped\n",fin);

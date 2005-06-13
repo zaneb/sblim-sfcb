@@ -41,10 +41,10 @@ typedef struct _CMPIConstClass CMPIConstClass;
 struct _CMPIConstClass_FT {
    int version;
     CMPIStatus(*release) (CMPIConstClass * cc);
-   CMPIConstClass *(*clone) (CMPIConstClass * cc, CMPIStatus * rc);
-   void (*relocate) (CMPIConstClass * cc);
-   const char *(*getCharClassName) (CMPIConstClass * br);
-   const char *(*getCharSuperClassName) (CMPIConstClass * br);
+    CMPIConstClass *(*clone) (CMPIConstClass * cc, CMPIStatus * rc);
+    void (*relocate) (CMPIConstClass * cc);
+    const char *(*getCharClassName) (CMPIConstClass * br);
+    const char *(*getCharSuperClassName) (CMPIConstClass * br);
     CMPIBoolean(*isAssociation) (CMPIConstClass * cc);
     CMPIBoolean(*isAbstract) (CMPIConstClass * cc);
     CMPIBoolean(*isIndication) (CMPIConstClass * cc);

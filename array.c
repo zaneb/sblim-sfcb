@@ -140,13 +140,17 @@ static CMPIData __aft_getElementAt(CMPIArray * array,
    return result;
 }
 
-
+/*
 static CMPIStatus __aft_setElementAt(CMPIArray * array,
                                      CMPICount index,
                                      CMPIValue * val, CMPIType type)
 {
    struct native_array *a = (struct native_array *) array;
 
+   if ( a->dynamic && index==a->size ) {
+      native_array_increase_size(array, 1); 
+   }
+      
    if (index < a->size) {
       CMPIValue v;
 
@@ -182,6 +186,49 @@ static CMPIStatus __aft_setElementAt(CMPIArray * array,
    
    CMReturn(CMPI_RC_ERR_FAILED);
 }
+*/
+static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue * val,
+       CMPIType type, int opt )
+{
+   struct native_array * a = (struct native_array *) array;
+
+   if ( a->dynamic && index==a->size ) {
+      native_array_increase_size(array, 1); 
+   }
+      
+   if ( index < a->size ) {
+      CMPIValue v;
+
+      if ( type == CMPI_chars && a->type == CMPI_string ) {
+         v.string = native_new_CMPIString ( (char *) val, NULL );
+         type = CMPI_string;
+         val  = &v;
+      }
+
+      if ( opt || type == a->type ) {
+         CMPIStatus rc = {CMPI_RC_OK, NULL};
+         a->data[index].state = 0;
+         if (opt) a->data[index].value = *val;
+         else a->data[index].value =  ( a->mem_state == TOOL_MM_ADD )?  *val:
+               native_clone_CMPIValue ( type, val, &rc );
+         return rc;
+      }
+
+      if ( type == CMPI_null ) {
+         if ( ! ( a->data[index].state & CMPI_nullValue ) ) {
+            __make_NULL ( a, index, index, a->mem_state == TOOL_MM_NO_ADD );
+         }
+         CMReturn ( CMPI_RC_OK );
+      }
+   }
+   CMReturn ( CMPI_RC_ERR_FAILED );
+}
+
+static CMPIStatus __aft_setElementAt ( CMPIArray * array, CMPICount index, CMPIValue * val,
+          CMPIType type )
+{ 
+   return setElementAt(array,index,val,type,0);
+}
 
 CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
                                      CMPICount index,
@@ -193,29 +240,22 @@ CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
       CMPIValue v;
 
       if (type == CMPI_chars && a->type == CMPI_string) {
-
          v.string = native_new_CMPIString((char *) val, NULL);
          type = CMPI_string;
          val = &v;
       }
 
       if (type == a->type) {
-
          CMPIStatus rc = { CMPI_RC_OK, NULL };
-
          a->data[index].state = 0;
          a->data[index].value =*val;
-
          return rc;
       }
 
       if (type == CMPI_null) {
-
          if (!(a->data[index].state & CMPI_nullValue)) {
-
             __make_NULL(a, index, index, a->mem_state == TOOL_MM_NO_ADD);
          }
-
          CMReturn(CMPI_RC_OK);
       }
    }
@@ -271,11 +311,21 @@ static struct native_array *__new_empty_array(int mm_add,
    array->array = a;
    array->mem_state = mm_add;
 
-   type &= ~CMPI_ARRAY;
-   array->type = (type == CMPI_chars) ? CMPI_string : type;
-   array->max = array->size = size;
+   type        &= ~CMPI_ARRAY;
+   array->type  = ( type == CMPI_chars )? CMPI_string: type;
+   array->size  = size;
+ 
+   if (array->size==0) {
+      array->max=8;
+      array->dynamic=1;
+   }
+   else {
+      array->max=array->size;
+      array->dynamic=0;
+   }    
+     
    array->data = (struct native_array_item *)
-       tool_mm_alloc(mm_add, size * sizeof(struct native_array_item));
+      tool_mm_alloc ( mm_add, array->max * sizeof ( struct native_array_item ) );
 
    __make_NULL(array, 0, size - 1, 0);
 
@@ -310,19 +360,30 @@ CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
    void *array =
        __new_empty_array(TOOL_MM_NO_ADD, av->value.sint32, av->type, rc);
    int i, m;
-//asm("int $3");
+
    for (i = 0, m = (int) av->value.sint32; i < m; i++)
-      if (av->type == CMPI_chars) {
-         char *chars = av[i + 1].value.chars;
-         chars = (char *) ClObjectGetClString(hdr, (ClString *) & chars);
-         __aft_setElementAt((CMPIArray *) array, i, (CMPIValue *) chars,
-                            av[i + 1].type);
+      if (av[i + 1].type == CMPI_string) {
+         char *chars = (char *) ClObjectGetClString(hdr, (ClString *) & av[i + 1].value.chars);
+         __aft_setElementAt((CMPIArray *) array, i, (CMPIValue *) chars, CMPI_chars);
       }
-      else
-         __aft_setElementAt((CMPIArray *) array, i, &av[i + 1].value,
-                            av[i + 1].type);
+      else __aft_setElementAt((CMPIArray *) array, i, &av[i + 1].value,
+         av[i + 1].type);
+                       
    return (CMPIArray *) array;
 }
+
+CMPIStatus simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type)
+{
+   struct native_array * a = (struct native_array *) array;
+   if (a->dynamic) {
+      if (a->size==0) {
+         a->type=type;
+         if (a->type==CMPI_chars) a->type=CMPI_string;
+      }   
+      return setElementAt(array,a->size,val,type,1);
+   }   
+   CMReturn ( CMPI_RC_ERR_FAILED );
+} 
 
 
 /****************************************************************************/

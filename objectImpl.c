@@ -95,30 +95,25 @@ const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id)
 {
    ClStrBuf *buf;
 
-   if (id->id == 0)
-      return NULL;
-   if MALLOCED
-      (hdr->strBufOffset) buf = (ClStrBuf *) hdr->strBufOffset;
-   else
-      buf = (ClStrBuf *) ((char *) hdr + abs(hdr->strBufOffset));
-   return &(buf->buf[buf->index[id->id - 1]]);
+   if (id->id == 0) return NULL;
+   if MALLOCED (hdr->strBufOffset) buf = (ClStrBuf *) hdr->strBufOffset;
+   else buf = (ClStrBuf *) ((char *) hdr + abs(hdr->strBufOffset));
+   return &(buf->buf[buf->sIndex[id->id - 1]]);
 }
 
 const CMPIData *ClObjectGetClArray(ClObjectHdr * hdr, ClArray * id)
 {
    ClArrayBuf *buf;
 
-   if MALLOCED (hdr->arrayBufOffset) 
-      buf = (ClArrayBuf *) hdr->arrayBufOffset;
-   else
-      buf = (ClArrayBuf *) ((char *) hdr + abs(hdr->arrayBufOffset));
-   return &(buf->buf[buf->index[id->id - 1]]);
+   if (id->id == 0) return NULL;
+   if MALLOCED(hdr->arrayBufOffset) buf = (ClArrayBuf *) hdr->arrayBufOffset;
+   else buf = (ClArrayBuf *) ((char *) hdr + abs(hdr->arrayBufOffset));
+   return &(buf->buf[buf->aIndex[id->id - 1]]);
 }
 
 void *ClObjectGetClSection(ClObjectHdr * hdr, ClSection * s)
 {
-   if MALLOCED(s->offset) 
-      return (void *) s->offset;
+   if MALLOCED(s->offset) return (void *) s->offset;
    return (void *) ((char *) hdr + abs(s->offset));
 }
 
@@ -170,35 +165,30 @@ static long addClString(ClObjectHdr * hdr, const char *str)
       buf->bMax = nmax;
       buf->bUsed = buf->iUsed = 0;
       buf->iOffset = (long)
-          (buf->index = (long *) malloc(sizeof(long) * 16));
+          (buf->sIndex = (long *) malloc(sizeof(long) * 16));
       buf->iMax = 16;
       hdr->flags |= HDR_Rebuild;
    }
 
    else {
       int malloced = MALLOCED(hdr->strBufOffset);
-      if (malloced)
-         buf = (ClStrBuf *) hdr->strBufOffset;
-      else
-         buf = (ClStrBuf *) (((char *) hdr) + abs(hdr->strBufOffset));
+      if (malloced) buf = (ClStrBuf *) hdr->strBufOffset;
+      else buf = (ClStrBuf *) (((char *) hdr) + abs(hdr->strBufOffset));
 
       if (buf->iUsed >= abs(buf->iMax)) {
          nmax = abs(buf->iMax) * 2;
          if (buf->iMax > 0) {
             if (!malloced) {
-               void *idx = (void *) buf->index;
+               void *idx = (void *) buf->sIndex;
                buf->iOffset = (long)
-                   (buf->index = (long *) malloc(nmax * sizeof(long)));
-               memcpy((void *) buf->index, idx, buf->iMax * sizeof(long));
+                   (buf->sIndex = (long *) malloc(nmax * sizeof(long)));
+               memcpy((void *) buf->sIndex, idx, buf->iMax * sizeof(long));
             }
-            else
-               buf->iOffset = (long) (buf->index = (long *)
-                                      realloc((void *) buf->index,
-                                              nmax * sizeof(long)));
+            else buf->iOffset = (long) (buf->sIndex = (long *)
+                        realloc((void *) buf->sIndex,nmax * sizeof(long)));
          }
-         else
-            buf->iOffset = (long)
-                (buf->index = (long *) malloc(nmax * sizeof(long)));
+         else buf->iOffset = (long)
+                (buf->sIndex = (long *) malloc(nmax * sizeof(long)));
          buf->iMax = nmax;
          hdr->flags |= HDR_Rebuild;
       }
@@ -210,16 +200,12 @@ static long addClString(ClObjectHdr * hdr, const char *str)
             if (!malloced) {
                hdr->strBufOffset = (long)
                    malloc(((nmax - 1) * sizeof(char)) + sizeof(ClStrBuf));
-               memcpy((void *) hdr->strBufOffset, buf,
-                      buf->bMax + sizeof(ClStrBuf));
+               memcpy((void *) hdr->strBufOffset, buf, buf->bMax + sizeof(ClStrBuf));
             }
-            else
-               hdr->strBufOffset = (long) (realloc((void *) hdr->strBufOffset,
-                                                   ((nmax - 1) * sizeof(char)) +
-                                                   sizeof(ClStrBuf)));
+            else hdr->strBufOffset = (long) (realloc((void *) hdr->strBufOffset,
+                 ((nmax - 1) * sizeof(char)) + sizeof(ClStrBuf)));
          }
-         else
-            hdr->strBufOffset = (long)
+         else hdr->strBufOffset = (long)
                 malloc(((nmax - 1) * sizeof(char)) + sizeof(ClStrBuf));
          buf = (ClStrBuf *) hdr->strBufOffset;
          buf->bMax = nmax;
@@ -228,7 +214,7 @@ static long addClString(ClObjectHdr * hdr, const char *str)
    }
 
    strcpy(buf->buf + buf->bUsed, str);
-   buf->index[buf->iUsed++] = buf->bUsed;
+   buf->sIndex[buf->iUsed++] = buf->bUsed;
    buf->bUsed += l;
 
    _SFCB_RETURN(buf->iUsed);
@@ -248,40 +234,37 @@ static long addClArray(ClObjectHdr * hdr, CMPIData d)
       nmax = 16;
       for (; nmax <= l; nmax *= 2);
       buf = (ClArrayBuf *) (hdr->arrayBufOffset = (long)
-                            malloc(((nmax - 1) * sizeof(CMPIData)) +
-                                   sizeof(ClArrayBuf)));
+             malloc(((nmax - 1) * sizeof(CMPIData)) + sizeof(ClArrayBuf)));
       buf->bMax = nmax;
       buf->bUsed = buf->iUsed = 0;
-      buf->iOffset = (long)
-          (buf->index = (long *) malloc(sizeof(long) * 16));
+      buf->iOffset = (long) (buf->aIndex = (long *) malloc(sizeof(long) * 16));
       buf->iMax = 16;
       hdr->flags |= HDR_Rebuild;
    }
 
    else {
       int malloced = MALLOCED(hdr->arrayBufOffset);
-      if (malloced)
-         buf = (ClArrayBuf *) hdr->arrayBufOffset;
-      else
-         buf = (ClArrayBuf *) (((char *) hdr) + abs(hdr->strBufOffset));
+      if (malloced) buf = (ClArrayBuf *) hdr->arrayBufOffset;
+      else buf = (ClArrayBuf *) (((char *) hdr) + abs(hdr->arrayBufOffset));
 
       if (buf->iUsed >= abs(buf->iMax)) {
          nmax = abs(buf->iMax) * 2;
          if (buf->iMax > 0) {
             if (!malloced) {
-               void *idx = (void *) buf->index;
+               void *idx = (void *) buf->aIndex;
                buf->iOffset = (long)
-                   (buf->index = (long *) malloc(nmax * sizeof(long)));
-               memcpy((void *) buf->index, idx, buf->iMax * sizeof(long));
+                   (buf->aIndex = (long *) malloc(nmax * sizeof(long)));
+               memcpy((void *) buf->aIndex, idx, buf->iMax * sizeof(long));
             }
-            else
-               buf->iOffset = (long) (buf->index = (long *)
-                                      realloc((void *) buf->index,
-                                              nmax * sizeof(long)));
+            else {
+               buf->iOffset = (long)
+                  (buf->aIndex = (long *)realloc((void *) buf->aIndex, nmax * sizeof(long)));
+            }   
          }
-         else
-            buf->iOffset = (long)
-                (buf->index = (long *) malloc(nmax * sizeof(long)));
+         else {
+            buf->iOffset = (long) 
+             (buf->aIndex = (long *) malloc(nmax * sizeof(long)));
+         }   
          buf->iMax = nmax;
          hdr->flags |= HDR_Rebuild;
       }
@@ -296,15 +279,10 @@ static long addClArray(ClObjectHdr * hdr, CMPIData d)
                memcpy((void *) hdr->arrayBufOffset, buf,
                       buf->bMax + sizeof(ClArrayBuf));
             }
-            else
-               hdr->arrayBufOffset =
-                   (long) (realloc
-                           ((void *) hdr->arrayBufOffset,
-                            ((nmax - 1) * sizeof(CMPIArray)) +
-                            sizeof(ClArrayBuf)));
+            else hdr->arrayBufOffset = (long) (realloc ((void *) hdr->arrayBufOffset,
+                  ((nmax - 1) * sizeof(CMPIData)) + sizeof(ClArrayBuf)));
          }
-         else
-            hdr->arrayBufOffset = (long)
+         else hdr->arrayBufOffset = (long)
                 malloc(((nmax - 1) * sizeof(CMPIData)) + sizeof(ClArrayBuf));
          buf = (ClArrayBuf *) hdr->arrayBufOffset;
          buf->bMax = nmax;
@@ -314,25 +292,27 @@ static long addClArray(ClObjectHdr * hdr, CMPIData d)
 
    td.state = 0;
    td.type = (ar->type == CMPI_string) ? CMPI_chars : ar->type;
-   td.value.sint32 = ar->size;
-   buf->index[buf->iUsed++] = buf->bUsed;
+   td.value.sint32 = ar->size; 
+   buf->aIndex[buf->iUsed++] = buf->bUsed;
    buf->buf[buf->bUsed++] = td;
 
    for (i = 0, dp = buf->buf + buf->bUsed, m = ar->size; i < m; i++) {
       td.state = ar->data[i].state;
-      if (ar->type == CMPI_chars && (td.state & CMPI_nullValue) == 0) {
+      if (ar->type == CMPI_chars && ((td.state & CMPI_nullValue) == 0)) {
          td.value.chars = (char *) addClString(hdr, ar->data[i].value.chars);
+         td.type = CMPI_string;
       }
-      if (ar->type == CMPI_string && (td.state & CMPI_nullValue) == 0) {
-         td.value.chars =
-             (char *) addClString(hdr, ar->data[i].value.string->hdl);
-         td.type = CMPI_chars;
+      else if (ar->type == CMPI_string && ((td.state & CMPI_nullValue) == 0)) {
+         td.value.chars = (char *) addClString(hdr, ar->data[i].value.string->hdl);
+         td.type = CMPI_string;
       }
-      else
+      else {
          td.value = ar->data[i].value;
+         td.type =ar->type&~CMPI_ARRAY;
+      }
       dp[i] = td;
    }
-//    buf->index[buf->iUsed++]=buf->bUsed;
+
    buf->bUsed += m;
 
    _SFCB_RETURN(buf->iUsed);
@@ -392,7 +372,7 @@ static long sizeStringBuf(ClObjectHdr * hdr)
    else
       buf = (ClStrBuf *) (((char *) hdr) + abs(hdr->strBufOffset));
 
-   sz = sizeof(*buf) + buf->bUsed + (buf->iUsed * sizeof(*buf->index));
+   sz = sizeof(*buf) + buf->bUsed + (buf->iUsed * sizeof(*buf->sIndex));
    DEB(printf("--- sizeStringBuf: %lu-%p\n", sz, (void *) sz));
 
    _SFCB_RETURN(sz);
@@ -407,13 +387,12 @@ static long sizeArrayBuf(ClObjectHdr * hdr)
    if (hdr->arrayBufOffset == 0)
       _SFCB_RETURN(0);
 
-   if MALLOCED
-      (hdr->arrayBufOffset) buf = (ClArrayBuf *) hdr->arrayBufOffset;
-   else
-      buf = (ClArrayBuf *) (((char *) hdr) + abs(hdr->arrayBufOffset));
+   if MALLOCED(hdr->arrayBufOffset) buf = (ClArrayBuf *) hdr->arrayBufOffset;
+   else buf = (ClArrayBuf *) (((char *) hdr) + abs(hdr->arrayBufOffset));
 
    sz = sizeof(*buf) + (buf->bUsed * sizeof(CMPIData)) +
-       (buf->iUsed * sizeof(*buf->index));
+       (buf->iUsed * sizeof(*buf->aIndex));
+
    DEB(printf("--- sizeArrayBuf: %lu-%p\n", sz, (void *) sz));
 
    _SFCB_RETURN(sz);
@@ -427,19 +406,17 @@ static void replaceClString(ClObjectHdr * hdr, int id, const char *str)
    long i, l, u;
    ClStrBuf *fb;
 
-   if MALLOCED
-      (hdr->strBufOffset) fb = (ClStrBuf *) hdr->strBufOffset;
-   else
-      fb = (ClStrBuf *) (((char *) hdr) + abs(hdr->strBufOffset));
+   if MALLOCED(hdr->strBufOffset) fb = (ClStrBuf *) hdr->strBufOffset;
+   else fb = (ClStrBuf *) (((char *) hdr) + abs(hdr->strBufOffset));
 
    ts = (char *) malloc(fb->bUsed);
    fs = &fb->buf[0];
 
    for (u = i = 0; i < fb->iUsed; i++) {
       if (i != id - 1) {
-         char *f = fs + fb->index[i];
+         char *f = fs + fb->sIndex[i];
          l = strlen(f) + 1;
-         fb->index[i] = u;
+         fb->sIndex[i] = u;
          memcpy(ts + u, f, l);
          u += l;
       }
@@ -453,7 +430,7 @@ static void replaceClString(ClObjectHdr * hdr, int id, const char *str)
    else fb = (ClStrBuf *) (((char *) hdr) + abs(hdr->strBufOffset));
 
    fb->iUsed--;
-   fb->index[id - 1] = fb->index[i-1];
+   fb->sIndex[id - 1] = fb->sIndex[i-1];
 
   _SFCB_EXIT();
 }
@@ -466,19 +443,17 @@ static void replaceClArray(ClObjectHdr * hdr, int id, CMPIData d)
    long i, l, u;
    ClArrayBuf *fb;
 
-   if MALLOCED
-      (hdr->arrayBufOffset) fb = (ClArrayBuf *) hdr->arrayBufOffset;
-   else
-      fb = (ClArrayBuf *) (((char *) hdr) + abs(hdr->arrayBufOffset));
+   if MALLOCED (hdr->arrayBufOffset) fb = (ClArrayBuf *) hdr->arrayBufOffset;
+   else fb = (ClArrayBuf *) (((char *) hdr) + abs(hdr->arrayBufOffset));
 
    ts = (CMPIData *) malloc(fb->bUsed * sizeof(CMPIData));
    fs = &fb->buf[0];
 
    for (u = i = 0; i < fb->iUsed; i++) {
       if (i != id - 1) {
-         CMPIData *f = fs + fb->index[i];
+         CMPIData *f = fs + fb->aIndex[i];
          l = (f->value.sint32 + 1) * sizeof(CMPIData);
-         fb->index[i] = u;
+         fb->aIndex[i] = u;
          memcpy(ts + u, f, l);
          u += f->value.sint32 + 1;
       }
@@ -488,13 +463,11 @@ static void replaceClArray(ClObjectHdr * hdr, int id, CMPIData d)
    free(ts);
 
    i = addClArray(hdr, d);
-   if MALLOCED
-      (hdr->arrayBufOffset) fb = (ClArrayBuf *) hdr->arrayBufOffset;
-   else
-      fb = (ClArrayBuf *) (((char *) hdr) + abs(hdr->arrayBufOffset));
+   if MALLOCED(hdr->arrayBufOffset) fb = (ClArrayBuf *) hdr->arrayBufOffset;
+   else fb = (ClArrayBuf *) (((char *) hdr) + abs(hdr->arrayBufOffset));
 
    fb->iUsed--;
-   fb->index[id - 1] = i;
+   fb->aIndex[id - 1] = i;
 
    _SFCB_EXIT();
 }
@@ -506,26 +479,25 @@ static int copyStringBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
 
    ClStrBuf *fb, *tb;
    long l, il;
-   if (fh->strBufOffset == 0)
-      _SFCB_RETURN(ofs);
+   
+   if (fh->strBufOffset == 0) _SFCB_RETURN(ofs);
 
    tb = (ClStrBuf *) (((char *) th) + ofs);
-   if MALLOCED (fh->strBufOffset)
-      fb = (ClStrBuf *) fh->strBufOffset;
+   if MALLOCED (fh->strBufOffset) fb = (ClStrBuf *) fh->strBufOffset;
    else fb = (ClStrBuf *) (((char *) fh) + abs(fh->strBufOffset));
 
    l = sizeof(*fb) + fb->bUsed;
-   il = fb->iUsed * sizeof(*fb->index);
+   il = fb->iUsed * sizeof(*fb->sIndex);
 
    memcpy(tb, fb, l);
    tb->bMax = tb->bUsed;
    th->strBufOffset = -ofs;
    ofs += l;
 
-   memcpy(((char *) th) + ofs, fb->index, il);
+   memcpy(((char *) th) + ofs, fb->sIndex, il);
    tb->iMax = tb->iUsed;
    tb->iOffset = -ofs;
-   tb->index = (long *) (((char *) th) + ofs);
+   tb->sIndex = (long *) (((char *) th) + ofs);
 
    _SFCB_RETURN(l + il);
 }
@@ -537,30 +509,29 @@ static int copyArrayBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
    ClArrayBuf *fb, *tb;
    long l, il;
 
-   if (fh->arrayBufOffset == 0)
-      _SFCB_RETURN(ofs);
+   if (fh->arrayBufOffset == 0) _SFCB_RETURN(ofs);
 
    tb = (ClArrayBuf *) (((char *) th) + ofs);
-   if MALLOCED
-      (fh->arrayBufOffset) fb = (ClArrayBuf *) fh->arrayBufOffset;
-   else
-      fb = (ClArrayBuf *) (((char *) fh) + abs(fh->arrayBufOffset));
-
+   if MALLOCED(fh->arrayBufOffset) fb = (ClArrayBuf *) fh->arrayBufOffset;
+   else fb = (ClArrayBuf *) (((char *) fh) + abs(fh->arrayBufOffset));
+   
    l = sizeof(*fb) + (fb->bUsed * sizeof(CMPIData));
-   fb->bMax = fb->bUsed;
-   il = fb->iUsed * sizeof(*fb->index);
-   fb->iMax = fb->iUsed;
-
+   il = fb->iUsed * sizeof(*fb->aIndex);
+   
    memcpy(tb, fb, l);
+   tb->bMax = tb->bUsed;
    th->arrayBufOffset = -ofs;
    ofs += l;
-
-   memcpy(((char *) th) + ofs, fb->index, il);
+       
+   memcpy(((char *) th) + ofs, fb->aIndex, il);
+   tb->iMax = tb->iUsed;
    tb->iOffset = -ofs;
-   tb->index = (long *) (((char *) th) + ofs);
+   tb->aIndex = (long *) (((char *) th) + ofs);
 
    _SFCB_RETURN(l + il);
 }
+
+
 
 //string concatenation
 
@@ -696,6 +667,9 @@ static ClQualifier makeClQualifier(ClObjectHdr * hdr, const char *id,
       d.type = CMPI_chars;
       d.value.chars = (char *) addClString(hdr, (char *) d.value.string->hdl);
    }
+   else if ((d.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
+      d.value.chars = (char *) addClArray(hdr, d);
+   }
 
    q.data = d;
    return q;
@@ -812,6 +786,10 @@ static int ClGetQualifierAt(ClClass * cls, ClQualifier *q, int id, CMPIData * da
           ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
       data->value.string = native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
+   }
+   else if (data->type & CMPI_ARRAY) {
+      data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&cls->hdr,
+            (ClArray *) & data->value.array);
    }
    if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(q + id)->id));
    return 0;
@@ -1343,24 +1321,18 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
 
 static void ClObjectRelocateStringBuffer(ClObjectHdr * hdr, ClStrBuf * buf)
 {
-   if (buf == NULL)
-      return;
-   if MALLOCED
-      (hdr->strBufOffset) buf = (ClStrBuf *) hdr->strBufOffset;
-   else
-      buf = (ClStrBuf *) ((char *) hdr + abs(hdr->strBufOffset));
-   buf->index = (long *) ((char *) hdr + abs(buf->iOffset));
+   if (buf == NULL) return;
+   if MALLOCED(hdr->strBufOffset) buf = (ClStrBuf *) hdr->strBufOffset;
+   else buf = (ClStrBuf *) ((char *) hdr + abs(hdr->strBufOffset));
+   buf->sIndex = (long *) ((char *) hdr + abs(buf->iOffset));
 }
 
 static void ClObjectRelocateArrayBuffer(ClObjectHdr * hdr, ClArrayBuf * buf)
 {
-   if (buf == NULL)
-      return;
-   if MALLOCED
-      (hdr->arrayBufOffset) buf = (ClArrayBuf *) hdr->arrayBufOffset;
-   else
-      buf = (ClArrayBuf *) ((char *) hdr + abs(hdr->arrayBufOffset));
-   buf->index = (long *) ((char *) hdr + abs(buf->iOffset));
+   if (buf == NULL) return;
+   if MALLOCED(hdr->arrayBufOffset) buf = (ClArrayBuf *) hdr->arrayBufOffset;
+   else buf = (ClArrayBuf *) ((char *) hdr + abs(hdr->arrayBufOffset));
+   buf->aIndex = (long *) ((char *) hdr + abs(buf->iOffset));
 }
 
 
@@ -1374,9 +1346,8 @@ static void ClObjectRelocateArrayBuffer(ClObjectHdr * hdr, ClArrayBuf * buf)
 static ClClass *newClassH(ClObjectHdr * hdr, const char *cn, const char *pa)
 {
    ClClass *cls = (ClClass *) malloc(sizeof(ClClass));
-   if (hdr == NULL)
-      hdr = &cls->hdr;
-
+   if (hdr == NULL) hdr = &cls->hdr;
+   
    memset(cls, 0, sizeof(ClClass));
    hdr->type = HDR_Class;
    if (cn) cls->name.id = addClString(hdr, cn);
@@ -1446,6 +1417,9 @@ static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area)
                          
    ofs += copyStringBuf(ofs, sz, &nc->hdr, hdr);
    ofs += copyArrayBuf(ofs, sz, &nc->hdr, hdr);
+   
+   //printArrayBuf(&nc->hdr);
+   
    nc->hdr.size = sz;
 
    return nc;
@@ -1458,9 +1432,10 @@ ClClass *ClClassRebuildClass(ClClass * cls, void *area)
 
 void ClClassRelocateClass(ClClass * cls)
 {
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "ClClassRelocateClass");
    ClObjectRelocateStringBuffer(&cls->hdr, (ClStrBuf *) cls->hdr.strBufOffset);
-   ClObjectRelocateArrayBuffer(&cls->hdr,
-                               (ClArrayBuf *) cls->hdr.arrayBufOffset);
+   ClObjectRelocateArrayBuffer(&cls->hdr,  (ClArrayBuf *) cls->hdr.arrayBufOffset);
+   _SFCB_EXIT();
 }
 
 void ClClassFreeClass(ClClass * cls)
@@ -1586,6 +1561,7 @@ int ClClassGetPropQualifierAt(ClClass * cls, int id, int qid, CMPIData * data,
 {
    ClProperty *p;
    ClQualifier *q;
+   
    p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
    if (id < 0 || id > cls->properties.used) return 1;
    p = p + id;
@@ -1728,24 +1704,9 @@ ClInstance *ClInstanceRebuild(ClInstance * inst, void *area)
 
 void ClInstanceRelocateInstance(ClInstance * inst)
 {
-//   ClObjectRelocateStringBuffer(&inst->hdr,(ClStrBuf*)inst->hdr.strBufOffset);
-//   ClObjectRelocateArrayBuffer(&inst->hdr,(ClArrayBuf*)inst->hdr.arrayBufOffset);
-   _SFCB_ENTER(TRACE_OBJECTIMPL, "ClArgsRelocateArgs");
-   if (inst->hdr.strBufOffset) {
-      ClStrBuf *buf;
-      if MALLOCED (inst->hdr.strBufOffset)
-             buf = (ClStrBuf *) inst->hdr.strBufOffset;
-      else buf = (ClStrBuf *) ((char *) inst + abs(inst->hdr.strBufOffset));
-      buf->index = (long *) ((char *) inst + abs(buf->iOffset));
-   }
-
-   if (inst->hdr.arrayBufOffset) {
-      ClArrayBuf *buf;
-      if MALLOCED (inst->hdr.arrayBufOffset)
-             buf = (ClArrayBuf *) inst->hdr.arrayBufOffset;
-      else buf = (ClArrayBuf *) ((char *) inst + abs(inst->hdr.arrayBufOffset));
-      buf->index = (long *) ((char *) inst + abs(buf->iOffset));
-   }
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "ClInstanceRelocateInstance");
+   ClObjectRelocateStringBuffer(&inst->hdr,(ClStrBuf*)inst->hdr.strBufOffset);
+   ClObjectRelocateArrayBuffer(&inst->hdr,(ClArrayBuf*)inst->hdr.arrayBufOffset);
    _SFCB_EXIT();
 }
 
@@ -1931,8 +1892,10 @@ ClObjectPath *ClObjectPathRebuild(ClObjectPath * op, void *area)
 
 void ClObjectPathRelocateObjectPath(ClObjectPath * op)
 {
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "ClObjectPathRelocateObjectPath");
    ClObjectRelocateStringBuffer(&op->hdr, (ClStrBuf *) op->hdr.strBufOffset);
    ClObjectRelocateArrayBuffer(&op->hdr, (ClArrayBuf *) op->hdr.arrayBufOffset);
+   _SFCB_EXIT();
 }
 
 void ClObjectPathFree(ClObjectPath * op)
@@ -2109,25 +2072,9 @@ ClArgs *ClArgsRebuild(ClArgs * arg, void *area)
 void ClArgsRelocateArgs(ClArgs * arg)
 {
    _SFCB_ENTER(TRACE_OBJECTIMPL, "ClArgsRelocateArgs");
-   if (arg->hdr.strBufOffset) {
-      ClStrBuf *buf;
-      if MALLOCED
-         (arg->hdr.strBufOffset)
-             buf = (ClStrBuf *) arg->hdr.strBufOffset;
-      else
-         buf = (ClStrBuf *) ((char *) arg + abs(arg->hdr.strBufOffset));
-      buf->index = (long *) ((char *) arg + abs(buf->iOffset));
-   }
-
-   if (arg->hdr.arrayBufOffset) {
-      ClArrayBuf *buf;;
-      if MALLOCED
-         (arg->hdr.arrayBufOffset)
-             buf = (ClArrayBuf *) arg->hdr.arrayBufOffset;
-      else
-         buf = (ClArrayBuf *) ((char *) arg + abs(arg->hdr.arrayBufOffset));
-      buf->index = (long *) ((char *) arg + abs(buf->iOffset));
-   }
+   
+   ClObjectRelocateStringBuffer(&arg->hdr,(ClStrBuf*)arg->hdr.strBufOffset);
+   ClObjectRelocateArrayBuffer(&arg->hdr,(ClArrayBuf*)arg->hdr.arrayBufOffset);
    _SFCB_EXIT();
 }
 
@@ -2185,6 +2132,17 @@ int ClArgsAddArg(ClArgs * arg, const char *id, CMPIData d)
    _SFCB_RETURN(addObjectPropertyH(&arg->hdr, prps, id, d));
 }
 
+void dumpClass(char *msg, CMPIConstClass *cls)
+{
+   ClClass *cl=(ClClass*)cls->hdl;
+   char *buf=(char*)cl;
+   printf("classDump: %s\n",msg); 
+   printf("strBuf: %p arrayBuf %p\n",buf+abs(cl->hdr.strBufOffset),buf+abs(cl->hdr.arrayBufOffset));
+   dump("strBuf",buf+abs(cl->hdr.strBufOffset),sizeof(ClStrBuf));
+   dump("arrayBuf",buf+abs(cl->hdr.arrayBufOffset),sizeof(ClArrayBuf));
+   dump(msg, buf, cl->hdr.size);
+}
+
 /*
 char *ClArgToString(ClArg * cls)
 {
@@ -2207,6 +2165,7 @@ char *ClArgToString(ClArg * cls)
     return sc.str;
 }
 */
+//#define MAIN_TEST
 #ifdef MAIN_TEST
 
 extern CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);

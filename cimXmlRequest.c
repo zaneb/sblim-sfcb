@@ -535,7 +535,7 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
       closeProviderContext(&binCtx);
       free(sreq);
       resp->rc--;
-      if (resp->rc == CMPI_RC_OK) {
+      if (resp->rc == CMPI_RC_OK) { 
          cls = relocateSerializedConstClass(resp->object[0].data);
          sb = UtilFactory->newStrinBuffer(1024);
          cls2xml(cls, sb,binCtx.bHdr->flags);

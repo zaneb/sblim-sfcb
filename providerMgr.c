@@ -876,7 +876,7 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
          ((BinRequestHdr *) buf)->object[i].data = (void *) l;
          l += ol;
          break;
-      case MSG_SEG_CONSTCLASS:
+      case MSG_SEG_CONSTCLASS: 
          getSerializedConstClass((CMPIConstClass *) hdr->object[i].data,
                                  buf + l);
          ((BinRequestHdr *) buf)->object[i].data = (void *) l;

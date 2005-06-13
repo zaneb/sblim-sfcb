@@ -34,7 +34,7 @@ struct native_array {
    CMPIArray array;
    int mem_state;
 
-   CMPICount size,max;
+   CMPICount size,max,dynamic;
    CMPIType type;
    struct native_array_item *data;
 };

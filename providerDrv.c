@@ -25,6 +25,8 @@
 #include <signal.h>
 #include <pthread.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "providerMgr.h"
 #include "utilft.h"
@@ -36,7 +38,7 @@
 #include "trace.h"
 #include "queryOperation.h"
 #include "selectexp.h"
-
+#include "control.h"
 
 #define PROVCHARS(p) (p && *((char*)p)) ? (char*)p : NULL
 
@@ -88,35 +90,41 @@ unsigned long provSampleInterval=10;
 unsigned long provTimeoutInterval=25;
 static int stopping=0;
 
-void libraryName(const char *location, char *fullName)
+void libraryName(const char *dir, const char *location, char *fullName)
 {
-#if defined(PEGASUS_PLATFORM_WIN32_IX86_MSVC)
+#if defined(CMPI_PLATFORM_WIN32_IX86_MSVC)
+  if (dir) {
+    sprintf(fullName,"%s\\%s.dll",dir,location);
+  } else {
+    sprintf(fullName,"%s.dll",location);
+  }
+#elif defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
+  if (dir) {
+   sprintf(fullName,"%s/lib%s.so",dir,location);
+  } else {
+    sprintf(fullName,"lib%s.so",location);
+  }
+#elif defined(CMPI_OS_HPUX)
+  if (dir) {
+   sprintf(fullName,"%s/lib%s.so",dir,location);
+  } else {
+    sprintf(fullName,"lib%s.so",location);
+  }
+#elif defined(CMPI_OS_OS400)
+  if (dir) {
    strcpy(fullName, location);
-   strcat(fullName, ".dll");
-#elif defined(PEGASUS_PLATFORM_LINUX_GENERIC_GNU)
-   strcpy(fullName, "lib");
-   strcat(fullName, location);
-   strcat(fullName, ".so");
-#elif defined(PEGASUS_OS_HPUX)
-#ifdef PEGASUS_PLATFORM_HPUX_PARISC_ACC
-   strcpy(fullName, "lib");
-   strcat(fullName, location);
-   strcat(fullName, ".so");
+#elif defined(CMPI_OS_DARWIN)
+  if (dir) {
+   sprintf(fullName,"%s/lib%s.dylib",dir,location);
+  } else {
+    sprintf(fullName,"lib%s.dylib",location);
+  }
 #else
-   strcpy(fullName, "lib");
-   strcat(fullName, location);
-   strcat(fullName, ".so");
-#endif
-#elif defined(PEGASUS_OS_OS400)
-   strcpy(fullName, location);
-#elif defined(PEGASUS_OS_DARWIN)
-   strcpy(fullName, "lib");
-   strcat(fullName, location);
-   strcat(fullName, ".dylib");
-#else
-   strcpy(fullName, "lib");
-   strcat(fullName, location);
-   strcat(fullName, ".so");
+  if (dir) {
+   sprintf(fullName,"%s/lib%s.so",dir,location);
+  } else {
+    sprintf(fullName,"lib%s.so",location);
+  }
 #endif
 }
 
@@ -1652,13 +1660,44 @@ static int initProvider(ProviderInfo *info)
 
 static int doLoadProvider(ProviderInfo *info, char *dlName)
 {
+   char *dirs,*dir,*dirlast, *dircpy;
+   char *fullname;
+   struct stat stbuf;
+
    _SFCB_ENTER(TRACE_PROVIDERDRV, "doLoadProvider");
 
-   libraryName((char *) info->location, dlName);
-   info->library = dlopen(dlName, RTLD_NOW);
+   if (getControlChars("providerDirs",&dirs) != 0) {
+     mlogf(M_ERROR,M_SHOW,"*** No provider directories configured.\n");
+     abort();
+   }
+   
+
+   libraryName(NULL, (char *) info->location, dlName);
+   
+   dircpy = strdup(dirs);
+   fullname = malloc(strlen(dircpy)+strlen(dlName)+2); /* sufficient */
+   dir=strtok_r(dircpy," \t",&dirlast);
+   info->library = NULL;
+   while (dir) {
+     libraryName(dir, (char *) info->location, fullname);
+     if (stat(fullname,&stbuf) == 0) {
+       info->library = dlopen(fullname, RTLD_NOW);
+       if (info->library == NULL) {
+	 mlogf(M_ERROR,M_SHOW,"*** dlopen error: %s\n",dlerror());
+       } else {
+	 _SFCB_TRACE(1, ("--- Loaded provider library %s for %s-%d",
+			 fullname,
+			 info->providerName,
+			 currentProc));
+       }
+       break;	 
+     }
+     dir=strtok_r(NULL, " \t", &dirlast);
+   }
+   free(dircpy);
+   free(fullname);
 
    if (info->library == NULL) {
-      mlogf(M_ERROR,M_SHOW,"*** dlopen error: %s\n",dlerror());
       _SFCB_RETURN(-1);
    }   
 

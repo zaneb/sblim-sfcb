@@ -75,7 +75,7 @@ static int httpProcSem;
 static int httpWorkSem;
 
 extern char *decode64(char *data);
-extern void libraryName(const char *location, char *fullName);
+extern void libraryName(const char* dir, const char *location, char *fullName);
 extern void *loadLibib(const char *libname);
 extern int getControlChars(char *id, char **val);
 extern void *loadLibib(const char *libname);
@@ -156,7 +156,7 @@ int baValidate(char *cred, char **principle)
       char *ln;
       int err=1;
       if (getControlChars("basicAuthlib", &ln)==0) {
-         libraryName(ln,dlName);
+         libraryName(NULL,ln,dlName);
         if ((authLib=dlopen(dlName, RTLD_LAZY))) {
             authenticate= dlsym(authLib, "_sfcBasicAuthenticate");
             if (authenticate) err=0;

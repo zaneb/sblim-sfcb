@@ -11,3 +11,4 @@ useChunking:    true
 sslKeyFilePath: @sysconfdir@/sfcb/file.pem
 sslCertificateFilePath: @sysconfdir@/sfcb/server.pem
 registrationDir: @localstatedir@/lib/sfcb/registration
+providerDirs: @libdir@ @libdir@/cmpi

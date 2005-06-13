@@ -40,6 +40,10 @@
 #define SFCB_STATEDIR "/var/lib/sfcb"
 #endif
 
+#ifndef SFCB_LIBDIR
+#define SFCB_LIBDIR "/usr/lib"
+#endif
+
 typedef struct control {
    char *id;
    int type;
@@ -79,6 +83,7 @@ Control init[] = {
    {"sslCertificateFilePath", 0, SFCB_CONFDIR "/server.pem"},
 
    {"registrationDir", 0, SFCB_STATEDIR "/registration"},
+   {"providerDirs", 3, SFCB_LIBDIR " " SFCB_LIBDIR "/cmpi" }, /* 3: unstripped */
 };
 
 int setupControl(char *fn)
@@ -127,8 +132,15 @@ int setupControl(char *fn)
       case 2:
          for (i=0; i<sizeof(init)/sizeof(Control); i++) {
             if (strcmp(rv.id, init[i].id) == 0) {
-               init[i].strValue=strdup(cntlGetVal(&rv));
-               goto ok;
+	      if (init[i].type == 3) {
+		/* unstripped character string */
+		init[i].strValue=strdup(rv.val);
+		if (strchr(init[i].strValue,'\n'))
+		  *(strchr(init[i].strValue,'\n')) = 0;
+	      } else {
+		init[i].strValue=strdup(cntlGetVal(&rv));
+	      }
+	      goto ok;
             }
          }
          mlogf(M_ERROR,M_SHOW,"--- invalid control statement: \n\t%d: %s\n", n, stmt);
@@ -160,7 +172,7 @@ int getControlChars(char *id, char **val)
    Control *ctl;
    int rc = -1;
    if ((ctl = ct->ft->get(ct, id))) {
-      if (ctl->type == 0) {
+      if (ctl->type == 0 || ctl->type == 3) {
          *val = ctl->strValue;
          return 0;
       }

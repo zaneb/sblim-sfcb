@@ -32,6 +32,7 @@ AM_YFLAGS=-d
 
 AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfdir)\" \
 	-DSFCB_STATEDIR=\"$(sfcbstatedir)\"
+	-DSFCB_LIBDIR=\"$(libdir)\"
 
 SUBDIRS=. $(MOFC_DIR)
 

@@ -21,13 +21,6 @@ then
     export LD_LIBRARY_PATH
 fi
 
-# Add CMPI directory
-if [ -z "$LD_LIBRARY_PATH" ] || echo $LD_LIBRARY_PATH | grep -qv @libdir@/cmpi
-then
-    LD_LIBRARY_PATH=@libdir@/cmpi:$LD_LIBRARY_PATH
-    export LD_LIBRARY_PATH
-fi
-
 start() {
 	echo -n "Starting sfcb: "
 	startproc @sbindir@/sfcbd -d

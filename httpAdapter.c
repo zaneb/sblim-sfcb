@@ -111,9 +111,10 @@ void initHttpProcCtl(int p)
    if ((httpProcSem=semget(httpProcSemKey,1,0666))!=-1) 
       semctl(httpProcSem,0,IPC_RMID,sun);
       
-   if ((httpProcSem=semget(httpProcSemKey,1+p,IPC_CREAT | 0666))==-1) {
+   if ((httpProcSem=semget(httpProcSemKey,1+p,IPC_CREAT | IPC_EXCL | 0666))==-1) {
       char *emsg=strerror(errno);
-      mlogf(M_ERROR,M_SHOW,"--- Http Proc semaphore create %d: %s\n",currentProc,emsg);
+      mlogf(M_ERROR,M_SHOW,"\n--- Http Proc semaphore create key: 0x%x failed: %s\n",httpProcSemKey,emsg);
+      mlogf(M_ERROR,M_SHOW,"     use \"ipcrm -S 0x%x\" to remove semaphore\n\n",httpProcSemKey);
       abort();
    }
    sun.val=p;
@@ -126,13 +127,21 @@ void initHttpProcCtl(int p)
    if ((httpWorkSem=semget(httpWorkSemKey,1,0666))!=-1) 
       semctl(httpWorkSem,0,IPC_RMID,sun);
       
-   if ((httpWorkSem=semget(httpWorkSemKey,1,IPC_CREAT | 0666))==-1) {
+   if ((httpWorkSem=semget(httpWorkSemKey,1,IPC_CREAT | IPC_EXCL | 0666))==-1) {
       char *emsg=strerror(errno);
-      mlogf(M_ERROR,M_SHOW,"--- Http ProcWork semaphore create %d: %s\n",currentProc,emsg);
+      mlogf(M_ERROR,M_SHOW,"\n--- Http ProcWork semaphore create key: 0x%x failed: %s\n",httpWorkSemKey,emsg);
+      mlogf(M_ERROR,M_SHOW,"     use \"ipcrm -S 0x%x\" to remove semaphore\n\n",httpProcSemKey);
       abort();
    }
    sun.val=1;
    semctl(httpWorkSem,0,SETVAL,sun);
+}
+
+int remProcCtl()
+{
+   semctl(httpProcSem,0,IPC_RMID,0);
+   semctl(httpWorkSem,0,IPC_RMID,0);
+   return 0;
 }
 
 int baValidate(char *cred, char **principle)
@@ -939,6 +948,8 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
       handleHttpRequest(connFd);
       close(connFd);
    }
+   
+   remProcCtl();   
    
 //   printf("--- %s draining %d\n",processName,running);
    for (;;) {

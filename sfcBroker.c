@@ -138,7 +138,8 @@ int stopNextAdapter()
 static pthread_mutex_t sdMtx=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  sdCnd=PTHREAD_COND_INITIALIZER;
 static int stopping=0;
-   
+extern int remSem();   
+
 static void stopBroker(void *p)
 {
    struct timespec waitTime;
@@ -173,6 +174,7 @@ static void stopBroker(void *p)
       }
       if (providersStopped) break;
    }
+   remSem();
    
    if (restartBroker) {
       char *emsg=strerror(errno);

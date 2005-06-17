@@ -829,13 +829,9 @@ static HashTableIterator *hashTableGetNext(UtilHashTable * ht,
                                            void **key, void **val)
 {
    HashTable *t = (HashTable *) ht->hdl;
-//   for (iter->pair = iter->pair->next; iter->bucket < t->numOfBuckets;
-//        iter->pair = t->bucketArray[++iter->bucket]) {
-   iter->pair = iter->pair->next;
-   while (iter->bucket < t->numOfBuckets) {
+   for (iter->pair = iter->pair->next; iter->bucket < t->numOfBuckets;
+        iter->pair = t->bucketArray[++iter->bucket]) {
       if (iter->pair == NULL) {
-         if (iter->bucket+1 < t->numOfBuckets) 
-            iter->pair = t->bucketArray[++iter->bucket];
          continue;
       }
       *key = (void *) iter->pair->key;

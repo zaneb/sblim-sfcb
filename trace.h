@@ -110,11 +110,13 @@ typedef struct traceId {
 #define TRACE_INDPROVIDER       512
 #define TRACE_INTERNALPROVIDER  1024
 #define TRACE_OBJECTIMPL        2048
-#define TRACE_SOCKETS           4096
-#define TRACE_MEMORYMGR         8192
-#define TRACE_MSGQUEUE          16384
-#define TRACE_XMLPARSING        32768 
-#define TRACE_DBPDAEMON         65536       
+#define TRACE_XMLIN             4096
+#define TRACE_XMLOUT            8192
+#define TRACE_SOCKETS           16384
+#define TRACE_MEMORYMGR         32768
+#define TRACE_MSGQUEUE          65536
+#define TRACE_XMLPARSING        131072  
+#define TRACE_DBPDAEMON         262144       
 
 typedef void sigHandler(int);
 

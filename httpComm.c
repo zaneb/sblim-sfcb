@@ -60,6 +60,14 @@ int commWrite(CommHndl to, void *data, size_t count)
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "commWrite");
 
+#ifdef SFCB_DEBUG
+  if ((_sfcb_trace_mask & TRACE_XMLOUT) ) {
+     fprintf(stderr,"-#- xmlOut %d bytes:\n%*s",count,count,(char*)data);
+     if (*(((char*)data)+count-1)!='\n') fprintf(stderr,"\n");
+     fprintf(stderr,"-#- xmlOut end\n");
+  }
+#endif 
+  
 #if defined USE_SSL
    if (to.ssl) {
       rc = SSL_write(to.ssl, data, count);

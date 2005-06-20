@@ -378,15 +378,17 @@ int main(int argc, char *argv[])
          if (*argv[i+1]=='?') {
             fprintf(stdout,"--- -tm values:\n");
             for (i=0; traceIds[i].id; i++)  
-               fprintf(stdout,"--- \t%18s: %d\n",traceIds[i].id,traceIds[i].code);
+               fprintf(stdout,"--- \t%18s:    %d\t0x%05X\n",traceIds[i].id,traceIds[i].code,traceIds[i].code);
             exit(1);
          }
          if (isdigit(*argv[i + 1])) {
-            tmask = atoi(argv[++i]);
+            char *ep;
+            tmask = strtol(argv[++i], &ep, 0);
+//                   tmask = atoi(argv[++i]);
          }
       }
       else if (strcmp(argv[i], "-c") == 0 && i<(argc-1)) {
-	configfile = strdup(argv[++i]);
+         configfile = strdup(argv[++i]);
       }
       else if (strcmp(argv[i], "-F") == 0);
       else if (strcmp(argv[i], "-nF") == 0);

@@ -61,6 +61,8 @@ TraceId traceIds[]={
   {"indProvider",       TRACE_INDPROVIDER},
   {"internalProvider",  TRACE_INTERNALPROVIDER},
   {"objectImpl",        TRACE_OBJECTIMPL},
+  {"xmlIn",             TRACE_XMLIN},
+  {"xmlOut",            TRACE_XMLOUT},
   {"sockets",           TRACE_SOCKETS},
   {"memoryMgr",         TRACE_MEMORYMGR},
   {"msgQueue",          TRACE_MSGQUEUE},

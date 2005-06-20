@@ -686,6 +686,16 @@ static void doHttpRequest(CommHndl conn_fd)
      CimXmlRequestContext ctx =
         { inBuf.content, inBuf.principle, inBuf.host, len - hl, &conn_fd };
       ctx.chunkFncs=&httpChunkFunctions;
+      
+#ifdef SFCB_DEBUG
+      if ((_sfcb_trace_mask & TRACE_XMLIN) ) {
+         fprintf(stderr,"-#- xmlIn %d bytes:\n%*s",inBuf.content_length,
+            inBuf.content_length,(char*)inBuf.content);
+         if (*(((char*)inBuf.content)+inBuf.content_length-1)!='\n') fprintf(stderr,"\n");
+         fprintf(stderr,"-#- xmlIn end\n");
+      }  
+#endif 
+      
       response = handleCimXmlRequest(&ctx);
    }
    free(hdr);

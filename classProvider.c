@@ -384,7 +384,7 @@ static int addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
 static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
 {
    DIR *dir;
-   struct dirent *de;
+   struct dirent *de, *de_test;
    char *n;
    int l;
    ClassRegister *cr;
@@ -397,20 +397,24 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
        
    dir=opendir(dn);
    if (dir) while ((de=readdir(dir))!=NULL) {
-      if (de->d_type==DT_DIR) {
-         if (strcmp(de->d_name,".")==0) continue;
-         if (strcmp(de->d_name,"..")==0) continue;
-         l=strlen(dn)+strlen(de->d_name)+4;
-         n=(char*)malloc(l+8);
-         strcpy(n,dn);
-         strcat(n,"/");
-         strcat(n,de->d_name);
-         cr=newClassRegister(n);
-         if (cr) {
-            ns->ft->put(ns, n+nsBaseLen, cr);
-            gatherNameSpaces(n,ns,0);
-         }   
-      } 
+     if (strcmp(de->d_name,".")==0) continue;
+     if (strcmp(de->d_name,"..")==0) continue;
+     l=strlen(dn)+strlen(de->d_name)+4;
+     n=(char*)malloc(l+8);
+     strcpy(n,dn);
+     strcat(n,"/");
+     strcat(n,de->d_name);
+     de_test = opendir(n);
+     if (de_test == NULL) {
+       free(n);
+       continue;
+     }
+     free(de_test);
+     cr=newClassRegister(n);
+     if (cr) {
+       ns->ft->put(ns, n+nsBaseLen, cr);
+       gatherNameSpaces(n,ns,0);
+     }   
    }
    else if (first) {
       mlogf(M_ERROR,M_SHOW,"--- Repository %s not found\n",dn);

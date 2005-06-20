@@ -663,7 +663,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
             if (data.state &CMPI_nullValue) {
                sb->ft->appendChars(sb, "<PROPERTY.REFERENCE NAME=\"");
                sb->ft->appendChars(sb, (char*)name->hdl);
-               sb->ft->appendChars(sb, "\"</PROPERTY.REFERENCE>\n");
+               sb->ft->appendChars(sb, "\"></PROPERTY.REFERENCE>\n");
             }
             else data2xml(&data,cls,name,"<PROPERTY.REFERENCE NAME=\"",
                    "</PROPERTY.REFERENCE>\n", sb, qsb, 0,0);

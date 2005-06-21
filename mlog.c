@@ -12,8 +12,9 @@
  *
  * Author:       Viktor Mihajlovski <mihajlov@de.ibm.cim>
  * Contributors: Michael Schuele <schuelem@de.ibm.com>
+ *               Anas Nashif <nashif@planux.com>
  *
- * Description: Metric Defintiona and Value data types.
+ * Description: Logger support.
  *
  */
 
@@ -32,7 +33,7 @@ void startLogging(const char *name)
 
 void mlogf(int priority, int errout, const char *fmt, ...)
 {
-  va_list ap;
+  va_list ap,apc;
   int priosysl;
 
   char buf[4096];
@@ -55,7 +56,9 @@ void mlogf(int priority, int errout, const char *fmt, ...)
   syslog(priosysl,buf);
 
   if (errout) {
-    vfprintf(stderr,fmt,ap);
+    va_start(apc,fmt);
+    vfprintf(stderr,fmt,apc);
+    va_end(apc);
   }
   va_end(ap);
 }

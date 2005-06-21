@@ -179,7 +179,7 @@ fi
 
 # Add sfcb locations to the search paths
 export PATH=$_PREFIX/bin:$PATH
-export LD_LIBRARY_PATH=$_PREFIX/lib:$LD_LIBRARY_PATH
+#(removed for defect#712784)export LD_LIBRARY_PATH=$_PREFIX/lib:$LD_LIBRARY_PATH
 
 # Setup sfcb tracing
 export SFCB_TRACE_FILE=/tmp/sfcb.log
@@ -275,7 +275,7 @@ if [[ -z $_ANSWER || $_ANSWER = "Y" || $_ANSWER = "y" ]]; then
 fi
 
 # Add SBLIM provider library location to search path
-export LD_LIBRARY_PATH=$_PREFIX/lib/cmpi:$LD_LIBRARY_PATH
+#(defect 712784)export LD_LIBRARY_PATH=$_PREFIX/lib/cmpi:$LD_LIBRARY_PATH
 
 # BUILD PROBLEM WORKAROUND NEEDED FOR SOME PACKAGES WHEN LIBS DONT GET LINKED CORRECTLY
 echo "Workaround for missing <lib>.0 symbolic links"

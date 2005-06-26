@@ -399,7 +399,7 @@ static void writeChunkHeaders(BinRequestContext *ctx)
    static char cach[] = {"Cache-Control: no-cache\r\n"};
    static char op[]   = {"CIMOperation: MethodResponse\r\n"};
    static char tenc[] = {"Transfer-encoding: chunked\r\n"};
-   static char trls[] = {"Trailers: CIMError, CIMStatusCode, CIMStatusCodeDescription\r\n"};
+   static char trls[] = {"Trailer: CIMError, CIMStatusCode, CIMStatusCodeDescription\r\n"};
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "writeChunkHeaders");
    
@@ -684,7 +684,7 @@ static void doHttpRequest(CommHndl conn_fd)
 
    {
      CimXmlRequestContext ctx =
-        { inBuf.content, inBuf.principle, inBuf.host, len - hl, &conn_fd };
+        { inBuf.content, inBuf.principle, inBuf.host, inBuf.trailers, len - hl, &conn_fd };
       ctx.chunkFncs=&httpChunkFunctions;
       
 #ifdef SFCB_DEBUG

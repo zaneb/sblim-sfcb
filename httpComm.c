@@ -62,9 +62,19 @@ int commWrite(CommHndl to, void *data, size_t count)
 
 #ifdef SFCB_DEBUG
   if ((_sfcb_trace_mask & TRACE_XMLOUT) ) {
-     fprintf(stderr,"-#- xmlOut %d bytes:\n%*s",count,count,(char*)data);
-     if (*(((char*)data)+count-1)!='\n') fprintf(stderr,"\n");
-     fprintf(stderr,"-#- xmlOut end\n");
+     char *mp,*m=alloca(count*2),*d=(char*)data;
+     int i;
+     fprintf(stderr,"->> xmlOut %d bytes:\n",count);
+     for (mp=m,i=0; i<count; i++)
+        switch (d[i]) {
+        case '\r': *mp++='\\'; *mp++='r'; break;
+        case '\n': *mp++='\\'; *mp++='n'; break;
+        case ' ' : *mp++='~'; break;
+        default:   *mp++=d[i];
+     } 
+     *mp=0;  
+     fprintf(stderr,"%s\n",m);
+     fprintf(stderr,"-<< xmlOut end\n");
   }
 #endif 
   

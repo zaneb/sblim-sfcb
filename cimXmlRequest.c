@@ -799,7 +799,8 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
    binCtx.type=CMPI_class;
    binCtx.xmlAs=binCtx.noResp=0;
    binCtx.chunkFncs=ctx->chunkFncs;
-   if (noChunking)
+   
+   if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
       sreq.flags|=FL_chunked;
@@ -819,7 +820,7 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
 
       closeProviderContext(&binCtx);
       
-      if (noChunking) {
+      if (noChunking || ctx->teTrailers==0) {
          if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));
@@ -1175,7 +1176,7 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
    binCtx.xmlAs=binCtx.noResp=0;
    binCtx.chunkFncs=ctx->chunkFncs;
    
-   if (noChunking)
+   if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
       sreq->flags|=FL_chunked;
@@ -1195,7 +1196,7 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
       closeProviderContext(&binCtx);
       free(sreq);
       
-      if (noChunking) {
+      if (noChunking || ctx->teTrailers==0) {
          if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));
@@ -1252,7 +1253,8 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    binCtx.type=CMPI_instance;
    binCtx.xmlAs=XML_asObj; binCtx.noResp=0;
    binCtx.chunkFncs=ctx->chunkFncs;
-   if (noChunking)
+   
+   if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
       sreq.flags|=FL_chunked;
@@ -1272,7 +1274,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
       _SFCB_TRACE(1, ("--- Back from Provider"));
       closeProviderContext(&binCtx);
       
-      if (noChunking) {
+      if (noChunking || ctx->teTrailers==0) {
          if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));
@@ -1418,7 +1420,8 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    binCtx.xmlAs=XML_asObj; binCtx.noResp=0;
    binCtx.pAs=NULL;
    binCtx.chunkFncs=ctx->chunkFncs;
-   if (noChunking)
+   
+   if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
       sreq->flags|=FL_chunked;
@@ -1438,7 +1441,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
       closeProviderContext(&binCtx);
       free(sreq);
       
-      if (noChunking) {
+      if (noChunking || ctx->teTrailers==0) {
          if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));
@@ -1579,7 +1582,8 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    binCtx.xmlAs=XML_asObj; binCtx.noResp=0;
    binCtx.pAs=NULL;
    binCtx.chunkFncs=ctx->chunkFncs;
-   if (noChunking)
+   
+   if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
       sreq->flags|=FL_chunked;
@@ -1598,7 +1602,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
       closeProviderContext(&binCtx);
       free(sreq);
       
-      if (noChunking) {
+      if (noChunking || ctx->teTrailers==0) {
          if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));

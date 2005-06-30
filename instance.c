@@ -214,24 +214,34 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
    CMPIData data = { type, CMPI_goodValue, {0} };
    int rc;
 
-   if (type == CMPI_chars)
+   if (type == CMPI_chars) {
+      /* VM: is this OK or do we need a __new copy */
       data.value.chars = (char *) value;
-   else if (type == CMPI_string) {
-      if (value && value->string && value->string->hdl)
-         data.value.chars = (char *) value->string->hdl;
-      else data.value.chars=NULL;
+      if (value == NULL) {
+	 data.state=CMPI_nullValue;
+      }
+   } else if (type == CMPI_string) {
       data.type=CMPI_chars;
-      data.state=CMPI_nullValue;
-   }
-   else if (type == CMPI_dateTime) {
-        if (value == NULL);
-        else  {
-        data.state = CMPI_nullValue;
-        }
-
-   else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64)
+      if (value && value->string && value->string->hdl) {
+	 /* VM: is this OK or do we need a __new copy */
+         data.value.chars = (char *) value->string->hdl;
+      } else {
+	 data.value.chars=NULL;
+	 data.state=CMPI_nullValue;
+      }
+   } else if (type == CMPI_dateTime) {
+      if (value && value->dateTime) {
+	 /* VM: is this OK or do we need a __new copy */
+         data.value.dateTime = value->dateTime;
+      } else {
+	 data.value.dateTime=NULL;
+	 data.state=CMPI_nullValue;
+      }
+   } else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
       data.value = *value;
-   else data.value.Int = value->Int;
+   }  else {
+      data.value.Int = value->Int;
+   }
 
    if (i->filtered == 0 ||
        i->property_list == NULL ||
@@ -575,5 +585,5 @@ const char *instGetClassName(CMPIInstance * ci)
 
 /*** Local Variables:  ***/
 /*** mode: C           ***/
-/*** c-basic-offset: 8 ***/
+/*** c-basic-offset: 3 ***/
 /*** End:              ***/

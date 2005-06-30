@@ -44,8 +44,7 @@ void commInit()
       if (!SSL_library_init()) {
          fprintf(stderr, "** OpenSSL initialization failed!\n");
          exit(-1);
-      }Frank Scheffler
- * Contributions: 
+      }
       SSL_load_error_strings();
       RAND_load_file("/dev/urandom", 1024);
    }

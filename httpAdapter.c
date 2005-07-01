@@ -64,6 +64,7 @@ static int hMax;
 static int httpProcId;
 static int stopAccepting=0;
 static int running=0;
+static long keepaliveTimeout=15;
 
 #if defined USE_SSL
 SSL_CTX *ctx;
@@ -573,7 +574,7 @@ int pauseCodec(char *name)
    return 0;
 }
 
-static void doHttpRequest(CommHndl conn_fd)
+static int doHttpRequest(CommHndl conn_fd)
 {
    char *cp;
    Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
@@ -597,7 +598,12 @@ static void doHttpRequest(CommHndl conn_fd)
    int badReq = 0;
 
    getHdrs(conn_fd, &inBuf);
-
+   if (inBuf.size == 0) {
+     /* no buffer data - end of file - quit */
+     _SFCB_TRACE(1,("--- HTTP connection EOF, quit %d ", currentProc));   
+     _SFCB_RETURN(1);
+   }
+   
    inBuf.httpHdr = getNextHdr(&inBuf);
    for (badReq = 1;;) {
       if (inBuf.httpHdr == NULL)
@@ -705,25 +711,20 @@ static void doHttpRequest(CommHndl conn_fd)
 
    //commClose(conn_fd);
 
-#if defined USE_SSL
-   if (sfcbSSLMode) {
-      if ((SSL_get_shutdown(conn_fd.ssl) & SSL_RECEIVED_SHUTDOWN))
-         SSL_shutdown(conn_fd.ssl);
-      else SSL_clear(conn_fd.ssl);
-      SSL_free(conn_fd.ssl);
-   }
-#endif
 
    freeBuffer(&inBuf);
-   _SFCB_EXIT();
+   _SFCB_RETURN(0);
 }
 
 static void handleHttpRequest(int connFd)
 {
    int r;
    CommHndl conn_fd;
+   int isReady;
+   fd_set httpfds;
    struct sembuf procReleaseUnDo = {0,1,SEM_UNDO};
-
+   struct timeval httpTimeout;
+   
    _SFCB_ENTER(TRACE_HTTPDAEMON, "handleHttpRequest");
 
    _SFCB_TRACE(1, ("--- Forking xml handler"));
@@ -745,25 +746,6 @@ static void handleHttpRequest(int connFd)
          semReleaseUnDo(httpProcSem,httpProcId+1);
          semRelease(httpWorkSem,0);
 
-         if (sfcbSSLMode) {
-#if defined USE_SSL
-            conn_fd.socket=-2;
-            conn_fd.bio=BIO_new(BIO_s_socket());
-            BIO_set_fd(conn_fd.bio,connFd,BIO_CLOSE);
-            if (!(conn_fd.ssl = SSL_new(ctx)))
-               intSSLerror("Error creating SSL context");
-            SSL_set_bio(conn_fd.ssl, conn_fd.bio, conn_fd.bio);
-            if (SSL_accept(conn_fd.ssl) <= 0)
-               intSSLerror("Error accepting SSL connection");
-#endif
-         }
-         else {
-            conn_fd.socket=connFd;
-#if defined USE_SSL
-            conn_fd.bio=NULL;
-            conn_fd.ssl=NULL;
-#endif
-         }
       }
       else if (r>0) {
          running++;
@@ -791,14 +773,59 @@ static void handleHttpRequest(int connFd)
          fprintf(stderr,"-#- Pausing - pid: %d\n",currentProc);
          sleep(5);
       }   
-      
-      conn_fd.socket=connFd;
-#if defined USE_SSL
-      conn_fd.bio=NULL;
-      conn_fd.ssl=NULL;
-#endif
 
-      doHttpRequest(conn_fd);
+      conn_fd.socket=connFd;
+      if (sfcbSSLMode) {
+#if defined USE_SSL
+	conn_fd.bio=BIO_new(BIO_s_socket());
+	BIO_set_fd(conn_fd.bio,connFd,BIO_CLOSE);
+	if (!(conn_fd.ssl = SSL_new(ctx)))
+	  intSSLerror("Error creating SSL object");
+	SSL_set_bio(conn_fd.ssl, conn_fd.bio, conn_fd.bio);
+	if (SSL_accept(conn_fd.ssl) <= 0)
+	  intSSLerror("Error accepting SSL connection");
+#endif
+      } else {
+#if defined USE_SSL
+	conn_fd.bio=NULL;
+	conn_fd.ssl=NULL;
+#endif
+      }
+      
+      FD_ZERO(&httpfds);
+      FD_SET(conn_fd.socket,&httpfds);
+      do {
+	if (doHttpRequest(conn_fd)) {
+	  /* eof reached - leave */
+	  break;
+	}
+	if (keepaliveTimeout==0) {
+	  /* we don't support persistence - quit */
+	  break;
+	}
+	/* wait for next request or timeout */
+	httpTimeout.tv_sec=keepaliveTimeout;
+	httpTimeout.tv_usec=keepaliveTimeout;
+	isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpTimeout);
+	if (isReady == 0) {
+	  _SFCB_TRACE(1,("--- HTTP connection timeout, quit %d ", currentProc));
+	  break;
+	} else if (isReady < 0) {
+	  _SFCB_TRACE(1,("--- HTTP connection error, quit %d ", currentProc));
+	  break;
+	}
+      } while (1);
+
+#if defined USE_SSL
+      if (sfcbSSLMode) {
+	if ((SSL_get_shutdown(conn_fd.ssl) & SSL_RECEIVED_SHUTDOWN))
+	  SSL_shutdown(conn_fd.ssl);
+	else SSL_clear(conn_fd.ssl);
+	SSL_free(conn_fd.ssl);
+      } else {
+	close(conn_fd.socket);
+      }
+#endif
 
       if (!doFork) return;
 
@@ -848,6 +875,9 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    if (getControlBool("doBasicAuth", &doBa))
       doBa=0;
 
+   if (getControlNum("keepaliveTimeout", &keepaliveTimeout))
+     keepaliveTimeout = 15;
+
    i = 1;
    while (i < argc && argv[i][0] == '-') {
       if (strcmp(argv[i], "-D") == 0)
@@ -888,6 +918,12 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
 
    if (doBa) mlogf(M_INFO,M_SHOW,"--- Using Basic Authentication\n");
+
+   if (keepaliveTimeout == 0) {
+     mlogf(M_INFO,M_SHOW,"--- Keep-alive timeout disabled\n");
+   } else {
+     mlogf(M_INFO,M_SHOW,"--- Keep-alive timeout %ld seconds\n",keepaliveTimeout);
+   }
 
    listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
    sin_len = sizeof(sin);

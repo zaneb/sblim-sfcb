@@ -25,8 +25,7 @@
 #if defined USE_SSL 
 void handleSSLerror(const char *file, int lineno, const char *msg)
 {
-    fprintf(stderr, "** %s:%i %s\n", file, lineno, msg);
-    ERR_print_errors_fp(stderr);
+    mlogf(M_ERROR,M_SHOW,"\n*** %s:%i %s -- exiting\n", file, lineno, msg);
     exit(-1);
 }
 #endif

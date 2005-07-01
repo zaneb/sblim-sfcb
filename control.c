@@ -75,6 +75,8 @@ Control init[] = {
    
    {"useChunking",      2, "false"},
    {"chunkSize",        1, "50000"},
+   
+   {"keepaliveTimeout",        1, "15"},
 
    {"providerSampleInterval",  1, "30"},
    {"providerTimeoutInterval", 1, "60"},

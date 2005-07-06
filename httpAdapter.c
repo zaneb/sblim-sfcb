@@ -65,6 +65,8 @@ static int httpProcId;
 static int stopAccepting=0;
 static int running=0;
 static long keepaliveTimeout=15;
+static long keepaliveMaxRequest=10;
+static long numRequest;
 
 #if defined USE_SSL
 SSL_CTX *ctx;
@@ -275,6 +277,7 @@ static void genError(CommHndl conn_fd, Buffer * b, int status, char *title,
    commWrite(conn_fd, server, strlen(server));
    commWrite(conn_fd, clength, strlen(clength));
    commWrite(conn_fd, cclose, strlen(cclose));
+   commFlush(conn_fd);
    exit(1);
 }
 
@@ -330,6 +333,7 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
    static char cont[] = {"Content-Type: application/xml; charset=\"utf-8\"\r\n"};
    static char cach[] = {"Cache-Control: no-cache\r\n"};
    static char op[]   = {"CIMOperation: MethodResponse\r\n"};
+   static char cclose[] = "Connection: close\r\n";
    static char end[]  = {"\r\n\r\n"};
    char str[256];
    int len, i, ls[8];
@@ -366,6 +370,10 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
 //   PrintF("%s",man);
    commWrite(conn_fd, op, strlen(op));
    PrintF("%s",op);
+   if (keepaliveTimeout == 0 || numRequest >= keepaliveMaxRequest) {
+     commWrite(conn_fd, cclose, strlen(cclose));
+     PrintF("%s",cclose);
+   }
    commWrite(conn_fd, end, strlen(end));
    PrintF("%s",end);
 
@@ -387,6 +395,7 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
          }
       }
    }
+   commFlush(conn_fd);
    PrintF("%s","-----------------\n");
    
    _SFCB_EXIT();
@@ -401,6 +410,7 @@ static void writeChunkHeaders(BinRequestContext *ctx)
    static char op[]   = {"CIMOperation: MethodResponse\r\n"};
    static char tenc[] = {"Transfer-encoding: chunked\r\n"};
    static char trls[] = {"Trailer: CIMError, CIMStatusCode, CIMStatusCodeDescription\r\n"};
+   static char cclose[] = "Connection: close\r\n";
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "writeChunkHeaders");
    
@@ -416,7 +426,11 @@ static void writeChunkHeaders(BinRequestContext *ctx)
    PrintF("%s",tenc);
    commWrite(*(ctx->commHndl), trls, strlen(trls));
    PrintF("%s",trls);
-
+   if (keepaliveTimeout == 0 || numRequest >= keepaliveMaxRequest) {
+     commWrite(*(ctx->commHndl), cclose, strlen(cclose));
+     PrintF("%s",cclose);
+   }
+   
    _SFCB_EXIT();
 }
 
@@ -520,6 +534,7 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
       commWrite(*(ctx->commHndl), eStr, strlen(eStr));
       PrintF("%s",eStr);
    }
+   commFlush(*(ctx->commHndl));
    _SFCB_EXIT();
 }
 
@@ -775,6 +790,17 @@ static void handleHttpRequest(int connFd)
       }   
 
       conn_fd.socket=connFd;
+      conn_fd.file=fdopen(connFd,"a");
+      if (conn_fd.file == NULL) {
+	mlogf(M_ERROR,M_SHOW,"--- failed to create socket stream - continue with raw socket: %s\n",strerror(errno));
+      } else {
+	conn_fd.buf = malloc(SOCKBUFSZ);
+	if (conn_fd.buf) {
+	  setbuffer(conn_fd.file,conn_fd.buf,SOCKBUFSZ);
+	} else {
+	  mlogf(M_ERROR,M_SHOW,"--- failed to create socket buffer - continue unbuffered: %s\n",strerror(errno));
+	}
+      }
       if (sfcbSSLMode) {
 #if defined USE_SSL
 	conn_fd.bio=BIO_new(BIO_s_socket());
@@ -792,15 +818,17 @@ static void handleHttpRequest(int connFd)
 #endif
       }
       
+      numRequest = 0;
       FD_ZERO(&httpfds);
       FD_SET(conn_fd.socket,&httpfds);
       do {
+	numRequest += 1;
 	if (doHttpRequest(conn_fd)) {
 	  /* eof reached - leave */
 	  break;
 	}
-	if (keepaliveTimeout==0) {
-	  /* we don't support persistence - quit */
+	if (keepaliveTimeout==0 || numRequest >= keepaliveMaxRequest ) {
+	  /* no persistence wanted or exceeded - quit */
 	  break;
 	}
 	/* wait for next request or timeout */
@@ -822,10 +850,16 @@ static void handleHttpRequest(int connFd)
 	  SSL_shutdown(conn_fd.ssl);
 	else SSL_clear(conn_fd.ssl);
 	SSL_free(conn_fd.ssl);
-      } else {
-	close(conn_fd.socket);
-      }
+      } else 
 #endif
+	if (conn_fd.file == NULL) {
+	  close(conn_fd.socket);
+	} else {
+	  fclose(conn_fd.file);
+	  if (conn_fd.buf) {
+	    free(conn_fd.buf);
+	  }
+	}
 
       if (!doFork) return;
 
@@ -878,6 +912,9 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    if (getControlNum("keepaliveTimeout", &keepaliveTimeout))
      keepaliveTimeout = 15;
 
+   if (getControlNum("keepaliveMaxRequest", &keepaliveMaxRequest))
+     keepaliveMaxRequest = 10;
+
    i = 1;
    while (i < argc && argv[i][0] == '-') {
       if (strcmp(argv[i], "-D") == 0)
@@ -922,7 +959,8 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    if (keepaliveTimeout == 0) {
      mlogf(M_INFO,M_SHOW,"--- Keep-alive timeout disabled\n");
    } else {
-     mlogf(M_INFO,M_SHOW,"--- Keep-alive timeout %ld seconds\n",keepaliveTimeout);
+     mlogf(M_INFO,M_SHOW,"--- Keep-alive timeout: %ld seconds\n",keepaliveTimeout);
+     mlogf(M_INFO,M_SHOW,"--- Maximum requests per connection: %ld\n",keepaliveMaxRequest);
    }
 
    listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);

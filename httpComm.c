@@ -85,7 +85,15 @@ int commWrite(CommHndl to, void *data, size_t count)
    }
    else
 #endif
-      rc = write(to.socket,data,count);
+     if (to.file == NULL) { 
+       rc = write(to.socket,data,count);
+     } else {
+       rc = fwrite(data,count,1,to.file);
+       if (rc == 1) {
+	 /* return number of bytes written */
+	 rc = count;
+       }
+     }
 
    _SFCB_RETURN(rc);
 }
@@ -108,4 +116,11 @@ int commRead(CommHndl from, void *data, size_t count)
       rc = read(from.socket,data,count);
 
    _SFCB_RETURN(rc);
+}
+
+void commFlush(CommHndl hndl)
+{
+  if (hndl.file) {
+    fflush(hndl.file);
+  }
 }

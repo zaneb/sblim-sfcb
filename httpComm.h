@@ -67,8 +67,12 @@
 #endif
 
 
+#define SOCKBUFSZ 32768
+
 typedef struct commHndl {
-  int socket;
+  int   socket;
+  FILE *file;
+  void *buf;
 #if defined USE_SSL
   BIO *bio;
   SSL *ssl;
@@ -79,5 +83,7 @@ typedef struct commHndl {
 void commInit();
 int commWrite(CommHndl to, void *data, size_t count);
 int commRead(CommHndl from, void *data, size_t count);
+void commFlush(CommHndl hdl);
+void commClose(CommHndl hdl);
 
 #endif

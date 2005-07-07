@@ -103,14 +103,14 @@ typedef struct _buffer {
    char *protocol;
 } Buffer;
 
-void initHttpProcCtl(int p)
+void initHttpProcCtl(int p, int sslmode)
 {
-   httpProcSemKey=ftok(".",'H');
-   httpWorkSemKey=ftok(".",'W');
+   httpProcSemKey=ftok(".",'H' + sslmode);
+   httpWorkSemKey=ftok(".",'W' + sslmode);
    union semun sun;
    int i;
 
-   mlogf(M_INFO,M_SHOW,"--- Max Http procs: %d\n",p);
+   mlogf(M_INFO,M_SHOW,"--- Max Http%s procs: %d\n",sslmode?"s":"",p);
    if ((httpProcSem=semget(httpProcSemKey,1,0666))!=-1) 
       semctl(httpProcSem,0,IPC_RMID,sun);
       
@@ -902,9 +902,14 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
       hMax=htMax;
    }
 
-   if (getControlNum("httpProcs", &procs))
-      procs = 10;
-   initHttpProcCtl(procs);
+   if (sslMode) {
+     if (getControlNum("httpsProcs", &procs))
+       procs = 10;
+   } else {
+     if (getControlNum("httpProcs", &procs))
+       procs = 10;
+   }
+   initHttpProcCtl(procs,sslMode);
 
    if (getControlBool("doBasicAuth", &doBa))
       doBa=0;
@@ -1006,11 +1011,13 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
        char *fnc,*fnk;
        ctx = SSL_CTX_new(SSLv23_method());
        getControlChars("sslCertificateFilePath", &fnc);
+       _SFCB_TRACE(1,("---  sslCertificateFilePath = %s",fnc));
        if (SSL_CTX_use_certificate_chain_file(ctx, fnc) != 1)
-           intSSLerror("Error loading certificate from file");
+	 intSSLerror("Error loading certificate from file");
        getControlChars("sslKeyFilePath", &fnk);
+       _SFCB_TRACE(1,("---  sslKeyFilePath = %s",fnk));
        if (SSL_CTX_use_PrivateKey_file(ctx, fnk, SSL_FILETYPE_PEM) != 1)
-           intSSLerror("Error loading private key from file");
+	 intSSLerror("Error loading private key from file");
     }
 #endif
 

@@ -49,7 +49,6 @@ extern char *parseTarget(const char *target);
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
 extern int init_sfcBroker(char *);
 extern CMPIBroker *Broker;
-extern void initHttpProcCtl(int);
 extern void initProvProcCtl(int);
 extern void processTerminated(int pid);
 extern int httpDaemon(int argc, char *argv[], int sslMode, int pid);
@@ -347,7 +346,7 @@ int main(int argc, char *argv[])
    int c, i;
    unsigned long tmask = 0, sslMode=0,sslOMode=0;
    int enableHttp=0,enableHttps=0,useChunking=0,doBa=0;
-   long dSockets, pSockets;
+   long dSockets,sSockets,pSockets;
    char *pauseStr;
 
    _SFCB_TRACE_INIT();
@@ -442,6 +441,8 @@ int main(int argc, char *argv[])
 
    if (getControlNum("httpProcs", &dSockets))
       dSockets = 10;
+   if (getControlNum("httpsProcs", &sSockets))
+      sSockets = 10;
    if (getControlNum("provProcs", &pSockets))
       pSockets = 16;
 
@@ -453,10 +454,10 @@ int main(int argc, char *argv[])
    resultSockets=getSocketPair("sfcbd result");
    sfcbSockets=getSocketPair("sfcbd sfcb");
 
-   initSem(dSockets,dSockets,pSockets);
+   initSem(dSockets,sSockets,pSockets);
    initProvProcCtl(pSockets);
    init_sfcBroker(NULL);
-   initSocketPairs(pSockets,dSockets,0);
+   initSocketPairs(pSockets,dSockets,sSockets);
 
    setSignal(SIGQUIT, handleSigquit,0);
    setSignal(SIGTERM, handleSigquit,0);

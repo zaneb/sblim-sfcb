@@ -26,6 +26,9 @@
 void handleSSLerror(const char *file, int lineno, const char *msg)
 {
     mlogf(M_ERROR,M_SHOW,"\n*** %s:%i %s -- exiting\n", file, lineno, msg);
+#ifdef SFCB_DEBUG
+    ERR_print_errors_fp(stderr);
+#endif
     exit(-1);
 }
 #endif

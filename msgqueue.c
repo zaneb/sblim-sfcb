@@ -482,7 +482,7 @@ int spSendCtlResult(int *to, int *from, short code, unsigned long count,
 
 void initSocketPairs(int provs, int https, int shttps)
 {
-   int i,t=(provs*2)+https; //,shttps;
+   int i,t=(provs*2)+https+shttps;
    
    sPairs=(ComSockets*)malloc(sizeof(ComSockets)*t);
    mlogf(M_INFO,M_SHOW,"--- initSocketPairs: %d\n",t);

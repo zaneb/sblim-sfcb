@@ -80,13 +80,11 @@ int commWrite(CommHndl to, void *data, size_t count)
 #endif 
   
 #if defined USE_SSL
-   if (to.ssl) {
+  if (to.bio) {
+    rc = BIO_write(to.bio, data, count);
+  } else if (to.ssl) {
       rc = SSL_write(to.ssl, data, count);
-   }
-   else if (to.bio) {
-      rc = BIO_write(to.bio, data, count);
-   }
-   else
+  } else
 #endif
      if (to.file == NULL) { 
        rc = write(to.socket,data,count);
@@ -109,12 +107,8 @@ int commRead(CommHndl from, void *data, size_t count)
 
 #if defined USE_SSL
    if (from.ssl) {
-      rc = SSL_read(from.ssl, data, count);
-   }
-   else if (from.bio) {
-      rc = BIO_read(from.bio, data, count);
-   }
-   else
+     rc = SSL_read(from.ssl, data, count);
+   } else
 #endif
       rc = read(from.socket,data,count);
 
@@ -123,7 +117,12 @@ int commRead(CommHndl from, void *data, size_t count)
 
 void commFlush(CommHndl hndl)
 {
-  if (hndl.file) {
-    fflush(hndl.file);
-  }
+#if defined USE_SSL
+   if (hndl.bio) {
+     BIO_flush(hndl.bio);
+   } else
+#endif     
+     if (hndl.file) {
+       fflush(hndl.file);
+     }
 }

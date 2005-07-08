@@ -803,13 +803,21 @@ static void handleHttpRequest(int connFd)
       }
       if (sfcbSSLMode) {
 #if defined USE_SSL
-	conn_fd.bio=BIO_new(BIO_s_socket());
-	BIO_set_fd(conn_fd.bio,connFd,BIO_CLOSE);
+	BIO *sslb;
+	BIO *sb=BIO_new_socket(connFd,BIO_NOCLOSE);
 	if (!(conn_fd.ssl = SSL_new(ctx)))
 	  intSSLerror("Error creating SSL object");
-	SSL_set_bio(conn_fd.ssl, conn_fd.bio, conn_fd.bio);
+	SSL_set_bio(conn_fd.ssl, sb, sb);
 	if (SSL_accept(conn_fd.ssl) <= 0)
 	  intSSLerror("Error accepting SSL connection");
+	sslb = BIO_new(BIO_f_ssl());
+	BIO_set_ssl(sslb,conn_fd.ssl,BIO_CLOSE);
+	conn_fd.bio=BIO_new(BIO_f_buffer());
+	BIO_push(conn_fd.bio,sslb);
+	if (BIO_set_write_buffer_size(conn_fd.bio,SOCKBUFSZ)) { 
+	} else {
+	  conn_fd.bio=NULL;
+	}
 #endif
       } else {
 #if defined USE_SSL

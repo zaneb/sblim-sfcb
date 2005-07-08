@@ -1,0 +1,7 @@
+[req]
+distinguished_name=user_dn
+prompt=no
+
+[user_dn]
+CN=Common Name
+emailAddress=test@email.address

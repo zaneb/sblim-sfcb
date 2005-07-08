@@ -315,9 +315,21 @@ CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64 time,
 CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *string,
                                                 CMPIStatus * rc)
 {
+     
    CMPIUint64 msecs,secs;
-   CMPIBoolean interval = (string[21] == ':');
-   char *str = strdup(string);
+   CMPIBoolean interval;
+
+   if (string == NULL)
+    {
+         if (rc)
+            CMSetStatus(rc, CMPI_RC_ERR_INVALID_PARAMETER);
+         return;
+    }
+
+
+char *str = strdup(string);
+interval = (str[21] == ':');
+
   
 // 0000000000111111111122222  
 // 0123456789012345678901234

@@ -237,9 +237,7 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
           data.state=CMPI_nullValue;
       }
       data.type=CMPI_dateTime;
-      }
-
-} else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
+   } else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
       data.value = *value;
    }  else {
       data.value.Int = value->Int;

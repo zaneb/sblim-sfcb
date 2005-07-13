@@ -82,6 +82,13 @@ fi
 		;;
      **)	AC_MSG_ERROR([$ac_cv_host is not a supported platform, sorry.])
 esac
+
+
+case $host_cpu in
+     i*86)     AC_DEFINE(SFCB_IX86,1,[Intel i386 CPU])
+	       ;;     
+esac
+
 AC_SUBST(SFCB_CMPI_PLATFORM)
 AC_SUBST(SFCB_CMPI_OS)
 
@@ -134,7 +141,7 @@ elif test -f /etc/SuSE-release
 then 
    INIT_STYLE=init-suse
 else
-   INIT_STYLE=init-generic
+   INIT_STYLE=init-none
 fi
 AC_SUBST(INIT_STYLE)
 

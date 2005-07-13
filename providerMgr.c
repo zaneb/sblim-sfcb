@@ -36,6 +36,13 @@
 #include "trace.h"
 #include "queryOperation.h"
 #include "selectexp.h"
+#include "config.h"
+
+#ifdef SFCB_IX86
+#define SFCB_ASM(x) asm(x)
+#else
+#define SFCB_ASM(x)
+#endif
 
 
 extern CMPIBroker *Broker;
@@ -903,7 +910,7 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
       rc=spSendReq(&ctx->provA.socket, &resultSockets.send, buf, l);
       if (rc==-2) {
          mlogf(M_ERROR,M_SHOW,"--- need to reload provider ??\n");
-         asm("int $3");
+         SFCB_ASM("int $3");
    //      reloadProviderRequest(ctx);
          exit(3);
       }

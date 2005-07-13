@@ -37,6 +37,13 @@
 #include "string.h"
 
 #include "queryOperation.h"
+#include "config.h"
+
+#ifdef SFCB_IX86
+#define SFCB_ASM(x) asm(x)
+#else
+#define SFCB_ASM(x)
+#endif
 
 typedef struct handler {
    RespSegments(*handler) (CimXmlRequestContext *, RequestHdr * hdr);
@@ -390,7 +397,7 @@ static UtilStringBuffer *genEnumResponses(BinRequestContext * binCtx,
    _SFCB_ENTER(TRACE_CIMXMLPROC, "genEnumResponses");
 
    ar = NewCMPIArray(arrLen, binCtx->type, NULL);
-//asm("int $3");
+//SFCB_ASM("int $3");
    for (c = 0, i = 0; i < binCtx->rCount; i++) {
       for (j = 0; j < resp[i]->count; c++, j++) {
          if (binCtx->type == CMPI_ref)

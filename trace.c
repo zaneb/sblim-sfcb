@@ -33,6 +33,7 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "config.h"
 
 /* ---------------------------------------------------------------------------*/
 /*                            trace facility                                  */
@@ -170,6 +171,7 @@ extern void _sfcb_set_trace_mask(int n)
 
 void _sfcb_trap(int tn)
 {
+#ifdef SFCB_IX86
    char *tp;
    int t;
    if ((tp = getenv("SFCB_TRAP"))) {
@@ -177,6 +179,7 @@ void _sfcb_trap(int tn)
       if (tn == t)
          asm("int $3");
    }
+#endif
 }
 
 sigHandler *setSignal(int sn, sigHandler * sh, int flags)

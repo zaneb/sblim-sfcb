@@ -30,6 +30,13 @@
 #include <errno.h>
 #include "native.h"
 #include "trace.h"
+#include "config.h"
+
+#ifdef SFCB_IX86
+#define SFCB_ASM(x) asm(x)
+#else
+#define SFCB_ASM(x)
+#endif
 
 int collectStat=0;
 unsigned long exFlags = 0;
@@ -393,7 +400,7 @@ void *tool_mm_alloc(int add, size_t size)
    void *result = calloc(1, size);
    if (!result) {
       _SFCB_TRACE(1,("--- tool_mm_alloc error %u %d\n", size, currentProc))
-      asm("int $3");
+      SFCB_ASM("int $3");
       abort();
    }
    __ALLOC_ERROR(!result);
@@ -411,7 +418,7 @@ void *memAlloc(int add, size_t size, int *memId)
    void *result = calloc(1, size);
    if (!result) {
       _SFCB_TRACE(1,("--- memAlloc %u %d\n", size, currentProc))
-      asm("int $3");
+      SFCB_ASM("int $3");
       abort();
    }
    __ALLOC_ERROR(!result);

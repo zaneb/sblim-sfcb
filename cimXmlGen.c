@@ -36,6 +36,13 @@
 #include "string.h"
 
 #include "queryOperation.h"
+#include "config.h"
+
+#ifdef SFCB_IX86
+#define SFCB_ASM(x) asm(x)
+#else
+#define SFCB_ASM(x)
+#endif
 
 extern const char *instGetClassName(CMPIInstance * ci);
 extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
@@ -195,7 +202,7 @@ static char *dataType(CMPIType type)
    }
    mlogf(M_ERROR,M_SHOW,"%s(%d): invalid data type %d %x\n", __FILE__, __LINE__, (int) type,
           (int) type);
-   asm("int $3");
+   SFCB_ASM("int $3");
    abort();
    return "*??*";
 }
@@ -222,7 +229,7 @@ static char *keyType(CMPIType type)
    }
    mlogf(M_ERROR,M_SHOW,"%s(%d): invalid key data type %d %x\n", __FILE__, __LINE__,
           (int) type, (int) type);
-   asm("int $3");
+   SFCB_ASM("int $3");
    abort();
    return "*??*";
 }

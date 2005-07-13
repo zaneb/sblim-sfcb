@@ -28,6 +28,13 @@
 #include "array.h"
 #include "utilft.h"
 #include "trace.h" 
+#include "config.h"
+
+#ifdef SFCB_IX86
+#define SFCB_ASM(x) asm(x)
+#else
+#define SFCB_ASM(x)
+#endif
 
 //#define DEB(x) x
 #define DEB(x) 
@@ -2180,7 +2187,7 @@ extern unsigned long getInstanceSerializedSize(CMPIInstance * ci);
 int main()
 {
    int val = 37, s;
-   //  asm("int $3");
+   //  SFCB_ASM("int $3");
    {
       CMPIObjectPath *cop = NewCMPIObjectPath("root", "myClass", NULL);
       CMPIInstance *inst = NewCMPIInstance(cop, NULL);

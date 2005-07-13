@@ -7,11 +7,17 @@
 
 #include "objectImpl.h"
 #include "cmpimacs.h"
-
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+
+#ifdef SFCB_IX86
+#define SFCB_ASM(x) asm(x)
+#else
+#define SFCB_ASM(x)
+#endif
 
 #define SbS sbs = (SubSelect*)this->cnode; sbs
 #define FS fs = (FullSelect*)this->cnode; fs
@@ -538,7 +544,7 @@ static char *dataType(CMPIType type)
    }
    printf("%s(%d): invalid data type %d %x\n", __FILE__, __LINE__, (int) type,
           (int) type);
-   asm("int $3");
+   SFCB_ASM("int $3");
    abort();
    return "*??*";
 }
@@ -591,7 +597,7 @@ char* type2sqlString(int type){
    }
    printf("%s(%d): invalid data type %d %x\n", __FILE__, __LINE__, (int) type,
           (int) type);
-   asm("int $3");
+   SFCB_ASM("int $3");
    abort();
    return "*??*";
 }

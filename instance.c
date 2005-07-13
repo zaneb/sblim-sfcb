@@ -29,6 +29,13 @@
 #include "native.h"
 
 #include "objectImpl.h"
+#include "config.h"
+
+#ifdef SFCB_IX86
+#define SFCB_ASM(x) asm(x)
+#else
+#define SFCB_ASM(x)
+#endif
 
 extern int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
                                    char **name, unsigned long *quals);
@@ -469,7 +476,7 @@ CMPIInstance *internal_new_CMPIInstance(int mode, CMPIObjectPath * cop,
    
    else {
       j=0;
-      asm("int $3");
+      SFCB_ASM("int $3");
       ns = "*NoNameSpace*";
       cn = "*NoClassName*";
       tmp1.rc=tmp2.rc=tmp3.rc=CMPI_RC_OK;

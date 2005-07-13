@@ -203,7 +203,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcbunstage.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
 	sfcb.init-none.in \
-	regressionTests doc
+	doc
 
 sfcbconf_DATA=sfcb.cfg
 

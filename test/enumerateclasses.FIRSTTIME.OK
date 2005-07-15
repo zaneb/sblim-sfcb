@@ -3,6 +3,7 @@ Content-Type: application/xml; charset="utf-8"
 Content-Length: 295
 Cache-Control: no-cache
 CIMOperation: MethodResponse
+Connection: close
 
 
 <?xml version="1.0" encoding="utf-8" ?>

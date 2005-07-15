@@ -42,7 +42,7 @@ extern CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref
 extern int value2xml(CMPIData d, UtilStringBuffer * sb, int wv);
 extern int instanceName2xml(CMPIObjectPath * cop, UtilStringBuffer * sb);
 extern int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags);
-extern int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb);
+extern int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags);
 extern int args2xml(CMPIArgs * args, UtilStringBuffer * sb);
 extern int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
                     int xmlAs, unsigned int flags);

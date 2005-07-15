@@ -47,15 +47,6 @@ extern int yyerror(char*);
 extern int yylex (void *lvalp, ParserControl *parm);
 
 
-int isBoolean(CMPIData data)
-{
-   if (data.type==CMPI_chars) {
-      if (strcasecmp(data.value.chars,"true")==0) return 0xffff;
-      if (strcasecmp(data.value.chars,"false")==0) return 0;
-   }
-   return -1;
-}
-
 static void setRequest(void *parm, void *req, unsigned long size, int type)
 {
    ((ParserControl*)parm)->reqHdr.cimRequestLength=size;
@@ -2099,8 +2090,8 @@ valueReference
 boolValue
     : XTOK_VALUE ZTOK_VALUE
     {
-//       int b=isBoolean($1.val);
-//       if (b>=0) $$=(b!=0);
+    if (strcasecmp($1.value,"true")==0) $$=1;
+    if (strcasecmp($1.value,"false")==0) $$=0;
     }
 ;
 

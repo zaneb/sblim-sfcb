@@ -645,7 +645,8 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       sb->ft->appendChars(sb, superCls);
    }
    sb->ft->appendChars(sb, "\">\n");
-   quals2xml(cl->quals, sb);
+   if (flags & FL_includeQualifiers) quals2xml(cl->quals, sb);
+   
    if (flags & FL_includeQualifiers)
       for (i = 0, m = ClClassGetQualifierCount(cl); i < m; i++) {
          data = cls->ft->getQualifierAt(cls, i, &name, NULL);
@@ -655,7 +656,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
    for (i = 0, m = ClClassGetPropertyCount(cl); i < m; i++) {
       qsb->ft->reset(qsb);
       data = cls->ft->getPropertyAt(cls, i, &name, &quals, NULL);
-      quals2xml(quals << 8, qsb);
+      if (flags & FL_includeQualifiers) quals2xml(quals << 8, qsb);
       if (flags & FL_includeQualifiers)
          for (q = 0, qm = ClClassGetPropQualifierCount(cl, i); q < qm; q++) {
             qdata = cls->ft->getPropQualifierAt(cls, i, q, &qname, NULL);
@@ -711,7 +712,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
    _SFCB_RETURN(0);
 }
 
-int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb)
+int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
    int i, m = ClInstanceGetPropertyCount(inst);
@@ -723,6 +724,8 @@ int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb)
    sb->ft->appendChars(sb, "<INSTANCE CLASSNAME=\"");
    sb->ft->appendChars(sb, instGetClassName(ci));
    sb->ft->appendChars(sb, "\">\n");
+   
+   if (flags & FL_includeQualifiers) quals2xml(inst->quals, sb);
 
    for (i = 0; i < m; i++) {
       CMPIString *name;
@@ -873,7 +876,7 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
          instanceName2xml(cop, sb);
          if (xmlAs==XML_asObj)
             sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
-         instance2xml(ci, sb);
+         instance2xml(ci, sb, flags);
          if (xmlAs==XML_asObj)
             sb->ft->appendChars(sb, "</VALUE.OBJECTWITHPATH>\n");
          else

@@ -1142,7 +1142,7 @@ static char *addPropertyToString(stringControl * sc, ClObjectHdr * hdr,
    return sc->str + o;
 }
 
-int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb);
+int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags);
 
 static long sizeProperties(ClObjectHdr * hdr, ClSection * s)
 {
@@ -1156,7 +1156,7 @@ static long sizeProperties(ClObjectHdr * hdr, ClSection * s)
          if ((p->flags & ClProperty_EmbeddedObjectAsString)==0) {
             p->flags|=ClProperty_EmbeddedObjectAsString;
             sb = UtilFactory->newStrinBuffer(1024);
-            instance2xml(p->data.value.inst,sb);
+            instance2xml(p->data.value.inst,sb,0);
             p->data.value.dataPtr.length = addClString(hdr, sb->ft->getCharPtr(sb));
             sb->ft->release(sb);
          }

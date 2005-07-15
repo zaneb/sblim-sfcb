@@ -378,7 +378,7 @@ ExpSegments exportIndicationReq(CMPIInstance *ci, char *id)
        {0, exportIndTrailer1}} };
        
    _SFCB_ENTER(TRACE_CIMXMLPROC, "exportIndicationReq");
-   instance2xml(ci, sb);
+   instance2xml(ci, sb, 0);
   _SFCB_RETURN(xs);
 };
  
@@ -545,7 +545,7 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
       if (resp->rc == CMPI_RC_OK) { 
          cls = relocateSerializedConstClass(resp->object[0].data);
          sb = UtilFactory->newStrinBuffer(1024);
-         cls2xml(cls, sb,binCtx.bHdr->flags);
+         cls2xml(cls, sb, binCtx.bHdr->flags);
          _SFCB_RETURN(iMethodResponse(hdr, sb));
       }
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc, 
@@ -898,7 +898,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
       if (resp->rc == CMPI_RC_OK) {
          inst = relocateSerializedInstance(resp->object[0].data);
          sb = UtilFactory->newStrinBuffer(1024);
-         instance2xml(inst, sb);
+         instance2xml(inst, sb, binCtx.bHdr->flags);
          rsegs=iMethodResponse(hdr, sb);
          _SFCB_RETURN(rsegs);
       }

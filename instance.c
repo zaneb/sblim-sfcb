@@ -237,14 +237,13 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
 	 data.state=CMPI_nullValue;
       }
    } else if (type == CMPI_dateTime) {
-      if (value && value->dateTime && value->dateTime->hdl)
-         data.value.dateTime = (char *) value->dateTime->hdl;
-      else {
+      if (value && value->dateTime) { 
+         data.value.dateTime = value->dateTime;
+   }   else {
           data.value.dateTime=NULL;
           data.state=CMPI_nullValue;
       }
-      data.type=CMPI_dateTime;
-   } else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
+    } else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
       data.value = *value;
    }  else {
       data.value.Int = value->Int;

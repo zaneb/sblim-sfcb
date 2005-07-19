@@ -1,12 +1,12 @@
 httpPort:       5988
+enableHttp:     true
 httpProcs:      8
 httpsPort:      5989
-enableHttp:     true
+enableHttps:    false
 httpsProcs:     8
 provProcs:      32
-enableHttps:    false
-basicAuthLib:   sfcBasicAuthentication
 doBasicAuth:    false
+basicAuthLib:   sfcBasicAuthentication
 useChunking:    true
 keepaliveTimeout: 0
 keepaliveMaxRequest: 10

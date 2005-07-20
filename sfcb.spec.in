@@ -13,7 +13,7 @@ Release: 0
 Group: Systems Management/Base
 License: Common Public License 1.0
 
-Source0: ftp://www-126.ibm.com/pub/sblim/%{name}-%{version}.tar.bz2
+Source0: ftp://dl.sourceforge.net/pub/s/sb/sblim/%{name}-%{version}.tar.bz2
 
 Provides: cimserver
 

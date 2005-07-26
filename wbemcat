@@ -21,6 +21,7 @@
 
 use strict;
 use Getopt::Long;
+use IO::Socket;
 
 # Defaults
 my $port = 5988;
@@ -72,11 +73,24 @@ my @preamble = ("POST /cimom HTTP/1.1\n", "Host:\n",
 
 # Pipe STDOUT to nc command
 # DEBUG: Comment out this line to see what data gets sent to the CIMOM
-open(STDOUT, "| nc $host $port") || die "Cannot fork nc command: $!";
+
+# nc not supported on all distributions
+# open(STDOUT, "| nc $host $port") || die "Cannot fork nc command: $!";
+
+my ($socket, $answer,$n);
+$socket=IO::Socket::INET->new(PeerAddr => $host, PeerPort => $port,
+                              Proto    => "tcp", Type => SOCK_STREAM) 
+     or die "Could not connect to $host:$port : $@\n"; 
 
 # Send preamble and XML data to CIMOM via STDOUT pipe
-print @preamble;
-print @xml;
+print $socket @preamble;
+print $socket @xml;
 
-close(STDOUT) || warn "Cannot close STDOUT";
-
+# Get the answer
+$answer = "";
+while (defined ($answer = <$socket>)) {
+   print ">$answer<";
+}  
+#print $answer;
+ 
+close($socket);

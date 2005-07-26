@@ -74,23 +74,22 @@ my @preamble = ("POST /cimom HTTP/1.1\n", "Host:\n",
 # Pipe STDOUT to nc command
 # DEBUG: Comment out this line to see what data gets sent to the CIMOM
 
-# nc not supported on all distributions
+# since nc not supported on all distributions it is not used anymore
 # open(STDOUT, "| nc $host $port") || die "Cannot fork nc command: $!";
 
-my ($socket, $answer,$n);
+my ($socket, $answer);
 $socket=IO::Socket::INET->new(PeerAddr => $host, PeerPort => $port,
                               Proto    => "tcp", Type => SOCK_STREAM) 
      or die "Could not connect to $host:$port : $@\n"; 
 
-# Send preamble and XML data to CIMOM via STDOUT pipe
+# Send preamble and XML data to CIMOM to $socket
 print $socket @preamble;
 print $socket @xml;
 
 # Get the answer
 $answer = "";
 while (defined ($answer = <$socket>)) {
-   print ">$answer<";
+   print $answer;
 }  
-#print $answer;
  
 close($socket);

@@ -142,6 +142,7 @@ static CMPIInstance *__ift_clone(CMPIInstance * instance, CMPIStatus * rc)
    struct native_instance *new = (struct native_instance*)
        malloc(sizeof(struct native_instance));
 
+   new->mem_state=MEM_NOT_TRACKED;
    new->property_list = __duplicate_list(i->property_list);
    new->key_list = __duplicate_list(i->key_list);
 

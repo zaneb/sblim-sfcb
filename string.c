@@ -40,7 +40,7 @@ static CMPIStatus __sft_release(CMPIString * string)
 {
    struct native_string *s = (struct native_string *) string;
 
-   if (s->mem_state == TOOL_MM_NO_ADD) {
+   if (s->mem_state == MEM_NOT_TRACKED) {
 
       tool_mm_add(s);
       tool_mm_add(s->string.hdl);
@@ -55,7 +55,7 @@ static CMPIStatus __sft_release(CMPIString * string)
 static CMPIString *__sft_clone(CMPIString * string, CMPIStatus * rc)
 {
    return (CMPIString *)
-       __new_string(TOOL_MM_NO_ADD, string->ft->getCharPtr(string, rc), rc);
+       __new_string(MEM_NOT_TRACKED, string->ft->getCharPtr(string, rc), rc);
 }
 
 
@@ -82,7 +82,7 @@ static struct native_string *__new_string(int mm_add,
    string->string.ft = &sft;
    string->mem_state = mm_add;
 
-   if (mm_add == TOOL_MM_ADD) {
+   if (mm_add == MEM_TRACKED) {
       tool_mm_add(string->string.hdl);
    }
 
@@ -94,7 +94,7 @@ static struct native_string *__new_string(int mm_add,
 
 CMPIString *native_new_CMPIString(const char *ptr, CMPIStatus * rc)
 {
-   return (CMPIString *) __new_string(TOOL_MM_ADD, ptr, rc);
+   return (CMPIString *) __new_string(MEM_TRACKED, ptr, rc);
 }
 
 

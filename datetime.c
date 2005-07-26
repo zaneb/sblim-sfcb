@@ -64,9 +64,9 @@ static CMPIStatus __dtft_release(CMPIDateTime * dt)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
-   if (ndt->mem_state == TOOL_MM_NO_ADD) {
+   if (ndt->mem_state == MEM_NOT_TRACKED) {
 
-      ndt->mem_state = TOOL_MM_ADD;
+      ndt->mem_state = MEM_TRACKED;
       tool_mm_add(ndt);
 
       CMReturn(CMPI_RC_OK);
@@ -90,7 +90,7 @@ static CMPIStatus __dtft_release(CMPIDateTime * dt)
 static CMPIDateTime *__dtft_clone(CMPIDateTime * dt, CMPIStatus * rc)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
-   struct native_datetime *new = __new_datetime(TOOL_MM_NO_ADD,
+   struct native_datetime *new = __new_datetime(MEM_NOT_TRACKED,
                                                 ndt->msecs,
                                                 ndt->interval,
                                                 rc);
@@ -212,7 +212,7 @@ static CMPIBoolean __dtft_isInterval(CMPIDateTime * dt, CMPIStatus * rc)
   The newly allocated object's function table is initialized to point
   to the native functions in this file.
 
-  \param mm_add TOOL_MM_ADD for a regular object, TOOL_MM_NO_ADD for
+  \param mm_add MEM_TRACKED for a regular object, MEM_NOT_TRACKED for
   cloned ones
   \param msecs the binary time to be stored
   \param interval the interval flag to be stored
@@ -273,7 +273,7 @@ CMPIDateTime *native_new_CMPIDateTime(CMPIStatus * rc)
    msecs = (CMPIUint64) 1000000 *(CMPIUint64) tv.tv_sec
        + (CMPIUint64) tv.tv_usec;
 
-   return (CMPIDateTime *) __new_datetime(TOOL_MM_ADD, msecs, 0, rc);
+   return (CMPIDateTime *) __new_datetime(MEM_TRACKED, msecs, 0, rc);
 }
 
 
@@ -293,7 +293,7 @@ CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64 time,
                                                  CMPIBoolean interval,
                                                  CMPIStatus * rc)
 {
-   return (CMPIDateTime *) __new_datetime(TOOL_MM_ADD, time, interval, rc);
+   return (CMPIDateTime *) __new_datetime(MEM_TRACKED, time, interval, rc);
 }
 
 
@@ -379,7 +379,7 @@ interval = (str[21] == ':');
    free(str);
 
    return (CMPIDateTime *)
-       __new_datetime(TOOL_MM_ADD, msecs, interval, rc);
+       __new_datetime(MEM_TRACKED, msecs, interval, rc);
 }
 
 

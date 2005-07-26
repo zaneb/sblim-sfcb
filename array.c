@@ -55,7 +55,7 @@ static CMPIStatus __aft_release(CMPIArray * array)
 {
    struct native_array *a = (struct native_array *) array;
 
-   if (a->mem_state == TOOL_MM_NO_ADD) {
+   if (a->mem_state == MEM_NOT_TRACKED) {
 
       int i = a->size;
 
@@ -79,7 +79,7 @@ static CMPIArray *__aft_clone(CMPIArray * array, CMPIStatus * rc)
 {
    CMPIStatus tmp;
    struct native_array *a = (struct native_array *) array;
-   struct native_array *new = __new_empty_array(TOOL_MM_NO_ADD,
+   struct native_array *new = __new_empty_array(MEM_NOT_TRACKED,
                                                 a->size,
                                                 a->type,
                                                 &tmp);
@@ -167,7 +167,7 @@ static CMPIStatus __aft_setElementAt(CMPIArray * array,
 
          a->data[index].state = 0;
          a->data[index].value =
-             (a->mem_state == TOOL_MM_ADD) ?
+             (a->mem_state == MEM_TRACKED) ?
              *val : native_clone_CMPIValue(type, val, &rc);
 
          return rc;
@@ -177,7 +177,7 @@ static CMPIStatus __aft_setElementAt(CMPIArray * array,
 
          if (!(a->data[index].state & CMPI_nullValue)) {
 
-            __make_NULL(a, index, index, a->mem_state == TOOL_MM_NO_ADD);
+            __make_NULL(a, index, index, a->mem_state == MEM_NOT_TRACKED);
          }
 
          CMReturn(CMPI_RC_OK);
@@ -209,14 +209,14 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
          CMPIStatus rc = {CMPI_RC_OK, NULL};
          a->data[index].state = 0;
          if (opt) a->data[index].value = *val;
-         else a->data[index].value =  ( a->mem_state == TOOL_MM_ADD )?  *val:
+         else a->data[index].value =  ( a->mem_state == MEM_TRACKED )?  *val:
                native_clone_CMPIValue ( type, val, &rc );
          return rc;
       }
 
       if ( type == CMPI_null ) {
          if ( ! ( a->data[index].state & CMPI_nullValue ) ) {
-            __make_NULL ( a, index, index, a->mem_state == TOOL_MM_NO_ADD );
+            __make_NULL ( a, index, index, a->mem_state == MEM_NOT_TRACKED );
          }
          CMReturn ( CMPI_RC_OK );
       }
@@ -254,7 +254,7 @@ CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
 
       if (type == CMPI_null) {
          if (!(a->data[index].state & CMPI_nullValue)) {
-            __make_NULL(a, index, index, a->mem_state == TOOL_MM_NO_ADD);
+            __make_NULL(a, index, index, a->mem_state == MEM_NOT_TRACKED);
          }
          CMReturn(CMPI_RC_OK);
       }
@@ -337,7 +337,7 @@ static struct native_array *__new_empty_array(int mm_add,
 
 CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc)
 {
-   void *array = internal_new_CMPIArray(TOOL_MM_ADD, size, type, rc);
+   void *array = internal_new_CMPIArray(MEM_TRACKED, size, type, rc);
    return (CMPIArray *) array;
 }
 
@@ -350,7 +350,7 @@ CMPIArray *internal_new_CMPIArray(int mode, CMPICount size, CMPIType type,
 
 CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc)
 {
-   void *array = internal_new_CMPIArray(TOOL_MM_NO_ADD, size, type, rc);
+   void *array = internal_new_CMPIArray(MEM_NOT_TRACKED, size, type, rc);
    return (CMPIArray *) array;
 }
 
@@ -358,7 +358,7 @@ CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
                                  ClObjectHdr * hdr)
 {
    void *array =
-       __new_empty_array(TOOL_MM_NO_ADD, av->value.sint32, av->type, rc);
+       __new_empty_array(MEM_NOT_TRACKED, av->value.sint32, av->type, rc);
    int i, m;
 
    for (i = 0, m = (int) av->value.sint32; i < m; i++)

@@ -62,7 +62,7 @@ static CMPIStatus __aft_release(CMPIArgs * args)
 {
    struct native_args *a = (struct native_args *) args;
 
-   if (a->mem_state == TOOL_MM_NO_ADD) {
+   if (a->mem_state == MEM_NOT_TRACKED) {
       ClArgsFree((ClArgs *) a->args.hdl);
       free(args);
       CMReturn(CMPI_RC_OK);
@@ -75,7 +75,7 @@ static CMPIStatus __aft_release(CMPIArgs * args)
 static CMPIArgs *__aft_clone(CMPIArgs * args, CMPIStatus * rc)
 {
    struct native_args *a = (struct native_args *) args;
-   struct native_args *na = __new_empty_args(TOOL_MM_NO_ADD, rc);
+   struct native_args *na = __new_empty_args(MEM_NOT_TRACKED, rc);
 
    //  if (rc->rc == CMPI_RC_OK) {
    na->args.hdl = ClArgsRebuild((ClArgs *) a->args.hdl, NULL);
@@ -202,12 +202,12 @@ static struct native_args *__new_empty_args(int mm_add, CMPIStatus * rc)
 
 CMPIArgs *NewCMPIArgs(CMPIStatus * rc)
 {
-   return (CMPIArgs *) __new_empty_args(TOOL_MM_NO_ADD, rc);
+   return (CMPIArgs *) __new_empty_args(MEM_NOT_TRACKED, rc);
 }
 
 CMPIArgs *TrackedCMPIArgs(CMPIStatus * rc)
 {
-   return (CMPIArgs *) __new_empty_args(TOOL_MM_ADD, rc);
+   return (CMPIArgs *) __new_empty_args(MEM_TRACKED, rc);
 }
 
 unsigned long getArgsSerializedSize(CMPIArgs * args)

@@ -42,7 +42,7 @@ static CMPIStatus __eft_release(CMPIEnumeration * enumeration)
 {
    struct native_enum *e = (struct native_enum *) enumeration;
 
-   if (e->mem_state == TOOL_MM_NO_ADD) {
+   if (e->mem_state == MEM_NOT_TRACKED) {
 
       tool_mm_add(enumeration);
       return e->data->ft->release(e->data);
@@ -66,7 +66,7 @@ static CMPIEnumeration *__eft_clone(CMPIEnumeration * enumeration,
       return NULL;
    }
 
-   return (CMPIEnumeration *) __new_enumeration(TOOL_MM_NO_ADD, data, rc);
+   return (CMPIEnumeration *) __new_enumeration(MEM_NOT_TRACKED, data, rc);
 }
 
 
@@ -113,7 +113,7 @@ static struct native_enum *__new_enumeration(int mm_add,
 
    enumeration->enumeration = e;
    enumeration->mem_state = mm_add;
-   enumeration->data = (mm_add == TOOL_MM_NO_ADD) ? CMClone(array, rc) : array;
+   enumeration->data = (mm_add == MEM_NOT_TRACKED) ? CMClone(array, rc) : array;
 
    if (rc)
       CMSetStatus(rc, CMPI_RC_OK);
@@ -123,7 +123,7 @@ static struct native_enum *__new_enumeration(int mm_add,
 
 CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc)
 {
-   return (CMPIEnumeration *) __new_enumeration(TOOL_MM_ADD, array, rc);
+   return (CMPIEnumeration *) __new_enumeration(MEM_TRACKED, array, rc);
 }
 
 

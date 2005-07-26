@@ -183,7 +183,7 @@ static void stopProc(void *p)
    ProviderInfo *pInfo;
    CMPIContext *ctx = NULL;
    
-   ctx = native_new_CMPIContext(TOOL_MM_ADD,NULL);
+   ctx = native_new_CMPIContext(MEM_TRACKED,NULL);
    for (pInfo=curProvProc->firstProv; pInfo; pInfo=pInfo->next) {
       if (pInfo->classMI) pInfo->classMI->ft->cleanup(pInfo->classMI, ctx);
       if (pInfo->instanceMI) pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx);
@@ -264,7 +264,7 @@ void* providerIdleThread()
                semAcquireUnDo(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
                if ((val=semGetValue(sfcbSem,(proc->id*3)+provProcInuseId+provProcBaseId))==0) {            
                   if ((now-proc->lastActivity)>provTimeoutInterval) {
-                     ctx = native_new_CMPIContext(TOOL_MM_ADD,NULL);
+                     ctx = native_new_CMPIContext(MEM_TRACKED,NULL);
                      noBreak=0;
                      for (crc.rc=0,pInfo = activProvs; pInfo; pInfo = pInfo->next) {
                         if (pInfo->library==NULL) continue;
@@ -712,7 +712,7 @@ static BinResponseHdr *deleteClass(BinRequestHdr * hdr, ProviderInfo * info, int
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
 
@@ -741,7 +741,7 @@ static BinResponseHdr *getClass(BinRequestHdr * hdr, ProviderInfo * info, int re
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPICount count;
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
@@ -792,7 +792,7 @@ static BinResponseHdr *createClass(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIConstClass *cls = relocateSerializedConstClass(req->cls.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
 
@@ -823,7 +823,7 @@ static BinResponseHdr *enumClassNames(BinRequestHdr * hdr,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPICount count;
    BinResponseHdr *resp;
    CMPIFlags flgs=req->flags;
@@ -869,7 +869,7 @@ static BinResponseHdr *enumClasses(BinRequestHdr * hdr,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=req->flags;
 
@@ -904,7 +904,7 @@ static BinResponseHdr *invokeMethod(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPICount count;
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
@@ -963,7 +963,7 @@ static BinResponseHdr *getInstance(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPICount count;
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
@@ -1008,7 +1008,7 @@ static BinResponseHdr *deleteInstance(BinRequestHdr * hdr, ProviderInfo * info, 
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
 
@@ -1040,7 +1040,7 @@ static BinResponseHdr *createInstance(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIInstance *inst = relocateSerializedInstance(req->instance.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPIArray *r;
    CMPICount count;
    BinResponseHdr *resp;
@@ -1081,7 +1081,7 @@ static BinResponseHdr *modifyInstance(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIInstance *inst = relocateSerializedInstance(req->instance.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPICount count;
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
@@ -1119,7 +1119,7 @@ static BinResponseHdr *enumInstances(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
    char **props=NULL;
@@ -1155,7 +1155,7 @@ static BinResponseHdr *enumInstanceNames(BinRequestHdr * hdr,
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
 
@@ -1239,7 +1239,7 @@ static BinResponseHdr *execQuery(BinRequestHdr * hdr, ProviderInfo * info, int r
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
    int irc;
@@ -1310,7 +1310,7 @@ static BinResponseHdr *associators(BinRequestHdr * hdr, ProviderInfo * info, int
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
    char **props=NULL;
@@ -1349,7 +1349,7 @@ static BinResponseHdr *references(BinRequestHdr * hdr, ProviderInfo * info, int 
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
    char **props=NULL;
@@ -1386,7 +1386,7 @@ static BinResponseHdr *associatorNames(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
 
@@ -1419,7 +1419,7 @@ static BinResponseHdr *referenceNames(BinRequestHdr * hdr, ProviderInfo * info, 
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
 
@@ -1458,7 +1458,7 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    NativeSelectExp *se=NULL,*prev=NULL;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPIFlags flgs=0;
    int makeActive=0;
    char *type;
@@ -1546,7 +1546,7 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    NativeSelectExp *se=NULL,**sef=&activFilters;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPIFlags flgs=0;
    
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
@@ -1627,7 +1627,7 @@ static int initProvider(ProviderInfo *info)
    CMPIInstanceMI *mi = NULL;
    int rc=0;
    unsigned int flgs=0;
-   CMPIContext *ctx = native_new_CMPIContext(TOOL_MM_ADD,info);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    
    _SFCB_ENTER(TRACE_PROVIDERDRV, "initProvider");
 

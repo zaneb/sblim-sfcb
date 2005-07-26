@@ -147,9 +147,9 @@ void native_release_CMPIContext(CMPIContext * ctx)
 {
    struct native_context *c = (struct native_context *) ctx;
 
-   if (c->mem_state == TOOL_MM_NO_ADD) {
+   if (c->mem_state == MEM_NOT_TRACKED) {
 
-      c->mem_state = TOOL_MM_ADD;
+      c->mem_state = MEM_TRACKED;
       tool_mm_add(c);
 
       propertyFT.release(c->entries);
@@ -161,7 +161,7 @@ CMPIContext *native_clone_CMPIContext(CMPIContext* ctx)
    CMPIString *name;
    struct native_context *c = (struct native_context *) ctx;
    int i,s;
-   CMPIContext *nCtx=native_new_CMPIContext(TOOL_MM_NO_ADD,c->data);
+   CMPIContext *nCtx=native_new_CMPIContext(MEM_NOT_TRACKED,c->data);
    
    for (i=0,s=ctx->ft->getEntryCount(ctx,NULL); i<s; i++) {
       CMPIData data=ctx->ft->getEntryAt(ctx,i,&name,NULL);
@@ -230,7 +230,7 @@ static int __addProperty ( struct native_property ** prop,
   
 		tmp->name = strdup ( name );
 
-		if ( mm_add == TOOL_MM_ADD ) tool_mm_add ( tmp->name );
+		if ( mm_add == MEM_TRACKED ) tool_mm_add ( tmp->name );
 
 		if ( type == CMPI_chars ) {
 
@@ -245,7 +245,7 @@ static int __addProperty ( struct native_property ** prop,
 		if ( type != CMPI_null ) {
 			tmp->state = state;
 
-			if ( mm_add == TOOL_MM_ADD ) {
+			if ( mm_add == MEM_TRACKED ) {
 
 				tmp->value = *value;
 			} else {
@@ -303,7 +303,7 @@ static int __setProperty ( struct native_property * prop,
 
 		if ( type != CMPI_null ) {
 			prop->value =
-				( mm_add == TOOL_MM_ADD )?
+				( mm_add == MEM_TRACKED )?
 				*value:
 				native_clone_CMPIValue ( type, value, &rc );
 
@@ -411,7 +411,7 @@ static struct native_property * __clone ( struct native_property * prop,
 
 	result = 
 		(struct native_property * )
-		tool_mm_alloc ( TOOL_MM_NO_ADD,
+		tool_mm_alloc ( MEM_NOT_TRACKED,
 				sizeof ( struct native_property ) );
 
 	result->name  = strdup ( prop->name );

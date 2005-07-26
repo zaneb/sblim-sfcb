@@ -68,15 +68,12 @@ CMPIClassMI *loadClassMI(const char *provider,
 
 
 //! States cloned objects, i.e. memory that is not being tracked.
-#define TOOL_MM_NO_ADD 0
-#define MEM_NOT_TRACKED 0
+#define MEM_NOT_TRACKED -2
 
 //! States tracked memory objects.
-#define TOOL_MM_ADD    1
 #define MEM_TRACKED   1
 
 //! States tracked memory objects but already released.
-#define TOOL_MM_RELEASED 2
 #define MEM_RELEASED -1
 
 //! The initial size of trackable memory pointers per thread.

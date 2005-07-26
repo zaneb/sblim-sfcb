@@ -391,8 +391,8 @@ static void memInit(int newProc)
  * Description:
  *
  *   Calls calloc to get the requested block size, then adds it to
- *   the control system depending on add, defined as TOOL_MM_ADD and
- *   TOOL_MM_NO_ADD.
+ *   the control system depending on add, defined as MEM_TRACKED and
+ *   MEM_NOT_TRACKED.
  */
 void *tool_mm_alloc(int add, size_t size)
 {
@@ -405,7 +405,7 @@ void *tool_mm_alloc(int add, size_t size)
    }
    __ALLOC_ERROR(!result);
 
-   if (add != TOOL_MM_NO_ADD) {
+   if (add != MEM_NOT_TRACKED) {
       tool_mm_add(result);
    }
    _SFCB_TRACE(1, ("--- Area: %p size: %d", result, size));
@@ -514,7 +514,7 @@ void *tool_mm_add_obj(int mode, void *ptr, size_t size)
    object = malloc(size);
    memcpy(object, ptr, size);
 
-   if (mode == TOOL_MM_NO_ADD)
+   if (mode == MEM_NOT_TRACKED)
       _SFCB_RETURN(object);
 
    mt->hc.encObjs[mt->hc.encUsed++] = (Object *) object;
@@ -595,7 +595,7 @@ void memUnlinkEncObj(int memId)
 {
    managed_thread *mt=__memInit();
    
-   if (memId!=MEM_RELEASED)
+   if (memId!=MEM_RELEASED && memId!=MEM_NOT_TRACKED)
       mt->hc.memEncObjs[memId-1] = NULL;
 }
 

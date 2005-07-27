@@ -21,8 +21,6 @@
 */
 
 
-#define SFCB_INCL_INDICATION_SUPPORT 1
-  
 #include <signal.h>
 #include <time.h>
 
@@ -37,6 +35,10 @@
 #include "queryOperation.h"
 #include "selectexp.h"
 #include "config.h"
+
+#ifdef HAVE_INDICATIONS
+#define SFCB_INCL_INDICATION_SUPPORT 1
+#endif
 
 #ifdef SFCB_IX86
 #define SFCB_ASM(x) asm(x)

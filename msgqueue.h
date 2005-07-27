@@ -55,13 +55,8 @@ union semun {
 #endif
 
 typedef struct _spMessageHdr {
-   union {
-      long type;
-      struct {
-         short type;
-         short xtra;
-      } ctl;
-   } type;
+   short type;
+   short xtra;
    int returnS;
    unsigned long totalSize;
    unsigned long segments;

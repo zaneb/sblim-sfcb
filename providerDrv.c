@@ -20,8 +20,6 @@
 */
 
 
-#define SFCB_INCL_INDICATION_SUPPORT 1
-
 #include <signal.h>
 #include <pthread.h>
 #include <time.h>
@@ -39,6 +37,11 @@
 #include "queryOperation.h"
 #include "selectexp.h"
 #include "control.h"
+#include "config.h"
+
+#ifdef HAVE_INDICATIONS
+#define SFCB_INCL_INDICATION_SUPPORT 1
+#endif
 
 #define PROVCHARS(p) (p && *((char*)p)) ? (char*)p : NULL
 

@@ -21,7 +21,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 0.9.0, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 0.9.0b, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE
@@ -101,7 +101,8 @@ AC_PROG_LIBTOOL
 # Checks for libraries.
 AC_CHECK_LIB(pthread,main)
 AC_CHECK_LIB(dl,main)
-if test "$enable_indications" = "yes"; then
+if test "$enable_indications" == "yes"; then
+   AC_DEFINE(HAVE_INDICATIONS,,[Indication support enabled.])
    AC_CHECK_LIB(curl,main)
 fi
 
@@ -158,6 +159,7 @@ if test -d mofc; then
    AC_SUBST(MOFC_DIR)
 fi
 
+AM_CONDITIONAL(INDICATIONS,[test "$enable_indications" == "yes"]) 
 AM_CONDITIONAL(JDBC,[test "$enable_jdbc" == "yes"]) 
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh sfcb.cfg.pre getSchema.sh.pre sfcb.init-redhat sfcb.init-suse sfcb.init-none])
@@ -167,7 +169,7 @@ echo ======================================================
 echo sfcb configuration complete
 echo configuration features:
 echo -e "debug"\\t"${enable_debug:-no}"
-echo -e "indications"\\t"yes (cannot be disabled currently)"
+echo -e "indications"\\t"${enable_indications}"
 echo -e "ssl"\\t"${enable_ssl:-no}"
 echo -e "jdbc"\\t"${enable_jdbc:-no}"
 echo ======================================================

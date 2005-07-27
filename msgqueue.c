@@ -254,12 +254,12 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
       _SFCB_TRACE(1, ("--- Received data segment %d bytes", *length));
    }
 
-   if (spMsg.type.type == MSG_DATA) {
+   if (spMsg.type == MSG_DATA) {
       _SFCB_TRACE(1, ("--- Received %d bytes", *length));
       _SFCB_RETURN(0);
    }
 
-   if (spMsg.type.ctl.xtra == MSG_X_EXTENDED_CTL_MSG) {
+   if (spMsg.xtra == MSG_X_EXTENDED_CTL_MSG) {
       *data = malloc(256);
       *length = 256;
       do {
@@ -269,22 +269,22 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
       } while (mqg->teintr) ;       
    }
 
-   switch (spMsg.type.ctl.xtra) {
+   switch (spMsg.xtra) {
    case MSG_X_PROVIDER:
       *length = spMsg.segments;
       *data = spMsg.provId;
    case MSG_X_INVALID_NAMESPACE:
    case MSG_X_PROVIDER_NOT_FOUND:
    case MSG_X_INVALID_CLASS:
-      _SFCB_RETURN(spMsg.type.ctl.xtra);
+      _SFCB_RETURN(spMsg.xtra);
    default:
       *data = NULL;
-      mlogf(M_ERROR,M_SHOW,"### %d ??? %ld-%d\n", currentProc, spMsg.type.type,
-             spMsg.type.ctl.xtra);
+      mlogf(M_ERROR,M_SHOW,"### %d ??? %ld-%d\n", currentProc, spMsg.type,
+             spMsg.xtra);
       abort();
    }
    
-   _SFCB_RETURN(spMsg.type.ctl.xtra);
+   _SFCB_RETURN(spMsg.xtra);
 }
 
 int spRecvReq(int *s, int *from, void **data, unsigned long *length, MqgStat *mqg)
@@ -317,8 +317,8 @@ int spRecvCtlResult(int *s, int *from, void **data, unsigned long *length)
 
 static int spSendMsg(int *to, int *from, int n, struct iovec *iov, int size)
 {
-   SpMessageHdr spMsg = { {MSG_DATA}, *from, size };
-   spMsg.type.ctl.type = MSG_DATA;
+   SpMessageHdr spMsg = { 0, 0, *from, size };
+   spMsg.type = MSG_DATA;
    static char *em = "spSendMsg sending to";
    struct msghdr msg;
    ssize_t rc;
@@ -427,7 +427,7 @@ int spRcvAck(int from)
 static int spSendCtl(int *to, int *from, short code, unsigned long count,
                      void *data)
 {
-   SpMessageHdr spMsg = { {MSG_DATA}, *from, 0 };
+   SpMessageHdr spMsg = { 0, 0, *from, 0 };
    static char *em = "spSendCtl sending to";
    struct msghdr msg;
    struct iovec iov[2];
@@ -456,8 +456,8 @@ static int spSendCtl(int *to, int *from, short code, unsigned long count,
    msg.msg_iov = iov;
    msg.msg_iovlen = 1;
 
-   spMsg.type.ctl.type = MSG_CTL;
-   spMsg.type.ctl.xtra = code;
+   spMsg.type = MSG_CTL;
+   spMsg.xtra = code;
    spMsg.segments = count;
    spMsg.provId = data;
 

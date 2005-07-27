@@ -20,8 +20,6 @@
 */
 
  
-#define SFCB_INCL_INDICATION_SUPPORT 1
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <error.h>
@@ -33,6 +31,11 @@
 #include "objectImpl.h"
 #include "msgqueue.h"
 #include "utilft.h"
+#include "config.h"
+
+#ifdef HAVE_INDICATIONS
+#define SFCB_INCL_INDICATION_SUPPORT 1
+#endif
 
 #ifdef SFCB_INCL_INDICATION_SUPPORT 
 #include "selectexp.h"
@@ -46,7 +49,9 @@ extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
 extern void memLinkObjectPath(CMPIObjectPath *op);
 
 extern ProviderInfo *activProvs;
+#ifdef SFCB_INCL_INDICATION_SUPPORT
 extern NativeSelectExp *activFilters;
+#endif
 extern CMPIObjectPath *TrackedCMPIObjectPath(const char *nameSpace,
                                       const char *className, CMPIStatus * rc);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
@@ -136,9 +141,9 @@ CMPIStatus deliverIndication(CMPIBroker* mb, CMPIContext* ctx,
    _SFCB_RETURN(st);
 #else 
 
+   _SFCB_ENTER(TRACE_INDPROVIDER | TRACE_UPCALLS, "deliverIndication");
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   if (rc)  *rc = rci;
-   _SFCB_RETURN(NULL);
+   _SFCB_RETURN(rci);
    
 #endif
 }

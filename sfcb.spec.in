@@ -38,7 +38,7 @@ export PATCH_GET=0
 
 %build
 
-%configure --disable-debug
+%configure --enable-debug --disable-indications
 make
 
 %install
@@ -89,6 +89,7 @@ sfcbrepos -f 2> /dev/null
 exit 0
 
 %files schema
+%defattr(-,root,root)
 %{_datadir}/sfcb/CIM
 
 %files -f _pkg_list

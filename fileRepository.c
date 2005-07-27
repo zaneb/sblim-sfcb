@@ -28,13 +28,38 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+
+#include <sys/types.h>
+#include <dirent.h>
 #include <errno.h>
+       
 #include "fileRepository.h"
 #include "mlog.h"
 
 #define BASE "repository"
 
+static char *repfn=NULL;
 
+char *getRepDir()
+{
+   int keyl;
+   char *dir;
+   
+   if (repfn) return repfn;
+   
+   if (getControlChars("registrationDir",&dir)) {
+     dir = "/var/lib/sfcb/registration";
+   }
+   keyl=strlen(BASE)+strlen(dir);
+   repfn=(char*)malloc(keyl+64);
+   
+   strcpy(repfn,dir);
+   strcat(repfn,"/");
+   strcat(repfn,BASE);
+   strcat(repfn,"/");
+
+   return repfn;      
+}
 
 void freeBlobIndex(BlobIndex **bip, int all)
 {
@@ -192,13 +217,19 @@ static int rebuild(BlobIndex *bi, char *id, void *blob, int blen)
 int getIndex(char *ns, char *cls, int elen, int mki, BlobIndex **bip)
 {
    BlobIndex *bi;
-   char *fn=alloca(elen);
+   char *fn;
    char *p;
+   char *dir;
+   int keyl;
 
+   dir=getRepDir();
+   
+   keyl=strlen(dir)+elen;
+   fn=alloca(elen);
+   
    bi=NEW(BlobIndex);
 
-   strcpy(fn,BASE);
-   strcat(fn,"/");
+   strcpy(fn,dir);
    p=fn+strlen(fn);
    strcat(fn,ns);
    strcat(fn,"/");
@@ -376,26 +407,31 @@ void *getBlob(char *ns, char *cls, char *id, int *len)
 
 int existingNameSpace(char *ns)
 {
-   int keyl=strlen(ns)+strlen(BASE);
-   char *fn=alloca(keyl+64),*p;
-   FILE *ft=NULL;
+   int keyl;
+   char *fn,*p;
+   char *dir;
+   DIR *d;
 
-   strcpy(fn,BASE);
-   strcat(fn,"/");
+   dir=getRepDir();
+   
+   keyl=strlen(ns)+strlen(dir);
+   fn=alloca(keyl+64);
+
+   strcpy(fn,dir);
    p=fn+strlen(fn);
    strcat(fn,ns);
-   strcat(fn,"/");
-   strcat(fn,"__test__");
 
    while (*p) { *p=tolower(*p); p++; }
 
 #ifdef __MAIN__
    printf("--- testing %s \n",fn);
 #endif
-   ft=fopen(fn,"w");
-   if (ft==NULL) return 0;
-   fclose(ft);
-   remove(fn);
+    
+   if ((d=opendir(fn))==NULL) {
+      perror("opendir");
+      return 0;
+   }   
+   closedir(d);
    return 1;
 }
 

@@ -467,7 +467,7 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    
    if (addBlob(nss,cns,key,blob,(int)len)) {
       CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
-      st.msg=native_new_CMPIString("Unable to write to repsoitory",NULL);
+      st.msg=native_new_CMPIString("Unable to write to repository",NULL);
       return st;
    }
 

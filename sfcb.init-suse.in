@@ -24,19 +24,19 @@ fi
 start() {
 	echo -n "Starting sfcb: "
 	startproc @sbindir@/sfcbd -d
-	rcstatus -v
+	rc_status -v
 }	
 
 stop() {
 	echo -n "Shutting down sfcb: "
 	killproc sfcbd
-	rcstatus -v
+	rc_status -v
 }
 
 reload() {
 	echo -n "Reloading sfcb configuration: "
 	killproc -HUP sfcbd
-	rcstatus -v
+	rc_status -v
 }
 
 case "$1" in

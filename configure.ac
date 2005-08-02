@@ -69,7 +69,7 @@ fi
 		;;
      linux*)	SFCB_CMPI_PLATFORM="-D CMPI_PLATFORM_LINUX_GENERIC_GNU"
 		SFCB_CMPI_OS="-D CMPI_OS_LINUX"
-		CFLAGS=-Wall
+		CFLAGS="-Wall -fsigned-char"
 if test "$enable_debug" != "no"; then
 		CFLAGS="-g $CFLAGS"
 fi

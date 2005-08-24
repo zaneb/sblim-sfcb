@@ -46,6 +46,8 @@ AC_ARG_ENABLE(indications,
 	[enable_indications="yes"]
 	)
 
+export enable_debug=yes
+
 if test "$enable_debug" == "yes"; then
    CPPFLAGS="-D SFCB_DEBUG $CPPFLAGS"
 fi

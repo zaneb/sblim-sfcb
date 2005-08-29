@@ -1,0 +1,74 @@
+.ig
+(C) Copyright IBM Corp. 2004, 2005
+                                                                                
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+                                                                                
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+..
+.de TQ
+.br
+.ns
+.TP \\$1
+..
+.\" Like TP, but if specified indent is more than half
+.\" the current line-length - indent, use the default indent.
+.de Tp
+.ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
+.el .TP "\\$1"
+..
+.TH xmltest 1 "August 2005" "xmltest Version 1.0"
+
+.SH NAME
+xmltest \- Test script to send CIM-XML (via wbemcat) to CIMOM and compare to known results
+
+.SH SYNOPSIS
+.B xmltest
+[\c
+.B file ...]
+
+.SH DESCRIPTION
+Script to send the specified CIM-XML file containing a CIM client using wbemcat to the CIMOM, and compare the returned results to an existing "x.OK" file. If no file specified then iteratively test all "*.XML" files and test their results.
+
+.SH OPTIONS
+TODO
+
+.SH ENVIRONMENT
+TODO
+
+.SH FILES
+TODO
+
+.SH PREREQUISITIES
+Requires wbemcat on search path.
+
+.SH AUTHOR
+Dr. Gareth S. Bestor <bestor@us.ibm.com>
+
+.SH CONTRIBUTORS
+Adrian Schuur <schuur@de.ibm.com>
+
+.SH BUGS
+Does not adequately deal with additional http headers/footers caused by
+chunking responses, which will result in false failures when comparing results
+to existing "x.OK" files.
+
+.SH COPYRIGHT
+(C) Copyright IBM Corp. 2004, 2005
+
+.SH AVAILABILITY
+The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
+The most recent version is available on the web at
+.IP
+\%http://sblim.sourceforge.net/
+
+.
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+
+

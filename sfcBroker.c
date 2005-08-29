@@ -40,6 +40,8 @@
 #include "sfcVersion.h"
 #include "control.h"
 
+#include <getopt.h>
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -341,6 +343,48 @@ int startDbpd(int argc, char *argv[], int sslMode)
 
 #endif
 
+static void usage(int status)
+{
+    if (status != 0)
+	fprintf(stderr, "Try '%s --help' for more information.\n", name);
+
+    else
+    {
+	static const char * help[] =
+	    {
+		"",
+		"Options:",
+		" -c, --config-file=<FILE>        use alternative configuration file",
+		" -d, --daemon                    run in the background",
+		" -h, --help                      display this message and exit",
+		" -s, --collect-stats             turn on runtime statistics collecting",
+		" -t, --trace-components=<N|?>    activate component-level tracing messages where",
+		"                                 N is an OR-ed bitmask integer defining the",
+		"                                 components to trace; ? lists the available",
+		"                                 components with their bitmask and exits",
+		" -v, --version                   output version information and exit",
+		"",
+		"For SBLIM package updates and additional information, please see",
+		"    the SBLIM homepage at http://sblim.sourceforge.net"
+	    };
+
+	int i;
+
+	fprintf(stdout, "Usage: %s [options]\n", name);
+	for (i = 0; i < sizeof(help) / sizeof(char *); i++)
+	    fprintf(stdout, "%s\n", help[i]);
+    }
+
+    exit(status);
+}
+
+static void version()
+{
+    fprintf(stdout, "%s " sfcHttpDaemonVersion "\n", name);
+
+    exit(0);
+}
+
 int main(int argc, char *argv[])
 {
    int c, i;
@@ -365,42 +409,71 @@ int main(int argc, char *argv[])
    restartArgv=argv;
 
    startLogging("sfcb");
-   
-   mlogf(M_INFO,M_SHOW,"--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
 
-   for (c = 0, i = 1; i < argc; i++) {
-      if (strcmp(argv[i], "-d") == 0)
-         daemon(0,0);
-      else if (strcmp(argv[i], "-v") == 0)
-         exFlags |= 1;
-      else if (strcmp(argv[i], "-tm") == 0 && i<(argc-1)) {
-         if (*argv[i+1]=='?') {
-            fprintf(stdout,"--- -tm values:\n");
-            for (i=0; traceIds[i].id; i++)  
-               fprintf(stdout,"--- \t%18s:    %d\t0x%05X\n",traceIds[i].id,traceIds[i].code,traceIds[i].code);
-            exit(1);
-         }
-         if (isdigit(*argv[i + 1])) {
-            char *ep;
-            tmask = strtol(argv[++i], &ep, 0);
-//                   tmask = atoi(argv[++i]);
-         }
-      }
-      else if (strcmp(argv[i], "-c") == 0 && i<(argc-1)) {
-         configfile = strdup(argv[++i]);
-      }
-      else if (strcmp(argv[i], "-F") == 0);
-      else if (strcmp(argv[i], "-nF") == 0);
-      else if (strcmp(argv[i], "-S") == 0) collectStat=1;
-      else if (strcmp(argv[i], "-I") == 0) exFlags|=2;
+   exFlags = 2;
 
-      else {
-         mlogf(M_ERROR,M_SHOW,"--- Bad parameter: %s\n", argv[i]);
-         exit(3);
-      }
+   static struct option const long_options[] =
+       {
+	   { "config-file",      required_argument, 0,        'c' },
+	   { "daemon",           no_argument,       0,        'd' },
+	   { "help",             no_argument,       0,        'h' },
+	   { "collect-stats",    no_argument,       0,        's' },
+	   { "trace-components", required_argument, 0,        't' },
+	   { "version",          no_argument,       0,        'v' },
+	   { 0, 0, 0, 0 }
+       };
+
+   while ((c = getopt_long(argc, argv, "c:dhst:v", long_options, 0)) != -1)
+   {
+       switch(c)
+       {
+	   case 0:
+	       break;
+
+	   case 'c':
+	       configfile = strdup(optarg);
+	       break;
+
+	   case 'd':
+	       daemon(0, 0);
+	       break;
+
+	   case 'h':
+	       usage(0);
+
+	   case 's':
+	       collectStat = 1;
+	       break;
+
+	   case 't':
+	       if (*optarg == '?') {
+		   fprintf(stdout, "---   Traceable Components:     Int       Hex\n");
+		   for (i = 0; traceIds[i].id; i++)
+		       fprintf(stdout, "--- \t%18s:    %d\t0x%05X\n", traceIds[i].id, traceIds[i].code, traceIds[i].code);
+		   exit(0);
+	       } else if (isdigit(*optarg)) {
+		   char *ep;
+		   tmask = strtol(optarg, &ep, 0);
+	       } else {
+		   fprintf(stderr, "Try %s -t ? for a list of the trace components and bitmasks.\n", name);
+		   exit(1);
+	       }
+	       break;
+
+	   case 'v':
+	       version();
+
+	   default:
+	       usage(3);
+       }
    }
 
-   if (collectStat) remove("sfcbStat");
+   mlogf(M_INFO,M_SHOW,"--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
+
+   if (collectStat) {
+       mlogf(M_INFO,M_SHOW,"--- Statistics collection enabled\n");
+       remove("sfcbStat");
+   }
    
    _sfcb_set_trace_mask(tmask);
 
@@ -408,7 +481,7 @@ int main(int argc, char *argv[])
 //        SFCB_DEBUG
 #ifndef SFCB_DEBUG
    if (tmask)
-      mlogf(M_ERROR,M_SHOW,"--- SCFB_DEBUG not configured. -tm %d ignored\n",tmask);
+      mlogf(M_ERROR,M_SHOW,"--- SCFB_DEBUG not configured. -t %d ignored\n",tmask);
 #endif
 
    if ((pauseStr=getenv("SFCB_PAUSE_PROVIDER"))) {

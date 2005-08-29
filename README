@@ -341,12 +341,13 @@ To stop and restart sfcbd type
 sfcb has a few commandline options that enable/disable particular runtime
 features. They are
 
-	sfcbd [-tm n|?] [-d] [-v] [-S] [-I] [-c configfile] 
+	sfcbd [-t N|?] [-d] [-v] [-h] [-s] [-c FILE] 
 
 where
-	-tm n	Activate component-level tracing messages, where n is a
+	-t, --trace-components<N|?>
+		Activate component-level tracing messages, where N is a
 		OR-ed bitmask integer defining which component to trace.
-		Specifying "-tm ?" which list all the components and their
+		Specifying "-t ?" which list all the components and their
 		associated integer bitmask. They are
 
 		providerMgr		     1 (0x00001)
@@ -372,20 +373,21 @@ where
 		sfcbd when processing a CIM request (but also does not
 		generate too many messages) is "-tm 2019".
 
-	-d	Run sfcbd (and child processes) in the background.
+	-d, --daemon	
+		Run sfcbd (and child processes) in the background.  
 
-	-v	[not currently implemented]
+	-v, --version	
+		Prints version information and exits.
 
-	-S	Turn on runtime statistics collecting. If enabled then
+	-h, --help
+		Displays usage infomration and exits.
+
+	-s, --collect-stats	
+		Turn on runtime statistics collecting. If enabled then
 		various sfcbd runtime statistics will be written to ./sfcbStat
 		Default is no statistics are collected.
 
-	-I	Turn on interop namespace support and enable the InterOp
-		module. This is required to support provider lifecycle and
-		process indications. Default is no interop support;
-		i.e. indications are not support.
-
-	-c configfile
+	-c, --config-file=<FILE>
 		Specify an alternative configuration file (see Section 12).
 		Default=/usr/local/etc/sfcb/sfcb.cfg 
  

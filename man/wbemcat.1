@@ -1,0 +1,80 @@
+.ig
+(C) Copyright IBM Corp. 2004, 2005
+                                                                                
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+                                                                                
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+..
+.de TQ
+.br
+.ns
+.TP \\$1
+..
+.\" Like TP, but if specified indent is more than half
+.\" the current line-length - indent, use the default indent.
+.de Tp
+.ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
+.el .TP "\\$1"
+..
+.TH wbemcat 1 "August 2005" "wbemcat Version 1.0"
+
+.SH NAME
+wbemcat \- Simple CIM-XML (via curl) CIM client
+
+.SH SYNOPSIS
+.B wbemcat
+[\c
+.BR \-?]
+[\c
+.BR \--help]
+[\c
+.BI \-h | --host \ hostname\fr]
+[\c
+.BI \-p | --port \ port\fr]
+
+.SH DESCRIPTION
+Utility to send CIM-XML request file to a CIMOM and display
+the response/results. Default CIMOM is localhost:5988.
+If no input file is specified then get XML data from stdin.
+
+.SH OPTIONS
+TODO
+
+.SH ENVIRONMENT
+TODO
+
+.SH FILES
+TODO
+
+.SH LIBRARIES
+Requires curl
+
+.SH AUTHOR
+Adrian Schuur <schuur@de.ibm.com>
+
+.SH CONTRIBUTORS
+Dr. Gareth S. Bestor <bestor@us.ibm.com>
+
+.SH BUGS
+None
+
+.SH COPYRIGHT
+(C) Copyright IBM Corp. 2004, 2005
+
+.SH AVAILABILITY
+The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
+The most recent version is available on the web at
+.IP
+\%http://sblim.sourceforge.net/
+
+.
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+
+

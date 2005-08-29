@@ -1,0 +1,113 @@
+.ig
+(C) Copyright IBM Corp. 2004, 2005
+                                                                                
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+                                                                                
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+..
+.de TQ
+.br
+.ns
+.TP \\$1
+..
+.\" Like TP, but if specified indent is more than half
+.\" the current line-length - indent, use the default indent.
+.de Tp
+.ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
+.el .TP "\\$1"
+..
+.TH sfcbd 1 "August 2005" "sfcb Version 1.0"
+
+.SH NAME
+sfcbd \- Open Source Small-Footprint CIM Broker (sfcb)
+
+.SH SYNOPSIS
+.B sfcbd
+[\c
+.BI \-tm \ n|?]
+[\c
+.BR \-d]
+[\c
+.BR \-v]
+[\c
+.BR \-S]
+[\c
+.BR \-I]
+[\c
+.BI \-c \ configfile\fr]
+
+.SH DESCRIPTION
+TODO
+
+.SH OPTIONS
+Supported command line options are:
+.TP
+.B tm
+\tActivate component-level tracing messages, where n is a
+OR-ed bitmask integer defining which component to trace.
+Specifying "-tm ?" which list all the components and their
+associated integer bitmask.
+.TP
+.B d
+\tRun sfcbd (and child processes) in the background.
+.TP
+.B v
+\t[not currently implemented]
+.TP
+.B S
+\tTurn on runtime statistics collecting. If enabled then
+various sfcbd runtime statistics will be written to ./sfcbStat
+Default is no statistics are collected
+.TP
+.B I
+\tTurn on interop namespace support and enable the InterOp
+module. This is required to support provider lifecycle and
+process indications. Default is no interop support;
+i.e. indications are not support.
+.TP
+.B c configfile
+\tSpecify an alternative configuration file. 
+Default=/usr/local/etc/sfcb/sfcb.cfg
+
+
+.SH ENVIRONMENT
+TODO
+
+.SH FILES
+TODO
+
+.SH LIBRARIES
+TODO
+
+.SH AUTHOR
+Adrian Schuur <schuur@de.ibm.com>
+
+.SH CONRIBUTORS
+Dr. Gareth S. Bestor <bestor@us.ibm.com>
+Viktor Mihajlovski <MIHAJLOV@de.ibm.com>
+
+.SH BUGS
+None
+
+.SH COPYRIGHT
+(C) Copyright IBM Corp. 2004, 2005
+
+.SH AVAILABILITY
+The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
+The most recent version is available on the web at
+.IP
+\%http://sblim.sourceforge.net/
+
+.SH "SEE ALSO"
+.BR cimserver (1)
+.
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+
+

@@ -61,7 +61,7 @@ int noChunking = 0;
 int sfcbSSLMode = 0;
 static int hBase;
 static int hMax;
-static int httpProcId;
+static int httpProcIdX;
 static int stopAccepting=0;
 static int running=0;
 static long keepaliveTimeout=15;
@@ -747,9 +747,9 @@ static void handleHttpRequest(int connFd)
    if (doFork) {
       semAcquire(httpWorkSem,0);
       semAcquire(httpProcSem,0);
-      for (httpProcId=0; httpProcId<hMax; httpProcId++)
-         if (semGetValue(httpProcSem,httpProcId+1)==0) break;
-      procReleaseUnDo.sem_num=httpProcId+1; 
+      for (httpProcIdX=0; httpProcIdX<hMax; httpProcIdX++)
+         if (semGetValue(httpProcSem,httpProcIdX+1)==0) break;
+      procReleaseUnDo.sem_num=httpProcIdX+1; 
          
       r = fork();
 
@@ -758,7 +758,7 @@ static void handleHttpRequest(int connFd)
          processName="CIMXML-Processor";
          semRelease(httpProcSem,0);
          semAcquireUnDo(httpProcSem,0);
-         semReleaseUnDo(httpProcSem,httpProcId+1);
+         semReleaseUnDo(httpProcSem,httpProcIdX+1);
          semRelease(httpWorkSem,0);
 
       }
@@ -778,7 +778,7 @@ static void handleHttpRequest(int connFd)
    if (r == 0) {
       if (doFork) {
          _SFCB_TRACE(1,("--- Forked xml handler %d", currentProc))
-         resultSockets=sPairs[hBase+httpProcId];
+         resultSockets=sPairs[hBase+httpProcIdX];
       }
 
       _SFCB_TRACE(1,("--- Started xml handler %d %d", currentProc,
@@ -881,7 +881,8 @@ static void handleHttpRequest(int connFd)
 int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 {
    struct sockaddr_in sin;
-   int sz,i,sin_len,ru;
+   socklen_t sz,sin_len;
+   int i,ru;
    char *cp;
    long procs, port;
    int listenFd, connFd;

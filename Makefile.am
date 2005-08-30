@@ -210,6 +210,9 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h
 
+man_MANS=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
+	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 \
+	man/wbemcat.1 man/xmltest.1
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcbunstage.sh.in sfcb.init-redhat.in sfcb.init-suse.in \

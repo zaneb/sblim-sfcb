@@ -266,7 +266,6 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage
 	test -d $(DESTDIR)$(sfcbdocdir) || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)
 	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
-	$(INSTALL_DATA) $(DESTDIR)$(sfcbdocdir)
 
 uninstall-local:
 	rm -f $(DESTDIR)$(sysconfdir)/sfcb/sfcb.cfg

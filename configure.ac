@@ -98,6 +98,11 @@ AC_SUBST(SFCB_CMPI_OS)
 AC_PROG_CC
 AC_PROG_LEX
 AC_CHECK_PROG(YACC,bison,[bison -y])
+if test -z "${YACC}"
+then
+	AC_MSG_ERROR([GNU bison is required to build the sfcb package.])
+fi
+
 AC_PROG_LIBTOOL
 
 # Checks for libraries.

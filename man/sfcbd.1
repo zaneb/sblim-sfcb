@@ -71,9 +71,9 @@ various sfcbd runtime statistics will be written to \fI./sfcbStat\fR.
 Default is no statistics are collected.
 .TP
 \fB\-t\fR, \fB\-\-trace-components\fR=\fINUM\fR
-Activate component-level tracing messages, where \fINUM\fR is a
+Activate component-level tracing messages, where \fINUM\fR is an
 OR-ed bitmask integer defining which component to trace.
-Specifying "-t ?" which list all the components and their
+Specifying "-t ?" will list all the components and their
 associated integer bitmask.
 .TP
 \fB\-v\fR, \fB\-\-version\fR
@@ -82,15 +82,15 @@ Prints version information and exits.
 .PP
 sfcbd reads the configuration file \fI/usr/local/etc/sfcb/sfcb.cfg\fR (or
 the file specified with the -c option) at start up. The configuration file 
-contains option : value pairs, one per line. sfcb recogonizes the following 
-configuration file options
+contains \fIoption : value\fR pairs, one per line. sfcb recogonizes the 
+following configuration file options
 .TP
 .B httpPort
 Local port that sfcbd should listen to receive HTTP (i.e. insecure)
 requests from CIM clients. Default=\fI5988\fR
 .TP
 .B enableHttp
-sfcb should/not accept HTTP client connections. Default=\fItrue\fR.
+whether sfcb should accept HTTP client connections. Default=\fItrue\fR.
 .TP
 .B httpProcs
 Maximum number of simultaneous HTTP client connections before
@@ -101,7 +101,7 @@ Local port that sfcbd should listen to receive HTTPS (i.e. secure)
 requests from CIM clients. Default=\fI5989\fR
 .TP
 .B enableHttps
-sfcb should/not accept HTTPS client connections. Default=\fIfalse\fR.
+whether sfcb should accept HTTPS client connections. Default=\fIfalse\fR.
 .TP
 .B httpsProcs
 Maximum number of simultaneous HTTPS client connections before
@@ -209,7 +209,7 @@ http://sourceforge.net/tracker/?group_id=128809&atid=712784
 The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
 The most recent version is available on the web at
 .IP
-\%http://sblim.sourceforge.net/
+http://sblim.sourceforge.net/
 .SH "SEE ALSO"
 .BR cimserver (1),
 .BR sfcbmof (1),

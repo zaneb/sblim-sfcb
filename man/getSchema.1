@@ -10,74 +10,59 @@ manual under the conditions for verbatim copying, provided that the
 entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
-.de TQ
-.br
-.ns
-.TP \\$1
-..
-.\" Like TP, but if specified indent is more than half
-.\" the current line-length - indent, use the default indent.
-.de Tp
-.ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
-.el .TP "\\$1"
-..
-.TH getSchema 1 "August 2005" "getSchema Version 1.0"
 
+.TH getSchema 1 "August 2005" "getSchema Version 1.0"
 .SH NAME
 getSchema \- Script to download DMTF CIM Schema for Small-Footprint CIM Broker (sfcb)
-
 .SH SYNOPSIS
 .B getSchema
-[\c
-.BR \-f]
-\c
-.I schemadir
-
+[\fB-f\fR]
+\fIschemadir\fR
 .SH DESCRIPTION
 getSchema is a small script to automatically downlaod and install the latest
 CIM Schema from the DMTF website. The CIM Schema is required by the
 Small-Footprint CIM Broker (sfcb) to be able to install and register new classes.
 getSchema uses curl to fetch the CIM Schema tarball.
-
 .SH OPTIONS
 Supported command line options are:
 .TP
-.B schemadir
-\tPath to download the CIM Schema tarball and extract all the CIM classes.
-Default is /usr/local/share/sfcb
+\fIschemadir\fR
+Path to download the CIM Schema tarball and extract all the CIM classes.
+Default is \fI/usr/local/share/sfcb\fR
 .TP
-.B f
-\tForce option. Without this option you will be prompted if an existing schema is already found in the target schemadir. 
-Setting this option will reinstall the new CIM Schema withou prompting.
-
-
-.SH ENVIRONMENT
-TODO
-
+\fB\-f\fR
+Force option. Without this option you will be prompted if an existing schema
+is already found in the target \fIschemadir\fR. Setting this option will
+reinstall the new CIM Schema without prompting.
 .SH FILES
-/usr/local/share/sfcb/CIM/CIM_Schema.mof
-
-.SH LIBRARIES
+.TP
+\fI/usr/local/share/sfcb/getSchema.sh\fR
+The getSchema script.
+.TP
+\fI/usr/local/share/sfcb/CIM/CIM_Schema.mof\fR
+CIM Schema
+.SH PREQUISITES
+.PP
 Requires curl
-
 .SH AUTHOR
 Adrian Schuur <schuur@de.ibm.com>
-
 .SH BUGS
-None
-
+.PP
+The SBLIM project maintains a mailing list to which you should direct all
+questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
+To subscribe to this mailing list visit
+.IP
+http://lists.sourceforge.net/lists/listinfo/sblim-issues
+.PP
+The SBLIM Project Bug tracking page can be found at
+.IP
+http://sourceforge.net/tracker/?group_id=128809&atid=712784
 .SH COPYRIGHT
 (C) Copyright IBM Corp. 2004, 2005
-
 .SH AVAILABILITY
 The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
 The most recent version is available on the web at
 .IP
-\%http://sblim.sourceforge.net/
-
-.
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
-
-
+http://sblim.sourceforge.net/
+.SH "SEE ALSO"
+.BR sfcbd (1)

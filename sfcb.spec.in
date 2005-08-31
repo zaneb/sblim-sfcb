@@ -11,7 +11,8 @@ Name: @PACKAGE_TARNAME@
 Version: @PACKAGE_VERSION@
 Release: 0
 Group: Systems Management/Base
-License: Common Public License 1.0
+License: CPL
+URL: http://www.sblim.org
 
 Source0: ftp://dl.sourceforge.net/pub/s/sb/sblim/%{name}-%{version}.tar.bz2
 
@@ -61,7 +62,8 @@ find $RPM_BUILD_ROOT/%{_datadir}/sfcb -type f | grep -v $RPM_BUILD_ROOT/%{_datad
 sed s?$RPM_BUILD_ROOT??g _pkg_list > _pkg_list_2
 mv -f _pkg_list_2 _pkg_list
 echo "%config %{_sysconfdir}/sfcb" >> _pkg_list
-echo "%doc %{_datadir}/doc" >> _pkg_list
+echo "%doc %{_datadir}/doc/*" >> _pkg_list
+echo "%doc %{_datadir}/man/man1/*" >> _pkg_list
 echo "%{_sysconfdir}/init.d/sfcb" >> _pkg_list
 echo "%{_localstatedir}/lib/sfcb" >> _pkg_list
 echo "%{_bindir}/*" >> _pkg_list
@@ -78,11 +80,9 @@ then
 	rm -rf $RPM_BUILD_ROOT 
 fi
 
-%post
-/sbin/ldconfig
+%post -p /sbin/ldconfig
 
-%postun
-/sbin/ldconfig
+%postun -p /sbin/ldconfig
 
 %post schema
 sfcbrepos -f 2> /dev/null
@@ -93,3 +93,8 @@ exit 0
 %{_datadir}/sfcb/CIM
 
 %files -f _pkg_list
+
+%changelog
+
+* Wed Aug 31 2005  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com> - 0.9.0b-0
+- Support for man pages added

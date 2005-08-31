@@ -20,10 +20,10 @@
 # 
 # 
 
+sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
 sfcbdatadir=$(datadir)/sfcb
 sfcbconfdir=$(sysconfdir)/sfcb
 sfcbstatedir=$(localstatedir)/lib/sfcb
-sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
 initdir=$(sysconfdir)/init.d
 
 BUILT_SOURCES=queryParser.c queryLexer.c sqlParser.c sqlLexer.c
@@ -216,8 +216,7 @@ man_MANS=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcbunstage.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
-	sfcb.init-none.in \
-	doc
+	sfcb.init-none.in $(man_MANS)
 
 sfcbconf_DATA=sfcb.cfg
 
@@ -230,6 +229,8 @@ nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage
 dist_bin_SCRIPTS=wbemcat xmltest
 
 init_SCRIPTS=sfcb
+
+sfcbdoc_DATA=README AUTHORS COPYING
 
 sfcbrepos: sfcbrepos.sh
 	sed -e s?$$\{prefix\}?$(prefix)?g \
@@ -267,16 +268,10 @@ install-data-local:
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
 	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
 	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage
-	test -d $(DESTDIR)$(sfcbdocdir) || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)
-	$(INSTALL_DATA) $(srcdir)/README $(srcdir)/AUTHORS $(srcdir)/COPYING $(DESTDIR)$(sfcbdocdir)
 
 uninstall-local:
-	rm -f $(DESTDIR)$(sysconfdir)/sfcb/sfcb.cfg
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/interop.mof
-	rm -f $(DESTDIR)$(sfcbdocdir)/*
-	-rmdir $(sysconfdir)/sfcb
-	-rmdir $(sfcbdocdir)
 
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb \

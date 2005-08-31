@@ -1,0 +1,24 @@
+Changes in 0.9.0
+================
+- many bugfixes
+
+Changes in 0.8.7
+================
+- Open source version of sfcb. Added CPL license headers.
+
+Changes in Beta 3-0.8.6
+=======================
+- Added circular provider invocation support.
+- Added association support in internal provider.
+
+Changes in Beta 3-0.8.5
+=======================
+- Added WQL support.
+- Added ExecQuery (WQL based) and InvokeMethod (Extrinsic methods) support.
+- Added Process Indication support (WQL based).
+- Provider NEVER_UNLOAD/DO_NOT_UNLOAD support.
+- Additional startup options (-tm ? and -I).
+- Added namespace support for all operations.
+- Added SIGHUP support for restarting sfcb.
+- Extended regression the testing environment with wbemcat and catdif scripts.
+  (now deprecated)

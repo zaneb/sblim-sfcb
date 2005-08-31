@@ -152,17 +152,17 @@ libsfcBrokerCore_la_CFLAGS = @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@
 
 if JDBC
 sqlLexer.c: sqlLexer.l sqlParser.y
-	lex -t sqlLexer.l | sed -e "s/yy/sfcSql/g" > sqlLexer.c
+	$(LEX) -t sqlLexer.l | sed -e "s/yy/sfcSql/g" > sqlLexer.c
 
 sqlParser.c: sqlLexer.l sqlParser.y
-	$(YACC) -p sfcSql -d -o sqlParser.c sqlParser.y
+	$(YACC) $(AM_YFLAGS) -p sfcSql -o sqlParser.c sqlParser.y
 endif
 
 queryLexer.c: queryLexer.l queryParser.y
-	lex -t queryLexer.l | sed -e "s/yy/sfcQuery/g" > queryLexer.c
+	$(LEX) -t queryLexer.l | sed -e "s/yy/sfcQuery/g" > queryLexer.c
 
 queryParser.c: queryLexer.l queryParser.y
-	$(YACC) -p sfcQuery -d -o queryParser.c queryParser.y  
+	$(YACC) $(AM_YFLAGS) -p sfcQuery -o queryParser.c queryParser.y  
 
 libsfcHttpAdapter_la_SOURCES = \
    httpAdapter.c \

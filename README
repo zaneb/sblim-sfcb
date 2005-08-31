@@ -5,6 +5,33 @@
 1. What is sfcb
 ===============
 sfcb is a lightweight CIM daemon (aka CIMOM) that responds to CIM client
+requests for system management data and/or performs system management 
+tasks. sfcb supports most of the standard CIM XML over http/https protocol.
+It is highly modular, allowing functionality to be easily added, removed
+or customized for different management applications. sfcb is specifically
+targetted for small embedded system that do not have the available CPU,
+memory or disk resources to support a full-blown enterprise-level CIMOM.
+That said, sfcb runs very well on a regular Linux/Unix system and supports
+most of the functions required by CIM clients to manage such the system. 
+Supported CIM operations include:
+
+	GetClass
+	EnumerateClasses
+	EnumerateClassNames
+	GetInstance
+	DeleteInstance
+	CreateInstance
+	ModifyInstance
+	EnumerateInstances
+	EnumerateInstanceNames
+	InvokeMethod (MethodCall)
+	ExecQuery
+	Associators
+	AssociatorNames
+	References
+	ReferenceNames
+
+CIM process and lifecycle indications (aka 'events') are also supported.sfcb is a lightweight CIM daemon (aka CIMOM) that responds to CIM client
 requests for system management data and/or perform system management 
 tasks. sfcb supports most of the standard CIM XML over http/https protocol.
 It is highly modular, allowing functionality to be easily added, removed
@@ -62,7 +89,7 @@ What isn't sfcb
 ===============
 Currently sfcb does not support some of the CIM class operations, 
 specifically adding and removing new CIM classes dynamically. Instead,
-classes are added/removed/modified offlinexi and require restarting the sfcb
+classes are added/removed/modified offline and require restarting the sfcb
 daemon for the changes to take effect. However, there is nothing inherent
 in the design of sfcb preventing more sophisticated class module from being
 implemented, although probably at the expense of a larger footprint.
@@ -302,7 +329,6 @@ something like
 --- SSL not configured
 --- User authentication disabled
 --- Max provider procs: 32
---- InterOp provider definition found but not started - no InterOp support available
 --- initSocketPairs: 80
 --- Max Http procs: 8
 --- sfcbd HTTP  Daemon V0.9.0 started - 31806 - port 5988
@@ -319,13 +345,11 @@ with three running processes associated with sfcb. e.g.
 	root     31807 31805  0 20:54 pts/3    00:00:00 /usr/local/sbin/sfcbd
 
 which correspond to the main  sfcbd process itself (pid 31805), the HTTP codec
-(pid 31806) and the class provider (pid 31807). The "InterOp provider
-definition found but not started" message is normal and is a result of not
-specifying the -I command line option (see Section 11 below).
-Hit CTRL-C at any time to stop sfcb and all its associated processes.
-In rare cases sfcb might hang and/or not shutdown cleanly. Please report this
-as a bug and include how to reproduce the problem. Should this ever happen
-you can 'kill' sfcbd and all associated processes by
+(pid 31806) and the class provider (pid 31807). Hit CTRL-C at any time to stop 
+sfcb and all its associated processes. In rare cases sfcb might hang and/or not 
+shutdown cleanly. Please report this as a bug and include how to reproduce the 
+problem. Should this ever happen you can 'kill' sfcbd and all associated 
+processes by
 
 	killall -9 sfcbd
 
@@ -495,7 +519,7 @@ SFCB_PAUSE_PROVIDER
 	See Section 19 below for more details on debugging providers.
  
 SFCB_PAUSE_CODEC 
-	Specifies the name of the sfcb codex (currently only "http") to pause
+	Specifies the name of the sfcb codec (currently only "http") to pause
 	after first being started to facilitate attaching a runtime debugger
 	to the process.
         See Section 15 below for more details on debugging sfcb.
@@ -503,14 +527,14 @@ SFCB_PAUSE_CODEC
 SFCB_PAUSE_HTTP
 	(duplicate of SFCB_PAUSE_CODEC=http? remove?)
 
-SFCB_TRACE
+SFCB_TRACE=[0..4]
         Specifies the level of trace/debug messages for sfcb.
         Valid values are 0 (no trace messages), or 1 (key trace messages only)
 	to 4 (all messages). Note: SFCB_TRACE level is used in conjunction
 	with sfcb's component-level tracing (see Section 11) to control the
 	level of detail of trace messages to display within each component. 
 
-SFCB_TRACE_FILE
+SFCB_TRACE_FILE=/path/to/file
         By default sfcb trace messages are written to STDERR.
         Setting this envorinment variable causes the trace messages to be
         written to a file instead.
@@ -747,6 +771,7 @@ installed SBLIM providers in the class repository. This consists of the
 directory tree comprised of the CIM namespace components. Typically the
 CIM namespaces known to a CIMOM are "root/cimv2" and "root/interop", which
 respectively translate to the class repository directory paths
+
 	/usr/local/var/lib/sfcb/registration/repository/root/cimv2
 and
 	/usr/local/var/lib/sfcb/registration/repository/root/interop
@@ -1124,7 +1149,7 @@ with sfcbd (except for the unsupported CIM operations mentioned in Section 2).
         earlier class repository in case sfcbrepos generates a corrupt one.
 
 /usr/local/var/lib/sfcb/stage/default.reg
-	Registration data for the default build-in sfcb internal providers. 
+	Registration data for the default built-in sfcb internal providers. 
 
 /usr/local/var/lib/sfcb/stage/interop.mof
 	Dummy classes used to added CIM indication support to the
@@ -1180,9 +1205,9 @@ with sfcbd (except for the unsupported CIM operations mentioned in Section 2).
 ==============================
 The SBLIM project maintains a mailing list to which you should direct all
 questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
-To subscribe to this mailing list
+To subscribe to this mailing list visit
 
-	TODO
+        http://lists.sourceforge.net/lists/listinfo/sblim-issues
 
 The SBLIM Project Bug tracking page can be found at
 

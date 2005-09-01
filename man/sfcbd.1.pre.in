@@ -57,7 +57,7 @@ Supported command line options are:
 .TP
 \fB\-c\fR, \fB\-\-config-file\fR=\fIFILE\fR
 Specify an alternative configuration file. 
-Default=\fI/usr/local/etc/sfcb/sfcb.cfg\fR
+Default=\fI@sysconfdir@/sfcb/sfcb.cfg\fR
 .TP
 \fB\-d\fR, \fB\-\-daemon\fR
 Run sfcbd (and child processes) in the background.
@@ -71,26 +71,26 @@ various sfcbd runtime statistics will be written to \fI./sfcbStat\fR.
 Default is no statistics are collected.
 .TP
 \fB\-t\fR, \fB\-\-trace-components\fR=\fINUM\fR
-Activate component-level tracing messages, where \fINUM\fR is an
+Activate component-level tracing messages, where \fINUM\fR is a
 OR-ed bitmask integer defining which component to trace.
-Specifying "-t ?" will list all the components and their
+Specifying "-t ?" which list all the components and their
 associated integer bitmask.
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 Prints version information and exits.
 .SH CONFIGURATION FILE
 .PP
-sfcbd reads the configuration file \fI/usr/local/etc/sfcb/sfcb.cfg\fR (or
+sfcbd reads the configuration file \fI@sysconfdir@/sfcb/sfcb.cfg\fR (or
 the file specified with the -c option) at start up. The configuration file 
-contains \fIoption : value\fR pairs, one per line. sfcb recogonizes the 
-following configuration file options
+contains option : value pairs, one per line. sfcb recogonizes the following 
+configuration file options
 .TP
 .B httpPort
 Local port that sfcbd should listen to receive HTTP (i.e. insecure)
 requests from CIM clients. Default=\fI5988\fR
 .TP
 .B enableHttp
-whether sfcb should accept HTTP client connections. Default=\fItrue\fR.
+sfcb should/not accept HTTP client connections. Default=\fItrue\fR.
 .TP
 .B httpProcs
 Maximum number of simultaneous HTTP client connections before
@@ -101,7 +101,7 @@ Local port that sfcbd should listen to receive HTTPS (i.e. secure)
 requests from CIM clients. Default=\fI5989\fR
 .TP
 .B enableHttps
-whether sfcb should accept HTTPS client connections. Default=\fIfalse\fR.
+sfcb should/not accept HTTPS client connections. Default=\fIfalse\fR.
 .TP
 .B httpsProcs
 Maximum number of simultaneous HTTPS client connections before
@@ -120,7 +120,7 @@ HTTP/HTTPS header) before allowing the request. Default=\fIfalse\fR
 .TP
 .B basicAuthLib
 Name of the local library to call to authenticate the client userid.
-Default=\fI/usr/local/lib/libsfcBasicAuthentication.la\fR
+Default=\fI@libdir@/libsfcBasicAuthentication.la\fR
 .TP
 .B useChunking
 Tell sfcbd to use HTTP/HTTPS 'chunking' to return large volumes of
@@ -128,7 +128,7 @@ response data to the client in 'chunks', rather than buffering the
 data and sending it back all at once. 
 .SH ENVIRONMENT
 .TP
-.B SFCB_PAUSE_PROVIDER
+.B SFCB_PAUSE_PROVIER
 Specifies the name of the SBLIM provider to pause after first
 being loaded to facilitate attaching a runtime debugger to the
 provider's process for debugging purposes.
@@ -172,20 +172,20 @@ Setting this envorinment variable causes the trace messages to be
 written to a file instead.
 .SH FILES
 .TP
-.I /usr/local/etc/sfcb/sfcb.cfg
+.I @sysconfdir@/sfcb/sfcb.cfg
 Default sfcb configuration file.
 .TP
-.I /usr/local/etc/sfcb/server.pem
+.I @sysconfdir@/sfcb/server.pem
 SSL certificate for sfcb.
 .TP
-.I /usr/local/etc/sfcb/file.pem
+.I @sysconfdir@/sfcb/file.pem
 SSL certificate for sfcb.
 .SH LIBRARIES
 .TP
-.I /usr/local/lib/libsfc*
+.I @libdir@/libsfc*
 Binaries for sfcb runtime libraries.
 .TP
-.I /usr/local/lib/cmpi/*
+.I @libdir@/cmpi/*
 Binaries for SBLIM providers
 .SH AUTHOR
 Adrian Schuur <schuur@de.ibm.com>
@@ -209,7 +209,7 @@ http://sourceforge.net/tracker/?group_id=128809&atid=712784
 The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
 The most recent version is available on the web at
 .IP
-http://sblim.sourceforge.net/
+\%http://sblim.sourceforge.net/
 .SH "SEE ALSO"
 .BR cimserver (1),
 .BR sfcbmof (1),

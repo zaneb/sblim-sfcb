@@ -26,12 +26,16 @@ sfcbconfdir=$(sysconfdir)/sfcb
 sfcbstatedir=$(localstatedir)/lib/sfcb
 initdir=$(sysconfdir)/init.d
 
-BUILT_SOURCES=queryParser.c queryLexer.c sqlParser.c sqlLexer.c
+MANFILES=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
+	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 \
+	man/wbemcat.1 man/xmltest.1
+
+BUILT_SOURCES=queryParser.c queryLexer.c sqlParser.c sqlLexer.c $(MANFILES)
 
 AM_YFLAGS=-d
 
 AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfdir)\" \
-	-DSFCB_STATEDIR=\"$(sfcbstatedir)\"
+	-DSFCB_STATEDIR=\"$(sfcbstatedir)\" \
 	-DSFCB_LIBDIR=\"$(libdir)\"
 
 SUBDIRS=. $(MOFC_DIR)
@@ -210,13 +214,11 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h
 
-man_MANS=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
-	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 \
-	man/wbemcat.1 man/xmltest.1
+man_MANS=$(MANFILES)
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcbunstage.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
-	sfcb.init-none.in $(man_MANS)
+	sfcb.init-none.in
 
 sfcbconf_DATA=sfcb.cfg
 
@@ -231,6 +233,12 @@ dist_bin_SCRIPTS=wbemcat xmltest
 init_SCRIPTS=sfcb
 
 sfcbdoc_DATA=README AUTHORS COPYING
+
+SUFFIXES = .1 .1.pre
+
+.1.pre.1:
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 sfcbrepos: sfcbrepos.sh
 	sed -e s?$$\{prefix\}?$(prefix)?g \
@@ -275,7 +283,8 @@ uninstall-local:
 
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb \
-		sfcb.init-redhat sfcb.init-suse sfcb.init-none
+		sfcb.init-redhat sfcb.init-suse sfcb.init-none \
+		$(MANFILES)
 
 dist-hook:
 	test -d "$(distdir)" &&	rm -rf `find $(distdir) -type d -name CVS`

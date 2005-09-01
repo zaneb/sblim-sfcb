@@ -1,0 +1,105 @@
+.ig
+(C) Copyright IBM Corp. 2004, 2005
+                                                                                
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+                                                                                
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+..
+.de TQ
+.br
+.ns
+.TP \\$1
+..
+.\" Like TP, but if specified indent is more than half
+.\" the current line-length - indent, use the default indent.
+.de Tp
+.ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
+.el .TP "\\$1"
+..
+.TH sfcbrepos 1 "August 2005" "sfcbrepos Version 1.0"
+
+.SH NAME
+sfcbrepos \- Script to rebuild the Small-Footprint CIM Broker (sfcb) class repository
+
+.SH SYNOPSIS
+.B sfcbrepos
+[\c
+.BR \-h]
+[\c
+.BR \-f]
+[\c
+.BI \-c \ schemadir\fr]
+[\c
+.BI \-s \ stagingdir\fr]
+[\c
+.BI \-r \ registrationdir\fr]
+
+.SH DESCRIPTION
+TODO
+
+.SH OPTIONS
+Supported command line options are:
+.TP
+.B c schemadir
+\tPath to obtain the CIM Schema classes.
+Default is @datadir@/sfcb
+.TP
+.B s stagingdir
+\tPath to sfcb staging area containing class MOFs and registration files
+Default is @localstatedir@/lib/sfcb/stage
+.TP
+.B r registrationdir
+\tPath to the sfcb registration directory, containing the root of the class repository directory tree. 
+Default is @localstatedir@/lib/sfcb/registration
+.TP
+.B f
+\tForce option. Without this option you will be prompted to confirm creating a new class repository (and delete the old one).
+Setting this option will rebuild the new sfcb repository without prompting.
+.TP
+.B h
+\tDisplay usage information.
+
+.SH ENVIRONMENT
+TODO
+
+.SH FILES
+@datadir@/sfcb/CIM/CIM_Schema.mof
+@localstatedir@/lib/sfcb/registration/providerRegister
+@localstatedir@/lib/sfcb/registration/providerRegister.previous
+@localstatedir@/lib/sfcb/registration/repository
+@localstatedir@/lib/sfcb/registration/repository.previous
+@localstatedir@/lib/sfcb/registration/repository/.../classSchemas
+@localstatedir@/lib/sfcb/registration/stage/default.reg
+@localstatedir@/lib/sfcb/registration/stage/interop.mof
+@localstatedir@/lib/sfcb/registration/stage/mofs/*.mof
+@localstatedir@/lib/sfcb/registration/stage/regs/*.reg
+
+.SH LIBRARIES
+Requires libsfcBrokerCore.a
+
+.SH AUTHOR
+Adrian Schuur <schuur@de.ibm.com>
+
+.SH BUGS
+None
+
+.SH COPYRIGHT
+(C) Copyright IBM Corp. 2004, 2005
+
+.SH AVAILABILITY
+The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
+The most recent version is available on the web at
+.IP
+\%http://sblim.sourceforge.net/
+
+.
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+
+

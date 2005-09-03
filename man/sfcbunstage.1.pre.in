@@ -10,76 +10,53 @@ manual under the conditions for verbatim copying, provided that the
 entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
-.de TQ
-.br
-.ns
-.TP \\$1
-..
-.\" Like TP, but if specified indent is more than half
-.\" the current line-length - indent, use the default indent.
-.de Tp
-.ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
-.el .TP "\\$1"
-..
-.TH sfcbunstage 1 "August 2005" "sfcbunstage Version 1.0"
 
+.TH sfcbunstage 1 "August 2005" "sfcbunstage Version 1.0"
 .SH NAME
 sfcbstage \- Script to remove SBLIM provider MOF and registration files from the Small-Footprint CIM Broker (sfcb) staging area
-
 .SH SYNOPSIS
 .B sfcbstage
-[\c
-.BR \-h]
-[\c
-.BI \-s \ stagingdir\fr]
-[\c
-.BI \-r \ registrationfile\fr]
-[\c
-.B mof...]
-
+[\fIoptions\fR] [\fImof...\fR]
 .SH DESCRIPTION
-TODO
-
+sfcbunstage removes SBLIM provider mof and registration files from the sfcb staging area.
+Used to remove classes from sfcb offline. The class repository must be rebuilt
+with sfcbrepos and the sfcb CIMOM restarted before changes take effect.
 .SH OPTIONS
 .TP
-.B s stagingdir
-\tPath to sfcb staging area containing class MOFs and registration files
-Default is @localstatedir@/lib/sfcb/stage
+\fB\-s\fR \fIstagingdir\fR
+Path to sfcb staging area containing class MOFs and registration files
+Default is \fI@localstatedir@/lib/sfcb/stage\fR
 .TP
-.B r registrationfile
-\tPath to the provider registration file.
+\fB\-r\fR \fIregistrationfile\fR
+Path to the provider registration file.
 .TP
-.B mof
-\tPath(s) to one of more class MOF files containing the CIM class definitions
+\fB\-h\fR
+Display usage information and exit.
+.TP
+\fImof\fR
+Path(s) to one of more class MOF files containing the CIM class definitions
 for the class(es) implemented by the provider
-.TP
-.B h
-\tDisplay usage information.
-
-.SH ENVIRONMENT
-TODO
-
-.SH FILES
-TODO
-
 .SH AUTHOR
 Viktor Mihajlovski <MIHAJLOV@de.ibm.com>
-
 .SH BUGS
-None
-
+.PP
+The SBLIM project maintains a mailing list to which you should direct all
+questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
+To subscribe to this mailing list visit
+.IP
+http://lists.sourceforge.net/lists/listinfo/sblim-issues
+.PP
+The SBLIM Project Bug tracking page can be found at
+.IP
+http://sourceforge.net/tracker/?group_id=128809&atid=712784
 .SH COPYRIGHT
 (C) Copyright IBM Corp. 2004, 2005
-
 .SH AVAILABILITY
 The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
 The most recent version is available on the web at
 .IP
-\%http://sblim.sourceforge.net/
-
-.
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
-
-
+http://sblim.sourceforge.net/
+.SH "SEE ALSO"
+.BR sfcbd (1),
+.BR sfcbstage (1),
+.BR sfcbrepos (1)

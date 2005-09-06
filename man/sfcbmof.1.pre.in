@@ -11,14 +11,14 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
 
-.TH sfcbmof 1 "August 2005" "sfcbmof Version 1.0"
+.TH sfcbmof 1 "August 2005" "sfcbmof Version 0.7.3"
 .SH NAME
 sfcbmof \- MOF compile for the Small-Footprint CIM Broker (sfcb)
 .SH SYNOPSIS
 .B sfcbmof
 [\fIoptions\fR] \fIinfile\fR...
 .SH DESCRIPTION
-The MOF compiler for sfcb generates binary class data from plaintext MOF class defintions.
+The MOF compiler for sfcb generates binary class data from plaintext MOF class definitions.
 .SH OPTIONS
 .TP
 \fB\-h\fR
@@ -34,7 +34,8 @@ Print version information and exit.
 Directory to search for include files.
 .TP
 \fB\-i\fR \fIextrafile\fR
-File to load before parsing.
+File to load before parsing. This option can be used to preload the CIM
+schema or other pre-requisite classes.
 .TP
 \fB\-o\fR \fIoutfile\fR
 Output file to generate. The default is \fImofc.out\fR.
@@ -60,7 +61,7 @@ http://sourceforge.net/tracker/?group_id=128809&atid=712784
 (C) Copyright IBM Corp. 2004, 2005
 
 .SH AVAILABILITY
-The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
+The Small-Footprint CIM Broker (sfcb) is a part of the SBLIM project.
 The most recent version is available on the web at
 .IP
 http://sblim.sourceforge.net/

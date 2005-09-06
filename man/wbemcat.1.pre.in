@@ -11,7 +11,7 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
 
-.TH wbemcat 1 "August 2005" "wbemcat Version 1.0"
+.TH wbemcat 1 "August 2005" "wbemcat Version @PACKAGE_VERSION@"
 .SH NAME
 wbemcat \- Simple CIM-XML (via curl) CIM client
 
@@ -52,7 +52,7 @@ http://sourceforge.net/tracker/?group_id=128809&atid=712784
 .SH COPYRIGHT
 (C) Copyright IBM Corp. 2004, 2005
 .SH AVAILABILITY
-The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
+The Small-Footprint CIM Broker (sfcb) is a part of the SBLIM project.
 The most recent version is available on the web at
 .IP
 http://sblim.sourceforge.net/

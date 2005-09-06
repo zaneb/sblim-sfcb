@@ -11,7 +11,7 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
 
-.TH sfcbstage 1 "August 2005" "sfcbstage Version 1.0"
+.TH sfcbstage 1 "August 2005" "sfcbstage Version @PACKAGE_VERSION@"
 .SH NAME
 sfcbstage \- Script to copy SBLIM provider MOF and registration files to the 
 Small-Footprint CIM Broker (sfcb) staging area
@@ -53,7 +53,7 @@ http://sourceforge.net/tracker/?group_id=128809&atid=712784
 .SH COPYRIGHT
 (C) Copyright IBM Corp. 2004, 2005
 .SH AVAILABILITY
-The Small-Footprint CIM Broker (sfcb) is a part of IBM's SBLIM project.
+The Small-Footprint CIM Broker (sfcb) is a part of the SBLIM project.
 The most recent version is available on the web at
 .IP
 http://sblim.sourceforge.net/

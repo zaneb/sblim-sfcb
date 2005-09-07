@@ -1,0 +1,195 @@
+2005-09-06  mihajlov
+
+	* man/genSslCert.1.pre.in, man/getSchema.1.pre.in,
+	man/sfcbd.1.pre.in, man/sfcbmof.1.pre.in, man/sfcbrepos.1.pre.in,
+	man/sfcbstage.1.pre.in, man/sfcbunstage.1.pre.in,
+	man/wbemcat.1.pre.in, man/xmltest.1.pre.in: 
+	Bugs fixed: 1276160. Updated man pages (editorial stuff).
+
+	* mofc/configure.ac: Upgraded version number to 0.7.3.
+
+2005-09-03  tyreld
+
+	* man/genSslCert.1.pre.in, man/getSchema.1.pre.in,
+	man/sfcbd.1.pre.in, man/sfcbmof.1.pre.in, man/sfcbrepos.1.pre.in,
+	man/sfcbstage.1.pre.in, man/sfcbunstage.1.pre.in,
+	man/wbemcat.1.pre.in, man/xmltest.1.pre.in: 
+	Bug 1276160  Update man	page skeletons
+	The automake ready man pages checked in Thursday revisions of the
+	pages from Tuesdays check in. I've applied changes to the pages I
+	checked in on Wednesday to support automake.
+
+2005-09-01  mihajlov
+
+	* Makefile.am, configure.ac, man/genSslCert.1,
+	man/genSslCert.1.pre.in, man/getSchema.1, man/getSchema.1.pre.in,
+	man/sfcbd.1, man/sfcbd.1.pre.in, man/sfcbmof.1,
+	man/sfcbmof.1.pre.in, man/sfcbrepos.1, man/sfcbrepos.1.pre.in,
+	man/sfcbstage.1, man/sfcbstage.1.pre.in, man/sfcbunstage.1,
+	man/sfcbunstage.1.pre.in, man/wbemcat.1, man/wbemcat.1.pre.in,
+	man/xmltest.1, man/xmltest.1.pre.in: 
+	Bugs fixed: 1276160, 1269291.
+	Modified make processing for man files in order to have correct
+	file pathes in the documentation.  Renamed the man sources from .1
+	to .1.pre.in.  Fixed a typo in Makefile.am to make sure that
+	provider libs are found even when no config file exists.
+
+2005-08-31  tyreld
+
+	* man/sfcbd.1: Bug 1276160  Update skeleton man pages.
+	Corrected misspelled environment variable.
+
+	* man/genSslCert.1, man/getSchema.1, man/sfcbmof.1,
+	man/sfcbrepos.1, man/sfcbstage.1, man/sfcbunstage.1: 
+	Bug 1276160 Update skeleton man pages.
+	Updated genSslCert, getSchema, sfcbmof, sfcbrepos, sfcbstage, and
+	sfcbunstage skeletons.
+
+	* man/sfcbd.1, man/wbemcat.1, man/xmltest.1: 
+	Bug 1276160  Update skeleton man pages.
+	Updated sfcbd, wbemcat, and xmltest skeletons.
+
+	* README: Corrected spelling and updated some usage aspects.
+
+	* man/sfcbd.1: Updated skeleton man page.
+
+2005-08-31  mihajlov
+
+	* NEWS, README, configure.ac: Bugs fixed: 1209974, 1222948.
+	Updated README and fixed the disable-debug option of configure.
+
+	* Makefile.am, configure.ac: Bugs fixed: 1203835. Minor changes in
+	the lex/yacc invocation.  Bumped version number to 0.9.1.
+
+	* Makefile.am, sfcb.spec.in: Bugs fixed: 1209974. Added/fixed
+	support for man pages in Makefile and RPM spec.
+
+2005-08-30  tyreld
+
+	* Makefile.am: Modified so that the sfcb man pages are installed.
+
+	* Makefile.am: Replaced explicit calls to yacc with $(YACC) which
+	is set by the configure script.
+
+	* Makefile.am: The sfcb.html file was removed from the CVS tree. It
+	however is still referenced in the Makefile which breaks when
+	attempting to install the missing file. Removed sfcb.html from the
+	Makefile.
+
+	* configure.ac: Added an error message in the event that bison is
+	not found as it is a build requirement.
+
+	* README: Updated section pertaining to command line options to
+	reflect recent changes.
+
+	* sfcBroker.c: The interop namespace is now enabled by default, and
+	disabling it will now be supported from the config file in the
+	future. Added usage and version information. Revamped command line
+	processing so that it better conforms to users expected
+	conventions. Please note the new command line options:
+
+		Usage: sfcbd [options]
+
+		Options:
+		 -c, --config-file=<FILE>	 use alternative
+	configuration file
+		 -d, --daemon			 run in the background
+		 -h, --help			 display this message and
+	exit
+		 -s, --collect-stats		 turn on runtime statistics
+	collecting
+		 -t, --trace-components=<N|?>	 activate component-level
+	tracing messages where
+						 N is an OR-ed bitmask
+	integer defining the
+						 components to trace; ?
+	lists the available
+						 components with their
+	bitmask and exits
+		 -v, --version			 output version information
+	and exit
+
+		For SBLIM package updates and additional information,
+	please see
+		    the SBLIM homepage at http://sblim.sourceforge.net
+
+2005-08-30  mihajlov
+
+	* httpAdapter.c: Bug fixed: 1276651. Didn't compile under Fedora
+	Core 4 (gcc4).	Needed to change arguments for accept and bind and
+	remove a static/external clash.
+
+2005-08-29  bestorga-oss
+
+	* man/xmltest.1: new man page for xmltest
+
+	* man/wbemcat.1: new man page for wbemcat
+
+	* man/sfcbunstage.1: new man page for sfcbunstage
+
+	* man/sfcbstage.1: new man page for sfcbstage
+
+	* man/sfcbmof.1: new man page for sfcbmof
+
+	* man/sfcbrepos.1: add new man page for sfcbrepos
+
+	* man/getSchema.1: new man page for getSchema
+
+	* man/sfcbd.1: new man page for sfcbd
+
+	* man/genSslCert.1: new man page for genSslCert command
+
+	* README: rewrote README
+
+2005-08-25  ibmpeanuts
+
+	* autoconfiscate.sh: [no log message]
+
+	* configure.ac: #1222948
+
+2005-08-24  ibmpeanuts
+
+	* autoconfiscate.sh: #1222948
+
+2005-08-02  a3schuur
+
+	* configure.ac, mofc/configure.ac: Added -fsigned-char compile flag
+	to ensure ppc gcc treats char the same way as gcc on ix86
+
+	* mofc/mofparse.c: fixed [ 1250128 ] sfcbmof fails on ppc
+	char opt; on line 49 changed to int opt;
+
+2005-07-28  mihajlov
+
+	* sfcb.init-suse.in: Bugs fixed: 1242508.  Typo rcstatus instead of
+	rc_status fixed.
+
+2005-07-27  a3schuur
+
+	* fileRepository.c, internalProvider.c: Fixed [ 1246249 ] sfcb
+	fails to correctly locate repository Added getRepDir() routine.
+
+2005-07-27  mihajlov
+
+	* Makefile.am, brokerUpc.c, configure.ac, msgqueue.c, msgqueue.h,
+	providerDrv.c, providerMgr.c, sfcb.spec.in: Bugs fixed: 1246130,
+	1246009.  Indications can now be disabled effectively.	Endianness
+	sensitivity removed from msgqueue data structures.
+
+2005-07-26  a3schuur
+
+	* wbemcat: fixed debugging adat
+
+	* wbemcat: Fixed [ 1242514 ] wbemcat fails under SuSE nc program
+	not needed anymore. Its function is replaced by a few Perl stmts.
+
+	* args.c, array.c, context.c, datetime.c, enumeration.c,
+	providerDrv.c, string.c, support.c, support.h: Additional cleanup
+	for [ 1245096 ] mem_state set incorrectly by instance:clone()
+	Removed TOOL_MEM_ADD etc defines in support.h Changed
+	MEM_NOT_TRACKED value to -2 - getting better control for memory
+	management
+
+	* instance.c: Fixed [ 1245096 ] mem_state set incorrectly by
+	instance:clone() mem_state now set to MEM_NOT_TRACKED.
+

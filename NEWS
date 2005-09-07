@@ -1,3 +1,24 @@
+Changes in 0.9.1
+================
+
+New Features:
+- Man pages are now available for all programs/scripts.
+
+Bugs fixed:
+- 1203835 Fixed configure to require bison/byacc for parsers.
+- 1209974 Updated readme's and documentation (now man pages).
+- 1222948 --enable-debug is the default now for configure.
+- 1242514 nc usage has been replaced by "native" perl code.
+- 1242508 fixed typos in SUSE init scripts.
+- 1245096 fixed incorrect mem_state after clone().
+- 1246009 removed i386-specific debug asm code.
+- 1246130 added --disable-indication option to configure.
+- 1246249 fixed code for repository discovery.
+- 1250128 changed compile flag for ppc platform 
+- 1269291 fixed provider driver segfault with no config file
+- 1276160 updated man pages
+- 1276651 fixed gcc 4.0.x compile error.
+
 Changes in 0.9.0
 ================
 - many bugfixes

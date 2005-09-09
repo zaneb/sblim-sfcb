@@ -21,7 +21,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 0.9.1, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 0.9.1a, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE

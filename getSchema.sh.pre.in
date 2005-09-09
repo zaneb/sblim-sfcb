@@ -3,14 +3,19 @@
 
 trap "rm -f /tmp/cimv290.zip" exit 
 
-function usage()
+usage()
 {
     echo usage: $1 [schemadir] >&2
 }
 
 args=`getopt f $*`
+rc=$?
 
-if [ $? != 0 ]
+if [ $rc = 127 ]
+then
+    echo "warning: getopt not found ...continue without syntax check"
+    args=$*
+elif [ $rc != 0 ]
 then
     usage $0
     exit 1
@@ -29,9 +34,9 @@ do
   esac
 done
 
-if [ $# == 1 ]; then
+if [ $# = 1 ]; then
     sfcbdir=$1
-elif [ $# == 0 ]; then
+elif [ $# = 0 ]; then
     sfcbdir=@datadir@/sfcb
 else
     usage $0
@@ -40,7 +45,7 @@ fi
 
 if [ -x /usr/bin/curl ] 
 then
-   if [ ! -f $sfcbdir/CIM/CIM_Schema.mof ] || [ $force == 1 ]
+   if [ ! -f $sfcbdir/CIM/CIM_Schema.mof ] || [ $force = 1 ]
    then
       echo "Fetching CIM Schema from DMTF homepage ..."
       if [ -d $sfcbdir/CIM ]
@@ -53,7 +58,7 @@ then
 	  fi
       fi
       mkdir -p $sfcbdir/CIM
-      if [ $? == 0 ]; then
+      if [ $? = 0 ]; then
 	  /usr/bin/curl -o /tmp/cimv290.zip \
  http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip &&
 	  unzip -jd $sfcbdir/CIM /tmp/cimv290.zip &&

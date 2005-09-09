@@ -1,14 +1,18 @@
 #!/bin/sh
 
-function usage() 
+usage() 
 {
     echo "usage: $0 [-h] [ -s stagingdir] [ -r regfile ] [ mof ... ]  " 1>&2 
 }
 
-
 args=`getopt hr:s: $*`
+rc=$?
 
-if [ $? != 0 ]
+if [ $rc = 127 ]
+then
+    echo "warning: getopt not found ...continue without syntax check"
+    args=$*
+elif [ $rc != 0 ]
 then
     usage $0
     exit 1
@@ -31,7 +35,7 @@ do
   esac
 done
 
-if [ "$help" == "1" ]
+if [ "$help" = "1" ]
 then
     usage
     echo -e "\t-h display help message"

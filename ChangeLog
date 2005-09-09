@@ -1,3 +1,10 @@
+2005-09-09  mihajlov
+
+	* getSchema.sh.pre.in, sfcbrepos.sh.in,	
+	sfcbstage.sh.in, sfcbunstage.sh.in: 
+	Bugs: 1284983. Fixed interoperability problems in sfcb scripts in
+	conjunction with ash.
+
 2005-09-06  mihajlov
 
 	* man/genSslCert.1.pre.in, man/getSchema.1.pre.in,

@@ -1,3 +1,9 @@
+Changes in 0.9.2
+================
+
+Bugs fixed:
+- 1284983 Fixed compatibility issues with the ash shell.
+
 Changes in 0.9.1
 ================
 

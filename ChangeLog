@@ -1,3 +1,10 @@
+2005-09-12  tyreld
+
+	* control.c, providerRegister.c
+	sfcBroker.c, sfcb.cfg.pre.in, man/sfcbd.1.pre.in
+	Bugs fixed: 1284079. Added config file option to support disabling 
+	the interop namespace.
+
 2005-09-09  mihajlov
 
 	* getSchema.sh.pre.in, sfcbrepos.sh.in,	

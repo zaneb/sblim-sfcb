@@ -3,6 +3,7 @@ Changes in 0.9.2
 
 Bugs fixed:
 - 1284983 Fixed compatibility issues with the ash shell.
+- 1284079 Added option to disable interop namespace from config file.
 
 Changes in 0.9.1
 ================

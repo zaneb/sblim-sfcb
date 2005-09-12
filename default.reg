@@ -22,3 +22,9 @@
    type: instance method
    namespace: root/interop
 #
+[CIM_Namespace]
+   provider: NameSpaceProvider
+   location: sfcInteropServerProvider
+   type: instance
+   namespace: root/interop
+#

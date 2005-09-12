@@ -90,7 +90,7 @@ Local port that sfcbd should listen to receive HTTP (i.e. insecure)
 requests from CIM clients. Default=\fI5988\fR
 .TP
 .B enableHttp
-whether sfcb should accept HTTP client connections. Default=\fItrue\fR.
+Whether sfcb should accept HTTP client connections. Default=\fItrue\fR.
 .TP
 .B httpProcs
 Maximum number of simultaneous HTTP client connections before
@@ -101,11 +101,15 @@ Local port that sfcbd should listen to receive HTTPS (i.e. secure)
 requests from CIM clients. Default=\fI5989\fR
 .TP
 .B enableHttps
-whether sfcb should accept HTTPS client connections. Default=\fIfalse\fR.
+Whether sfcb should accept HTTPS client connections. Default=\fIfalse\fR.
 .TP
 .B httpsProcs
 Maximum number of simultaneous HTTPS client connections before
 blocking new incoming HTTPS requests. Default=\fI8\fR
+.TP
+.B enableInterOp
+Whether sfcb should provide the interop namespace for indication support.
+Default=\fItrue\fR
 .TP
 .B provProcs
 Maximum number of simultaneous SBLIM provider processes. After this
@@ -125,7 +129,7 @@ Default=\fI@libdir@/libsfcBasicAuthentication.la\fR
 .B useChunking
 Tell sfcbd to use HTTP/HTTPS 'chunking' to return large volumes of
 response data to the client in 'chunks', rather than buffering the 
-data and sending it back all at once. 
+data and sending it back all at once. Default=\fItrue\fR
 .SH ENVIRONMENT
 .TP
 .B SFCB_PAUSE_PROVIDER

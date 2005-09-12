@@ -32,7 +32,7 @@
 #include "providerRegister.h"
 
 static ProviderInfo forceNotFound={"",FORCE_PROVIDER_NOTFOUND};
-extern int exFlags;
+extern unsigned long exFlags;
 extern char * configfile;
 extern int setupControl(char *fn);
 extern int getControlChars(char *id, char **val);

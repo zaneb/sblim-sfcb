@@ -87,6 +87,8 @@ Control init[] = {
 
    {"registrationDir", 0, SFCB_STATEDIR "/registration"},
    {"providerDirs", 3, SFCB_LIBDIR " " SFCB_LIBDIR "/cmpi" }, /* 3: unstripped */
+
+   {"enableInterOp", 2, "true"}
 };
 
 int setupControl(char *fn)

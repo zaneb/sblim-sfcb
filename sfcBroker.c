@@ -1,6 +1,6 @@
 
 /*
- * instance.c
+ * sfcBroker.c
  *
  * (C) Copyright IBM Corp. 2005
  *
@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
 {
    int c, i;
    unsigned long tmask = 0, sslMode=0,sslOMode=0;
-   int enableHttp=0,enableHttps=0,useChunking=0,doBa=0;
+   int enableHttp=0,enableHttps=0,useChunking=0,doBa=0,enableInterOp=0;
    long dSockets,sSockets,pSockets;
    char *pauseStr;
 
@@ -410,7 +410,7 @@ int main(int argc, char *argv[])
 
    startLogging("sfcb");
 
-   exFlags = 2;
+   exFlags = 0;
 
    static struct option const long_options[] =
        {
@@ -512,6 +512,9 @@ int main(int argc, char *argv[])
    if (!doBa)
       mlogf(M_INFO,M_SHOW,"--- User authentication disabled\n");
 
+   if (getControlBool("enableInterOp", &enableInterOp))
+       enableInterOp=0;
+
    if (getControlNum("httpProcs", &dSockets))
       dSockets = 10;
    if (getControlNum("httpsProcs", &sSockets))
@@ -526,6 +529,11 @@ int main(int argc, char *argv[])
 
    resultSockets=getSocketPair("sfcbd result");
    sfcbSockets=getSocketPair("sfcbd sfcb");
+
+   if (enableInterOp==0)
+       mlogf(M_INFO,M_SHOW,"--- InterOp namespace disabled\n");
+   else
+       exFlags = exFlags | 2;
 
    initSem(dSockets,sSockets,pSockets);
    initProvProcCtl(pSockets);

@@ -178,7 +178,6 @@ static CMPIStatus NameSpaceProviderGetInstance(CMPIInstanceMI * mi,
          gethostname(hostName,511);
          CMSetProperty(ci,"SystemName",hostName,CMPI_chars);
          CMSetProperty(ci,"ClassInfo",&info,CMPI_uint16);
-         CMSetProperty(ci,"DescriptionOfClassInfo","namespace",CMPI_chars);
          CMSetProperty(ci,"Name",dn+dbl,CMPI_chars);
          CMReturnInstance(rslt,ci);
          closedir(dir);
@@ -223,7 +222,6 @@ static CMPIStatus NameSpaceProviderEnumInstances(CMPIInstanceMI * mi,
    gethostname(hostName,511);
    CMSetProperty(ci,"SystemName",hostName,CMPI_chars);
    CMSetProperty(ci,"ClassInfo",&info,CMPI_uint16);
-   CMSetProperty(ci,"DescriptionOfClassInfo","namespace",CMPI_chars);
    
    gatherNameSpacesData(dn,strlen(dn),rslt,NULL,ci);
    

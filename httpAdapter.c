@@ -594,6 +594,7 @@ static int doHttpRequest(CommHndl conn_fd)
    char *cp;
    Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
    RespSegments response;
+   static RespSegments nullResponse = { NULL, 0, 0, NULL, { {0, NULL} } };
    int len, hl;
    char *hdr, *path;
    MsgSegment msgs[2];
@@ -633,8 +634,10 @@ static int doHttpRequest(CommHndl conn_fd)
       path += strspn(path, " \t\r\n");
       inBuf.protocol = strpbrk(path, " \t\r\n");
       *inBuf.protocol++ = 0;
+#ifdef SFCB_CANONICAL_URI
       if (strcmp(path, "/cimom") != 0)
          break;
+#endif
       if (inBuf.protocol == NULL)
          break;
       badReq = 0;
@@ -692,6 +695,10 @@ static int doHttpRequest(CommHndl conn_fd)
    }
 
    len = inBuf.content_length;
+   if (len < 0) {
+     genError(conn_fd, &inBuf, 411, "Length Required", NULL);
+   }
+
    hdr = (char *) malloc(strlen(inBuf.authorization) + 64);
    len += hl =
        sprintf(hdr, "<!-- xml -->\n<!-- auth: %s -->\n", inBuf.authorization);
@@ -703,7 +710,7 @@ static int doHttpRequest(CommHndl conn_fd)
    msgs[1].data = inBuf.content;
    msgs[1].length = len - hl;
 
-   {
+   if (msgs[1].length > 0) {
      CimXmlRequestContext ctx =
         { inBuf.content, inBuf.principle, inBuf.host, inBuf.trailers, len - hl, &conn_fd };
       ctx.chunkFncs=&httpChunkFunctions;
@@ -718,6 +725,8 @@ static int doHttpRequest(CommHndl conn_fd)
 #endif 
       
       response = handleCimXmlRequest(&ctx);
+   } else {
+     response = nullResponse;
    }
    free(hdr);
 

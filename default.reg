@@ -23,7 +23,13 @@
    namespace: root/interop
 #
 [CIM_Namespace]
-   provider: NameSpaceProvider
+   provider: ServerProvider
+   location: sfcInteropServerProvider
+   type: instance
+   namespace: root/interop
+#
+[CIM_ObjectManager]
+   provider: ServerProvider
    location: sfcInteropServerProvider
    type: instance
    namespace: root/interop

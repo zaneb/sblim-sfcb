@@ -94,11 +94,11 @@ static int genNameSpaceData(char *ns, int dbl, CMPIResult * rslt, CMPIObjectPath
    CMPIInstance *ci)
 {
    if (op) {
-      CMAddKey(op,"name",ns+dbl+1,CMPI_chars);
+      CMAddKey(op,"Name",ns+dbl+1,CMPI_chars);
       CMReturnObjectPath(rslt,op);
    }  
    else if (ci) {
-      CMSetProperty(ci,"name",ns+dbl+1,CMPI_chars);
+      CMSetProperty(ci,"Name",ns+dbl+1,CMPI_chars);
       CMReturnInstance(rslt,ci);
    }  
    return 0;
@@ -172,14 +172,14 @@ static CMPIStatus NameSpaceProviderGetInstance(CMPIInstanceMI * mi,
    
          CMSetProperty(ci,"CreationClassName","CIM_Namespace",CMPI_chars);
          CMSetProperty(ci,"ObjectManagerCreationClassName","CIM_ObjectManager",CMPI_chars);
-         CMSetProperty(ci,"ObjectManagerName","CIM_ObjectManagerNameValue",CMPI_chars);
+         CMSetProperty(ci,"ObjectManagerName",getSfcbUuid(),CMPI_chars);
          CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
          hostName[0]=0;
          gethostname(hostName,511);
          CMSetProperty(ci,"SystemName",hostName,CMPI_chars);
          CMSetProperty(ci,"ClassInfo",&info,CMPI_uint16);
          CMSetProperty(ci,"DescriptionOfClassInfo","namespace",CMPI_chars);
-         CMSetProperty(ci,"name",dn+dbl,CMPI_chars);
+         CMSetProperty(ci,"Name",dn+dbl,CMPI_chars);
          CMReturnInstance(rslt,ci);
          closedir(dir);
       }
@@ -217,7 +217,7 @@ static CMPIStatus NameSpaceProviderEnumInstances(CMPIInstanceMI * mi,
    
    CMSetProperty(ci,"CreationClassName","CIM_Namespace",CMPI_chars);
    CMSetProperty(ci,"ObjectManagerCreationClassName","CIM_ObjectManager",CMPI_chars);
-   CMSetProperty(ci,"ObjectManagerName","CIM_ObjectManagerNameValue",CMPI_chars);
+   CMSetProperty(ci,"ObjectManagerName",getSfcbUuid(),CMPI_chars);
    CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
    hostName[0]=0;
    gethostname(hostName,511);

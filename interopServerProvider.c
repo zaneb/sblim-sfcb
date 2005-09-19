@@ -351,6 +351,103 @@ static CMPIStatus ObjectManagerProviderGetInstance(CMPIInstanceMI * mi,
 
 // ---------------------------------------------------------------
 
+static CMPIStatus ComMechProviderEnumInstanceNames(CMPIInstanceMI * mi,
+                                             CMPIContext * ctx,
+                                             CMPIResult * rslt,
+                                             CMPIObjectPath * ref)
+{
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   char hostName[512];
+   CMPIObjectPath *op;
+   
+   _SFCB_ENTER(TRACE_PROVIDERS, "ComMechProviderEnumInstanceNames");
+
+   op=CMNewObjectPath(_broker,"root/interop","CIM_ObjectManagerCommunicationMechanism",NULL);
+   
+   CMAddKey(op,"SystemCreationClassName","CIM_ObjectManager",CMPI_chars);
+   CMAddKey(op,"CreationClassName","CIM_ObjectManagerCommunicationMechanism",CMPI_chars);
+   hostName[0]=0;
+   gethostname(hostName,511);
+   CMAddKey(op,"SystemName",hostName,CMPI_chars);
+   CMAddKey(op,"Name",getSfcbUuid(),CMPI_chars);
+   
+   CMReturnObjectPath(rslt,op);
+   
+   _SFCB_RETURN(st);
+}
+
+static CMPIStatus ComMechProviderEnumInstances(CMPIInstanceMI * mi,
+                                             CMPIContext * ctx,
+                                             CMPIResult * rslt,
+                                             CMPIObjectPath * ref, char **properties)
+{
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   char hostName[512];
+   CMPIObjectPath *op;
+   CMPIInstance *ci;
+   CMPIUint16 mech;
+   CMPIBoolean bul=0;
+   int i;
+   
+   CMPIArray *fps;
+   CMPIUint16 fpa[6]={2,3,5,6,7,9};
+   CMPIArray *as;
+   CMPIUint16 aa[1]={3};
+   
+   _SFCB_ENTER(TRACE_PROVIDERS, "ComMechProviderEnumInstanceNames");
+
+   op=CMNewObjectPath(_broker,"root/interop","CIM_ObjectManagerCommunicationMechanism",NULL);
+   ci=CMNewInstance(_broker,op,NULL);
+      
+   CMSetProperty(ci,"SystemCreationClassName","CIM_ObjectManager",CMPI_chars);
+   CMSetProperty(ci,"CreationClassName","CIM_ObjectManagerCommunicationMechanism",CMPI_chars);
+   hostName[0]=0;
+   gethostname(hostName,511);
+   CMSetProperty(ci,"SystemName",hostName,CMPI_chars);
+   CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
+   
+   mech=2;
+   CMSetProperty(ci,"CommunicationMechanism",&mech,CMPI_uint16);
+   
+   fps=CMNewArray(_broker,sizeof(fpa)/sizeof(CMPIUint16),CMPI_uint16,NULL);
+   for (i=0; i<sizeof(fpa)/sizeof(CMPIUint16); i++)
+      CMSetArrayElementAt(fps,i,&fpa[i],CMPI_uint16);
+   CMSetProperty(ci,"FunctionalProfilesSupported",&fps,CMPI_uint16A);
+   
+   as=CMNewArray(_broker,sizeof(aa)/sizeof(CMPIUint16),CMPI_uint16,NULL);
+   for (i=0; i<sizeof(aa)/sizeof(CMPIUint16); i++)
+      CMSetArrayElementAt(as,i,&aa[i],CMPI_uint16);
+   CMSetProperty(ci,"AuthenticationMechanismsSupported",&as,CMPI_uint16A);
+   
+   CMSetProperty(ci,"MultipleOperationsSupported",&bul,CMPI_boolean);
+      
+   CMReturnInstance(rslt,ci);
+   
+   _SFCB_RETURN(st);
+}
+
+static CMPIStatus ComMechProviderGetInstance(CMPIInstanceMI * mi,
+                                             CMPIContext * ctx,
+                                             CMPIResult * rslt,
+                                             CMPIObjectPath * ref, char **properties)
+{
+  CMPIStatus st = { CMPI_RC_OK, NULL };
+  CMPIString *name=CMGetKey(ref,"name",NULL).value.string;
+   
+   _SFCB_ENTER(TRACE_PROVIDERS, "ComMechProviderGetInstance");
+
+   if (name && name->hdl) {
+      if (strcasecmp((char*)name->hdl,getSfcbUuid())==0)  
+         return ComMechProviderEnumInstances(mi,ctx,rslt,ref,properties);
+      else st.rc=CMPI_RC_ERR_NOT_FOUND;   
+   }
+   else st.rc=CMPI_RC_ERR_NO_SUCH_PROPERTY;  
+   
+   _SFCB_RETURN(st);
+}
+
+// ---------------------------------------------------------------
+
 static CMPIStatus ServerProviderCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -370,6 +467,8 @@ static CMPIStatus ServerProviderGetInstance(CMPIInstanceMI * mi,
       return NameSpaceProviderGetInstance(mi, ctx, rslt, ref, properties);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanager")==0) 
       return ObjectManagerProviderGetInstance(mi, ctx, rslt, ref, properties);
+   if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
+      return ComMechProviderGetInstance(mi, ctx, rslt, ref, properties);
    
    return invClassSt;
 }
@@ -385,7 +484,9 @@ static CMPIStatus ServerProviderEnumInstanceNames(CMPIInstanceMI * mi,
       return NameSpaceProviderEnumInstanceNames(mi, ctx, rslt, ref);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanager")==0) 
       return ObjectManagerProviderEnumInstanceNames(mi, ctx, rslt, ref);
-   
+   if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
+      return ComMechProviderEnumInstanceNames(mi, ctx, rslt, ref);
+  
    return invClassSt;
 }                                                
 
@@ -400,6 +501,8 @@ static CMPIStatus ServerProviderEnumInstances(CMPIInstanceMI * mi,
       return NameSpaceProviderEnumInstances(mi, ctx, rslt, ref, properties);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanager")==0) 
       return ObjectManagerProviderEnumInstances(mi, ctx, rslt, ref, properties);
+   if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
+      return ComMechProviderEnumInstances(mi, ctx, rslt, ref, properties);
    
    return invClassSt;
 }                                                

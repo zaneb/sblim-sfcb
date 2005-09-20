@@ -27,7 +27,7 @@ sfcbstatedir=$(localstatedir)/lib/sfcb
 initdir=$(sysconfdir)/init.d
 
 MANFILES=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
-	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 \
+	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 man/sfcbuuid.1 \
 	man/wbemcat.1 man/xmltest.1
 
 BUILT_SOURCES=queryParser.c queryLexer.c sqlParser.c sqlLexer.c $(MANFILES)
@@ -223,7 +223,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 man_MANS=$(MANFILES)
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
-	sfcbunstage.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
+	sfcbunstage.sh.in sfcbuuid.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
 	sfcb.init-none.in
 
 sfcbconf_DATA=sfcb.cfg
@@ -232,7 +232,7 @@ dist_sfcbdata_SCRIPTS=genSslCert.sh getSchema.sh
 
 dist_sfcbdata_DATA=default.reg interop.mof
 
-nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage 
+nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage sfcbuuid
 
 dist_bin_SCRIPTS=wbemcat xmltest
 
@@ -255,6 +255,10 @@ sfcbstage: sfcbstage.sh
 	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
 sfcbunstage: sfcbunstage.sh
+	sed -e s?$$\{prefix\}?$(prefix)?g \
+	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
+
+sfcbuuid: sfcbuuid.sh
 	sed -e s?$$\{prefix\}?$(prefix)?g \
 	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
@@ -288,7 +292,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/interop.mof
 
 clean-local:
-	rm -f sfcbrepos sfcbstage sfcbunstage sfcb.cfg getSchema.sh sfcb \
+	rm -f sfcbrepos sfcbstage sfcbunstage sfcbuuid sfcb.cfg getSchema.sh sfcb \
 		sfcb.init-redhat sfcb.init-suse sfcb.init-none \
 		$(MANFILES)
 

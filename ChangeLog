@@ -1,3 +1,9 @@
+2005-09-19  mihajlov
+
+	* httpAdapter.c: Bug 1292955. Allow content-length=0 request
+	bodies for better interoperability.
+	
+
 2005-09-12  tyreld
 
 	* control.c, providerRegister.c

@@ -573,7 +573,7 @@ static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
       }
       
       if (total>=hdrLimmit) {
-         mlogf(M_ERROR,M_SHOW,"--- Possible DOS attempt detected\n");
+         mlogf(M_ERROR,M_SHOW,"-#- Possible DOS attempt detected\n");
          return 2;
       }
    }
@@ -864,7 +864,18 @@ static void handleHttpRequest(int connFd)
       FD_SET(conn_fd.socket,&httpfds);
       do {
 	numRequest += 1;
-	if (doHttpRequest(conn_fd)) {
+        
+	httpTimeout.tv_sec=5;
+	httpTimeout.tv_usec=0;
+	isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpTimeout);
+	if (isReady == 0) {
+           Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
+           fprintf(stderr,"-#- Waited too long for data after accept - request rejected\n");
+           genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+           break;
+        }
+	
+        if (doHttpRequest(conn_fd)) {
 	  /* eof reached - leave */
 	  break;
 	}
@@ -888,7 +899,7 @@ static void handleHttpRequest(int connFd)
 #if defined USE_SSL
       if (sfcbSSLMode) {
 	if ((SSL_get_shutdown(conn_fd.ssl) & SSL_RECEIVED_SHUTDOWN))
-	  SSL_shutdown(conn_fd.ssl);
+	  SSL_shutdown(conn_fd.ssl);if (rc==2) if (rc==2) 
 	else SSL_clear(conn_fd.ssl);
 	SSL_free(conn_fd.ssl);
       } else 

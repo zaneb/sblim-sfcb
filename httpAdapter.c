@@ -545,20 +545,39 @@ static ChunkFunctions httpChunkFunctions = {
 
 #undef PrintF
 
-static void getHdrs(CommHndl conn_fd, Buffer * b)
+#define hdrBufsize 5000
+#define hdrLimmit 5000
+
+static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
 {
+   int first=1,total=0;
+   
    for (;;) {
-      char buf[5000];
+      char buf[hdrBufsize];
       int r = commRead(conn_fd, buf, sizeof(buf));
+      
       if (r < 0 && (errno == EINTR || errno == EAGAIN)) continue;
       if (r <= 0) break;
       
       add2buffer(b, buf, r);
+      total+=r;
+      
+      if (r && first) {
+         if (strncasecmp(buf,cmd,strlen(cmd)) != 0) return 1;
+         first=0;
+      }
+      
       if (strstr(b->data, "\r\n\r\n") != NULL ||
           strstr(b->data, "\n\n") != NULL) {
          break;
       }
+      
+      if (total>=hdrLimmit) {
+         mlogf(M_ERROR,M_SHOW,"--- Possible DOS attempt detected\n");
+         return 2;
+      }
    }
+   return 0;
 }
 
 int pauseCodec(char *name)
@@ -595,7 +614,7 @@ static int doHttpRequest(CommHndl conn_fd)
    Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
    RespSegments response;
    static RespSegments nullResponse = { NULL, 0, 0, NULL, { {0, NULL} } };
-   int len, hl;
+   int len, hl, rc;
    char *hdr, *path;
    MsgSegment msgs[2];
 
@@ -613,7 +632,12 @@ static int doHttpRequest(CommHndl conn_fd)
    inBuf.useragent = "";
    int badReq = 0;
 
-   getHdrs(conn_fd, &inBuf);
+   rc=getHdrs(conn_fd, &inBuf,"POST ");
+   
+   if (rc==1) genError(conn_fd, &inBuf, 501, "Not Implemented", NULL);
+   if (rc==2) genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+
+            
    if (inBuf.size == 0) {
      /* no buffer data - end of file - quit */
      _SFCB_TRACE(1,("--- HTTP connection EOF, quit %d ", currentProc));   

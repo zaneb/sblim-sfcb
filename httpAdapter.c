@@ -550,8 +550,17 @@ static ChunkFunctions httpChunkFunctions = {
 
 static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
 {
-   int first=1,total=0;
+   int first=1,total=0,isReady;
+   struct timeval httpTimeout;
+   fd_set httpfds;
    
+   FD_ZERO(&httpfds);
+   FD_SET(conn_fd.socket,&httpfds);
+   httpTimeout.tv_sec=5;
+   httpTimeout.tv_usec=0;
+   isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpTimeout);
+   if (isReady == 0) return 3;
+	
    for (;;) {
       char buf[hdrBufsize];
       int r = commRead(conn_fd, buf, sizeof(buf));
@@ -636,7 +645,10 @@ static int doHttpRequest(CommHndl conn_fd)
    
    if (rc==1) genError(conn_fd, &inBuf, 501, "Not Implemented", NULL);
    if (rc==2) genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
-
+   if (rc==3) {
+      fprintf(stderr,"-#- Waited too long for data after accept - request rejected\n");
+      genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+   }
             
    if (inBuf.size == 0) {
      /* no buffer data - end of file - quit */
@@ -865,16 +877,6 @@ static void handleHttpRequest(int connFd)
       do {
 	numRequest += 1;
         
-	httpTimeout.tv_sec=5;
-	httpTimeout.tv_usec=0;
-	isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpTimeout);
-	if (isReady == 0) {
-           Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
-           fprintf(stderr,"-#- Waited too long for data after accept - request rejected\n");
-           genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
-           break;
-        }
-	
         if (doHttpRequest(conn_fd)) {
 	  /* eof reached - leave */
 	  break;

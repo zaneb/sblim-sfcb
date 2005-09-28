@@ -5,6 +5,9 @@ Bugs fixed:
 - 1284983 Fixed compatibility issues with the ash shell.
 - 1284079 Added option to disable interop namespace from config file.
 - 1292955 Allow content-length=0 request bodies.
+- 1296278 Support for CIM Server UUID added.
+- 1298807 Fixed DoS vulnerability (many parallel requests, execessive
+	  header length)
 
 Changes in 0.9.1
 ================

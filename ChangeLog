@@ -1,8 +1,69 @@
+2005-09-27  a3schuur
+
+	* httpAdapter.c: Rearanged DOS detection support
+
+2005-09-27  a3schuur
+
+	* httpAdapter.c: Bug [ 1298807 ] sfcb dos vulnerability Next step
+	to detect and reject DOS attacks.  Fist data after accept must
+	arrive within 5 seconds, otherwise the request will be rejected.
+
+2005-09-27  a3schuur
+
+	* httpAdapter.c: Bug [ 1298807 ] sfcb dos vulnerability First steps
+	to detect and reject DOS attacks.  a) None POST requests will be
+	rejected as early as possible without attempting to read remaining
+	HTTP header data.  b) Any request having a combined header data
+	size longer than 5000 bytes will be rejected
+
+2005-09-20  mihajlov
+
+	* sfcbuuid.sh.in: Bugs: 1296278. Support for uuid generation.
+
+2005-09-20  mihajlov
+
+	* Makefile.am, configure.ac, man/sfcbuuid.1.pre.in: Bugs: 1296278.
+	Added support for the generation of a CIM server uuid.
+
+2005-09-19  a3schuur
+
+	* default.reg, interopServerProvider.c: Added support for
+	CIM_ObjectManagerCommunicationMechanism class.
+
 2005-09-19  mihajlov
 
 	* httpAdapter.c: Bug 1292955. Allow content-length=0 request
 	bodies for better interoperability.
 	
+2005-09-17  a3schuur
+
+	* interopServerProvider.c: Removed depricated
+	DescriptionOfClassInfo property from cim_namespace
+
+2005-09-16  a3schuur
+
+	* interopServerProvider.c: Minor fixes to namespace provider
+	support - setting ObjectManagerName property.
+
+2005-09-16  a3schuur
+
+	* default.reg, interopServerProvider.c: Update in
+	interopServerProvider for CIM_ObjectManager This update is
+	anticipating a fix for the uuid file in the sfcb directory
+
+2005-09-16  mihajlov
+
+	* httpAdapter.c: Bugs: 1292955. Accept URIs other than /cimom and
+	empty request bodies.  Further, reply with 411 if the content
+	length is not specified.
+
+2005-09-13  a3schuur
+
+	* Makefile.am, default.reg, interopServerProvider.c: Added
+	interopServerProvider.c This module will support CIM classes needed
+	for SLP support.  This initial version supports CIM_Namespace
+	read-only mode. You can now enumerate (names and instance) class
+	CMI_Namespace
 
 2005-09-12  tyreld
 

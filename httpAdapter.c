@@ -901,7 +901,7 @@ static void handleHttpRequest(int connFd)
 #if defined USE_SSL
       if (sfcbSSLMode) {
 	if ((SSL_get_shutdown(conn_fd.ssl) & SSL_RECEIVED_SHUTDOWN))
-	  SSL_shutdown(conn_fd.ssl);if (rc==2) if (rc==2) 
+	  SSL_shutdown(conn_fd.ssl);
 	else SSL_clear(conn_fd.ssl);
 	SSL_free(conn_fd.ssl);
       } else 

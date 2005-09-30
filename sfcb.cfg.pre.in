@@ -12,6 +12,8 @@ keepaliveTimeout: 0
 keepaliveMaxRequest: 10
 sslKeyFilePath: @sysconfdir@/sfcb/file.pem
 sslCertificateFilePath: @sysconfdir@/sfcb/server.pem
+sslClientTrustStore: @sysconfdir@/sfcb/client.pem
+sslClientCertificate: ignore
 registrationDir: @localstatedir@/lib/sfcb/registration
 providerDirs: @libdir@ @libdir@/cmpi
 enableInterOp:  true

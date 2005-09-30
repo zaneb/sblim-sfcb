@@ -70,6 +70,10 @@ static long numRequest;
 
 #if defined USE_SSL
 SSL_CTX *ctx;
+#define CC_VERIFY_IGNORE  0
+#define CC_VERIFY_ACCEPT  1
+#define CC_VERIFY_REQUIRE 2
+int ccVerifyMode;
 #endif
 
 static key_t httpProcSemKey;
@@ -1063,7 +1067,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
 #if defined USE_SSL
     if (sfcbSSLMode) {
-       char *fnc,*fnk;
+       char *fnc,*fnk, *fnt, *fnl;
        ctx = SSL_CTX_new(SSLv23_method());
        getControlChars("sslCertificateFilePath", &fnc);
        _SFCB_TRACE(1,("---  sslCertificateFilePath = %s",fnc));
@@ -1073,6 +1077,28 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
        _SFCB_TRACE(1,("---  sslKeyFilePath = %s",fnk));
        if (SSL_CTX_use_PrivateKey_file(ctx, fnk, SSL_FILETYPE_PEM) != 1)
 	 intSSLerror("Error loading private key from file");
+       getControlChars("sslClientCertificate", &fnl);
+       _SFCB_TRACE(1,("---  sslClientCertificate = %s",fnl));
+       if (strcasecmp(fnl,"ignore") == 0) {
+	 ccVerifyMode = CC_VERIFY_IGNORE;
+	 SSL_CTX_set_verify(ctx,SSL_VERIFY_NONE,0);
+       } else if (strcasecmp(fnl,"accept") == 0) {
+	 ccVerifyMode = CC_VERIFY_ACCEPT;
+	 SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,0);
+       } else if (strcasecmp(fnl,"require") == 0) {
+	 ccVerifyMode = CC_VERIFY_REQUIRE;
+	 SSL_CTX_set_verify(ctx,
+			    SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+			    0);
+       } else {
+	 intSSLerror("sslClientCertificate must be one of: ignore, accept or require");	 
+       } 
+       getControlChars("sslClientTrustStore", &fnt);
+       _SFCB_TRACE(1,("---  sslClientTrustStore = %s",fnt));
+       if (ccVerifyMode != CC_VERIFY_IGNORE &&
+	   SSL_CTX_load_verify_locations(ctx, fnt, NULL) != 1)
+	 intSSLerror("Error locating the client trust store");
+	      
     }
 #endif
 

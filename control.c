@@ -88,7 +88,9 @@ Control init[] = {
    {"registrationDir", 0, SFCB_STATEDIR "/registration"},
    {"providerDirs", 3, SFCB_LIBDIR " " SFCB_LIBDIR "/cmpi" }, /* 3: unstripped */
 
-   {"enableInterOp", 2, "true"}
+   {"enableInterOp", 2, "true"},
+   {"sslClientTrustStore", 0, SFCB_CONFDIR "/client.pem"},
+   {"sslClientCertificate", 0, "ignore" }
 };
 
 int setupControl(char *fn)

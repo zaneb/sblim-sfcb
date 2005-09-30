@@ -130,6 +130,48 @@ Default=\fI@libdir@/libsfcBasicAuthentication.la\fR
 Tell sfcbd to use HTTP/HTTPS 'chunking' to return large volumes of
 response data to the client in 'chunks', rather than buffering the 
 data and sending it back all at once. Default=\fItrue\fR
+.TP
+.B keepaliveTimeout
+Specify the maximum time in seconds an sfcb HTTP process will wait
+between two requests on one connection before terminating. Setting 
+it to 0 will disable HTTP keep-alive. Default=\fI0\fR
+.TP
+.B keepaliveMaxRequest
+Specify the maximum number of consecutive request on one connection.
+Setting it to 0 will effectively disable HTTP keep-alive. Default=\fI10\fR
+.TP
+.B registrationDir
+Specify the registration directory, which contains the provider
+registration data, the staging area and the static repository.
+Default=\fI@localstatedir@/lib/sfcb/registration\fR
+.TP
+.B providerDirs
+A space separated list of directories where sfcb is looking for provider
+libraries. Default=\fI@libdir@\ @libdir@/cmpi\fR
+.TP
+.B sslCertificateFilePath
+Specify the name of the file containing the server's certificate. 
+The file must be in PEM format. This file is only required if 
+enableHttps is set to \fItrue\fR. Default=\fI @sysconfdir@/sfcb/server.pem\fR
+.TP
+.B sslKeyFilePath
+Specify the name of the file containing the private key for the
+server's certificate. The file must be in PEM format and may not
+be passphrase-protected. This file is only required if enableHttps is
+set to \fItrue\fR. Default=\fI@sysconfdir@/sfcb/file.pem\fR
+.TP
+.B sslClientTrustStore
+Specify the name of the file containing the either the CA certificate
+issuing client certificates or self-signed certificates of the clients.
+This file must be in PEM format and is only required if sslClientCertificate
+is set to \fIaccept\fR or \fIrequire\fR. Default=\fI@sysconfdir@/sfcb/client.pem\fR
+.TP
+.B sslClientCertificate
+Specify the way sfcb handles client certificate based authentication. If set to
+\fIignore\fR it will not request a certificate from the client. If set to
+\fIaccept\fR it will request a certificate from the client but not fail if
+the client doesn't present one. If set to \fIrequire\fR it will refuse the
+client connection if the client doesn't present a certificate. Default=\fIignore\fR
 .SH ENVIRONMENT
 .TP
 .B SFCB_PAUSE_PROVIDER

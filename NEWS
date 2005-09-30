@@ -1,6 +1,12 @@
 Changes in 0.9.2
 ================
 
+New Features:
+- 1308252 Support for client certificate based authentication
+
+Changes in 0.9.2
+================
+
 Bugs fixed:
 - 1284983 Fixed compatibility issues with the ash shell.
 - 1284079 Added option to disable interop namespace from config file.

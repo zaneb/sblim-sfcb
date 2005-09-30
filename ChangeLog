@@ -1,3 +1,9 @@
+2005-09-30    mihajlov
+
+	* httpAdapter.c, control.c, sfcb.cfg.pre.in, 
+	man/sfcbd.1.pre.in: Bug 1308252. Added support for client certificate
+	verfication. Introduced new config options and updated man page.
+
 2005-09-27  a3schuur
 
 	* httpAdapter.c: Rearanged DOS detection support

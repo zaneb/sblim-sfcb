@@ -31,6 +31,13 @@
 #include "cmpiftx.h"
 #include "cmpimacs.h"
 
+#define ENQ_BOT_LIST(i,f,l,n,p) { if (l) l->n=i; else f=i; \
+                                  i->p=l; i->n=NULL; l=i;}
+#define ENQ_TOP_LIST(i,f,l,n,p) { if (f) f->p=i; else l=i; \
+                                   i->p=NULL; i->n=f; f=i;}
+#define DEQ_FROM_LIST(i,f,l,n,p) \
+                    { if (i->n) i->n->p=i->p; else l=i->p; \
+                      if (i->p) i->p->n=i->n; else f=i->n;}
 
 CMPIInstanceMI *loadInstanceMI(const char *provider,
                                      void *library,

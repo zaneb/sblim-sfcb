@@ -76,6 +76,8 @@ extern void setResultQueryFilter(CMPIResult * result, QLStatement *qs);
 extern CMPIArray *getKeyListAndVerifyPropertyList(CMPIObjectPath*, 
                 char **props, int *ok,CMPIStatus * rc);
 extern void dumpTiming(int pid);
+static BinResponseHdr *errorCharsResp(int rc, char *msg);
+static int sendResponse(int requestor, BinResponseHdr * hdr);
                 
 extern CMPISelectExp *NewCMPISelectExp(const char *queryString, const char *language, 
            const char *sns, CMPIArray ** projection, CMPIStatus * rc);
@@ -92,6 +94,14 @@ int indicationEnabled=0;
 unsigned long provSampleInterval=10;
 unsigned long provTimeoutInterval=25;
 static int stopping=0;
+
+typedef struct parms {
+   int requestor;
+   BinRequestHdr *req;
+   ProviderInfo *pInfo;
+   struct parms  *next,*prev; 
+} Parms;
+static Parms *activeThreadsFirst=NULL,*activeThreadsLast=NULL;
 
 void libraryName(const char *dir, const char *location, char *fullName)
 {
@@ -199,6 +209,24 @@ static void stopProc(void *p)
 } 
   
 
+static void handleSigSegv(int sig) 
+{
+   Parms *threads=activeThreadsFirst;
+   char msg[1024];
+   BinResponseHdr *resp;
+   
+   mlogf(M_ERROR,M_SHOW, "-#- %s - %d provider exiting due to a SIGSEGV signal\n",
+           processName, currentProc);
+   while (threads) {
+      snprintf(msg,1023, "*** Provider %s(%d) exiting due to a SIGSEGV signal\n",
+              threads->pInfo->providerName, currentProc);
+      resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
+      sendResponse(threads->requestor, resp);
+      threads=threads->next;
+   }        
+           
+}
+
 static void handleSigUsr1(int sig)
 {
    pthread_t t;
@@ -230,6 +258,7 @@ void initProvProcCtl(int p)
 }
 
 static pthread_mutex_t idleMtx=PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t activeMtx=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  idleCnd=PTHREAD_COND_INITIALIZER;
 
 void* providerIdleThread()
@@ -427,6 +456,8 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
             setSignal(SIGHUP, SIG_IGN,0);
             setSignal(SIGUSR1, handleSigUsr1,0);
             
+            setSignal(SIGSEGV, handleSigSegv,SA_ONESHOT);
+            
             curProvProc=(*proc);
             resultSockets=sPairs[(*proc)->id+ptBase];
 
@@ -545,7 +576,7 @@ typedef struct provHandler {
 } ProvHandler;
 
 
-int sendResponse(int requestor, BinResponseHdr * hdr)
+static int sendResponse(int requestor, BinResponseHdr * hdr)
 {
    _SFCB_ENTER(TRACE_PROVIDERDRV, "sendResponse");
    int i, l, rvl=0, ol, size, dmy;
@@ -1841,11 +1872,6 @@ static char *ops[] = {
    "DisableIndications",
 };
 
-typedef struct parms {
-   int requestor;
-   BinRequestHdr *req;
-} Parms;
-
 static void *processProviderInvocationRequestsThread(void *prms)
 {
    BinResponseHdr *resp=NULL;
@@ -1906,7 +1932,17 @@ static void *processProviderInvocationRequestsThread(void *prms)
       else requestor=-parms->requestor;
 
       hdlr = pHandlers[req->operation];
+      
+      pthread_mutex_lock(&activeMtx);
+      parms->pInfo=pInfo;
+      ENQ_BOT_LIST(parms,activeThreadsFirst,activeThreadsLast,next,prev); 
+      pthread_mutex_unlock(&activeMtx);
+      
       resp = hdlr.handler(req, pInfo, requestor);
+      
+      pthread_mutex_lock(&activeMtx);
+      DEQ_FROM_LIST(parms,activeThreadsFirst,activeThreadsLast,next,prev);
+      pthread_mutex_unlock(&activeMtx);
 
       _SFCB_TRACE(1, ("--- Provider request for %s DONE", ops[req->operation]));
    }

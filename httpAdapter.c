@@ -1042,6 +1042,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    if (bind(listenFd, (struct sockaddr *) &sin, sin_len) ||
        listen(listenFd, 0)) {
       mlogf(M_ERROR,M_SHOW,"--- Cannot listen on port %ld\n", port);
+      sleep(1);
       kill(sfcbPid,3);
    }
 

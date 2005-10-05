@@ -116,9 +116,9 @@ via writing specical purpose external SBLIM providers. There is a sample
 authorization SBLIM provider available from the SBLIM Project home page. 
 
 sfcb does include support for basic authentication (which requires writing
-a custom authentication library) but does not at this time support more
-sophisticated authentication mechanisms, although certificate support is
-currently being worked on.
+a custom authentication library) and authentication based on client 
+certificates which can be combined with basic authentication. See 
+19. for details.
 
  
 2. Pre-requisites
@@ -562,7 +562,7 @@ and that the provider is properly registered using the sfcbstage and sfcbrepos
 commands as described in 17. and 18.
 Ideally the provider package is enabled for sfcb, so that a make install and/or
 make postinstall will care for the proper registration. For instance most
-of the SBLIM providers are prepared for sfcb. See 19. below.
+of the SBLIM providers are prepared for sfcb. See 20. below.
 
 15. Testing sfcb with wbemcat and xmltest
 =========================================
@@ -928,8 +928,47 @@ in the staging area.
 after which you must still rebuild the class repository and restart sfcb as
 before.
 
-  
-19. Installing Existing SBLIM Providers
+19. Authentication Support
+==========================
+sfcb can be configured to support HTTP basic authentication and authentication
+based on client certificates (for HTTP over SSL connections).
+
+Basic authentication is enabled by specifying doBasicAuth=true in the
+sfcb configuration file. With basic authentication enabled, the HTTP adapter
+will load the shared library specifed via the basicAuthLib configuration
+property and call the function _sfcBasicAuthenticate with user id and password
+from the HTTP header in order to authenticate the client request.
+The default implementation in libsfcBasicAuthentication.so is always failing
+the authentication request. Users of sfcb are encouraged to write their
+own basic authentication support.
+
+Client certificate based authentication is available if SSL support for sfcb
+is enabled (via ./configure --enable-ssl). If the clientCertificate 
+configuration property is set to "accept" or "require" the sfcb HTTP adapter 
+will request a certificate from clients connecting via HTTP over SSL (HTTPS).
+If "require" was specified, the client MUST present a valid certificate
+according to the client trust store specified via sslClientTrustStore.
+If the client fails to do so, the connection will be rejected.
+
+The case clientCertificate=accept is perhaps less obvious but useful 
+in the case where both basic and client certificate authentication are 
+configured. If the client is able to present a trusted certificate, the
+HTTP adapter will load the shared library specifed via the 
+certificateAuthLib configuration property and call the function
+_sfcCertificateAuthenticate with the certificate. The function can now
+check this certificate and map it to a principal (=user id), in which
+case the basic authentication procedure will not be executed.
+If this function cannot determine the certificate to principal mapping, the
+HTTP basic authentication will take place.
+
+The default implementation of in libsfcCertificateAuthentication is fairly
+useful already, as it maintains a list of certificate/principal pairs in
+shared memory. This list is automatically updated if a client can both
+supply a trusted certificate AND succesfully authenticate via HTTP basic
+authentication. In the case of special requirements, it is necessary to
+implement a custom certificate authentication library.
+
+20. Installing Existing SBLIM Providers
 =======================================
 The cmpi-base SBLIM provider package - which is installed by default when you
 install sfcbd from CVS using the installsfcb.sh script - implements the
@@ -969,7 +1008,7 @@ for a full list of available SBLIM providers, including a number of test
 providers.
 
 
-20. Debugging SBLIM Providers
+21. Debugging SBLIM Providers
 =============================
 Many of the existing SBLIM providers include extensive degub/trace messages
 to aid in debugging errors that may occur when running the providers. To
@@ -1027,7 +1066,7 @@ The following is the relevant code from providerDrv.c
 2015          }
 
 
-21. wbemcli, sfcc and other CIM Clients
+22. wbemcli, sfcc and other CIM Clients
 =======================================
 The SBLIM Project includes an Open Source command-line CIM client 'wbemcli'
 that can be used to send CIM requests to the sfcb and display returned
@@ -1119,7 +1158,7 @@ approriate home page for these clients for more information. In general,
 with sfcbd (except for the unsupported CIM operations mentioned in Section 2). 
 
 
-22. Files
+23. Files
 =========
 /usr/local/sbin/sfcbd
 	Small-footprint CIM broker daemon.
@@ -1184,10 +1223,10 @@ with sfcbd (except for the unsupported CIM operations mentioned in Section 2).
 	Script to generate SSL certificates for https (if enabled).
  
 /usr/local/etc/sfcb/server.pem
-	SSL certificate for sfcb
+	SSL server certificate for sfcb
 
 /usr/local/etc/sfcb/file.pem
-	SSL certificate for sfcb
+	SSL private key file for sfcb
 
 /usr/local/share/getSchema.sh
 	Script to download and install CIM schema.
@@ -1208,7 +1247,7 @@ with sfcbd (except for the unsupported CIM operations mentioned in Section 2).
 	CMPI API headers (used to build SBLIM providers)
 
 
-23. Support and Reporting Bugs
+24. Support and Reporting Bugs
 ==============================
 The SBLIM project maintains a mailing list to which you should direct all
 questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
@@ -1221,7 +1260,7 @@ The SBLIM Project Bug tracking page can be found at
 	http://sourceforge.net/tracker/?group_id=128809&atid=712784
 
 
-24. Known Bugs
+25. Known Bugs
 ==============
 - The HTTP xml codec does not correctly handle arrays and reference arrays.
 - Namespace enforcement is not correct when provider registration has no namespace definition.

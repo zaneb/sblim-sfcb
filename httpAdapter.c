@@ -69,11 +69,14 @@ static long keepaliveMaxRequest=10;
 static long numRequest;
 
 #if defined USE_SSL
-SSL_CTX *ctx;
+static SSL_CTX *ctx;
+static X509    *x509;
 #define CC_VERIFY_IGNORE  0
 #define CC_VERIFY_ACCEPT  1
 #define CC_VERIFY_REQUIRE 2
-int ccVerifyMode;
+int ccVerifyMode = CC_VERIFY_IGNORE;
+static int get_cert(int,X509_STORE_CTX*);
+static int ccValidate(X509*, char**, int);
 #endif
 
 static key_t httpProcSemKey;
@@ -97,14 +100,17 @@ extern char * configfile;
 
 int sfcBrokerPid=0;
 
-typedef int (*Authenticate)(char* principle, char* pwd);
+typedef int (*Authenticate)(char* principal, char* pwd);
 
 typedef struct _buffer {
    char *data, *content;
    int length, size, ptr, content_length,trailers;
    char *httpHdr, *authorization, *content_type, *host, *useragent;
-   char *principle;
+   char *principal;
    char *protocol;
+#if defined USE_SSL
+   X509 *certificate;
+#endif
 } Buffer;
 
 void initHttpProcCtl(int p, int sslmode)
@@ -151,7 +157,7 @@ int remProcCtl()
    return 0;
 }
 
-int baValidate(char *cred, char **principle)
+int baValidate(char *cred, char **principal)
 {
    char *auth,*pw;
    int i,err=0;
@@ -181,7 +187,7 @@ int baValidate(char *cred, char **principle)
       if (err) mlogf(M_ERROR,M_SHOW,"--- Authentication exit %s not found\n",dlName);
    }
 
-   *principle=strdup(auth);
+   *principal=strdup(auth);
    if (authenticate(auth,pw)) return 1;
    return 0;
 }
@@ -727,11 +733,37 @@ static int doHttpRequest(CommHndl conn_fd)
       }
    }
 
+#if defined USE_SSL
+   if (doBa && sfcbSSLMode) {
+     if (x509) {
+       if (ccVerifyMode == CC_VERIFY_ACCEPT || 
+	   ccVerifyMode == CC_VERIFY_REQUIRE) {
+	 inBuf.certificate = x509;
+	 if (ccValidate(inBuf.certificate,&inBuf.principal,0)) {
+	   /* successful certificate validation overrides basic auth */
+	   doBa = 0;
+	 }
+       }
+     } else {
+       /* this should never happen ;-) famous last words */
+       mlogf(M_ERROR,M_SHOW,
+	     "\n--- Client certificate not accessible - closing connection\n");
+       exit(1);
+     }     
+   }
+#endif
+
    if (doBa) {
-      if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principle))) {
-         //char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
-         genError(conn_fd, &inBuf, 401, "Unauthorized", NULL);  //more);
-      }
+     if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principal))) {
+       //char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
+       genError(conn_fd, &inBuf, 401, "Unauthorized", NULL);  //more);
+     }
+#if defined USE_SSL
+     else if (sfcbSSLMode) {
+       /* associate certificate with principal for next request */
+       ccValidate(inBuf.certificate,&inBuf.principal,1);
+     }
+#endif
    }
 
    len = inBuf.content_length;
@@ -752,7 +784,7 @@ static int doHttpRequest(CommHndl conn_fd)
 
    if (msgs[1].length > 0) {
      CimXmlRequestContext ctx =
-        { inBuf.content, inBuf.principle, inBuf.host, inBuf.trailers, len - hl, &conn_fd };
+        { inBuf.content, inBuf.principal, inBuf.host, inBuf.trailers, len - hl, &conn_fd };
       ctx.chunkFncs=&httpChunkFunctions;
       
 #ifdef SFCB_DEBUG
@@ -948,7 +980,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    if (sslMode) processName="HTTPS-Daemon";
    else processName="HTTP-Daemon";
 
-   if (sslMode) {
+   if (sfcbSSLMode) {
       if (getControlNum("httpsPort", &port))
          port = 5989;
       hBase=stBase;
@@ -1085,12 +1117,12 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 	 SSL_CTX_set_verify(ctx,SSL_VERIFY_NONE,0);
        } else if (strcasecmp(fnl,"accept") == 0) {
 	 ccVerifyMode = CC_VERIFY_ACCEPT;
-	 SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,0);
+	 SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,get_cert);
        } else if (strcasecmp(fnl,"require") == 0) {
 	 ccVerifyMode = CC_VERIFY_REQUIRE;
 	 SSL_CTX_set_verify(ctx,
 			    SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
-			    0);
+			    get_cert);
        } else {
 	 intSSLerror("sslClientCertificate must be one of: ignore, accept or require");	 
        } 
@@ -1134,3 +1166,43 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    }   
 
 }
+
+#if defined USE_SSL
+static int get_cert(int preverify_ok,X509_STORE_CTX* x509_ctx)
+{
+  if (preverify_ok) {
+    x509 = X509_STORE_CTX_get_current_cert(x509_ctx);
+  }
+  return preverify_ok;
+}
+
+typedef int (*Validate)(X509 *certificate, char ** principal, int mode);
+
+static int ccValidate(X509 *certificate, char ** principal, int mode)
+{
+  int   result=0;
+  char *ln;
+  char  dlName[512];
+  void *authLib;
+  Validate validate;
+  _SFCB_ENTER(TRACE_HTTPDAEMON, "ccValidate");
+  
+  if (getControlChars("certificateAuthlib", &ln)==0) {
+    libraryName(NULL,ln,dlName);
+    if ((authLib=dlopen(dlName, RTLD_LAZY))) {
+      validate= dlsym(authLib, "_sfcCertificateAuthenticate");
+      if (validate) {
+	result = validate(certificate,principal,mode);
+      } else {
+	mlogf(M_ERROR,M_SHOW,
+	      "--- Certificate authentication exit %s not found\n",dlName);
+	result = 0;
+      } 
+    }
+  } else {
+    mlogf(M_ERROR,M_SHOW,
+	  "--- Certificate authentication exit not configured\n",dlName);	
+  }
+  _SFCB_RETURN(result);
+}
+#endif

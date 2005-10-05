@@ -26,6 +26,9 @@
 extern int _sfcBasicAuthenticate(char *user, char *pw)
 {
    printf("-#- Authentication request for %s\n",user);
+   return 0;
+   /* - for security reasons always return false -
    if (strcmp(user,"REJECT")==0) return 0;
    return 1;
+   */
 }

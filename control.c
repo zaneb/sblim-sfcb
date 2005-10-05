@@ -90,7 +90,9 @@ Control init[] = {
 
    {"enableInterOp", 2, "true"},
    {"sslClientTrustStore", 0, SFCB_CONFDIR "/client.pem"},
-   {"sslClientCertificate", 0, "ignore" }
+   {"sslClientCertificate", 0, "ignore" },
+   {"certificateAuthLib",   0, "sfcCertificateAuthentication"}
+   
 };
 
 int setupControl(char *fn)

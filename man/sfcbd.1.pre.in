@@ -124,7 +124,7 @@ HTTP/HTTPS header) before allowing the request. Default=\fIfalse\fR
 .TP
 .B basicAuthLib
 Name of the local library to call to authenticate the client userid.
-Default=\fI@libdir@/libsfcBasicAuthentication.la\fR
+Default=\fIsfcBasicAuthentication\fR
 .TP
 .B useChunking
 Tell sfcbd to use HTTP/HTTPS 'chunking' to return large volumes of
@@ -172,6 +172,11 @@ Specify the way sfcb handles client certificate based authentication. If set to
 \fIaccept\fR it will request a certificate from the client but not fail if
 the client doesn't present one. If set to \fIrequire\fR it will refuse the
 client connection if the client doesn't present a certificate. Default=\fIignore\fR
+.TP
+.B certificateAuthLib
+Name of the local library to call for client-certificate based 
+user authentication. Called only if sslClientCertificate is not set 
+to \fIignore\fR. Default=\fIsfcCertificateAuthentication\fR
 .SH ENVIRONMENT
 .TP
 .B SFCB_PAUSE_PROVIDER
@@ -222,10 +227,13 @@ written to a file instead.
 Default sfcb configuration file.
 .TP
 .I @sysconfdir@/sfcb/server.pem
-SSL certificate for sfcb.
+SSL server certificate for sfcb.
 .TP
 .I @sysconfdir@/sfcb/file.pem
-SSL certificate for sfcb.
+SSL private key file for sfcb.
+.TP
+.I @sysconfdir@/sfcb/client.pem
+SSL client certificate / trus store for sfcb.
 .SH LIBRARIES
 .TP
 .I @libdir@/libsfc*

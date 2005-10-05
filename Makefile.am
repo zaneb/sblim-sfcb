@@ -50,6 +50,7 @@ lib_LTLIBRARIES = \
    libsfcCimXmlCodec.la \
    libsfcHttpAdapter.la \
    libsfcBasicAuthentication.la \
+   libsfcCertificateAuthentication.la \
    libsfcIndCIMXMLHandler.la
 else
 lib_LTLIBRARIES = \
@@ -60,7 +61,8 @@ lib_LTLIBRARIES = \
    libsfcClassProvider.la \
    libsfcCimXmlCodec.la \
    libsfcHttpAdapter.la \
-   libsfcBasicAuthentication.la
+   libsfcBasicAuthentication.la \
+   libsfcCertificateAuthentication.la 
 endif
 
 sbin_PROGRAMS = \
@@ -177,6 +179,9 @@ libsfcHttpAdapter_la_LIBADD=-lsfcBrokerCore -lsfcCimXmlCodec
 
 libsfcBasicAuthentication_la_SOURCES = \
    sfcBasicAuthentication.c
+
+libsfcCertificateAuthentication_la_SOURCES = \
+   sfcCertificateAuthentication.c
 
 libsfcInternalProvider_la_SOURCES = \
    internalProvider.c \

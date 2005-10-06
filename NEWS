@@ -6,6 +6,7 @@ New Features:
 
 Bugs fixed:
 - 1313902 Fixed IPC key creation and file mode
+- 1195240 Fixed client hang problem
 
 Changes in 0.9.2
 ================

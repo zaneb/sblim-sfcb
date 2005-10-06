@@ -14,6 +14,15 @@
 	authentication by adding certifciate to principal mapping
 	via a new loadable library.
 
+2005-10-04  a3schuur
+
+	* httpAdapter.c: Fixed sfcbd hang situation when http port not
+	  available
+
+2005-10-02  a3schuur
+
+	* providerDrv.c, support.h: Fixed 1195240  sfcb doesn't close
+	  client connection on error
 2005-09-30    mihajlov
 
 	* httpAdapter.c, control.c, sfcb.cfg.pre.in, 

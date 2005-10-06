@@ -115,16 +115,16 @@ typedef struct _buffer {
 
 void initHttpProcCtl(int p, int sslmode)
 {
-   httpProcSemKey=ftok(".",'H' + sslmode);
-   httpWorkSemKey=ftok(".",'W' + sslmode);
+   httpProcSemKey=ftok(SFCB_BINARY,'H' + sslmode);
+   httpWorkSemKey=ftok(SFCB_BINARY,'W' + sslmode);
    union semun sun;
    int i;
 
    mlogf(M_INFO,M_SHOW,"--- Max Http%s procs: %d\n",sslmode?"s":"",p);
-   if ((httpProcSem=semget(httpProcSemKey,1,0666))!=-1) 
+   if ((httpProcSem=semget(httpProcSemKey,1,0600))!=-1) 
       semctl(httpProcSem,0,IPC_RMID,sun);
       
-   if ((httpProcSem=semget(httpProcSemKey,1+p,IPC_CREAT | IPC_EXCL | 0666))==-1) {
+   if ((httpProcSem=semget(httpProcSemKey,1+p,IPC_CREAT | IPC_EXCL | 0600))==-1) {
       char *emsg=strerror(errno);
       mlogf(M_ERROR,M_SHOW,"\n--- Http Proc semaphore create key: 0x%x failed: %s\n",httpProcSemKey,emsg);
       mlogf(M_ERROR,M_SHOW,"     use \"ipcrm -S 0x%x\" to remove semaphore\n\n",httpProcSemKey);
@@ -137,10 +137,10 @@ void initHttpProcCtl(int p, int sslmode)
    for (i=1; i<=p; i++)
       semctl(httpProcSem,p,SETVAL,sun);
 
-   if ((httpWorkSem=semget(httpWorkSemKey,1,0666))!=-1) 
+   if ((httpWorkSem=semget(httpWorkSemKey,1,0600))!=-1) 
       semctl(httpWorkSem,0,IPC_RMID,sun);
       
-   if ((httpWorkSem=semget(httpWorkSemKey,1,IPC_CREAT | IPC_EXCL | 0666))==-1) {
+   if ((httpWorkSem=semget(httpWorkSemKey,1,IPC_CREAT | IPC_EXCL | 0600))==-1) {
       char *emsg=strerror(errno);
       mlogf(M_ERROR,M_SHOW,"\n--- Http ProcWork semaphore create key: 0x%x failed: %s\n",httpWorkSemKey,emsg);
       mlogf(M_ERROR,M_SHOW,"     use \"ipcrm -S 0x%x\" to remove semaphore\n\n",httpProcSemKey);

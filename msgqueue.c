@@ -114,12 +114,12 @@ int initSem(int https, int shttps, int provs)
    union semun sun;
    int i;
    
-   sfcbSemKey=ftok(".",'S');
+   sfcbSemKey=ftok(SFCB_BINARY,'S');
 
-   if ((sfcbSem=semget(sfcbSemKey,1, 0666))!=-1) 
+   if ((sfcbSem=semget(sfcbSemKey,1, 0600))!=-1) 
       semctl(sfcbSem,0,IPC_RMID,sun);
    
-   if ((sfcbSem=semget(sfcbSemKey,4+(provs*3)+3,IPC_CREAT | IPC_EXCL | 0666))==-1) {
+   if ((sfcbSem=semget(sfcbSemKey,4+(provs*3)+3,IPC_CREAT | IPC_EXCL | 0600))==-1) {
       char *emsg=strerror(errno);
       mlogf(M_ERROR,M_SHOW,"\n--- SFCB semaphore create key: 0x%x failed: %s\n",sfcbSemKey,emsg);
       mlogf(M_ERROR,M_SHOW,"     use \"ipcrm -S 0x%x\" to remove semaphore\n\n",sfcbSemKey);

@@ -113,17 +113,17 @@ extern int semGetValue(int semid, int semnum);
 
 void initDbpProcCtl(int p)
 {
-   dbpProcSemKey=ftok(".",'D');
-   dbpWorkSemKey=ftok(".",'E');
+   dbpProcSemKey=ftok(SFCB_BINARY,'D');
+   dbpWorkSemKey=ftok(SFCB_BINARY,'E');
    char emsg[256];
    union semun sun;
    int i;
 
    printf("--- Max dbp procs: %d\n",p);
-   if ((dbpProcSem=semget(dbpProcSemKey,1,0666))!=-1) 
+   if ((dbpProcSem=semget(dbpProcSemKey,1,0600))!=-1) 
       semctl(dbpProcSem,0,IPC_RMID,sun);
       
-   if ((dbpProcSem=semget(dbpProcSemKey,1+p,IPC_CREAT | 0666))==-1) {
+   if ((dbpProcSem=semget(dbpProcSemKey,1+p,IPC_CREAT | 0600))==-1) {
       sprintf(emsg,"Dbp Proc semaphore create %d",getpid());
       perror(emsg);
       abort();
@@ -135,10 +135,10 @@ void initDbpProcCtl(int p)
    for (i=1; i<=p; i++)
       semctl(dbpProcSem,p,SETVAL,sun);
 
-   if ((dbpWorkSem=semget(dbpWorkSemKey,1,0666))!=-1) 
+   if ((dbpWorkSem=semget(dbpWorkSemKey,1,0600))!=-1) 
       semctl(dbpWorkSem,0,IPC_RMID,sun);
       
-   if ((dbpWorkSem=semget(dbpWorkSemKey,1,IPC_CREAT | 0666))==-1) {
+   if ((dbpWorkSem=semget(dbpWorkSemKey,1,IPC_CREAT | 0600))==-1) {
       sprintf(emsg,"Dpb ProcWork semaphore create %d",getpid());
       perror(emsg);
       abort();

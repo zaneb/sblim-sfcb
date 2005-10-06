@@ -109,7 +109,7 @@ static int aquireSem()
   int    memid;
   if (semId == -1) {
     /* try to create semaphore and shared memory segment */
-    semkey = ftok(".",'C');
+    semkey = ftok(SFCB_BINARY,'C');
     semId = semget(semkey,1,IPC_CREAT|IPC_EXCL|0600);
     if (semId >= 0) {
       fprintf(stderr,"sem value %d = %d\n",semId,semctl(semId,0,GETVAL));

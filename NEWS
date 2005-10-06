@@ -4,6 +4,9 @@ Changes in 0.9.3
 New Features:
 - 1308252 Support for client certificate based authentication
 
+Bugs fixed:
+- 1313902 Fixed IPC key creation and file mode
+
 Changes in 0.9.2
 ================
 

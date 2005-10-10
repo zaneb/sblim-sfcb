@@ -231,7 +231,7 @@ static ClassRegister *newClassRegister(char *fname)
          return NULL;
       }
       
-      total+=hdr.size;
+      s=hdr.size;
       *((ClObjectHdr *) buf) = hdr;
       
       if (fread(buf + sizeof(hdr), 1, hdr.size - sizeof(hdr), in) == hdr.size - sizeof(hdr)) {
@@ -245,6 +245,7 @@ static ClassRegister *newClassRegister(char *fname)
          cc->ft->relocate(cc);
          cn=(char*)cc->ft->getCharClassName(cc);
          if (strncmp(cn,"DMY_",4)!=0) {
+            total+=s;
             cb->ht->ft->put(cb->ht, cn, cc);
             if (cc->ft->isAssociation(cc)) {
                cr->assocs++;

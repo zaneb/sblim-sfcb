@@ -204,13 +204,15 @@ struct qlStatementFt {
 
 #define QL_WQL 1
 #define QL_CQL 2
+#define QL_FILTER 1
+#define QL_QUERY 2
 
 struct qlStatement {
    QLStatementFt *ft;
 //   QLStatement *next;
    void *filterId;
    unsigned int useCount;
-   int lang,allProps;
+   int lang,allProps,mode;
    int fcMax,fcNext;
    char **fClasses;
    int spMax,spNext;

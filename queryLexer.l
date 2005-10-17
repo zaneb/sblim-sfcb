@@ -72,31 +72,6 @@ IDENT_CHAR [A-Za-z_]
 
 %%
 
-[_][C][L][A][S][S] {
-
-    return TOK_CLASS;
-}
-
-[_][K][E][Y] {
-
-    return TOK_KEY;
-}
-
-[_][N][A][M][E][S][P][A][C][E] {
-
-    return TOK_NAMESPACE;
-}
-
-[_][V][E][R][S][I][O][N] {
-
-    return TOK_VERSION;
-}
-
-[R][E][F] {
-
-    return TOK_REF;
-}
-
 [Ss][Ee][Ll][Ee][Cc][Tt] {
 
     return TOK_SELECT;

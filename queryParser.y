@@ -62,6 +62,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "queryOperation.h"
 #include "mlog.h"
@@ -139,12 +140,6 @@ extern QLOperand* newNameQueryOperand(QLStatement *qs, char* val);
 %token <intValue> TOK_ISA
 %token <intValue> TOK_SCOPE
 
-%token <strValue> TOK_REF
-%token <strValue> TOK_KEY
-%token <strValue> TOK_CLASS
-%token <strValue> TOK_NAMESPACE
-%token <strValue> TOK_VERSION
-
 %token <strValue> TOK_IDENTIFIER
 %token <intValue> TOK_SELECT
 %token <intValue> TOK_WHERE
@@ -154,7 +149,7 @@ extern QLOperand* newNameQueryOperand(QLStatement *qs, char* val);
 
 %type <propertyName>  classPropertyName
 %type <fullPropertyName>  fullPropertyName
-%type <strValue>  propertyIdentifier
+//%type <strValue>  propertyIdentifier
 %type <strValue> classAlias
 
 %type <comparisonTerm>  classId
@@ -385,6 +380,9 @@ classPropertyName
     {
        QL_TRACE(fprintf(stderr,"-#- classPropertyName: fullPropertyName\n"));
     }
+    | builtInFunction
+    {
+    }
     
     
 fullPropertyName
@@ -409,24 +407,6 @@ propertyName
     {
        $$=$1;
     }
-
-propertyIdentifier
-    : propertyName
-    {
-    }
-    | TOK_KEY 
-    {
-    }
-    | TOK_CLASS
-    {
-    }
-    | TOK_VERSION
-    {
-    }
-    | TOK_NAMESPACE
-    {
-    }
-
 
 className : TOK_IDENTIFIER
     {
@@ -462,12 +442,25 @@ comparisonTerm
     | TOK_STRING
     {
        $$=newCharsQueryOperand(QS,qsStrDup(QS,$1));
-       free($1);
-       
+       free($1);  
     }
     | truthValue
     {
        $$=newBooleanQueryOperand(QS,$1);
-    }
+    }    
 
+builtInFunction
+    :  TOK_IDENTIFIER '(' TOK_IDENTIFIER ')'    
+    {
+       if (strcasecmp($1,"classname")==0) ;
+       else  {
+          yyErr("Function ",$1," not supported");
+          YYERROR;
+       }
+
+    }
+    |  TOK_IDENTIFIER '(' ')'    
+    {
+    }
+        
 %%

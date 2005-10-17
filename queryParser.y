@@ -10,7 +10,7 @@
 %{
 
 /*
- * queryParser.l
+ * queryParser.y
  *
  * (C) Copyright IBM Corp. 2005
  *
@@ -26,7 +26,7 @@
  *
  * Description:
  *
- * WQL query parser for sfcb.
+ * WQL/CQL query parser for sfcb.
  *
 */
 
@@ -61,6 +61,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "queryOperation.h"
 #include "mlog.h"
 
@@ -100,6 +102,7 @@ extern QLOperand* newNameQueryOperand(QLStatement *qs, char* val);
    char* strValue;
    void* nodeValue;
    
+   QLOperand* fullPropertyName;
    QLOperand* propertyName;
    QLOperand* comparisonTerm;
    QLOperation* searchCondition;
@@ -134,6 +137,7 @@ extern QLOperand* newNameQueryOperand(QLStatement *qs, char* val);
 %token <intValue> TOK_AND
 %token <intValue> TOK_IS
 %token <intValue> TOK_ISA
+%token <intValue> TOK_SCOPE
 
 %token <strValue> TOK_REF
 %token <strValue> TOK_KEY
@@ -149,6 +153,7 @@ extern QLOperand* newNameQueryOperand(QLStatement *qs, char* val);
 %token <intValue> TOK_UNEXPECTED_CHAR
 
 %type <propertyName>  classPropertyName
+%type <fullPropertyName>  fullPropertyName
 %type <strValue>  propertyIdentifier
 %type <strValue> classAlias
 
@@ -278,7 +283,7 @@ searchCondition
     }
     | predicate TOK_IS truthValue
     {
-       if (QS->wql) {
+       if (QS->lang==QL_WQL) {
           if ($3);
           else $1->ft->eliminateNots($1,1);
           $$=newBinaryOperation(QS,$1);
@@ -290,7 +295,7 @@ searchCondition
     }
     | predicate TOK_IS TOK_NOT truthValue
     {
-       if (QS->wql) {
+       if (QS->lang==QL_WQL) {
           if ($4) $1->ft->eliminateNots($1,1);
            $$=newBinaryOperation(QS,$1);
       }
@@ -364,57 +369,52 @@ nullPredicate
        $$=newIsNotNullOperation(QS,$1);
     }
 
-
-classPropertyName
-    : className '.' classPropertyNameList
+initPropName
+    : /*emtpty */
     {
-       if (QS->wql) {
-          mlogf(M_ERROR,M_SHOW,"components ?\n"); 
-//          yyErr("Bad property-identifier-1: ",$1,"...");
-//          YYERROR;
-          $$=QC->addPnClass(QC,QS,$1,0);
-          QC->resetName(QC);
-       }
-       else if (QS->ft->testPropertyClass(QS,$1)==0) {
-          yyErr("class-identifier not in From clause: ",$1,"");
-          YYERROR;
-       }
-       else {
-          $$=QC->addPnClass(QC,QS,$1,0);
-          QC->resetName(QC);
-       }
+       QL_TRACE(fprintf(stderr,"### initPropName\n"));
+       QC->propName=NULL;
     }
-    | propertyIdentifier
+    
+classPropertyName 
+    : classPropertyName '.' fullPropertyName
     {
-       if (QS->wql) {
-          $$=QC->addPnClass(QC,QS,$1,1);
-          QC->resetName(QC);
-       }
-       else {
-          yyErr("Bad class-property-identifier-2: ",$1,"");
-          YYERROR;
-       }
+       QL_TRACE(fprintf(stderr,"-#- classPropertyName: classPropertyName '.' fullPropertyName\n"));
     }
-
-classPropertyNameList
-    : propertyIdentifier
+    | fullPropertyName
     {
+       QL_TRACE(fprintf(stderr,"-#- classPropertyName: fullPropertyName\n"));
     }
-    | classPropertyNameList '.' propertyIdentifier
-    {
-    }
-
-PropertyName
+    
+    
+fullPropertyName
     : TOK_IDENTIFIER
     {
-       QC->addPnPart(QC,QS,$1);
+       QL_TRACE(fprintf(stderr,"-#- fullPropertyName: propertyIdentifier  %s\n",$1));
+       QC->addPropIdentifier(QC,QS,NULL,$1,-99999);
+    }
+    | TOK_IDENTIFIER TOK_SCOPE TOK_IDENTIFIER  
+    {
+       QL_TRACE(fprintf(stderr,"-#- fullPropertyName: propertyClassIdentifier TOK_SCOPE propertyIdentifier %s::%s\n",$1,$3));
+       if (QS->lang==QL_CQL)
+          QC->addPropIdentifier(QC,QS,$1,$3,-99999);
+       else {
+          yyErr("CQL style property not supported with language=wql","","");
+          YYERROR;
+       }
+    }
+    
+propertyName
+    : TOK_IDENTIFIER
+    {
+       $$=$1;
     }
 
 propertyIdentifier
-    : PropertyName
+    : propertyName
     {
     }
-    | TOK_KEY
+    | TOK_KEY 
     {
     }
     | TOK_CLASS
@@ -427,11 +427,6 @@ propertyIdentifier
     {
     }
 
-
-propertyName
-    : TOK_IDENTIFIER
-    {
-    }
 
 className : TOK_IDENTIFIER
     {
@@ -451,9 +446,10 @@ classId
     }
 
 comparisonTerm
-    : classPropertyName
+    : initPropName classPropertyName
     {
-       $$=$1;
+       $$=newPropQueryOperand(QS,QC->propName);
+       QC->propName=NULL;
     }
     | TOK_INTEGER
     {

@@ -49,28 +49,27 @@ char * qsStrDup(QLStatement *qs, char *str) {
 static CMPIValue getPropValue(QLOperand* self, QLPropertySource* src, QLOpd *type)
 {
    CMPIValue v;
-   if (self->propertyName->composite) {
-      v=src->getValue(src,self->propertyName->className,type);
-      if (*type==QL_Inst) {
-         QLPropertySource nsrc=*src;
-         nsrc.data=v.inst;
-         v=src->getValue(&nsrc,self->propertyName->part[0],type);
-         if (*type==QL_Inst) *type=QL_Invalid;
-      } 
-      else *type=QL_Invalid;
+   QLPropertyNameData *pd=self->propertyName;
+   QLPropertySource nsrc=*src;
+   
+   if (pd->nextPart) for (;;) {
+      v=nsrc.getValue(&nsrc,pd->propName,type);
+      if (pd->nextPart==NULL) break;
+      if (*type!=QL_Inst) {
+         *type=QL_Invalid;
+        break;
+      }   
+      nsrc.data=v.inst;
    }
-
-   else {
-      v=src->getValue(src,self->propertyName->part[0],type);
-//      if (*type==QL_Inst) *type=QL_Invalid;
-   }   
+   
+   else v=nsrc.getValue(&nsrc,pd->propName,type);
+ 
    return v;
 }
 
 QLPropertyNameData* newPropertyNameData(QLStatement *qs) {
    QLPropertyNameData *pd=qsAllocNew(qs,QLPropertyNameData);
-   pd->max=8;
-   pd->composite=pd->next=0;
+   pd->nextPart=NULL;
    return pd;
 }
 
@@ -100,7 +99,28 @@ static char* charsToString(QLOperand* op)
    
 static char* propToString(QLOperand* op) 
 {
-   return qsStrDup(NULL,op->propertyName->part[0]);
+   QLPropertyNameData *pd=op->propertyName;
+   int s=0;
+   char *str;
+   while (pd) {
+      if (pd->className) s+=2+strlen(pd->className);
+      if (pd->propName) s+=strlen(pd->propName);
+      if (pd->nextPart) s++;
+      pd=pd->nextPart;
+   }   
+   str=(char*)malloc(s+8);
+   str[0]=0;
+   pd=op->propertyName;
+   while (pd) {
+      if (pd->className) {
+         strcat(str,pd->className);
+         strcat(str,"::");
+      }   
+      if (pd->propName) strcat(str,pd->propName);
+      if (pd->nextPart) strcat(str,".");
+      pd=pd->nextPart;
+   }   
+   return str;   //str must be freed by caller.
 }
    
 static char* typeToString(QLOperand* op) 
@@ -183,6 +203,7 @@ static int propCompare(QLOperand* self, QLOperand* op,
    QLOpd type;
    int rc;
    CMPIValue v=getPropValue(self, src, &type);
+   char *str;
 
    switch (type) {
    case QL_Integer: 
@@ -221,29 +242,15 @@ static int propCompare(QLOperand* self, QLOperand* op,
       abort();
       break;
    case QL_NotFound:
-      mlogf(M_ERROR,M_SHOW,"### propCompare(): %s not found\n",
-            self->propertyName->part[0]);
+      str=propToString(self);
+      mlogf(M_ERROR,M_SHOW,"### propCompare(): %s not found\n",str);
+      free(str);
       abort();
    }
    
    rc=nop->ft->compare(nop,op,src);
    QL_TRACE(fprintf(stderr,"propCompare(%s) %d\n",self->propertyName->part[0],rc));
    return rc;
-}
-
-static void propAddClass(QLOperand *op, QLStatement* qs, char* c, int opt) 
-{
-    op->propertyName->className=qsStrDup(qs,c); 
-    if (opt) {
-       op->propertyName->composite=0; 
-    }
-    else op->propertyName->composite=1; 
-}
-
-static void propAddPart(QLOperand *op, QLStatement* qs, char* p) 
-{
-   op->propertyName->part[op->propertyName->next]=qsStrDup(qs,p);
-   op->propertyName->next++;
 }
 
 extern const char *instGetClassName(CMPIInstance * ci);
@@ -284,56 +291,42 @@ static QLOperandFt qLintQueryOperandFt={
    intToString,
    typeToString,
    intCompare,
-   NULL,
-   NULL,
 };
  
 static QLOperandFt qLdoubleQueryOperandFt={
    doubleToString,
    typeToString,
    doubleCompare,
-   NULL,
-   NULL,
 };
 
 static QLOperandFt qLbooleanQueryOperandFt={
    booleanToString,
    typeToString,
    booleanCompare,
-   NULL,
-   NULL,
 };
 
 static QLOperandFt qLcharsQueryOperandFt={
    charsToString,
    typeToString,
    charsCompare,
-   NULL,
-   NULL,
 };
 
 static QLOperandFt qLpropQueryOperandFt={
    propToString,
    typeToString,
    propCompare,
-   propAddClass,
-   propAddPart,
 };
 
 static QLOperandFt qLinstQueryOperandFt={
    instToString,
    typeToString,
    instCompare,
-   NULL,
-   NULL,
 };
 
 static QLOperandFt qLnameQueryOperandFt={
    nameToString,
    typeToString,
    nameCompare,
-   NULL,
-   NULL,
 };
 
 

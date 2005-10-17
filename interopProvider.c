@@ -1031,10 +1031,15 @@ CMPIStatus InteropProviderInvokeMethod(
       CMPIObjectPath *op=in->ft->getArg(in,"key",&st).value.ref;
       char *key=internalProviderNormalizeObjectPath(op);
       Handler *ha=getHandler(key);
-      if (ha->useCount) {
-         setStatus(&st,CMPI_RC_ERR_FAILED,"Handler in use");
-      } 
-      else removeHandler(ha,key);   
+      if (ha) {
+         if (ha->useCount) {
+            setStatus(&st,CMPI_RC_ERR_FAILED,"Handler in use");
+         } 
+         else removeHandler(ha,key);   
+      }
+      else {
+         setStatus(&st, CMPI_RC_ERR_NOT_FOUND, "Handler objectnot found");
+      }   
    }
 
    else if (strcasecmp(methodName, "_startup") == 0) {

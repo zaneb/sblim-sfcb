@@ -68,17 +68,16 @@ typedef enum qlOpd {
 } QLOpd;
 
 struct qlPropertyNameData {
+   QLPropertyNameData *nextPart;
    char* className;
-   char* part[4];
-   int next,max,composite;
+   char* propName;
+   int index;
 };
 
 struct qlOperandFt {
    char *(*toString)(QLOperand*);
    char *(*type)(QLOperand*);
    int (*compare)(QLOperand*,QLOperand*,QLPropertySource*);
-   void (*addClass)(QLOperand*,QLStatement*,char*,int);
-   void (*addPart)(QLOperand*,QLStatement*,char *p);
 };
 
 struct qLqueryOperand {
@@ -203,12 +202,15 @@ struct qlStatementFt {
    char **(*getFromClassList)(QLStatement*);
 };
 
+#define QL_WQL 1
+#define QL_CQL 2
+
 struct qlStatement {
    QLStatementFt *ft;
 //   QLStatement *next;
    void *filterId;
    unsigned int useCount;
-   int wql,allProps;
+   int lang,allProps;
    int fcMax,fcNext;
    char **fClasses;
    int spMax,spNext;
@@ -223,13 +225,10 @@ struct qlStatement {
 };
 
 struct qlCollector {
-   void (*resetName)(QLCollector *qc);
    void (*clear)(QLCollector *qc);
-   QLOperand* (*addPnClass)(QLCollector *qc, QLStatement *qs, char* c, int opt);
-   void (*addPnPart)(QLCollector *qc, QLStatement *qs, char* p); 
-   QLOperand *pnOpn;
-   QLOperand *abOpn;
-};
+   void (*addPropIdentifier)(QLCollector *qc, QLStatement *qs, char *cls, char *prop, int index);
+   QLPropertyNameData *propName;
+};   
 
 struct qlControl {
    QLStatement *statement;

@@ -169,15 +169,9 @@ static CMPIInstance* qsCloneAndFilter(QLStatement *st, CMPIInstance *ci, CMPIObj
 }
 
 
-static void qcResetName(QLCollector *qc)  
-{ 
-   QL_TRACE(fprintf(stderr,"qcResetName\n"));
-   qc->pnOpn=NULL; 
-}
-
 static void qcClear(QLCollector *qc) {
    QL_TRACE(fprintf(stderr,"qcClear\n"));
-   qc->pnOpn=NULL;
+   qc->propName=NULL;
 }
 
 static QLOperand* newNameOperand(QLStatement *qs)
@@ -187,24 +181,18 @@ static QLOperand* newNameOperand(QLStatement *qs)
    return o; 
 }
 
-static QLOperand *getPnOpn(QLCollector *qc, QLStatement *qs) 
+static void qcAddPropIdentifier(QLCollector *qc, QLStatement *qs, char *cls, char *prop, int index)
 {
-   if (qc->pnOpn==NULL) qc->pnOpn=newNameOperand(qs);
-   return qc->pnOpn;
-}
-
-static QLOperand *qcAddPnClass(QLCollector *qc, QLStatement *qs, char* c, int opt) 
-{
-   QLOperand *opn=getPnOpn(qc,qs);
-   opn->ft->addClass(opn,qs,c,opt);
-   return opn;
-}
-
-static void qcAddPnPart(QLCollector *qc, QLStatement *qs, char* p) 
-{
-   QLOperand *opn=getPnOpn(qc,qs);
-   QL_TRACE(fprintf(stderr,"qcAddPnPart %s\n",p));
-   opn->ft->addPart(opn,qs,p);
+   QLPropertyNameData **pi;
+   for (pi=&qc->propName; 1; pi=&(*pi)->nextPart)
+      if (*pi==NULL) {
+         *pi=newPropertyNameData(qs);
+         (*pi)->className=cls;
+         (*pi)->propName=prop;
+         (*pi)->index=index;
+         (*pi)->nextPart=NULL;
+         break;
+      }
 }
 
 void *qsAlloc(QLStatement *qs, unsigned int size)
@@ -239,12 +227,9 @@ QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc)
 {
    QLStatement *qs=NULL;
    QLCollector ctlFt={
-      qcResetName,  
       qcClear,  
-      qcAddPnClass,  
-      qcAddPnPart,  
+      qcAddPropIdentifier,
       NULL,
-      NULL 
    };
    
    QLControl ctl={
@@ -255,8 +240,9 @@ QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc)
    q=query;
    ofs=0;
    ctl.statement=qs=newQLStatement(8,mode);
-   if (strcasecmp(lang,"wql")==0) ctl.statement->wql=1;
-   else ctl.statement->wql=0;
+   if (strcasecmp(lang,"wql")==0) ctl.statement->lang=QL_WQL;
+   else if (strcasecmp(lang,"cql")==0) ctl.statement->lang=QL_CQL;
+   else ctl.statement->lang=0;
    
    *rc=sfcQueryparse(&ctl);
    if (sns) qs->sns=strdup(sns);

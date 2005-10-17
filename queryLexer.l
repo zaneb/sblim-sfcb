@@ -18,7 +18,7 @@
  *
  * Description:
  *
- * WQL query lexer for sfcb.
+ * WQL/CQL query lexer for sfcb.
  *
 */
 
@@ -218,6 +218,10 @@ IDENT_CHAR [A-Za-z_]
 
 ">" { 
     return TOK_GT; 
+}
+
+"::" { 
+    return TOK_SCOPE; 
 }
 
 {IDENT_CHAR}({IDENT_CHAR}|{DECIMAL_DIGIT})*  {

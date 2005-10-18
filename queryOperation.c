@@ -444,6 +444,9 @@ QLOperand* newFncQueryOperand(QLStatement *qs, QLFnc fnc, QLOpd argType, void* a
       case QL_FNC_DateTime:
       case QL_FNC_MicrosecondsToTimestamp:
       case QL_FNC_MicrosecondsToInterval:
+         break;
+      default:
+         ;   
    }
    op->ft=&qLpropQueryOperandFt;
    return op;

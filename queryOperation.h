@@ -56,6 +56,7 @@ extern void *qsAlloc(QLStatement *qs, unsigned int size);
 typedef enum qlOpd {
     QL_Invalid,
     QL_NotFound,
+    QL_Null,
     QL_Integer,
     QL_UInteger,
     QL_Double,
@@ -65,7 +66,26 @@ typedef enum qlOpd {
     QL_PropertyName, 
     QL_Name, 
     QL_Inst, 
+    QL_Ref, 
+    QL_DateTime, 
 } QLOpd;
+
+typedef enum qlFnc {
+   QL_FNC_NoFunction,
+   QL_FNC_BadFunction,
+   QL_FNC_Classname,
+   QL_FNC_Namespacename,
+   QL_FNC_Namespacetype,
+   QL_FNC_Hostport,
+   QL_FNC_Modelpath,
+   QL_FNC_Classpath,
+   QL_FNC_Objectpath,
+   QL_FNC_InstanceToReference,
+   QL_FNC_CurrentDateTime,
+   QL_FNC_DateTime,
+   QL_FNC_MicrosecondsToTimestamp,
+   QL_FNC_MicrosecondsToInterval,
+} QLFnc;
 
 struct qlPropertyNameData {
    QLPropertyNameData *nextPart;
@@ -83,6 +103,8 @@ struct qlOperandFt {
 struct qLqueryOperand {
    QLOperandFt *ft;
    QLOpd type;
+   QLOpd fncArgType;
+   QLFnc fnc;
    union {
      CMPIValue value;
      long long  integerVal;
@@ -90,6 +112,8 @@ struct qLqueryOperand {
      unsigned char booleanVal;
      char* charsVal;
      CMPIInstance *inst;
+     CMPIObjectPath *ref;
+     CMPIDateTime *dateTime;
      QLPropertyNameData *propertyName;
    };
 };

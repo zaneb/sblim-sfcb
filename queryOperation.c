@@ -246,6 +246,8 @@ static int propCompare(QLOperand* self, QLOperand* op,
       mlogf(M_ERROR,M_SHOW,"### propCompare(): %s not found\n",str);
       free(str);
       abort();
+   default:
+      ; // what should we do here ?  
    }
    
    rc=nop->ft->compare(nop,op,src);
@@ -338,6 +340,7 @@ QLOperand* newIntQueryOperand(QLStatement *qs, long long val)
    QL_TRACE(fprintf(stderr,"--- newIntQueryOperand %lld\n",val));
    op->integerVal=val;
    op->type=QL_Integer;
+   op->fnc=QL_FNC_NoFunction;
    op->ft=&qLintQueryOperandFt;
    return op;
 }
@@ -348,6 +351,7 @@ QLOperand* newDoubleQueryOperand(QLStatement *qs, double val)
    QL_TRACE(fprintf(stderr,"--- newDoubleQueryOperand %g\n",val));
    op->doubleVal=val;
    op->type=QL_Double;
+   op->fnc=QL_FNC_NoFunction;
    op->ft=&qLdoubleQueryOperandFt;
    return op;
 }
@@ -357,6 +361,7 @@ QLOperand* newBooleanQueryOperand(QLStatement *qs, unsigned char val)
    QLOperand *op=qsAllocNew(qs,QLOperand);
    op->booleanVal=val;
    op->type=QL_Boolean;
+   op->fnc=QL_FNC_NoFunction;
    op->ft=&qLbooleanQueryOperandFt;
    QL_TRACE(fprintf(stderr,"--- newBooleanQueryOperand %d %p\n",val,op));
    return op;
@@ -368,6 +373,7 @@ QLOperand* newCharsQueryOperand(QLStatement *qs, char* val)
    QL_TRACE(fprintf(stderr,"--- newCharsQueryOperand %s\n",val));
    op->charsVal=val;
    op->type=QL_Chars;
+   op->fnc=QL_FNC_NoFunction;
    op->ft=&qLcharsQueryOperandFt;
    return op;
 }
@@ -378,6 +384,7 @@ QLOperand* newNameQueryOperand(QLStatement *qs, char* val)
    QL_TRACE(fprintf(stderr,"--- newNameQueryOperand %s\n",val));
    op->charsVal=val;
    op->type=QL_Name;
+   op->fnc=QL_FNC_NoFunction;
    op->ft=&qLnameQueryOperandFt;
    return op;
 }
@@ -388,6 +395,7 @@ QLOperand* newPropQueryOperand(QLStatement *qs, QLPropertyNameData* val)
    QL_TRACE(fprintf(stderr,"--- newPropQueryOperand %p\n",val));
    op->propertyName=val;
    op->type=QL_PropertyName;
+   op->fnc=QL_FNC_NoFunction;
    op->ft=&qLpropQueryOperandFt;
    return op;
 }
@@ -398,7 +406,46 @@ QLOperand* newInstQueryOperand(QLStatement *qs, CMPIInstance* ci)
    QL_TRACE(fprintf(stderr,"--- newInstQueryOperand %p\n",ci));
    op->inst=ci;
    op->type=QL_Inst;
+   op->fnc=QL_FNC_NoFunction;
    op->ft=&qLinstQueryOperandFt;
+   return op;
+}
+
+QLOperand* newFncQueryOperand(QLStatement *qs, QLFnc fnc, QLOpd argType, void* argVal) 
+{
+   QLOperand *op=qsAllocNew(qs,QLOperand);
+   QL_TRACE(fprintf(stderr,"--- newFncQueryOperand %p\n",val));
+//   op->propertyName=val;
+   op->type=QL_PropertyName;
+   op->fnc=fnc;
+   op->fncArgType=argType;
+   switch (fnc) {
+      case QL_FNC_NoFunction:
+      case QL_FNC_BadFunction:
+         break;
+      case QL_FNC_Classname:
+      case QL_FNC_Namespacename:
+      case QL_FNC_Namespacetype:
+      case QL_FNC_Hostport:
+      case QL_FNC_Modelpath:
+         op->type=QL_Chars;
+         if (argType!=QL_Chars && argType!=QL_PropertyName) return NULL; 
+         break;
+      case QL_FNC_Classpath:
+      case QL_FNC_Objectpath:
+         op->type=QL_Ref;
+         if (argType!=QL_Chars && argType!=QL_PropertyName) return NULL; 
+         break;         
+      case QL_FNC_InstanceToReference:
+         op->type=QL_Ref;
+         if (argType!=QL_Inst) return NULL; 
+         break;
+      case QL_FNC_CurrentDateTime:
+      case QL_FNC_DateTime:
+      case QL_FNC_MicrosecondsToTimestamp:
+      case QL_FNC_MicrosecondsToInterval:
+   }
+   op->ft=&qLpropQueryOperandFt;
    return op;
 }
 

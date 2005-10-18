@@ -449,18 +449,39 @@ comparisonTerm
        $$=newBooleanQueryOperand(QS,$1);
     }    
 
+functionArg
+    :  '(' classPropertyName ')'
+    
+    |  '(' TOK_STRING ')'
+    
+    |  '(' ')'
+        
 builtInFunction
-    :  TOK_IDENTIFIER '(' TOK_IDENTIFIER ')'    
+    :  TOK_IDENTIFIER functionArg    
     {
-       if (strcasecmp($1,"classname")==0) ;
-       else  {
-          yyErr("Function ",$1," not supported");
+       int fnc=QL_FNC_NoFunction;
+       if (QS->lang==QL_CQL) {
+          if (strcasecmp($1,"classname")==0) fnc=QL_FNC_Classname;
+          else if (strcasecmp($1,"namespacename")==0) fnc=QL_FNC_Namespacename;
+          else if (strcasecmp($1,"namespacetype")==0) fnc=QL_FNC_Namespacetype;
+          else if (strcasecmp($1,"hostport")==0) fnc=QL_FNC_Hostport;
+          else if (strcasecmp($1,"modelpath")==0) fnc=QL_FNC_Modelpath;
+          else if (strcasecmp($1,"classpath")==0) fnc=QL_FNC_Classpath;
+          else if (strcasecmp($1,"objectpath")==0) fnc=QL_FNC_Objectpath;
+          else if (strcasecmp($1,"instancetoreference")==0) fnc=QL_FNC_InstanceToReference;
+          else if (strcasecmp($1,"currentdatetime")==0) fnc=QL_FNC_CurrentDateTime;
+          else if (strcasecmp($1,"datetime")==0) fnc=QL_FNC_DateTime;
+          else if (strcasecmp($1,"microsecondtotimestamp")==0) fnc=QL_FNC_MicrosecondsToTimestamp;
+          else if (strcasecmp($1,"microsecondtointerval")==0) fnc=QL_FNC_MicrosecondsToInterval;
+          else  {
+             yyErr("Function ",$1," not supported");
+             YYERROR;
+          }
+       }
+       else {
+          yyErr("Functions not supported when language != cql","","");
           YYERROR;
        }
-
-    }
-    |  TOK_IDENTIFIER '(' ')'    
-    {
     }
         
 %%

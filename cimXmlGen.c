@@ -745,7 +745,7 @@ int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags)
       }
       
       if (data.type & (CMPI_ENC|CMPI_ARRAY)) {// don't get confused using generic release 
-         if (data.type != CMPI_instance) 
+         if ((data.state&~CMPI_keyValue)==0 && data.type != CMPI_instance) 
             data.value.inst->ft->release(data.value.inst);
       }   
       CMRelease(name);

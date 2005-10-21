@@ -110,6 +110,7 @@ extern int getControlNum(char *id, long *val);
 extern int getControlBool(char *id, int *val);
 extern int semGetValue(int semid, int semnum);
 
+ResultSet * rs;
 
 void initDbpProcCtl(int p)
 {
@@ -154,7 +155,7 @@ char* processSQLQuery(char *query,CommHndl conn_fd){
 	ResultSet *rs;
 
 //printf("1\n");
-	rs = parseSql(query,&stat);	
+	rs = createRS(query,&stat);	
 	if(!stat){
 		printd("Parsen erfolgreich\n");
 		res = (char *) malloc(strlen(rs->meta)+strlen(rs->tupel)+strlen(rs->sw->reason)+strlen(rs->sw->sqlstate)+4+1+3+3+3+1);
@@ -172,6 +173,14 @@ char* processSQLQuery(char *query,CommHndl conn_fd){
 	else{
 		printd("Parse Error %d!!\n",stat);
 		printd("###%s \n###%s!!\n",rs->sw->reason,rs->sw->sqlstate);
+		if(strstr(rs->sw->reason,"unexpected $end")!=0){
+		  char * s = "SQL STATEMENT NOT YET COMPLETE:\n";
+		  char * tmp =  rs->sw->reason;
+		  rs->sw->reason = (char*)malloc(strlen(tmp)+strlen(s)+1);
+		  strcpy(rs->sw->reason,s);
+		  strcat(rs->sw->reason,tmp);
+		  rs->sw->sqlstate = "03000";
+		}
 		res = (char *) malloc(strlen(rs->sw->reason)+strlen(rs->sw->sqlstate)+4+1+3+1);printd("Parse Error 2!!\n");
 		strcpy(res,"2 0\n");
 		strcat(res,rs->sw->sqlstate);
@@ -197,7 +206,7 @@ static void handleDbpSession(int connFd) {
 	CommHndl conn_fd;
    	struct sembuf procReleaseUnDo = {0,1,SEM_UNDO};
 
-   	int r,b2,c, by=0, h, sqlStat;
+   	int r,b2,c, by=0, h;
  
    	char buffer[1024],bc[1];
    	char buffer2[500];
@@ -205,13 +214,13 @@ static void handleDbpSession(int connFd) {
    					//Vermutlich später nicht mehr notwendig!!
    	char *header=NULL;char *payload;
    	int nbytes;
-   	ResultSet *rs;
+      
    
    _SFCB_ENTER(TRACE_DBPDAEMON, "handledbpRequest");
    _SFCB_TRACE(1, ("--- Forking sql handler"));
    		
-    printf("dbpProcSem %p dbpProcId: %d hMax: %d doFork: %d\n",dbpProcSem,dbpProcId,hMax,doFork);
-    printf("dbpProcId: %d hMax: %d doFork: %d\n",dbpProcId,hMax,doFork);
+   // printf("dbpProcSem %p dbpProcId: %d hMax: %d doFork: %d\n",dbpProcSem,dbpProcId,hMax,doFork);
+   // printf("dbpProcId: %d hMax: %d doFork: %d\n",dbpProcId,hMax,doFork);
     if (doFork) {
       	semAcquire(dbpWorkSem,0);
       	semAcquire(dbpProcSem,0);
@@ -296,7 +305,7 @@ static void handleDbpSession(int connFd) {
 			if(by&h){
 				//login
 				nbytes = read(connFd, buffer, 2);
-				c = atoi(&buffer);
+				c = atoi((char*)&buffer);
 				if(c==CONNECT){ 
 					printd("Ein Client hat sich korrekt angemeldet\n");
 					response = "1 1 1\n";//"Sie sind angemeldet. Warte auf Anfragen:\n";
@@ -324,7 +333,7 @@ static void handleDbpSession(int connFd) {
 				case CONTINUE: break;
 				case PROTOCOL: {
 					nbytes = read(connFd, buffer, 2);
-					c = atoi(&buffer);
+					c = atoi((char*)&buffer);
 					
 					//Pipe leersaugen
 					while((nbytes = read(connFd, bc, 1))>0)//
@@ -343,7 +352,7 @@ static void handleDbpSession(int connFd) {
 				    		by=1; 
 						}
 						else{
-							b2 = sprintf("%d %d %d",1,c,0);//sprintf(buffer2, "Syntxfehler: Operation %d ist keine Protokolloperation\n",c);
+							b2 = sprintf(buffer2,"%d %d %d",1,c,0);//sprintf(buffer2, "Syntxfehler: Operation %d ist keine Protokolloperation\n",c);
 							printd("%s",buffer2);
 	   						write(connFd, buffer2 , b2);
 						}
@@ -381,7 +390,7 @@ static void handleDbpSession(int connFd) {
 					break;
 				case META:  
 					nbytes = read(connFd, buffer, 2);
-					c = atoi(&buffer);
+					c = atoi((char*)&buffer);
 					if(c==METADB){
 						response = (char *) malloc(strlen(metaDB)+7);
 						response = strcpy(response,"3 1 1\n");
@@ -392,7 +401,7 @@ static void handleDbpSession(int connFd) {
 					}
 					
 					if(c==TABLES||c==STABLES||c==KEYS||c==COLS){
-						printf("UND los\n");
+					  //printf("UND los\n");
 						
 						while((nbytes = read(connFd, buffer, 1024))>0){
 							if(buffer[nbytes-1]=='\n')
@@ -512,7 +521,7 @@ static void handleSigUsr1(int sig)
  */
 int dbpDaemon(int argc, char *argv[], int sslMode, int sfcbPid) {//int argc, char *argv[], int sslMode) {
 	struct sockaddr_in sin;
-   int sz,i,sin_len,ru;
+   int sz,sin_len,ru;
    char *cp;
    long procs, port;
    int listenFd, connFd;

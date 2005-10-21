@@ -273,7 +273,7 @@ IDENT_CHAR [A-Za-z_]
 
 
 
-[\*(),.+-] { 
+[\*(),.+-,':] { 
 
 QL_TRACE(("LEX: %s [???]\n", yytext));
    tokenpos+=yyleng;
@@ -691,9 +691,9 @@ QL_TRACE(("LEX: %s [???]\n", yytext));
 
 %%
 
-
-void yyerror(char *m){ //irgendwie muss der richtige SQL-Error-Status übermittelt werden!!
-	char* ss;
+/*/ergänzt die Nachricht  m um die Positionsangabe des zuletzt gelesenen Zeichens*/
+void yyerror(char *m){
+	//char* ss;
 	
 	char* r; 
 	char z[5];
@@ -719,9 +719,9 @@ void yyerror(char *m){ //irgendwie muss der richtige SQL-Error-Status übermitte
 	strcat(r,"\n\t");
 	strncat(r,p,pi);
 	
-	printf("Zeile %d, Spalte %d: %s: \n%s\n",lineno,tokenpos,s,linebuf);
-	printf("%*s\n---\n",1+tokenpos,"^");
-	printf("%s",r);
+	//printf("Zeile %d, Spalte %d: %s: \n%s\n",lineno,tokenpos,s,linebuf);
+	//printf("%*s\n---\n",1+tokenpos,"^");
+	//printf("%s",r);
 //	RS->meta="kk";
 //printf("%p\n",yylval.stm);
 	//if(yylval.stm!=NULL&&strcmp("!!!!!",stm->rs->sw->sqlstate)==0){
@@ -731,7 +731,7 @@ void yyerror(char *m){ //irgendwie muss der richtige SQL-Error-Status übermitte
 		//printf("adad\n");
 		setSqlWarning("11111",r);
 	//}
-	printf("2\n");
+	//printf("2\n");
 	
 }
 

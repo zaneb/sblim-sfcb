@@ -3,7 +3,27 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * CIMDatabaseMetaData.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface DatabaseMetaData for the CIM-JDBC
+ * 
+ *
+ * 
+ *
  */
+
 package com.ibm.wbem.jdbc;
 
 import java.io.BufferedReader;
@@ -18,7 +38,7 @@ import java.sql.SQLWarning;
 import java.util.Properties;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -27,9 +47,9 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 
 	private Properties prop;
 	private CIMConnection con;
-	private BufferedReader in;
-	private PrintWriter out;
-	private Socket s;
+    //private BufferedReader in;
+    //private PrintWriter out;
+    //private Socket s;
 	/**
 	 * @param prop
 	 * @param socke
@@ -37,9 +57,9 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 	public CIMDatabaseMetaData(Properties prop,Socket s, CIMConnection con,BufferedReader in, PrintWriter out) throws IOException{
 		this.prop = prop;
 		this.con = con;
-		this.in = in;
-		this.out = out;
-		this.s = s;
+		//	this.in = in;
+		//this.out = out;
+		//this.s = s;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -1220,6 +1240,7 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 	 * @see java.sql.DatabaseMetaData#getPrimaryKeys(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
+	    if(table==null)table="";
 		return execute(table,"3 4");
 	}
 
@@ -1235,6 +1256,7 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 	 * @see java.sql.DatabaseMetaData#getSuperTables(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
+	    if(tableNamePattern==null)tableNamePattern="";
 		return execute(tableNamePattern,"3 3");
 	}
 
@@ -1304,6 +1326,8 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 	 * @see java.sql.DatabaseMetaData#getColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public ResultSet getColumns(String catalog, String schemapattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+	    if(columnNamePattern==null)columnNamePattern="";
+	    if(tableNamePattern==null)tableNamePattern="";
 		return  execute(tableNamePattern+"::"+columnNamePattern,"3 5");
 	}
 
@@ -1317,7 +1341,9 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 
 	
 	private ResultSet execute(String pattern, String command)  throws SQLException{
-		ResultSet rs = null;
+	    CIMStatement s = (CIMStatement)con.createStatement();
+	    return s.execQuery(pattern,command);
+	    /*ResultSet rs = null;
 		//Anfrage  abschicken
 		out.println(command+" "+pattern+"$");out.flush();
 		String inString="";
@@ -1360,7 +1386,7 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 		rs = new CIMResultSet(s,null,in,out);
 		System.out.println("fertig....");
 		return rs;
-		
+	    */
 	
 	}
 	
@@ -1368,6 +1394,7 @@ public class CIMDatabaseMetaData implements DatabaseMetaData{
 	 * @see java.sql.DatabaseMetaData#getTables(java.lang.String, java.lang.String, java.lang.String, java.lang.String[])
 	 */
 	public ResultSet getTables(String catalog, String schemapattern, String tableNamePattern, String[] types) throws SQLException {
+	    if(tableNamePattern==null)tableNamePattern="";
 		return execute(tableNamePattern,"3 2");
 	}
 

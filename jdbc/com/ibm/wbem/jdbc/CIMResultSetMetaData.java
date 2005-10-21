@@ -3,7 +3,27 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * CIMResultSetMetaData.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface ResultSetMetaData for the CIM-JDBC
+ * 
+ *
+ * 
+ *
  */
+
 package com.ibm.wbem.jdbc;
 
 import java.sql.ResultSetMetaData;
@@ -11,7 +31,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -20,13 +40,13 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 
 	private String[][] col;
 	private ResultSetMetaData rsmd;
-	
-
+    private String[] row;
+    private int[] ds;
 	/**
 	 * @param prop
 	 */
-	public CIMResultSetMetaData(String prop) {
-		
+	public CIMResultSetMetaData(String prop, String[] row) {
+	    this.row = row;
 		String[] st = prop.split("::");
 		
 		
@@ -50,17 +70,34 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#getColumnDisplaySize(int)
 	 */
 	public int getColumnDisplaySize(int column) throws SQLException {
-		
+	column--;
 			//Es wird nach der Anzahl der ZEICHEN gefragt!
 			int indx = col[column][2].indexOf("(")>0? col[column][2].indexOf("("):col[column][2].length();
 			String s = col[column][2].toUpperCase().substring(0,indx);
-			if(s.equals("BIGINT"))  return -1;//Nachschlage --> CIMOM 
-			else if(s.equals("TIMESTAMP"))  return -1;//Nachschlage --> CIMOM   
-			else if(s.equals("DATE"))  return -1;//Nachschlage --> CIMOM    
+	if(s.equals("BIGINT"))  return 20;//Nachschlage --> CIMOM 
+	else if(s.equals("TIMESTAMP"))  return 11;//Nachschlage --> CIMOM   
+	else if(s.equals("DATE"))  return 11;//Nachschlage --> CIMOM    
 			else if(s.equals("VARCHAR")){
-				return Integer.parseInt(col[column][2].substring(col[column][2].indexOf("(")+1,col[column][2].length()-1));
+	    if(ds==null){
+		ds = new int[col.length];
+		//System.out.println("row.length: "+col.length);
+		String r [][] = new String[row.length][];
+		for(int i=0;i<r.length;i++)
+		    r[i] = row[i].split(";");
+		for(int i=0;i<r[0].length;i++){
+		    if(getColumnType(i+1)==Types.VARCHAR)
+			continue;
+		    ds[i] = getColumnName(i+1).length();
+		    for(int j=0;j<r.length;j++){
+			if(ds[i]<r[j][i].length())
+			    ds[i] = r[j][i].length();
+		    }
 			}  
-			else if(s.equals("CHAR")) return -1;//Nachschlage --> CIMOM  
+	    }
+	    return ds[column];
+	    //return Integer.parseInt(col[column][2].substring(col[column][2].indexOf("(")+1,col[column][2].length()-1));
+	}  
+	else if(s.equals("CHAR")) return 1;//Nachschlage --> CIMOM  
 			else if(s.equals("DECIMAL") 
 					|| s.equals("NUMERIC") 
 					|| s.equals("NUM") 
@@ -68,11 +105,11 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 				//das +1 muss sein, wegen des "," in der Darstellung
 				return Integer.parseInt(col[column][2].substring(col[column][2].indexOf("(")+1,col[column][2].indexOf(",")))+1; 
 			}
-			else if(s.equals("DOUBLE")) return -1;//Nachschlage --> CIMOM  
-			else if(s.equals("REAL")) return -1;//Nachschlage --> CIMOM  
-			else if(s.equals("INTEGER")) return -1;//Nachschlage --> CIMOM  
-			else if(s.equals("INT")) return -1;//Nachschlage --> CIMOM  
-			else if(s.equals("SMALLINT")) return -1;//Nachschlage --> CIMOM  
+	else if(s.equals("DOUBLE")) return 11;//Nachschlage --> CIMOM  
+	else if(s.equals("REAL")) return 11;//Nachschlage --> CIMOM  
+	else if(s.equals("INTEGER")) return 11;//Nachschlage --> CIMOM  
+	else if(s.equals("INT")) return 11;//Nachschlage --> CIMOM  
+	else if(s.equals("SMALLINT")) return 5;//Nachschlage --> CIMOM  
 			else return 0;
 				
 	}
@@ -81,6 +118,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#getColumnType(int)
 	 */
 	public int getColumnType(int column) throws SQLException {
+	    column--;
 		int indx = col[column][2].indexOf("(")>0? col[column][2].indexOf("("):col[column][2].length();
 		String s = col[column][2].toUpperCase().substring(0,indx);
 		if(s.equals("BIGINT")) return Types.BIGINT; 
@@ -119,8 +157,11 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#getScale(int)
 	 */
 	public int getScale(int column) throws SQLException {
-		if(getColumnType(column)==Types.DECIMAL)
+	    
+	    if(getColumnType(column)==Types.DECIMAL){
+		column--;
 			return Integer.parseInt(col[column][2].substring(col[column][2].indexOf(",")+1,col[column][2].indexOf(")"))); 
+	    } 
 		return 0;
 	}
 
@@ -128,6 +169,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#isNullable(int)
 	 */
 	public int isNullable(int column) throws SQLException {
+	    column--;
 		// TODO Auto-generated method stub
 		return Integer.parseInt(col[column][4]);
 	}
@@ -143,6 +185,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#isCaseSensitive(int)
 	 */
 	public boolean isCaseSensitive(int column) throws SQLException {
+	    column--;
 		return col[column][5].equalsIgnoreCase("true");
 	}
 
@@ -158,6 +201,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#isDefinitelyWritable(int)
 	 */
 	public boolean isDefinitelyWritable(int column) throws SQLException {
+	    column--;
 		return col[column][3].equalsIgnoreCase("true");
 	}
 
@@ -225,6 +269,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#getColumnLabel(int)
 	 */
 	public String getColumnLabel(int column) throws SQLException {
+	    column--;
 		return col[column][1];
 	}
 
@@ -232,6 +277,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#getColumnName(int)
 	 */
 	public String getColumnName(int column) throws SQLException {
+	    column--;
 		return col[column][1];
 	}
 
@@ -239,6 +285,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#getColumnTypeName(int)
 	 */
 	public String getColumnTypeName(int column) throws SQLException {
+	    column--;
 		return col[column][2];
 	}
 
@@ -253,6 +300,7 @@ public class CIMResultSetMetaData implements ResultSetMetaData {
 	 * @see java.sql.ResultSetMetaData#getTableName(int)
 	 */
 	public String getTableName(int column) throws SQLException {
+	    column--;
 		return col[column][0];
 	}
 }

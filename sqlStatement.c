@@ -1,4 +1,25 @@
 
+/*
+ * sqlStatement.c
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Seyrich <seyrich@de.ibm.com>
+ *
+ * Description:
+ * 
+ *
+ * 
+ *
+*/
+
 #include "sqlStatement.h"
 #include "utilft.h"
 
@@ -29,14 +50,42 @@
 	}				\
 }
 
-extern int sfcSqlparse(ResultSet*);
+/*benötigt für die Kommunikation mit den Providern, bzw. der Datenaufbereitung der Ergebnisse eines Providercalls*/
+extern CMPIObjectPath *relocateSerializedObjectPath(void *area);
+extern CMPIArgs *relocateSerializedArgs(void *area);
+const char *opGetClassNameChars(CMPIObjectPath * cop);
+extern CMPIConstClass *relocateSerializedConstClass(void *area);
+extern CMPIConstClass *getConstClass(const char *ns, const char *cn);
+extern CMPIConstClass initConstClass(ClClass *cl);
+extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
+extern CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref);
+extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
+extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array, CMPICount index, CMPIValue * val, CMPIType type);
+extern void closeProviderContext(BinRequestContext * ctx);
+extern BinResponseHdr *invokeProvider(BinRequestContext * ctx);
+extern int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
+extern MsgSegment setCharsMsgSegment(char *str);
+extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
+
+
+
+
+
+
+/*die parse-Funktion, die in sqlParser.y definiert ist (im Makefile werden ihre Namen geändert, aus allen vorangestellten "yy" wird "sqfSlq")*/
+extern int sfcSqlparse(void* stmt);
+
+/*Datenstrukur-Konstruktoren*/
+extern UtilList *newList();
+extern UtilStringBuffer *newStringBuffer(int s);
 
 static char *q = NULL;
 static int ofs = 0;
 static ResultSet* rs = NULL;
 
-
+/*Definition der "Instanzmethoden, damit sie n den Konstruktoren benutzt werden können" */
 static void freeWarn(SqlWarning** this);
+static void freeCall(Call** this);
 static void addMetaRset(ResultSet* this, Projection* prj);
 static int addSetRset(ResultSet *this, AvlTree *t);
 static void freeRSet(ResultSet** this);
@@ -65,29 +114,17 @@ static void freeExL(ExpressionLight** this);
 static void addWhereListSbs(SubSelect* this, UtilList *ul);	
 
 
-CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp, int arrLen);
-CMPIEnumeration * enumInstances(char * ns, char * cn);
-int * createInstance(char * ns, char * cn, UtilList * ins);
-int createClass(char * ns, char * cn, char * scn, UtilList * colDef);
-int deleteClass(char * ns, char * cn);
-CMPIValue * string2cmpival(char * value, int type);
-int deleteInstance(char * ns, char * cn, UtilList *al);
-int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl);
-UtilList * getClassNames(char * ns, char *filter);
-int invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl);
-ClassDef * getClassDef(const char *ns, const char *cn);
 
-
-extern CMPIConstClass initConstClass(ClClass *cl);
-extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
-extern CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref);
-extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
-extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array, CMPICount index, CMPIValue * val, CMPIType type);
-extern void closeProviderContext(BinRequestContext * ctx);
-extern BinResponseHdr *invokeProvider(BinRequestContext * ctx);
-extern int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
-extern MsgSegment setCharsMsgSegment(char *str);
-extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
+/*Konstruktoren*/
+Call* newCall(char * tname, char * pname, UtilList * klist, UtilList * plist) {
+	Call* this = (Call*) calloc(1, sizeof(Call));
+	this->tableName = tname;
+	this->procedureName = pname;
+	this->keyList = klist;
+	this->parameterList = plist;
+	this->free = freeCall; 
+	return this;
+}
 
 	
 SqlWarning* newSqlWarning() {
@@ -123,6 +160,7 @@ SqlStatement* newSqlStatement(int type, ResultSet* rs) {
 	this->type = type;
 	this->rs = rs;
 	this->db = DEFAULTDB;
+	this->lastFs = NULL;
 	this->cnode = newList();
 	this->free = freeStm;
 	this->addNode = addNodeStm;
@@ -270,15 +308,19 @@ Sigma* newSigma(Column* colA, int op,char* value, Column* colB,char* valueB){
 	return this;
 }
 
+/*Hilfsfunktion, um die Gleichheit zweier Objekte vom Typ Column festzustellen*/
 int coleql(Column *colA, Column *colB){
 	//printf("%p %p\n",colA,colB);
 	//printf("%p %p\n",colA->colName,colB->colName);
 	//printf("%p %p\n",colA->tableAlias,colB->tableAlias);
-	if(strcmp(colA->colName,colB->colName)==0&&strcmp(colA->tableAlias,colB->tableAlias)==0)
+	if(strcasecmp(colA->colName,colB->colName)==0&&strcasecmp(colA->tableAlias,colB->tableAlias)==0)
 		return 0;
 	return 1;
 }
 
+/*
+kpiert den Teilbaum, den node repräsentiert in den Baum t ein. rekursiv.
+ */
 void copytree(AvlTree *t,AvlNode * node){
 	if(node!=NULL){
 		copytree(t,node->left);
@@ -287,7 +329,9 @@ void copytree(AvlTree *t,AvlNode * node){
 	}
 }
 
-
+/*wird aufgerufen, wenn ein Sigma-Objekt (Bedingung in einer WHERE-Klausel) einem Subselect zugeordnet wird
+Verteilt die einzelnen Bedinugen auf die eventuell darunterliegenden Subselects (Baumstruktur, erzeugt durch Joins)
+*/
 static void addWhere(SubSelect *sbs, Sigma *sigma){
 	//rekursiv durch den "Baum"
 	//printf(">>> 1\n");
@@ -301,7 +345,7 @@ static void addWhere(SubSelect *sbs, Sigma *sigma){
 		//printf(">>> %p %p\n", sigma, col);
 		
 		if(sigma->colB!=NULL&&sigma->colA!=NULL){//JOIN!!!
-			if(strcmp(col->colName,sigma->colA->colName)==0&&strcmp(col->colName,sigma->colB->colName)==0){
+			if(strcasecmp(col->colName,sigma->colA->colName)==0&&strcasecmp(col->colName,sigma->colB->colName)==0){
 				if(sbs->sigma->where==NULL)
 					sbs->sigma->where = newList();
 				sbs->sigma->where->ft->append(sbs->sigma->where,sigma);
@@ -328,8 +372,9 @@ static void addWhere(SubSelect *sbs, Sigma *sigma){
 	
 }
 
+/*in ul befindet sich eine Liste von Bedingungen, die alle diesem Subselect zugeordnet werden sollen*/
 static void addWhereListSbs(SubSelect* this, UtilList *ul){
-	int i;
+       
 	Sigma *sigma;
 	//printf("%p/n",sigma);
 	//printf("%d\n",ul->ft->size(ul));
@@ -339,6 +384,7 @@ static void addWhereListSbs(SubSelect* this, UtilList *ul){
 	}
 }
 
+/*negiert die Bedigung*/
 static void negateSi(Sigma* this){
 	switch(this->link){
 		case OR: this->link = AND; break;
@@ -358,7 +404,7 @@ static void negateSi(Sigma* this){
 	}
 }
 
-
+/*Vergleicht zwei Zeichenketten abhängig von ihrem Typ (lexikographisch, numerisch, usw.) und der Orderby-Bedingung (asc, desc)*/
 int row_cmp(char* r1,char *r2, int type, int order){
 	int res = 0;
 	long long int a1;
@@ -367,9 +413,9 @@ int row_cmp(char* r1,char *r2, int type, int order){
 	unsigned long long int b2;
 	long double a3;
 	long double b3;
-	if(r1==NULL||strcmp(r1,"NULL")==0||strcmp(r1,"Null")==0||strcmp(r1,"null")==0)
+	if(r1==NULL||strcasecmp(r1,"NULL")==0)//||strcmp(r1,"Null")==0||strcmp(r1,"null")==0)
 		res = -1;
-	if(r2==NULL||strcmp(r2,"NULL")==0||strcmp(r2,"Null")==0||strcmp(r2,"null")==0)
+	if(r2==NULL||strcasecmp(r2,"NULL")==0)//||strcmp(r2,"Null")==0||strcmp(r2,"null")==0)
 		res = 1;
 	else{
 		switch (type & ~CMPI_ARRAY) {
@@ -431,6 +477,7 @@ int row_cmp(char* r1,char *r2, int type, int order){
 	return res;
 }
 
+/*wird im avlBaum benutzt, wenn Objekte vom Typ Row einsortiert werden. Row entält alle wichtigen Informationen (typ, order), um row_cmp aufrufen zu können*/
 int item_cmp(const void *item1, const void *item2){
 	Row *r1 = (Row*)item1;
 	Row *r2 = (Row*)item2;
@@ -480,6 +527,8 @@ int item_cmp(const void *item1, const void *item2){
 	//printf("5\n");	
 	return res;
 }
+
+/*Baumdurchlauf, bei dem alle items vom Typ Row freigegeben werden*/
 void traverseDelRow(AvlNode* node){
 	if(node!=NULL){
 		traverseDelRow(node->left);
@@ -489,6 +538,13 @@ void traverseDelRow(AvlNode* node){
 	}
 }
 
+/*Destruktor*/
+static void freeCall(Call** this) {
+	Call * t = *this;
+       
+	FREE(t);
+}
+/*Destruktor*/
 static void freeWarn(SqlWarning** this) {
 	SqlWarning * t = *this;
 	FREE(t->reason);
@@ -496,7 +552,7 @@ static void freeWarn(SqlWarning** this) {
 	FREE(t);
 }
 /*
- * Vgl. Tabelle S.55 von Martin
+ * siehe Tablle zur Datentypkonvertierung
  * Problem: Länge des VARCHAR.
  *  - einmal über Qualifier maxlength manchmal beschrieben. Kaum ein 
  *    Cimom kümmert das
@@ -518,13 +574,13 @@ static char *dataType(CMPIType type)
    case CMPI_sint32:
       return "INTEGER";
    case CMPI_uint32:
-      return "INTEGER";
+      return "BIGINT";
    case CMPI_sint16:
       return "SMALLINT";
    case CMPI_uint16:
-      return "SMALLINT";
+      return "INTEGER";
    case CMPI_uint8:
-      return "SMALLINT"; //Tinyint??
+      return "TINYINT"; //Tinyint??
    case CMPI_sint8:
       return "SMALLINT";
    case CMPI_boolean:
@@ -602,6 +658,8 @@ char* type2sqlString(int type){
    return "*??*";
 }
 
+
+/*Codiert die Metainfos des Ergebnis, das dieses Resultset repräsentiert in das Nachrichtenfpormat als Antwort an den Client*/
 static void addMetaRset(ResultSet* this, Projection* prj){
 	int i;
 	UtilStringBuffer *sb=newStringBuffer(4096);
@@ -622,7 +680,7 @@ static void addMetaRset(ResultSet* this, Projection* prj){
 		sb->ft->appendChars(sb,"false");
 		if(i<(prj->col->ft->size(prj->col)-1))
 			sb->ft->appendChars(sb,"::");
-		
+		col->free(&col);
 		col = prj->col->ft->getNext(prj->col);
 	}
 	this->meta = malloc(sb->ft->getSize(sb)+1);
@@ -631,6 +689,8 @@ static void addMetaRset(ResultSet* this, Projection* prj){
 	
 }
 
+
+/*codiert die Tupel dem Baum gemäß der Protokollspezifikation. Rekursicer Baumdurhlauf*/
 static void tree2sb(AvlNode *node,UtilStringBuffer *sb){
 	int i,h;
 	
@@ -658,6 +718,8 @@ static void tree2sb(AvlNode *node,UtilStringBuffer *sb){
 	
 }
 
+
+/*Dubugging-Funktion, gibt den Baum auf der Standardausgabe aus*/
 void treetoString(AvlNode * node){
 	if(node){
 		
@@ -682,13 +744,14 @@ void treetoString(AvlNode * node){
 	
 }
 
+/*codiert die Ergebnismenge, falls eine vorliegt gemäß dem DB Protokoll*/
 static int addSetRset(ResultSet *this, AvlTree *t){
 	//printf("addSetRset()\n");
 	
 	//printf("afsf\n");
 	if(t==NULL){
-		this->sw->reason = "Internal Error.";
-		this->sw->sqlstate ="77777";
+		this->sw->reason = "INTERNAL ERROR";
+		this->sw->sqlstate ="XX000";
 		return 1;	
 	}
 	else{
@@ -719,6 +782,9 @@ static int addSetRset(ResultSet *this, AvlTree *t){
 	}	
 }
 
+/*Destruktoren,...<
+rufen sich im Prinzip rekursiv auf, so dass ein Aufruf von stmt->free(&stmt) alle im Zusammenhang erzeugten Strukturen wieder freigegeben werden.
+  Noch ausbaufähig*/
 static void freeRSet(ResultSet** this) {
 	ResultSet* t = *this;
 	FREE(t->meta);
@@ -787,12 +853,35 @@ static void freeSel(Selection** this) {
 	 
 }
 
+/*eineee zentrale Funktion. Hier wird der Parsebaum aufebaut: dem statement wir ein value mitgegeben, das durch type eindeutig definiert ist. Abhängig vom Typ wird value auf den Baum angewendet.*/
 static int addNodeStm(SqlStatement* this, int type, void * value) {
 	FullSelect* fs=NULL;
-	FullSelect *fsroot;
+  FullSelect *fsroot;//printf("--- 1 %d\n",type);
+  if(type==SUB&&this->lastFs!=NULL){
+    //printf("--- 2a\n");
+    fs = this->lasttos;
+  }
+  else{
+    //printf("--- 2\n");
 	if(!this->cnode->ft->isEmpty(this->cnode))
 		fs = (FullSelect*)this->cnode->ft->getLast(this->cnode);
-	SubSelect* sbs;
+    if(fs==NULL)
+      fs = this->lasttos;
+  }
+  //printf("--- 3\n");
+  //falls A u B u C geparst wurde muss ein neues Fullselect oben eingefügt werden
+  if((type==UNION||type==UNIONALL||type==EXCEPT||type==EXCEPTALL||type==INTERSECT)&&fs!=NULL&&fs->typeB!=UNDEF){
+    FullSelect * nfs = newFullSelect();//printf("--- 3a\n");
+    nfs->setA = this->lasttos->setB;
+    nfs->typeA = this->lasttos->typeB;
+    nfs->type = type;
+    //nfs->setB = value;
+    //nfs->typeB = SUB;
+    this->lasttos->setB = nfs;
+    this->lasttos->typeB = FUL;
+    this->lasttos = nfs;
+    return OK;
+  }//printf("--- 3 2\n");
 	Insert *ins;
 	UpdIns *upi;
 	switch(type){
@@ -850,6 +939,7 @@ static int addNodeStm(SqlStatement* this, int type, void * value) {
 				fs = (FullSelect*)value;
 				fs->free(&fs);
 			}
+    //this->lasttos = NULL;
 			break;
 		case FUL:	
 			//printf("**** %p\n",value);
@@ -866,10 +956,11 @@ static int addNodeStm(SqlStatement* this, int type, void * value) {
 				}
 			}
 			else{//kann nicht passiere. sollte durch die grammatik abgefangen werden!!
-				printf("Schwerer Fehler in addNode(): \"cannot happen\"\n");
+      //printf("Schwerer Fehler in addNode(): \"cannot happen\"\n");
 			}
 			
 			this->cnode->ft->append(this->cnode,value);
+    //this->lasttos = NULL;
 			break;
 		case EMPTY:
 			fs->type = EMPTY;
@@ -897,7 +988,12 @@ static int addNodeStm(SqlStatement* this, int type, void * value) {
 			break;
 		case SUB:
 			//if(this->currentType == FUL){
+    //printf("--- SUB 1");
 				fsroot = (FullSelect*)this->cnode->ft->getFirst(this->cnode);
+    //printf("--- SUB 2");
+    if(fsroot==NULL)
+      fsroot = this->lasttos;
+    // printf("--- SUB 3");
 				if(fsroot->pi==NULL){	
 					fsroot->pi = ((SubSelect*)value)->pi;
 					//printf("fs-pi %p\n",fs->pi);
@@ -919,17 +1015,36 @@ static int addNodeStm(SqlStatement* this, int type, void * value) {
 						return CCOUNTERR;	
 					}
 				}
+    //printf("--- 4\n");
 				if(fs->typeA==UNDEF){
 					fs->typeA = SUB;
 					fs->setA = value;
 					//printf("### SUB A %p %p\n",fs, value);
 				}
-				else{//kein elseif weil cannot happen - hoffentlich ;-)
+    else{
+      // printf("--- 5\n");
+      if(fs->typeB==UNDEF){//A union B
 					fs->typeB = SUB;
 					fs->setB = value;
 					//printf("### SUB B %p %p\n",fs, value);
 					this->lasttos = fs;
 					this->cnode->ft->removeLast(this->cnode); 
+	//this->lastFs = fs;
+	
+      }
+      else{//A union B union C
+	printf("### cannot happen\n");
+	/* FullSelect * nfs = newFullSelect();
+	    nfs->setA = fs->setB;
+	    nfs->typeA = fs->typeB;
+	    nfs->type = fs->typeB;
+	    nfs->setB = value;
+	    nfs->typeA = SUB;
+	    fs->setB = nfs;
+	    fs->typeA = FUL;
+	    this->lastFs = nfs; printf("### 2\n");*/
+	//this->cnode->ft->add(this->cnode,nfs);
+      }
 				}
 				//this->cnode->ft->add(this->cnode,value);
 				//this->currentType = SUB;
@@ -940,6 +1055,7 @@ static int addNodeStm(SqlStatement* this, int type, void * value) {
 			break;
 		case SIGMA://funktioniert im Falle von () union () order by nicht!!!
 			fs = this->cnode->ft->getLast(this->cnode);
+    this->lastFs = NULL;
 			//printf("SIGMA: %p %p\n",this->lasttos,this->lasttos->sigma);
 			if(fs!=NULL&&fs->typeB!=UNDEF){
 				//printf("lasttos\n");
@@ -966,6 +1082,8 @@ static int addNodeStm(SqlStatement* this, int type, void * value) {
 	return OK;
 }
 
+
+/*die Anfrage, die durch den Baum, der in stmt repräsentiert wird, wird abhängig von der Art des Statements ausgwertet.*/
 static int calculateStm(SqlStatement* this) {
 	FullSelect* fs;
 	Insert * ins;
@@ -980,40 +1098,46 @@ static int calculateStm(SqlStatement* this) {
 	UtilList *al;
 	Column * col;
 	ExpressionLight *el;
+	Call *call;
+	UtilList * ul;
+	UtilList * colList;
+
 	switch(this->type){
 		case CALL:
-			cd = (ClassDef*)this->stmt;
-			UtilList * pl = newList();
-			el = newExpressionLight("cmd",UNDEF,"xemacs");
-			el->sqltype = CMPI_string;
-			pl->ft->append(pl,el);
-			el = newExpressionLight("out",UNDEF," ");
-			el->sqltype = CMPI_string;
-			pl->ft->append(pl,el);
-			UtilList * kl = newList();
-			el = newExpressionLight("Name",UNDEF,"dyn-9-152-141-64.boeblingen.de.ibm.com");
-			el->sqltype = CMPI_string;
-			kl->ft->append(kl,el);
-			el = newExpressionLight("CreationClassName",UNDEF,"Linux_OperatingSystem");
-			el->sqltype = CMPI_string;
-			kl->ft->append(kl,el);
-			el = newExpressionLight("CSName",UNDEF,"dyn-9-152-141-64.boeblingen.de.ibm.com");
-			el->sqltype = CMPI_string;
-			kl->ft->append(kl,el);
-			el = newExpressionLight("CSCreationClassName",UNDEF,"Linux_ComputerSystem");
-			el->sqltype = CMPI_string;
-			kl->ft->append(kl,el);
+		  call = (Call*)this->stmt;
 			
-			c = invokeMethod(this->db, "Linux_OperatingSystem", "execCmd", pl,kl);
+			ul = invokeMethod(this->db, call->tableName, call->procedureName, call->keyList,call->parameterList);
 			
-			if(c==0){
-				this->rs->meta = "<EMPTY>";
-				this->rs->tupel	= "METHOD INVOKED";
+			if(ul!=NULL){
+			  colList = newList();
+
+			  r = newRow(ul->ft->size(ul));
+			  for(el = (ExpressionLight*)ul->ft->getFirst(ul),i=0;el;el = (ExpressionLight*)ul->ft->getNext(ul),i++){
+			    r->row[i] = el->value;
+			    char * tmp = r->row[i];			    
+			    while(*tmp!=0){
+			      if(*tmp=='\n')
+				*tmp=',';
+			      *tmp++;
+			    }// printf("--- ::: %s \n###%s\n",r->row[i], el->name);
+			    colList->ft->append(colList,newColumn("CALL",NULL, el->name, NULL,el->sqltype,NKEY));
+			  }	
+			  t = newAvlTree(item_cmp);
+			  t->insert(t,r);
+			  Projection *pi = newProjection(ALL,colList);
+			  this->rs->addSet(this->rs,t);
+			  
+			  this->rs->addMeta(this->rs,pi);
+			  this->rs->sw->reason = "Successful Completion";
+			  this->rs->sw->sqlstate = "00000";
+			  return 0;
+			  //this->rs->meta = "<EMPTY>";
+			  //this->rs->tupel = "METHOD INVOKED";
 			}else{
-				this->rs->sw->reason = "Internal Error";
-				this->rs->sw->sqlstate ="00007";	
+				this->rs->sw->reason = "SQL ROUTINE EXCEPTION";
+				this->rs->sw->sqlstate ="2F000";	
+				return 1;
 			}
-			return c;
 			break;
 		case CREATE:
 			cd = (ClassDef*)this->stmt;
@@ -1022,8 +1146,8 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->meta = "<EMPTY>";
 				this->rs->tupel	= "TABLE CREATED";
 			}else{
-				this->rs->sw->reason = "Internal Error";
-				this->rs->sw->sqlstate ="00007";	
+				this->rs->sw->reason = "INTERNAL ERROR";
+				this->rs->sw->sqlstate ="XX000";	
 			}
 			return c;
 			break;
@@ -1081,8 +1205,8 @@ static int calculateStm(SqlStatement* this) {
 					}
 					//printf("...\n");
 					if((c=deleteInstance(this->db,tupel->tname,al))!=0){
-						this->rs->sw->reason = "DELETE from Table: error...";
-						this->rs->sw->sqlstate ="00007";
+						this->rs->sw->reason = "INTERNAL ERROR";
+						this->rs->sw->sqlstate ="XX000";
 						return 1;
 					}
 					al->ft->release(al);
@@ -1104,8 +1228,8 @@ static int calculateStm(SqlStatement* this) {
 					strcat(this->rs->tupel," TUPEL DELETED");
 		
 				}else{
-					this->rs->sw->reason = "Internal Error";
-					this->rs->sw->sqlstate ="00007";	
+					this->rs->sw->reason = "INTERNAL ERROR";
+					this->rs->sw->sqlstate ="XX000";	
 				}
 			}
 			
@@ -1119,12 +1243,12 @@ static int calculateStm(SqlStatement* this) {
 				//printf("insert... %d\n",ins->tupelList->ft->size(ins->tupelList));
 				if((c=createInstance(this->db,ins->tname,tupel->assignmentList))!=0){
 					if(c==CMPI_RC_ERR_ALREADY_EXISTS){
-						this->rs->sw->reason = "Tupel already insered";
-						this->rs->sw->sqlstate ="00007";
+						this->rs->sw->reason = "WARNING:\nTupel already insered";
+						this->rs->sw->sqlstate ="01000";
 					}
 					else{
-						this->rs->sw->reason = "INSERT into Table: error...";
-						this->rs->sw->sqlstate ="00007";
+						this->rs->sw->reason = "INTERNAL ERROR:\nINSERT into Table: error...";
+						this->rs->sw->sqlstate ="XX000";
 					}
 					return 1;
 				}
@@ -1135,8 +1259,8 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->tupel	= "INSTANCE CREATED";
 			}
 			else{
-				this->rs->sw->reason = "Internal Error";
-				this->rs->sw->sqlstate ="00007";	
+				this->rs->sw->reason = "INTERNAL ERROR";
+				this->rs->sw->sqlstate ="XX000";	
 			}	
 			return c;
 			break;
@@ -1189,8 +1313,8 @@ static int calculateStm(SqlStatement* this) {
 					}
 					//printf("...\n");
 					if((c=updateInstance(this->db,tupel->tname,tupel->assignmentList,al))!=0){
-						this->rs->sw->reason = "UPDATE WHERE: error...";
-						this->rs->sw->sqlstate ="00007";
+						this->rs->sw->reason = "INTERNAL ERROR:\nUPDATE WHERE: error...";
+						this->rs->sw->sqlstate ="XX000";
 						return 1;
 					}
 					al->ft->release(al);
@@ -1201,8 +1325,8 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->meta = "<EMPTY>";
 				this->rs->tupel	= "TUPEL(S) UPDATED";
 			}else{
-				this->rs->sw->reason = "Internal Error";
-				this->rs->sw->sqlstate ="00007";	
+				this->rs->sw->reason = "INTERNAL ERROR";
+				this->rs->sw->sqlstate ="XX000";	
 			}
 		
 			return c;
@@ -1215,8 +1339,8 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->meta = "<EMPTY>";
 				this->rs->tupel	= "TABLE DROPED";
 			}else{
-				this->rs->sw->reason = "Internal Error";
-				this->rs->sw->sqlstate ="00007";	
+				this->rs->sw->reason = "INTERNAL ERROR";
+				this->rs->sw->sqlstate ="XX000";	
 			}
 			//printf("return DROP: %d\n",c);
 			return c;
@@ -1229,8 +1353,8 @@ static int calculateStm(SqlStatement* this) {
 			
 			return c;
 		default://Fehlermeldung, obwohl es nicht vorkommen sollte...
-			this->rs->sw->reason = "Not supported";
-				this->rs->sw->sqlstate ="00007";
+			this->rs->sw->reason = "FEATURE NOT SUPPORTED:\nNot supported";
+				this->rs->sw->sqlstate ="0A000";
 				return 1;	
 			break;
 	}
@@ -1267,6 +1391,8 @@ int min(int a, int b){
 		return a;
 	else return b;
 }
+
+/*nächsten drei Funktionen führen Fullselect-Operaionen auf dem Baum aus.*/
 AvlTree* uniontree(AvlTree *t1, AvlNode * node,int type){
 	
 	if(node!=NULL){
@@ -1318,6 +1444,7 @@ AvlTree* intersecttree(AvlTree *res, AvlTree *t1, AvlNode * node,int type){
 }
 
 
+
 void changeSigma(AvlNode * node, Selection *sigma){
 	if(node!=NULL){
 		changeSigma(node->left,sigma);
@@ -1328,7 +1455,7 @@ void changeSigma(AvlNode * node, Selection *sigma){
 }
 
 
-
+/*das Subselect ist Teil eines anderen Subselects und das ist anders geornet, daher muss auch dieses umsortiert werden*/
 AvlTree* reorder(AvlTree *t, Selection *sigma){
 	//printf("+++ roerder 1\n");
 	changeSigma(t->root,sigma);
@@ -1340,6 +1467,7 @@ AvlTree* reorder(AvlTree *t, Selection *sigma){
 	return res;
 }
 
+/*kürzt den Baum auf ff Elemente*/
 static AvlTree * fetchfirst(AvlTree * t,int ff){
 	AvlTree *ot = newAvlTree(item_cmp);
 	int i;
@@ -1359,13 +1487,14 @@ static AvlTree * fetchfirst(AvlTree * t,int ff){
 	return ot;
 }
 
+/*zwei Select-Statements werden über die Operation verknüpft zu einem. Fallunterschedungen, je nachdem, welchen Typ die einzenen Operanden haben*/
 static AvlTree* calculateFSel(FullSelect* this,char *db) {
-	//printf("calculateFSel()\n");
+  //printf("calculateFSel() %p\n",this);
 	AvlTree* avlt;
 	 
 	if(this->type==EMPTY){
 		if(this->typeA==SUB){ 
-			//printf("calculateFSel()2\n");
+		  //s			printf("calculateFSel()2\n");
 			SubSelect *sbs = (SubSelect*)this->setA;
 			//printf("is set: %d\n",sbs->isSet);
 			//printf("calculateFSel()3\n");
@@ -1408,6 +1537,7 @@ static AvlTree* calculateFSel(FullSelect* this,char *db) {
 			SubSelect *sbs = (SubSelect*)this->setB;
 			//printf("+++ %p\n",sbs);
 			t2 =  sbs->calculate(sbs,db);
+			//printf("+++ 3a2 %p\n",t2);
 			if(t2==NULL)
 				return NULL;
 		}
@@ -1559,24 +1689,11 @@ static void addNodeSSel(SubSelect* this,int type, void* value){
 	
 }
 
-static void extractValue(CMPIData d, UtilStringBuffer * sb){
-	char str[256];
+/*Für die Kodierung im DB Protokoll müssen alle Werte in eine Zeichenkette konvertiert werden*/
+static char * value2string(CMPIData d){
+  char str[128];
    	char *sp = str;
-   	int freesp = 0;
-   	if (d.type & CMPI_ARRAY) {
-     // sprintf(sp,"**[]**"); 
-    	CMPIArray *ar = d.value.array;
-		CMPIData da;
-		int j, ac = CMGetArrayCount(ar, NULL);
 		
-		for (j = 0; j < ac; j++) {
-			da = CMGetArrayElementAt(ar, j, NULL);
-			extractValue(da, sb);
-		}
-	    return; 
-     
-   }
-   else {
       if ((d.type & (CMPI_UINT|CMPI_SINT))==CMPI_UINT) {
          unsigned long long ul;
          switch (d.type) {
@@ -1632,8 +1749,8 @@ static void extractValue(CMPIData d, UtilStringBuffer * sb){
         
       }
       else if (d.type == CMPI_string) {
-        sprintf(sp,"%s",d.value.string->hdl);
-         
+    //sprintf(sp,"%s",d.value.string->hdl);
+    return d.value.string->hdl;
       }
       else if (d.type == CMPI_dateTime) {
          if (d.value.dateTime) {
@@ -1642,8 +1759,34 @@ static void extractValue(CMPIData d, UtilStringBuffer * sb){
          }
          
       }
+  //printf("--- %s ---\n",sp);
+  return sp;//strdup(sp);
+
+}
+
+static void extractValue(CMPIData d, UtilStringBuffer * sb){
+
+ 
+  if (d.type & CMPI_ARRAY) {
+    // sprintf(sp,"**[]**"); 
+    CMPIArray *ar = d.value.array;
+    CMPIData da;
+    int j, ac = CMGetArrayCount(ar, NULL);
+    
+    for (j = 0; j < ac; j++) {
+      da = CMGetArrayElementAt(ar, j, NULL);
+      
+      extractValue(da, sb);
+      if(j<ac-1)
+	sb->ft->appendChars(sb,",");
+    }
+    return; 
+    
+  }
+  else {
+    sb->ft->appendChars(sb,value2string(d));				      
+    
    	}
-	sb->ft->appendChars(sb,sp);				      
 }
 
 /*
@@ -1658,7 +1801,7 @@ static int getColumnNr(char * name,UtilList * ul){
 	Column *col;
 	int i;
 	for(i=0,col = (Column*) ul->ft->getFirst(ul);col;col = (Column*) ul->ft->getNext(ul),i++){
-		if(strcmp(col->colName,name)==0){
+		if(strcasecmp(col->colName,name)==0){
 			return i;	
 		}
 	}
@@ -1678,6 +1821,9 @@ static int getColNr(Column * colA,UtilList * ul){
 	return -1;
 }
 
+/*in eine Row müssen nicht nur die Spalten, die in der Projektion definiert werden gespeichert werden, sondern auch, die, die in einer Bedingung vorkommen
+select a from X where b<n
+*/
 static int testSigma(Projection *pi,Row * row){
 	int res = UNDEF;
 	UtilList *ul = row->sigma->where;
@@ -1743,6 +1889,7 @@ static int testSigma(Projection *pi,Row * row){
 }
 
 
+/*berechnet das Kreuzprodukt zweier Bäume*/
 void traversecross(AvlTree* res,AvlNode * node, AvlTree* t,UtilList *ul, int type){
 	if(node!=NULL){
 		//printf("1\n");
@@ -1889,7 +2036,7 @@ void traversecross(AvlTree* res,AvlNode * node, AvlTree* t,UtilList *ul, int typ
 	//printf("node is NULL\n");	
 }
 
-
+/*siehe traversecross*/
 AvlTree * crossproduct(AvlTree* setA,AvlTree* setB,UtilList  *ul, int type){
 	//ein reorder auf setB waere hier sinnvoll damit man die suche auch abbrechen kann. 
 	AvlTree* res = newAvlTree(item_cmp);
@@ -1904,6 +2051,7 @@ AvlTree * crossproduct(AvlTree* setA,AvlTree* setB,UtilList  *ul, int type){
 	return res;
 }
 
+/*berechnet eine Ergebnismenge aus allen darunterliegenden Subselects. Rekursiv*/
 static AvlTree* calculateSSel(SubSelect* this,char * db) {
 	//printf("-- 0\n");
 	if(this->isSet!=1){
@@ -1936,7 +2084,7 @@ static AvlTree* calculateSSel(SubSelect* this,char * db) {
 					Column *tcol;
 					//printf("1\n");
 					for(tcol = (Column*)this->pi->col->ft->getFirst(this->pi->col);tcol;tcol= (Column*)this->pi->col->ft->getNext(this->pi->col)){
-						if(strcmp(tcol->colAlias,sigma->colB->colAlias)==0){
+						if(strcasecmp(tcol->colAlias,sigma->colB->colAlias)==0){
 							this->pi->col->ft->removeCurrent(this->pi->col);
 							//printf("col %s aus pi loeschen\n",tcol->colAlias);
 							break;
@@ -1963,14 +2111,14 @@ static AvlTree* calculateSSel(SubSelect* this,char * db) {
 		//printf("------ %p  %p\n",this, this->set);
 		//CMPIObjectPath *cop;
 		CMPIInstance *ci;
-		CMPIConstClass *cl;
+		
 		CMPIEnumeration *enm;//noChunking = 1;
 	//	enm = enumInst("root/cimv2", this->setName);
 	//	enm = enumInstss("root/cimv2", this->setName);
 		enm = enumInstances(db, this->setName);
 		//printf("-- 2\n");
 		int wcount = 0;
-		int cc = 0;
+		
 		if(enm == NULL){
 			//printf("dumm\n");
 			return NULL;	
@@ -2023,10 +2171,13 @@ static AvlTree* calculateSSel(SubSelect* this,char * db) {
 			Row *r = (Row*)this->set->insert(this->set,row);
 			
 			//printf("b2\n");
-			if(r!=NULL)
+			if(r!=NULL){
 				if(this->pi->mode==ALL)
 					r->doublette++;
-				
+			  else
+			    rcount--;
+			}
+			//printf("%d ",row->size);
 			rcount++;
 			//printf("c\n");
 		}
@@ -2165,6 +2316,7 @@ static void freeSi(Sigma** this) {
 	FREE(t);
 }
 
+/*anders realisiert, siehe oben...*/
 static AvlTree* calculateCJoin(CrossJoin* this) {
 
 	return NULL;
@@ -2191,6 +2343,7 @@ void setMeta(char *meta){
 	rs->meta = meta;  
 }
 
+
 int sqlInput(char* buffer, int* done, int requested)
 {	
     int left = strlen(q) - ofs;
@@ -2207,10 +2360,9 @@ int sqlInput(char* buffer, int* done, int requested)
 }
 
 
+/*wird vom SQL-Prozessor aufgerufen, wenn eine Anfage (Komanndo der Gruppe 2) bearbeitet werden soll*/
+ResultSet *createRS(char *query, int *rc){//wird CommHndl noch benutzt?
 
-ResultSet *parseSql(char *query, int *rc){//wird CommHndl noch benutzt?
-	char *meta;
-	char *tupel;
 	int p;
 	
  	rs = newResultSet(query);
@@ -2276,7 +2428,7 @@ char * type2cmpiString(int type){
 }
 
 
-
+/*Hilfsfunktion für enumInstances*/
 CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp, int arrLen){
    	int i, c, j;
    	void *object;
@@ -2289,7 +2441,7 @@ CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp,
    	for (c = 0, i = 0; i < binCtx->rCount; i++) {
       	for (j = 0; j < resp[i]->count; c++, j++) {
          	object = relocateSerializedInstance(resp[i]->object[j].data);
-         	rc=arraySetElementNotTrackedAt(ar,c, &object, binCtx->type);
+         	rc=arraySetElementNotTrackedAt(ar,c, &object, binCtx->type);//object???.
       	}
    	}
 
@@ -2299,6 +2451,8 @@ CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp,
 	return enm;
 }
 
+
+/*Es folgt die Implementation der Schnittstelle zu den Providern. Genauere Erklärung siehe Tabelle in der Arbeit*/
 
 CMPIEnumeration * enumInstances(char * ns, char * cn) {
 
@@ -2367,7 +2521,7 @@ CMPIEnumeration * enumInstances(char * ns, char * cn) {
 }
 
 
-int * createInstance(char * ns, char * cn, UtilList * ins) {
+int  createInstance(char * ns, char * cn, UtilList * ins) {
 	RequestHdr * hdr = NULL;
    	
    	XtokCreateInstance reqq;
@@ -2389,12 +2543,12 @@ int * createInstance(char * ns, char * cn, UtilList * ins) {
    	CMPIObjectPath *path;
    	CMPIInstance *inst;
    	CMPIValue val;
-   	UtilStringBuffer *sb;
+   	
    	int irc;
    	BinRequestContext binCtx;
    	BinResponseHdr *resp;
 	CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, 3);
-	XtokProperty *p = NULL;
+	
 	
 	memset(&binCtx,0,sizeof(BinRequestContext));
 	XtokCreateInstance *req = (XtokCreateInstance *) hdr->cimRequest;
@@ -2471,7 +2625,7 @@ int createClass(char * ns, char * cn, char * scn, UtilList * colDef) {
    	CreateClassReq sreq = BINREQ(OPS_CreateClass, 3);
    
    	CMPIData d;
-   	CMPIParameter pa;
+   	
    
    	memset(&binCtx,0,sizeof(BinRequestContext));
    	XtokCreateClass *req = (XtokCreateClass *) hdr->cimRequest;
@@ -2615,7 +2769,7 @@ int deleteClass(char * ns, char * cn) {
 }
 
 
-
+/*Hilfssfunktion für die Erzeugung einer Instanz, da während der SQL-Verarbeitung alle Daten als Strings behandelt werden*/
 CMPIValue * string2cmpival(char * value, int type){
 	CMPIValue * val = (CMPIValue*) calloc(1, sizeof(CMPIValue));
 	switch (type & ~CMPI_ARRAY) {
@@ -2627,7 +2781,7 @@ CMPIValue * string2cmpival(char * value, int type){
    			//val->chars = value;
    			break; 
    		case CMPI_sint64:
-      		val->string = strtol(value,(char**)NULL,10);
+    val->sint64 = strtol(value,(char**)NULL,10);
    			break;
    		case CMPI_uint64:
       		val->uint64 = strtoul(value,(char**)NULL,10);
@@ -2651,7 +2805,7 @@ CMPIValue * string2cmpival(char * value, int type){
       		val->sint8 = (char)strtoul(value,(char**)NULL,10);
    			break;
    		case CMPI_boolean:
-      		val->boolean = strcasecmp(type, "true") == 0 ? 1 : 0;
+    val->boolean = strcasecmp(value, "true") == 0 ? 1 : 0;
    			break;
    		case CMPI_char16:
       		val->char16 = value[0];
@@ -2696,9 +2850,8 @@ int deleteInstance(char * ns, char * cn, UtilList *al) {
 	
    	
    	CMPIObjectPath *path;
-   	CMPIType type;
-   	CMPIValue val, *valp;
-   	int irc, i, m;
+       
+   	int irc;
    	BinRequestContext binCtx;
    	BinResponseHdr *resp;
    	DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, 2);
@@ -2767,15 +2920,15 @@ int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl) {
 	
    	CMPIObjectPath *path;
    	CMPIInstance *inst;
-   	CMPIType type;
-   	CMPIValue val, *valp;
-   	int irc, i, m, sreqSize=sizeof(ModifyInstanceReq)-sizeof(MsgSegment);
+   	
+      
+   	int irc, i, sreqSize=sizeof(ModifyInstanceReq)-sizeof(MsgSegment);
    	BinRequestContext binCtx;
    	BinResponseHdr *resp;
    	ModifyInstanceReq *sreq;
-   	XtokInstance *xci;
-   	XtokInstanceName *xco;
-   	XtokProperty *p = NULL;
+       
+       
+  
 
 	//printf("2\n");
 
@@ -2929,9 +3082,9 @@ UtilList * getClassNames(char * ns, char *filter) {
 }
 
 
-int invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl) {
+UtilList * invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl) {
    	RequestHdr * hdr = NULL;
-   	printf("%s %s %s\n",ns,cn,mn);
+  //printf("%s %s %s\n",ns,cn,mn);
     XtokMethodCall reqq;
 	reqq.op.count = 2;
 	reqq.op.type = OPS_InvokeMethod;
@@ -2949,16 +3102,16 @@ int invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl) {
    
    	CMPIObjectPath *path;
    	CMPIArgs *out;
-   	CMPIType type;
-   	CMPIValue val, *valp;
-   	UtilStringBuffer *sb;
-   	int irc, i, m;
+  
+
+  
+  int irc, i;
    	BinRequestContext binCtx;
    	BinResponseHdr *resp;
-   	RespSegments rsegs;
+  
    	InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, 5);
    	CMPIArgs *in=TrackedCMPIArgs(NULL);
-   	XtokParamValue *p;
+  
 
    	memset(&binCtx,0,sizeof(BinRequestContext));
    	XtokMethodCall *req = (XtokMethodCall *) hdr->cimRequest;
@@ -2966,14 +3119,14 @@ int invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl) {
    	path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
 	ExpressionLight * el;
    	for (el = (ExpressionLight*)kl->ft->getFirst(kl);el;el=(ExpressionLight*)kl->ft->getNext(kl)) {
-      	printf("%s %s %d\n",el->name,el->value,el->sqltype);
+    //printf("key: %s %s %d\n",el->name,el->value,el->sqltype);
       	CMAddKey(path, el->name, string2cmpival(el->value,el->sqltype),el->sqltype);      	
    	}
    	sreq.objectPath = setObjectPathMsgSegment(path);
    	sreq.principal = setCharsMsgSegment(NULL);
 
    	for (i=0,el = (ExpressionLight*)pl->ft->getFirst(pl);el;el=(ExpressionLight*)pl->ft->getNext(pl),i++) {
-   		printf("%s %s %d\n",el->name,el->value,el->sqltype);
+    //printf("param: %s %s %d\n",el->name,el->value,el->sqltype);
       	CMAddArg(in, el->name, string2cmpival(el->value,el->sqltype), el->sqltype);
    	}
    	sreq.in = setArgsMsgSegment(in);
@@ -2990,28 +3143,52 @@ int invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl) {
 
    	
    	irc = getProviderContext(&binCtx, (OperationHdr *) req);
-	printf("irc %d\n",irc);
+  //printf("irc %d\n",irc);
    	if (irc == MSG_X_PROVIDER) {
      	resp = invokeProvider(&binCtx);
       	closeProviderContext(&binCtx);
       	resp->rc--;
-      	printf("rc %d\n",resp->rc);
+    //printf("rc %d %d\n",resp->rc,CMPI_RC_OK);
       	if (resp->rc == CMPI_RC_OK) {
-//         out = relocateSerializedArgs(resp->object[0].data);
-//         sb = UtilFactory->newStrinBuffer(1024);
-//         sb->ft->appendChars(sb,"<RETURNVALUE>\n");
-//         value2xml(resp->rv, sb, 1);
-//         sb->ft->appendChars(sb,"</RETURNVALUE>\n");
-//         args2xml(out, sb);
-//         rsegs=methodResponse(hdr, sb);
-//         _SFCB_RETURN(rsegs);
-			return 0;
+      out = relocateSerializedArgs(resp->object[0].data);
+      UtilList * rl = newList();
+      ExpressionLight * el;
+
+      int i, m;
+    
+      
+      el = newExpressionLight("RETURNVALUE",UNDEF,strdup(value2string(resp->rv)));
+      el->sqltype = resp->rv.type;
+      rl->ft->append(rl,el);
+   
+      if (out!=NULL){
+   
+	m = CMGetArgCount(out,NULL);
+	for (i = 0; i < m; i++) {
+	  CMPIString *name;
+	  CMPIData data;
+	  data = CMGetArgAt(out, i, &name, NULL);
+	  
+	  if (data.type & CMPI_ARRAY) {
+	   
       	}
-      	return 1;
+	  else {
+      	      el = newExpressionLight(name->hdl,UNDEF,value2string(data));
+	      el->sqltype = data.type;
+	      rl->ft->append(rl,el);
+	  }  
+	  CMRelease(name);
+	}
+      }
+      
+     
+      return rl;
+    }
+    return NULL;
    	}
    	closeProviderContext(&binCtx);
 
-	return 1;
+  return NULL;
 }
  
 ClassDef * getClassDef(const char *ns, const char *cn){
@@ -3032,9 +3209,9 @@ ClassDef * getClassDef(const char *ns, const char *cn){
     
    	ClProperty * p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
    	int l;
-   	int fnl = 0;
-   	char *fname[count];
-   	char *cname = ccl->ft->getCharClassName(ccl);
+   	
+   	
+   	
 	char *dscr;
 	UtilList *ul = newList();
 	ClassDef *cld = newClassDef(count,ccl->ft->getCharClassName(ccl),ul,0,ccl->ft->getCharSuperClassName(ccl));
@@ -3071,6 +3248,8 @@ ClassDef * getClassDef(const char *ns, const char *cn){
 
 
 
+/*es folgen die weiteren Prozessor-Funktionen
+*/
 //leifert EMPTYSET zurueck, falls keine Tabelle zum Muster passt!
 char * processMetaTables(char * filter, char* db){
 	ResultSet * rs = newResultSet(NULL);
@@ -3114,7 +3293,7 @@ char * processMetaTables(char * filter, char* db){
 	
 	rs->addMeta(rs,pi);
 	rs->sw->reason = "Successful Completion";
-	rs->sw->sqlstate = "0000000";
+	rs->sw->sqlstate = "00000";
 	char * res = (char *) malloc(strlen(rs->meta)+strlen(rs->tupel)+strlen(rs->sw->reason)+strlen(rs->sw->sqlstate)+4+1+3+3+3+1);
 	strcpy(res,"3 2 1\n");
 	strcat(res,rs->sw->sqlstate);
@@ -3202,7 +3381,7 @@ char * processMetaColumns(char * filter,char * filtercol, char* db){
 	rs->addMeta(rs,pi);
 	
 	rs->sw->reason = "Successful Completion";
-	rs->sw->sqlstate = "0000000";
+	rs->sw->sqlstate = "00000";
 	char * res = (char *) malloc(strlen(rs->meta)+strlen(rs->tupel)+strlen(rs->sw->reason)+strlen(rs->sw->sqlstate)+4+1+3+3+3+1);
 	strcpy(res,"3 5 1\n");
 	strcat(res,rs->sw->sqlstate);
@@ -3247,7 +3426,7 @@ char * processSuperTables(char * filter, char* db){
 	
 	rs->addMeta(rs,pi);
 	rs->sw->reason = "Successful Completion";
-	rs->sw->sqlstate = "0000000";
+	rs->sw->sqlstate = "00000";
 	char * res = (char *) malloc(strlen(rs->meta)+strlen(rs->tupel)+strlen(rs->sw->reason)+strlen(rs->sw->sqlstate)+4+1+3+3+3+1);
 	strcpy(res,"3 3 1\n");
 	strcat(res,rs->sw->sqlstate);
@@ -3274,8 +3453,8 @@ char * processKeyTable(char * filter,char * db){
 		//printf("Parse Error !!\n");
 		//printf("###%s \n###%s!!\n",rs->sw->reason,rs->sw->sqlstate);
 		
-		rs->sw->reason = "Table does not exist";
-		rs->sw->sqlstate = "0000007";
+		rs->sw->reason = "UNDIFINED TABLE:\nTable does not exist";
+		rs->sw->sqlstate = "42P01";
 	
 		char * res = (char *) malloc(strlen(rs->sw->reason)+strlen(rs->sw->sqlstate)+4+1+3+1);
 		strcpy(res,"3 4 0\n");
@@ -3316,7 +3495,7 @@ char * processKeyTable(char * filter,char * db){
 	
 	rs->addMeta(rs,pi);
 	rs->sw->reason = "Successful Completion";
-	rs->sw->sqlstate = "0000000";
+	rs->sw->sqlstate = "00000";
 	char * res = (char *) malloc(strlen(rs->meta)+strlen(rs->tupel)+strlen(rs->sw->reason)+strlen(rs->sw->sqlstate)+4+1+3+3+3+1);
 	strcpy(res,"3 4 1\n");
 	strcat(res,rs->sw->sqlstate);

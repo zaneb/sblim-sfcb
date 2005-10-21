@@ -3,7 +3,27 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * CIMDriver.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface Driver for the CIM-JDBC
+ * 
+ *
+ * 
+ *
  */
+
 package com.ibm.wbem.jdbc;
 
 import java.io.BufferedReader;
@@ -20,16 +40,18 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class CIMDriver implements Driver {
 
-	public static final int VERSION = 0;
+    public static final int VERSION = 1; 
+    public final static int MINVERSION = 0;
 	public static final String NAME = "CIM-JDBC for sfcb";
-	public static final String VERSIONSTRING = "V 0.1";
+    public static String VERSIONSTRING = VERSION+"."+MINVERSION;
+   
 
 	/**
 	 * Driver will be registered on class loading
@@ -49,7 +71,7 @@ public class CIMDriver implements Driver {
 	
 	
 	public CIMDriver() throws SQLException{
-		System.out.println("Driver-Konstruktor");
+	    //System.out.println("Driver-Konstruktor");
 	}
 	
 	
@@ -57,16 +79,14 @@ public class CIMDriver implements Driver {
 	 * @see java.sql.Driver#getMajorVersion()
 	 */
 	public int getMajorVersion() {
-		// TODO Auto-generated method stub
-		return 0;
+		return VERSION;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.sql.Driver#getMinorVersion()
 	 */
 	public int getMinorVersion() {
-		// TODO Auto-generated method stub
-		return 0;
+		return MINVERSION;
 	}
 
 	/* (non-Javadoc)

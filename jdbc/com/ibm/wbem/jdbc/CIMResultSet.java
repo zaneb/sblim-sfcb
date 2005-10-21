@@ -3,7 +3,27 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * CIMResultSet.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface ResultSet for the CIM-JDBC
+ * 
+ *
+ * 
+ *
  */
+
 package com.ibm.wbem.jdbc;
 
 import java.io.BufferedReader;
@@ -35,7 +55,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -59,7 +79,7 @@ public class CIMResultSet implements ResultSet {
 	private int maxRows;
 	private int fetchSize;
 	private Vector warnBuffer;
-	
+    private boolean wasNull;
 	/**
 	 * @param s
 	 * @throws SQLException
@@ -86,6 +106,7 @@ public class CIMResultSet implements ResultSet {
 			}while(!prop.endsWith("$$"));
 			prop = sb.toString();
 			prop = prop.substring(0,prop.length()-2);
+			//System.out.println("prop>>>\n"+prop+"\n<<<");
 			//System.out.println(prop);
 		} catch (IOException e) {
 			throw new SQLException();
@@ -102,7 +123,7 @@ public class CIMResultSet implements ResultSet {
 			e1.printStackTrace();
 			new SQLException("IOError while reading Resultsetmetadata");
 		}*/
-		rsmd = new CIMResultSetMetaData(prop);
+	
 		try {
 			String rs;
 			StringBuffer sb = new StringBuffer();
@@ -128,10 +149,12 @@ public class CIMResultSet implements ResultSet {
 				count++;
 			}while(!rs.endsWith("$$"));
 			rs = sb.toString();
+			//System.out.println("prop>>>\n"+rs+"\n<<<");
 			rs = rs.substring(0,rs.length()-4);
 			allRows = rs.split("::");
 			if(cont>0)
 				warnBuffer.addElement(new SQLWarning("Einige Spalten wurden verworfen: Ergebnismenge groessera als maxRows"));	
+				rsmd = new CIMResultSetMetaData(prop,allRows);
 			//System.out.println(prop);
 		} catch (IOException e) {
 			throw new SQLException();
@@ -321,7 +344,7 @@ public class CIMResultSet implements ResultSet {
 		
 		if(cursorpos>=allRows.length||allRows.length==0)
 			return false;
-		if(allRows[cursorpos].equals("**EMPTYSET**"))
+		if(allRows[cursorpos].startsWith("**EMPTYSET**"))
 			return false;
 		currentRow = allRows[cursorpos].split(";");
 		return true;
@@ -371,21 +394,30 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#wasNull()
 	 */
 	public boolean wasNull() throws SQLException {//to be done...
-		throw new SQLException("Not Implemented: ResultSet()");
+	    return wasNull;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.sql.ResultSet#getByte(int)
 	 */
-	public byte getByte(int arg0) throws SQLException {
-		// TODO Auto-generated method stub
+	public byte getByte(int column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
 		return 0;
+	}
+	    wasNull = false;   
+	    return (byte)Integer.parseInt(currentRow[column-1]);
 	}
 
 	/* (non-Javadoc)
 	 * @see java.sql.ResultSet#getDouble(int)
 	 */
 	public double getDouble(int  column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return 0;
+	    }
+	    wasNull = false; 
 		return Double.parseDouble(currentRow[column-1]);
 	}
 
@@ -393,6 +425,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getFloat(int)
 	 */
 	public float getFloat(int  column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return 0;
+	    }
+	    wasNull = false; 
 		return Float.parseFloat(currentRow[column-1]);
 	}
 
@@ -400,6 +437,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getInt(int)
 	 */
 	public int getInt(int column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return 0;
+	    }
+	    wasNull = false; 
 		return Integer.parseInt(currentRow[column-1]);
 	}
 	
@@ -407,6 +449,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getLong(int)
 	 */
 	public long getLong(int  column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return 0;
+	    }
+	    wasNull = false; 
 		return Long.parseLong(currentRow[column-1]);
 	}
 
@@ -414,6 +461,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getShort(int)
 	 */
 	public short getShort(int  column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return 0;
+	    }
+	    wasNull = false; 
 		return Short.parseShort(currentRow[column-1]);
 	}
 
@@ -465,10 +517,14 @@ public class CIMResultSet implements ResultSet {
 	/* (non-Javadoc)
 	 * @see java.sql.ResultSet#getBoolean(int)
 	 */
-	public boolean getBoolean(int arg0) throws SQLException {
-		// TODO Auto-generated method stub
+    public boolean getBoolean(int column) throws SQLException {
+	if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+	    wasNull = true;
 		return false;
 	}
+	wasNull = false; 
+	return currentRow[column-1].equalsIgnoreCase("TRUE");
+    }
 
 	/* (non-Javadoc)
 	 * @see java.sql.ResultSet#relative(int)
@@ -606,7 +662,13 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getObject(int)
 	 */
 	public Object getObject(int column) throws SQLException {
+	     if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return null;
+	    }
+	    wasNull = false; 
 		Object obj;
+
 		//Synchron zu CIMResultSetMetaData.getColumnClassName() halten
 		switch(rsmd.getColumnType(column)){
 			case Types.BIGINT: obj = new BigInteger(currentRow[column-1]); break;
@@ -654,6 +716,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getString(int)
 	 */
 	public String getString(int  column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return null;
+	    }
+	    wasNull = false; 
 		if(maxFieldSize>0&&maxFieldSize>currentRow[column].length()){
 			currentRow[column] = currentRow[column].substring(0,maxFieldSize);
 			warnBuffer.addElement(new SQLWarning(column+". Wert der "+(cursorpos+1)+". Zeile um "+(currentRow[column].length()-maxFieldSize)+" Zeichen beschnitten"));
@@ -672,9 +739,8 @@ public class CIMResultSet implements ResultSet {
 	/* (non-Javadoc)
 	 * @see java.sql.ResultSet#getByte(java.lang.String)
 	 */
-	public byte getByte(String arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		return 0;
+	public byte getByte(String column) throws SQLException {
+	    return (byte)(Integer.parseInt(currentRow[parseColnr(column)]));
 	}
 
 	/* (non-Javadoc)
@@ -812,6 +878,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getBigDecimal(int)
 	 */
 	public BigDecimal getBigDecimal(int column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return null;
+	    }
+	    wasNull = false;
 		return new BigDecimal(currentRow[column-1]);
 	
 	}
@@ -887,6 +958,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getDate(int)
 	 */
 	public Date getDate(int column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return null;
+	    }
+	    wasNull = false;
 		return new Date(Long.parseLong(currentRow[column-1]));
 	}
 	
@@ -945,6 +1021,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getTime(int)
 	 */
 	public Time getTime(int column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return null;
+	    }
+	    wasNull = false;
 		return new Time(Long.parseLong(currentRow[column-1]));
 	}
 
@@ -960,6 +1041,11 @@ public class CIMResultSet implements ResultSet {
 	 * @see java.sql.ResultSet#getTimestamp(int)
 	 */
 	public Timestamp getTimestamp(int column) throws SQLException {
+	    if(currentRow[column-1].equals("UNDEF")||currentRow[column-1].equals("NULL")){
+		wasNull = true;
+		return null;
+	    }
+	    wasNull = false;
 		return new Timestamp(Long.parseLong(currentRow[column-1]));
 	}
 

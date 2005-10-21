@@ -1,3 +1,24 @@
+/*
+ * CIMCallableStatement.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface CallableStatement for the CIM-JDBC
+ * 
+ *
+ * 
+ *
+*/
+
 package com.ibm.wbem.jdbc;
 import java.io.InputStream;
 import java.io.Reader;
@@ -24,7 +45,7 @@ import java.util.Map;
  */
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates

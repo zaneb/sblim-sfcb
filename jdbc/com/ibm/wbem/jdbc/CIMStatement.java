@@ -3,6 +3,25 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * CIMStatement.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface Statement for the CIM-JDBC
+ * 
+ *
+ * 
+ *
  */
 package com.ibm.wbem.jdbc;
 
@@ -18,7 +37,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -333,10 +352,64 @@ public class CIMStatement implements Statement {
 	public boolean execute(String arg0, String[] arg1) throws SQLException {
 		throw new SQLException("Not Implemented: Statement()");
 	}
-
 	/* (non-Javadoc)
 	 * @see java.sql.Statement#executeQuery(java.lang.String)
 	 */
+	public ResultSet executeQuery(String sql) throws SQLException {
+	return execQuery(sql,"2");
+    }
+
+
+    protected ResultSet execQuery(String pattern, String command)  throws SQLException{
+	
+	//Anfrage  abschicken
+	out.println(command+" "+pattern+"$");out.flush();
+	String inString="";
+	try {
+	    //Antwort abwarten und analysieren
+	    //Fehler
+	    
+	    
+	    String protocollSt=in.readLine();
+	    boolean first = true; 
+	    do{
+		if(!first)
+		    inString += "\n"+in.readLine();
+		else{
+		    inString += in.readLine();
+		    first = false;
+		}
+	    }while(!inString.endsWith("$$"));
+	    //System.out.println(protocollSt+"<<<\n"+inString);
+	    inString = inString.substring(0,inString.length()-2);
+	    String w[] = inString.split(";");
+	    sw = new SQLWarning(w[1],w[0]);
+	    if(!protocollSt.equals(command+" 1")){
+		//System.out.println(command+" 0: "+protocollSt);
+		
+		throw sw;
+	    }
+	    else{
+		
+		//System.out.println("2 1 "+inString);
+		//Warning einlesen
+		
+	    }
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    throw new SQLException("IOException reading Socket");
+	}
+	
+	rs = new CIMResultSet(s,this,in,out);
+	//System.out.println("fertig....");
+	return rs;
+    }
+
+
+	/* (non-Javadoc)
+	 * @see java.sql.Statement#executeQuery(java.lang.String)
+	 *
 	public ResultSet executeQuery(String sql) throws SQLException {
 		sw = null;rs = null;
 		//Anfrage  abschicken
@@ -380,7 +453,7 @@ public class CIMStatement implements Statement {
 		
 		rs = new CIMResultSet(s,this,in,out);
 		return rs;
-	}
+		}*/
 	protected BufferedReader getIn() {
 		return in;
 	}

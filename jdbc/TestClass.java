@@ -51,15 +51,15 @@ public class TestClass {
 			DatabaseMetaData dbmd = con.getMetaData();
 			ResultSetMetaData rsms;
 			int col,jj;
-			
+			/*		
 			//rs = dbmd.getTables(null,null,"CIM",null);
 			//rs = dbmd.getSuperTables(null,null,"CIM");
 		//	rs = dbmd.getPrimaryKeys(null,null,"Linux_CSBaseBoard");
 		//	rs = dbmd.getPrimaryKeys(null,null,"Linux_CSBaseBoard");
-			rs = dbmd.getColumns(null,null,"Linux","Capt");
+			rs = dbmd.getColumns(null,null,"Linuxll","");
 			rsms = rs.getMetaData();
 			col = rsms.getColumnCount();
-			for (int i = 0; i < col; i++) {
+			for (int i = 1; i <= col; i++) {
 				
 				System.out.println("classname: "+rsms.getColumnClassName(i));
 				System.out.println("displaysize: "+rsms.getColumnDisplaySize(i));
@@ -83,7 +83,7 @@ public class TestClass {
 				}
 				System.out.println("");
 			}
-			System.out.println("Es tut 1");
+				System.out.println("Es tut 1");*/
 		//	rs.close();//System.out.println("A");
 		
 			
@@ -92,7 +92,7 @@ public class TestClass {
 			// rs = stmt.executeQuery("Select Caption, UserModeTime  from  Linux_UnixProcess");
 		//	rs = stmt.executeQuery("Select distinct Caption   from  Linux_UnixProcess");
 		//		rs = stmt.executeQuery("Select ElementName  from  CIM_LogicalElement");
-		//	 rs = stmt.executeQuery("Select distinct *  from  Linux_UnixProcess fetch first 5 rows only");
+						 rs = stmt.executeQuery("Select distinct Caption  from  Linux_UnixProcess fetch first 5 rows only");
 			 //rs = stmt.executeQuery("Select *  from  Linux_UnixProcess union select Caption, UserModeTime from Linux_UnixProcess");
 			//rs = stmt.executeQuery("Select *  from  Linux_UnixProcess union select Caption, UserModeTime from Linux_UnixProcess");
 			//rs = stmt.executeQuery("(Select Caption, UserModeTime  from  Linux_UnixProcess union select Caption, UserModeTime from Linux_UnixProcess) union select Caption, UserModeTime from Linux_UnixProcess");
@@ -153,7 +153,7 @@ public class TestClass {
 		//	rs = stmt.executeQuery("delete  from  test20 ");	
 		//	rs = stmt.executeQuery("delete  from  test18 where spbb=2");	
 			//	rs = stmt.executeQuery("create table tabhh like CIM_LogicalElement)");	
-			rs = stmt.executeQuery("call test6.sdf ()");	
+			//		rs = stmt.executeQuery("call Linux_OperatingSystem.execCmd(\'Name=\"localhost.localdomain\"\',\'CreationClassName=\"Linux_OperatingSystem\"\',\'CSName=\"localhost.localdomain\"\',\'CSCreationClassName=\"Linux_ComputerSystem\"\',\'cmd:\" ls -all\":5632\',\'out:\" \":5632\')");
 		
 			
 			SQLWarning sw = stmt.getWarnings();
@@ -161,7 +161,7 @@ public class TestClass {
 			if(sw.getSQLState().equals("00000")){
 				rsms = rs.getMetaData();
 				col = rsms.getColumnCount();
-				for (int i = 0; i < col; i++) {
+			    for (int i = 1; i <= col; i++) {
 					
 					System.out.println("classname: "+rsms.getColumnClassName(i));
 					System.out.println("displaysize: "+rsms.getColumnDisplaySize(i));

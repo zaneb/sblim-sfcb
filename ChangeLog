@@ -1,3 +1,18 @@
+2005-10-21    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* avltree.h, dbpAdapter.c, sqlLexer.l, sqlParser.y,
+	sqlStatement.c, sqlStatement.h, jdbc/TestClass.java,
+	jdbc/com/ibm/wbem/jdbc/CIMCallableStatement.java,
+	jdbc/com/ibm/wbem/jdbc/CIMConnection.java,
+	jdbc/com/ibm/wbem/jdbc/CIMDatabaseMetaData.java,
+	jdbc/com/ibm/wbem/jdbc/CIMDriver.java,
+	jdbc/com/ibm/wbem/jdbc/CIMPreparedStatement.java,
+	jdbc/com/ibm/wbem/jdbc/CIMResultSet.java,
+	jdbc/com/ibm/wbem/jdbc/CIMResultSetMetaData.java, 
+	jdbc/com/ibm/wbem/jdbc/CIMStatement.java,
+	jdbc/htmlviewer/HFrame.java: 
+	Enhancements for the exeperimental JDBC support/SQL adapter.
+
 2005-10-06    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* httpAdapter.c, dbpAdapter.c, msgqueue.c, 

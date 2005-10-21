@@ -34,7 +34,7 @@
 #include <errno.h>
 #include "queryOperation.h"
 #include "sqlStatement.h"
-#include "genericlist.h"
+#include "utilft.h"
 
 #define YYPARSE_PARAM parm 
 #define YYLEX_PARAM parm
@@ -44,6 +44,7 @@ extern int yylex();
 extern void sfcQueryErr(char*,char*,char*);
 extern void yyError(char*);
 extern void yyerror(char*);
+extern UtilList *newList();
 
 //extern void setMeta(char *meta);//durch Memberfunction ersetzen
 
@@ -204,6 +205,7 @@ static UtilList* cloneAL();
 
 
 %token <strValue> TOK_IDENTIFIER
+%token <strValue> TOK_IDENTIFIER2
 %token <intValue> TOK_SELECT
 %token <intValue> TOK_WHERE
 %token <intValue> TOK_FROM
@@ -240,7 +242,7 @@ static UtilList* cloneAL();
 %type <intValue> optNot
 %type <sigma> limitedPredicate
 %type <sigma> predicate
-%type <sigma> enhPredicate
+//%type <sigma> enhPredicate
 %type <sigma> optCondition
 %type <column> colIdentifier
 %type <intValue> joinType
@@ -254,16 +256,16 @@ start:
 	/*subselect  { printf("subselect abgearbeitet\n");return 0;}
 	| */
 	 
-	 {	printf("parsen...\n");
+{	//printf("parsen...\n");
 	 }
 	  fullSelect  {
-	  	printf("fullSelect abgearbeitet\n");
+  //printf("fullSelect abgearbeitet\n");
 		RS->sw->setWarning(RS->sw,"00000","Successful Completion");
 		return 0;
 	  }
 	| select  {printf("select abgearbeitet\n");return 0;}
 	| dropTable {
-		printf("drop abgearbeitet\n");
+	  //printf("drop abgearbeitet\n");
 		RS->sw->setWarning(RS->sw,"00000","Successful Completion");
 		return 0;
 	}
@@ -277,18 +279,95 @@ start:
 ;	
 
 call:
-	TOK_CALL tableName '.' procedureName '(' argList ')' {
-		printf("call abgearbeitet\n");	
-		STM->addNode(STM,CALL,NULL);	
-	}
+	TOK_CALL tableName '.' procedureName {
+	  ClassDef * cd = (ClassDef*)$2; 
+	  //printf("call abgearbeitet\n");
+	  whereList = newList();assignmentList = newList();
+	  columnList = cd->fieldNameList;
+	  /*	  ExpressionLight * el;
+	  el = newExpressionLight("cmd",UNDEF,"ls");
+	  el->sqltype = CMPI_string;
+	  whereList->ft->append(whereList,el);
+	  el = newExpressionLight("out",UNDEF," ");
+	  el->sqltype = CMPI_string;
+	  whereList->ft->append(whereList,el);
+	  assignmentList = newList();
+	  el = newExpressionLight("Name",UNDEF,"localhost.localdomain");
+	  el->sqltype = CMPI_string;
+	  assignmentList->ft->append(assignmentList,el);
+	  el = newExpressionLight("CreationClassName",UNDEF,"Linux_OperatingSystem");
+	  el->sqltype = CMPI_string;
+	  assignmentList->ft->append(assignmentList,el);
+	  el = newExpressionLight("CSName",UNDEF,"localhost.localdomain");
+	  el->sqltype = CMPI_string;
+	  assignmentList->ft->append(assignmentList,el);
+	  el = newExpressionLight("CSCreationClassName",UNDEF,"Linux_ComputerSystem");
+	  el->sqltype = CMPI_string;
+	  assignmentList->ft->append(assignmentList,el);
+	  */
+	  Call * call = newCall(cd->className,$4,assignmentList,whereList);
+	  STM->addNode(STM,CALL,call);	
+	} '(' argList ')'
 ;
 
 procedureName:
-	TOK_IDENTIFIER {$$=$1;}
+	TOK_IDENTIFIER {
+	  //muss validiert werden, sobald die Funktionalität im sfcb implementiert ist
+	  $$=$1;
+	}
 ;
 
 argList:
+	kList |
+	kList ',' pList
+	;
+kList:	
+	kpair 
+	| kList ',' kpair
 ;
+
+kpair:
+	//select distinct Priority from linux_unixprocess fetch first 5 rows only;
+	//select  Priority from linux_unixprocess where Priority=24;
+	//select distinct Priority from linux_unixprocess where Priority<24 intersect
+	//select  distinct Priority from linux_unixprocess where Priority=23;
+
+
+	 '\'' TOK_IDENTIFIER TOK_EQ TOK_STRING '\''{
+	  ExpressionLight * el;
+	  Column* col;
+	  int i, found;
+	  found = 0;
+	  //printf("und los %d\n", CMPI_string);
+	  //printf(columnList->ft->);
+	  for(i=0,col = (Column*)columnList->ft->getFirst(columnList);col;col = (Column*)columnList->ft->getNext(columnList),i++){
+	    if(strcasecmp(col->colName,$2)==0){
+	      found = 1;
+	      //printf("::: %s %s\n",$2,$4);
+	      el = newExpressionLight($2,UNDEF,$4);
+	      el->sqltype = col->colSQLType;
+	      whereList->ft->append(whereList,el);
+	      break;
+	    }
+	  }
+	  if(found==0){
+	    yyerror(semanticError("UNDIFINED PARAMETER:\nColumn \"",$2,"\" is not part of the Key"));STM->rs->sw->sqlstate = "42P02";YYERROR;
+	  }
+	 
+	}
+pList:  
+	ptripel
+	| pList ',' ptripel 
+;
+
+ptripel: 
+	 '\'' TOK_IDENTIFIER  ':' TOK_STRING ':' TOK_INTEGER '\''  {
+	  ExpressionLight * el;
+	  el = newExpressionLight($2,UNDEF,$4);
+	  el->sqltype = $6;
+	  //printf("::: %s %s\n",$2,$4);
+	  assignmentList->ft->append(assignmentList,el);
+	}
 
 update:
 	TOK_UPDATE tableName {
@@ -329,7 +408,7 @@ assignment:
 		Column* rcol = NULL;
 		//printf("assignment2\n");
 		for(col = (Column*)allColumnsList->ft->getFirst(allColumnsList);col;col = (Column*)allColumnsList->ft->getNext(allColumnsList)){
-			if(strcmp(col->colName,$1)==0){
+			if(strcasecmp(col->colName,$1)==0){
 				rcol = col;
 				//printf("gefunden!!!\n");
 			}
@@ -341,8 +420,8 @@ assignment:
 		//printf("assignment3b %p\n",exl);
 		ExpressionLight* exl2;
 		for(exl2 = (ExpressionLight*)assignmentList->ft->getFirst(assignmentList);exl2;exl2 = (ExpressionLight*)assignmentList->ft->getNext(assignmentList)){
-			if(strcmp(exl->name,exl2->name)==0){
-				yyerror(semanticError("Cannot change column \'",$1,"\' more then once in one statement"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			if(strcasecmp(exl->name,exl2->name)==0){
+				yyerror(semanticError("DUPLICATE COLUMN:\nCannot change column \'",$1,"\' more then once in one statement"));STM->rs->sw->sqlstate = "42701";YYERROR;
 			}
 			
 		}
@@ -350,12 +429,12 @@ assignment:
 		
 		if(rcol==NULL){
 	  		
-			yyerror(semanticError("Column \'",$1,"\' in assigmnet-clause does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("UNDIFINED COLUMN:\nColumn \'",$1,"\' in assigmnet-clause does not exist"));STM->rs->sw->sqlstate = "42703";YYERROR;
 	  	}	
 		
-		if(exl->name!=NULL&&strcmp(rcol->colName,exl->name)!=0){
+		if(exl->name!=NULL&&strcasecmp(rcol->colName,exl->name)!=0){
 			
-			yyerror(semanticError("Operation can only be applied to same column: \"",$3,"\" "));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("ERROR IN ASSIGNMENT:\nOperation can only be applied to same column: \"",$3,"\" "));STM->rs->sw->sqlstate = "22005";YYERROR;
 		}
 		//printf("assignment4\n");
 		
@@ -386,7 +465,7 @@ assignment:
 	  	//printf("assignment5\n");
 		
 	  	if(ni==1){
-			yyerror(semanticError("Wrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("ERROR IN ASSIGNMENT:\nWrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "22005";YYERROR;
 	  	}
 	  	exl->sqltype = rcol->colSQLType; 
 	  	
@@ -443,7 +522,7 @@ insert:
 		assignmentList = newList();
 		ClassDef* cd = (ClassDef*)$3;
 		int i;
-		Column *col, *colB;
+		Column *colB;
 		UtilList* ul = cd->fieldNameList;
 		//printf("### 2\n");
 		for(i=0; i<cd->fieldCount; i++){
@@ -476,7 +555,7 @@ optColName:
 	}
 	| '(' colList ')' {
 		//teste, ob alle Keyattribute vorkommen!!!
-		int i;
+		//int i;
 		Column* col;
 		for(col = (Column*)allColumnsListIns->ft->getFirst(allColumnsListIns);col;col = (Column*)allColumnsListIns->ft->getNext(allColumnsListIns)){
 		//	printf("### %s %d\n",col->colName,col->isKey);
@@ -485,13 +564,13 @@ optColName:
 				ExpressionLight * el;
 				int found = 0;
 				for(el = (ExpressionLight*)assignmentList->ft->getFirst(assignmentList);el;el = (ExpressionLight*)assignmentList->ft->getNext(assignmentList)){
-					if(strcmp(el->name,col->colName)==0){
+					if(strcasecmp(el->name,col->colName)==0){
 						found = 1;
 						break;	
 					}		
 				}
 				if(found==0){
-					yyerror(semanticError("Column \'",col->colName,"\' is part of the key of the table. You have to enter values for all key-properties in Column-Name-clause"));STM->rs->sw->sqlstate = "77777";YYERROR;
+					yyerror(semanticError("NOT NULL VIOLATION:\nColumn \'",col->colName,"\' is part of the key of the table. You have to enter values for all key-properties in Column-Name-clause"));STM->rs->sw->sqlstate = "23502";YYERROR;
 				}
 			//	printf(" %d %s \n ",col->isKey,col->colName);
 			}
@@ -508,7 +587,7 @@ colListIDENTIFIER:
 		Column* rcol = NULL;
 		Column* col;
 		for(col = (Column*)allColumnsListIns->ft->getFirst(allColumnsListIns);col;col = (Column*)allColumnsListIns->ft->getNext(allColumnsListIns)){
-			if(strcmp(col->colName,$1)==0){
+			if(strcasecmp(col->colName,$1)==0){
 				rcol = col;
 			}
 			if(rcol!=NULL)
@@ -516,12 +595,12 @@ colListIDENTIFIER:
 		}
 		
 		if(rcol==NULL){
-			yyerror(semanticError("Column \'",$1,"\' in colList-clause of INSERT-Statement does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("UNDEFINED COLUMN:\nColumn \'",$1,"\' in colList-clause of INSERT-Statement does not exist"));STM->rs->sw->sqlstate = "42703";YYERROR;
 	  	}
 	  	ExpressionLight * el;
 		for(el = (ExpressionLight*)assignmentList->ft->getFirst(assignmentList);el;el = (ExpressionLight*)assignmentList->ft->getNext(assignmentList)){
-			if(strcmp(el->name,$1)==0){
-				yyerror(semanticError("Column \'",$1,"\' indicated twice"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			if(strcasecmp(el->name,$1)==0){
+				yyerror(semanticError("DUPLICATED COLUMN:\nColumn \'",$1,"\' indicated twice"));STM->rs->sw->sqlstate = "42701";YYERROR;
 			}
 		}
 		assignmentList->ft->append(assignmentList,newExpressionLight($1,UNDEF,NULL));	
@@ -531,7 +610,7 @@ valuesOrSelect:
 	fullSelect {
 		FullSelect * fs = ((Insert*)(STM->stmt))->fs;
 		if(fs->pi->col->ft->size(fs->pi->col)>assignmentList->ft->size(assignmentList)){
-			yyerror(semanticError("Number of columns in Fullselect-clause ist greater than Number of columns entered in columnList-clause"," "," "));STM->rs->sw->sqlstate = "77777";YYERROR;	
+			yyerror(semanticError("SYNTAX ERROR:\nNumber of columns in Fullselect-clause ist greater than Number of columns entered in columnList-clause"," "," "));STM->rs->sw->sqlstate = "42601";YYERROR;	
 		}
 		//types der columns vergleichen
 		ExpressionLight * el = (ExpressionLight*)assignmentList->ft->getFirst(assignmentList);
@@ -540,7 +619,7 @@ valuesOrSelect:
 		for(i=0;i<assignmentList->ft->size(assignmentList);i++){//geht über zwei Listen. ist so übersichtlicher
 			Column* colA;//MUSS DAS NICHT fs->pi->col sein????
 			for(colA = (Column*)allColumnsListIns->ft->getFirst(allColumnsListIns);col;colA = (Column*)allColumnsListIns->ft->getNext(allColumnsListIns)){
-				if(strcmp(colA->colName,el->name)==0){
+				if(strcasecmp(colA->colName,el->name)==0){
 					break;
 				}	
 			}
@@ -580,7 +659,7 @@ valuesOrSelect:
 	  		}
 	  		if(ni==1){
 	  		
-				yyerror(semanticError("Wrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "77777";
+				yyerror(semanticError("DATATYPE MISMATCH:\nWrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "42804";
 	  		}
 			
 			col = (Column*)fs->pi->col->ft->getNext(fs->pi->col);
@@ -592,7 +671,7 @@ valuesOrSelect:
 		//das macht hier schon Sinn, denn dann ist es für das calculate des insert unerheblich, woher die Assigenments stammen. Das heißt, dass insert-fehler (Tupel mit gleichen Key-Values bereits vorhanden) erst im calculate gefunden und behandelt werden
 		AvlTree* t = fs->calculate(fs);
 		if(t==NULL){
-			yyerror(semanticError("Internal Error."," "," "));STM->rs->sw->sqlstate ="77777";YYERROR;	
+			yyerror(semanticError("INTERNAL ERROR."," "," "));STM->rs->sw->sqlstate ="xx000";YYERROR;	
 		}
 
     	int tos;
@@ -614,7 +693,7 @@ valuesOrSelect:
 	    		}
 	    		Row * r = (Row*) p->item;	
 	    		if(r->doublette>1){
-	    			yyerror(semanticError("There are doublicates in the resultset of the FULSELECT-clause. Use \"DISTINCT\" to avoid this."," "," "));STM->rs->sw->sqlstate = "77777";YYERROR;
+	    			yyerror(semanticError("UNIQUE VIOLATION:\nThere are doublicates in the resultset of the FULSELECT-clause. Use \"DISTINCT\" to avoid this."," "," "));STM->rs->sw->sqlstate = "23505";YYERROR;
 	    		}
 	    		int k;
 	    		Column* col = (Column*)fs->pi->col->ft->getFirst(fs->pi->col);
@@ -623,7 +702,7 @@ valuesOrSelect:
 	    			//finde assignment:
 	    			ExpressionLight * el;
 	    			for(el = (ExpressionLight*)assignmentList->ft->getFirst(assignmentList);el;col = (Column*)fs->pi->col->ft->getNext(fs->pi->col)){
-	    				if(strcmp(el->name,col->colName)==0){
+	    				if(strcasecmp(el->name,col->colName)==0){
 	    					el->value = r->row[k];
 	    					el->sqltype = col->colSQLType; 
 	    					break;	
@@ -675,13 +754,13 @@ val:
 			el = (ExpressionLight*)assignmentList->ft->getNext(assignmentList);
 		}
 		if(el==NULL){
-			yyerror(semanticError("Tried to assign more columns than entered in the columnList-clause"," "," "));STM->rs->sw->sqlstate = "77777";YYERROR;	
+			yyerror(semanticError("SYNTAX ERROR:\nTried to assign more columns than entered in the columnList-clause"," "," "));STM->rs->sw->sqlstate = "42601";YYERROR;	
 		}
 		if(assignmentList->ft->size(assignmentList)!=allColumnsListIns->ft->size(allColumnsListIns)){//d.h. columnList war nicht leer
 			//suche richtige Column
 			
 			for(col = (Column*)allColumnsListIns->ft->getFirst(allColumnsListIns);col;col = (Column*)allColumnsListIns->ft->getNext(allColumnsListIns)){
-				if(strcmp(col->colName,el->name)==0){
+				if(strcasecmp(col->colName,el->name)==0){
 					break;
 				}	
 			}
@@ -703,7 +782,7 @@ val:
 		   default: ni=1; break;
 	  	}
 	  	if(ni==1){
-			yyerror(semanticError("Wrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DATATYPE MISMATCH:\nWrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "42804";YYERROR;
 	  	}
 	  	char buf[100];
 		int ii = sprintf(buf,"%d",$1);
@@ -725,13 +804,13 @@ val:
 			el = (ExpressionLight*)assignmentList->ft->getNext(assignmentList);
 		}
 		if(el==NULL){
-			yyerror(semanticError("Tried to assign more columns than entered in the columnList-clause"," "," "));STM->rs->sw->sqlstate = "77777";YYERROR;	
+			yyerror(semanticError("SYNTAX ERROR:\n Tried to assign more columns than entered in the columnList-clause"," "," "));STM->rs->sw->sqlstate = "42601";YYERROR;	
 		}
 		if(assignmentList->ft->size(assignmentList)!=allColumnsListIns->ft->size(allColumnsListIns)){//d.h. columnList war nicht leer
 			//suche richtige Column
 			
 			for(col = (Column*)allColumnsListIns->ft->getFirst(allColumnsListIns);col;col = (Column*)allColumnsListIns->ft->getNext(allColumnsListIns)){
-				if(strcmp(col->colName,el->name)==0){
+				if(strcasecmp(col->colName,el->name)==0){
 					break;
 				}
 			}
@@ -746,7 +825,7 @@ val:
 		   
 	  	}
 	  	if(ni==1){
-			yyerror(semanticError("Wrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DATATYPE MISMATCH:\nWrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "42804";YYERROR;
 	  	}
 	  	char buf[100];
 		int ii = sprintf(buf,"%f",$1);
@@ -769,13 +848,13 @@ val:
 			el = (ExpressionLight*)assignmentList->ft->getNext(assignmentList);
 		}
 		if(el==NULL){
-			yyerror(semanticError("Tried to assign more columns than entered in the columnList-clause"," "," "));STM->rs->sw->sqlstate = "77777";YYERROR;	
+			yyerror(semanticError("SYNTAX ERROR:\nTried to assign more columns than entered in the columnList-clause"," "," "));STM->rs->sw->sqlstate = "42601";YYERROR;	
 		}
 		if(assignmentList->ft->size(assignmentList)!=allColumnsListIns->ft->size(allColumnsListIns)){//d.h. columnList war nicht leer
 			//suche richtige Column
 			
 			for(col = (Column*)allColumnsListIns->ft->getFirst(allColumnsListIns);col;col = (Column*)allColumnsListIns->ft->getNext(allColumnsListIns)){
-				if(strcmp(col->colName,el->name)==0){
+				if(strcasecmp(col->colName,el->name)==0){
 					break;
 				}	
 			}
@@ -794,7 +873,7 @@ val:
 	  	
 	  	//printf("%d %d\n",col->colSQLType,CMPI_string);
 	  	if(ni==1){
-			yyerror(semanticError("Wrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DATATYPE MISMATCH:\nWrong type in assigemnment of column \'",col->colName,"\' "));STM->rs->sw->sqlstate = "42804";YYERROR;
 	  	}
 	  	el->sqltype = col->colSQLType; 
 	  	el->value = $1; 
@@ -813,7 +892,7 @@ createTable:
 		//printf("suche: %s\n",$3);
 		ClassDef * cd = getClassDef(STM->db,$3);
 		if(cd!=NULL){	
-			yyerror(semanticError("Table \"",$3,"\" does alrady exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DUPLICATE TABLE:\nTable \"",$3,"\" does alrady exist"));STM->rs->sw->sqlstate = "42P07";YYERROR;
 		}
 		
 		STM->addNode(STM,CREATE,newClassDef(0,$3,eList,0,NULL));
@@ -824,7 +903,7 @@ createTable:
 		ClassDef* cd1 = (ClassDef*)$5;
 		ClassDef * cd = getClassDef(STM->db,$3);
 		if(cd!=NULL){	
-			yyerror(semanticError("Table \"",$3,"\" does alrady exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DUPLICATE TABLE:\nTable \"",$3,"\" does alrady exist"));STM->rs->sw->sqlstate = "42P07";YYERROR;
 		}
 		STM->addNode(STM,CREATE,newClassDef(0,$3,NULL,0,cd1->className));
 	  }
@@ -877,64 +956,64 @@ dataType://nicht ganz ideal...
 	| TOK_SINTDT {$$ = CMPI_sint16;}
 	| TOK_BINTDT {$$ = CMPI_sint64;}
 ;
-
+/*
 uniqueConstraint:
-	/* empty */
+	/* empty *
 	| OPT_CONSTRAINT OPT_UNIQUE_KEY '(' columnNameList ')'	
-;
+;/*
 
-OPT_UNIQUE_KEY:
+/*OPT_UNIQUE_KEY:
 	TOK_UNIQUE
 	| TOK_PRIMARY TOK_KEY
-;
+	;*/
 
-OPT_CONSTRAINT:
-	/* empty */
+/*OPT_CONSTRAINT:
+	/* empty *
 	| TOK_CONSTRAINT TOK_IDENTIFIER
-;
+;*/
 
-referentialConstraint:
-	/* empty */
-	| OPT_CONSTRAINT TOK_FOREIGN TOK_KEY '(' columnNameList ')' referencesClause /* rest gespart */
-;
+/*referentialConstraint:
+	/* empty *
+	| OPT_CONSTRAINT TOK_FOREIGN TOK_KEY '(' columnNameList ')' referencesClause // rest gespart 
+	;*/
 
-referencesClause:
+/*referencesClause:
 	TOK_REFERENCES TOK_IDENTIFIER '(' columnNameList ')'
-;
+	;*/
 
-checkConstraint:
-	/* empty */
-	| OPT_CONSTRAINT TOK_CHECK '(' checkCondition ')'  /* rest gespart */
-;
+/*checkConstraint:
+	/* empty *
+	| OPT_CONSTRAINT TOK_CHECK '(' checkCondition ')'  // rest gespart 
+	;*/
 
-checkCondition:
+/*checkCondition:
 	TOK_IDENTIFIER comparison TOK_IDENTIFIER
 	| TOK_IDENTIFIER optNot TOK_BETWEEN TOK_IDENTIFIER TOK_AND TOK_IDENTIFIER
-	| matchExpression optNot TOK_LIKE patternExpression /* escape gespart */
-;
-columnOptions: 
-/* empty */
+	| matchExpression optNot TOK_LIKE patternExpression // escape gespart 
+	;*/
+/*columnOptions: 
+/* empty *
 	| columnOptionElement	
-;
-columnOptionElement: 
+	;*/
+/*columnOptionElement: 
 	  columnOptions TOK_NOT TOK_NULL
 	| columnOptions OPT_CONSTRAINT columnConstraint	
-;
+	;*/
 
-columnConstraint:
+/*columnConstraint:
 	TOK_PRIMARY TOK_KEY
 	| TOK_UNIQUE
 	| referencesClause
 	| TOK_CHECK '(' checkCondition ')'
-;
+	;*/
 alterTable:								/* wird nicht unterstützt! */
 	
-	TOK_ALTER {yyerror("ALTER nicht unterstützt");STM->rs->sw->sqlstate = "77777";YYERROR;}
+	TOK_ALTER {yyerror("FEATURE NOT SUPPORTED: ALTER");STM->rs->sw->sqlstate = "0A000";YYERROR;}
 ;
 
 select:	
 								/* wird nicht unterstützt! */
-	TOK_WITH {yyerror("WITH nicht unterstützt");STM->rs->sw->sqlstate = "77777";YYERROR;}
+	TOK_WITH {yyerror("FEATURE NOT SUPPORTED: WITH");STM->rs->sw->sqlstate = "0A000";YYERROR;}
 ;
 fullSelect:							/* Achtung: orderby und fetch first nur, wenn fullSelectOperation nicht leer!!! */
 	
@@ -972,11 +1051,11 @@ fullSelectClause: {
 			switch(sw){
 			case CCOUNTERR:
 				
-				yyerror("Die Anzahl der Elemente der verschiedenen Relationen stimmen nicht überein");STM->rs->sw->sqlstate = "77777";YYERROR;
+				yyerror("SYNTAX ERROR: The number of elements of two relations is different");STM->rs->sw->sqlstate = "42601";YYERROR;
 				break;
 			case CDEFERR:
 				
-				yyerror("Die Elementtypen der verschiedenen Relationen sind nicht kompatibel");STM->rs->sw->sqlstate = "77777";YYERROR;
+				yyerror("DATATYPE MISMATCH");STM->rs->sw->sqlstate = "42804";YYERROR;
 				break;
 			default:;	
 			}
@@ -1051,7 +1130,7 @@ subselect:
 		SubSelect* sbs = (SubSelect*)$2;
 		sbs->sigma = sigma;
 		sbs->pi = prj;
-		int i;
+		
 		sbs->addWhereList(sbs,whereList);
 		$$ = sbs;
 		obList=NULL;	
@@ -1061,7 +1140,7 @@ subselect:
 
 selectClause:						/* not empty */
 	TOK_SELECT/* {
-		printf("SELECT eingegeben...\n");
+		//printf("SELECT eingegeben...\n");
 		
 	}*/
 	OPT_ALL_DIST					/* optional */
@@ -1173,12 +1252,12 @@ fromClause:							/* not empty */
 		Column *col;
 		
 		if(!(aliasList->ft->isEmpty(aliasList))){
-			yyerror(semanticError("Table alias name \"",(char*)aliasList->ft->getFirst(aliasList),"\" does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("AMBIGUOUS ALIAS:\nTable alias name \"",(char*)aliasList->ft->getFirst(aliasList),"\" is undifined"));STM->rs->sw->sqlstate = "42P09";YYERROR;
 		}
 		
 		for(col = (Column*)columnList->ft->getFirst(columnList); col; col = (Column*)columnList->ft->getNext(columnList)){
 			if(col->colSQLType == UNDEF){		
-				yyerror(semanticError("Column \"",col->colName,"\" does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+				yyerror(semanticError("UNDIFINED COLUMN:\nColumn \"",col->colName,"\" does not exist"));STM->rs->sw->sqlstate = "42703";YYERROR;
 			}
 			
 		}
@@ -1186,7 +1265,7 @@ fromClause:							/* not empty */
 		//printf("sbuSelect: %p\n",s);
 		int i;
 		if(tableReferenceList->ft->size(tableReferenceList)>1){
-			SubSelect* sbs = newSubSelect();printf("newSubselect() from: (mehr als ein Tablename) %p\n",sbs);
+		  SubSelect* sbs = newSubSelect();//printf("newSubselect() from: (mehr als ein Tablename) %p\n",sbs);
 			SubSelect* rsbs = sbs;
 			for(i=0; i<tableReferenceList->ft->size(tableReferenceList); i++){//das ergibt einen maximal unbalancierten Baum...
 				if(sbs->cross->setA == NULL){
@@ -1197,7 +1276,7 @@ fromClause:							/* not empty */
 				else{
 					sbs->cross->setB = s;
 					s->sigma = newSelection(NULL,UNDEF);
-					SubSelect* stmp = sbs;printf("newSubselect() from: (in for-schleife: cross) %p\n",stmp);
+					SubSelect* stmp = sbs;//printf("newSubselect() from: (in for-schleife: cross) %p\n",stmp);
 					sbs = newSubSelect();
 					sbs->cross->setA = stmp;
 					stmp->sigma = newSelection(NULL,UNDEF);
@@ -1231,7 +1310,7 @@ tableReference: 					/* very limited (S.64) */
 		ClassDef* cd = (ClassDef*)$1;
 		Column *colA, *colB;
 		UtilList* ul = cd->fieldNameList;
-		SubSelect* sbs = newSubSelect();printf("new SubSelect() tableReference: %p\n",sbs);
+		SubSelect* sbs = newSubSelect();//printf("new SubSelect() tableReference: %p\n",sbs);
 		//$2 ist Table-Alias-Name
 		Projection* prj = newProjection(ALL,newList());
 		sbs->pi = prj;
@@ -1252,11 +1331,11 @@ tableReference: 					/* very limited (S.64) */
 			for(colA = (Column*)columnList->ft->getFirst(columnList); colA; colA = (Column*)columnList->ft->getNext(columnList)){//gefundene Spalten mit classdef vergleichen. 
 				//nach abbarbeiten der FROM-Clause miss die Liste leer sein.
 				for(colB = (Column*)ul->ft->getFirst(ul); colB; colB = (Column*)ul->ft->getNext(ul)){			
-					if(strcmp(colB->colName,colA->colName)==0){
+					if(strcasecmp(colB->colName,colA->colName)==0){
 						//??? hier stimmts nicht!!!!!!
 						//welches verhalten bei gleichem spaltennamen mehrmals????
 						
-						if(colA->tableName==NULL || (strcmp(colA->tableName,$2)==0 || strcmp(colA->tableName,cd->className)==0)){
+						if(colA->tableName==NULL || (strcasecmp(colA->tableName,$2)==0 || strcasecmp(colA->tableName,cd->className)==0)){
 							//printf("%s %s %s\n",colA->tableName,$2,cd->className);
 							
 //							if(colA->colSQLType != UNDEF ){ //das tut so noch nicht...
@@ -1270,7 +1349,7 @@ tableReference: 					/* very limited (S.64) */
 							
 							char *alias;
 							for(alias = (char*)aliasList->ft->getFirst(aliasList); alias; alias = (char*)aliasList->ft->getNext(aliasList)){
-								if(strcmp(alias,$2)==0)
+								if(strcasecmp(alias,$2)==0)
 									aliasList->ft->removeCurrent(aliasList);
 								
 							}
@@ -1296,7 +1375,7 @@ tableReference: 					/* very limited (S.64) */
 
 	}			/* view or table name */
 	| tableReference joinType TOK_JOIN tableReference TOK_ON joinCondition{
-		$$ = newSubSelectC($1,$3,$2);
+		$$ = newSubSelectC($1,$4,$2);
 		//printf("new SubSelect join %p\n",$$);
 	}
 ; 	
@@ -1312,7 +1391,7 @@ tableName:
 		//printf("suche: %s\n",$1);
 		ClassDef * cd = getClassDef(STM->db,$1);
 		if(cd==NULL){	
-			yyerror(semanticError("Table \"",$1,"\" does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("UNDIFINED TABLE:\nTable \"",$1,"\" does not exist"));STM->rs->sw->sqlstate = "42P01";YYERROR;
 		}
 		else{
 			//printf("Die Klasse gibt es!!!\n");
@@ -1324,10 +1403,10 @@ tableName:
 		/ * empty * /
 		| '(' columnNameList ')'
 	;*/ 
-	columnNameList:
+/*	columnNameList:
 		TOK_IDENTIFIER
 		| columnNameList ',' TOK_IDENTIFIER
-	;
+		;*/
 
 joinType:
 	/* empty */ {$$ = INNER;}						/* äquvivalent zu INNER */
@@ -1342,7 +1421,10 @@ whereClause:						/* may be empty */
 ;
 
 groupByClause:						/* may be empty */
-	/* empty */ | TOK_GROUP TOK_BY groupingExpression
+	/* empty */ | TOK_GROUP  {
+	  yyerror("FEATURE NOT SUPPORTED: GROUP BY");STM->rs->sw->sqlstate = "0A000";YYERROR;
+	}
+        TOK_BY groupingExpression
 ;
 
 groupingExpression:
@@ -1351,7 +1433,7 @@ groupingExpression:
 ;
 
 havingClause:						/* may be empty */
-	/* empty */ | TOK_HAVING searchCondition	
+	/* empty */ | TOK_HAVING  {yyerror("FEATURE NOT SUPPORTED: HAVING");STM->rs->sw->sqlstate = "0A000";YYERROR;} searchCondition	
 ;
 orderByClause:						/* may be empty */
 	/* empty */ | TOK_ORDER TOK_BY {obList = newList();} sortKeyList
@@ -1363,11 +1445,13 @@ sortKeyList:
 sortKey:
 	TOK_INTEGER OPT_ASC_DESC {//orderby nur auf columns, die in pi angegeben wurden!!!
 		//columnList muss zu diesem Zeitpunkt gefüllt sein!!!
-		int found = 0;
+		//int found = 0;
 		int colnr = $1;
+		char num[4];
 		
 		if(colnr>columnList->ft->size(columnList)||colnr<1){			
-			yyerror(semanticError("Column number \"",$1,"\" in order-by-clause does not exist in the result relation"));STM->rs->sw->sqlstate = "77777";YYERROR;
+		  sprintf(num,"%d",$1);
+		  yyerror(semanticError("UNDIFINED COLUMN:\nColumn number \"",num,"\" in order-by-clause does not exist in the result relation"));STM->rs->sw->sqlstate = "42703";YYERROR;
 		}
 		else{
 			Column* col;
@@ -1388,7 +1472,7 @@ sortKey:
 		Column* col;
 		int i, found;
 		for(i=0,col = (Column*)columnList->ft->getFirst(columnList);col;col = (Column*)columnList->ft->getNext(columnList),i++){
-			if(strcmp(col->colName,$1)==0||strcmp(col->colAlias,$1)==0){
+			if(strcasecmp(col->colName,$1)==0||strcasecmp(col->colAlias,$1)==0){
 				found = 1;
 				obList->ft->append(obList,newOrder(i,col->colSQLType,$2));
 				//printf("key found\n");
@@ -1396,7 +1480,7 @@ sortKey:
 			}
 		}
 		if(found==0){
-			yyerror(semanticError("Column \"",$1,"\" in order-by-clause does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("UNDEFINED COLUMN:\nColumn \"",$1,"\" in order-by-clause does not exist"));STM->rs->sw->sqlstate = "42703";YYERROR;
 		}
 	}
 ;
@@ -1412,7 +1496,7 @@ fetchFirstClause:					/* may be empty */
 		if($3<1){
 			char num[10];
 			//sprintf(num,"%d",$3);
-			yyerror(semanticError("Non positive value x=",num," in \"FETCH FIRST x ROWS ONLY\"-Clause \""));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("INVALIDE VALUEN:\non positive value x=",num," in \"FETCH FIRST x ROWS ONLY\"-Clause \""));STM->rs->sw->sqlstate = "22020";YYERROR;
 		}
 		else
 			$$=$3;	
@@ -1454,7 +1538,8 @@ optLimCondition:
 	}
 	
 	| TOK_OR  optNot limitedPredicate {
-		Sigma *sigma = OR;
+	        Sigma *sigma = (Sigma*) $3;
+		sigma->link = OR;
 		if($2==NOT)
 			sigma->negate(sigma);
 		whereList->ft->append(whereList,sigma);	
@@ -1471,7 +1556,7 @@ joinCondition:
 ;
 predicate:							/* Differenzierung notwendig wegen joinCondition ohne fullSelects ACHTUNG: Dadurch kein IN in JOIN! */
 	limitedPredicate {$$ = $1;}
-	//| enhPredicate {printf("::: enhPredicate\n");$$ = $1;}
+/*| enhPredicate*/
 ;
 
 limitedPredicate:
@@ -1483,7 +1568,7 @@ limitedPredicate:
 		int typeB = colB->colSQLType;
 		
 	  	if(typeA!=typeB||typeA==UNDEF||typeB==UNDEF){  		
-			yyerror(semanticError("Column-Types of the two columns do not match: ",colA->colName,colB->colName));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DATATYPE MISMATCH:\nColumn-Types of the two columns do not match: ",colA->colName,colB->colName));STM->rs->sw->sqlstate = "42804";YYERROR;
 	  	}
 	  		
 	  	$$ = newSigma(colA,$2,NULL,colB,NULL);//INNER oder FULL????
@@ -1504,7 +1589,7 @@ limitedPredicate:
 		      ni = 1; 
 	  	}
 	  	if(ni==1){
-			yyerror(semanticError("Type of Column\'",col->colName,"\' cannot be casted to a number"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DATA EXCEPTION:\nType of Column\'",col->colName,"\' cannot be casted to a number"));STM->rs->sw->sqlstate = "22000";YYERROR;
 	  	}
 		     
 	  	$$ = newSigma(col,$2,$3,NULL,NULL);
@@ -1513,7 +1598,7 @@ limitedPredicate:
 	| colIdentifier comparison TOK_STRING  {
 		//printf("::: string pred\n");
 		Column* col = (Column*)$1;
-		int i;
+		
 		int type = col->colSQLType;
 		
 	  	int ni = 0;
@@ -1536,7 +1621,7 @@ limitedPredicate:
   		}
 	  	
 	  	if(ni==1){
-			yyerror(semanticError("Type of Column \'",col->colName,"\' cannot be casted to a [VAR]CHAR"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DATATYPE MISMATCH:\nType of Column \'",col->colName,"\' cannot be casted to a [VAR]CHAR"));STM->rs->sw->sqlstate = "42804";YYERROR;
 	  	}
 		      
   		$$ = newSigma(col,$2,$3,NULL,NULL);
@@ -1559,7 +1644,7 @@ limitedPredicate:
 		      ni = 1; 
 	  	}
 	  	if(ni==1){
-			yyerror(semanticError("Type of Column\'",col->colName,"\' cannot be casted to a number"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("DATA EXCEPTION:\nType of Column\'",col->colName,"\' cannot be casted to a number"));STM->rs->sw->sqlstate = "22000";YYERROR;
 	  	}
 	  	int between = ($2==NOT)? NOTBETWEEN : BETWEEN;
 	  	double a = strtod($4,(char**)NULL);
@@ -1582,29 +1667,29 @@ colIdentifier://entweder colname, colalias tabelname.colname tablealias.colname,
 			  //tablename.colalias und tablealia.colalias machen keinen Sinn!
 			  //zurueckgegeben wird tablename.colname 
 	TOK_IDENTIFIER{
-		int i;
+		
 		Column* rcol = NULL;
 		Column* col;
 		for(col = (Column*)allColumnsList->ft->getFirst(allColumnsList);col;col = (Column*)allColumnsList->ft->getNext(allColumnsList)){
-			if(strcmp(col->colName,$1)==0||strcmp(col->colAlias,$1)==0){
+			if(strcasecmp(col->colName,$1)==0||strcasecmp(col->colAlias,$1)==0){
 				rcol = col;//printf("gefunden!!!\n");
 			}
 			if(rcol!=NULL)
 				break;
 		}
 	  	if(rcol==NULL){
-			yyerror(semanticError("Column \'",$1,"\' in SEARCH-CONDITION does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("UNDIFINED COLUMN:\nColumn \'",$1,"\' in SEARCH-CONDITION does not exist"));STM->rs->sw->sqlstate = "42703";YYERROR;
 	  	}	
 	  	$$ = rcol;
 	}
 	| TOK_IDENTIFIER '.' TOK_IDENTIFIER {
-		int i;
+	       
 		Column* col;
 		Column* rcol = NULL;
 		char *alias = NULL;
 		char *aliasc;
 		for(aliasc = (char*)aliasList->ft->getFirst(aliasList);aliasc;aliasc = (char*)aliasList->ft->getNext(aliasList)){
-			if(strcmp(aliasc,$1)==0||strcmp(aliasc,$1)==0){
+			if(strcasecmp(aliasc,$1)==0||strcasecmp(aliasc,$1)==0){
 				alias = aliasc;
 			}
 			
@@ -1612,7 +1697,7 @@ colIdentifier://entweder colname, colalias tabelname.colname tablealias.colname,
 				break;
 		}
 		for(col = (Column*)allColumnsList->ft->getFirst(allColumnsList);col;col = (Column*)allColumnsList->ft->getNext(allColumnsList)){
-			if((strcmp(col->colName,$3)==0||strcmp(col->colAlias,$3)==0)&&(alias!=NULL||strcmp(col->tableName,$1))){
+			if((strcasecmp(col->colName,$3)==0||strcasecmp(col->colAlias,$3)==0)&&(alias!=NULL||strcasecmp(col->tableName,$1))){
 				rcol = col;
 			}
 			
@@ -1620,7 +1705,7 @@ colIdentifier://entweder colname, colalias tabelname.colname tablealias.colname,
 				break;
 		}
 	  	if(rcol==NULL){
-			yyerror(semanticError("Column \'",$3,"\' in SEARCH-CONDITION does not exist"));STM->rs->sw->sqlstate = "77777";YYERROR;
+			yyerror(semanticError("UNDIFINED COLUMN:\nColumn \'",$3,"\' in SEARCH-CONDITION does not exist"));STM->rs->sw->sqlstate = "42703";YYERROR;
 	  	}	
 	  	$$ = rcol;
 	}
@@ -1641,13 +1726,13 @@ number:
 		strncpy($$,buf,i);
 	}
 ;
-	
+/*	
 enhPredicate:
 	| TOK_EXISTS '('fullSelect')'
 	| inPredicate
 	| expression comparison optSome '('fullSelect')'
 	| '(' inExprB ')' comparison optSome '('fullSelect')'	
-;
+	;*/
 comparison:
 	  TOK_EQ {$$ = EQ;}
 	| TOK_NE {$$ = NE;}
@@ -1656,7 +1741,7 @@ comparison:
 	| TOK_GE {$$ = GE;}
 	| TOK_LE {$$ = LE;}
 ;
-
+/*
 inPredicate:
 	  expression optNot TOK_IN inExprA
 	| '(' inExprB ')' optNot TOK_IN '('fullSelect')'
@@ -1664,32 +1749,32 @@ inPredicate:
 inExprA:
 	expression
 	| '(' fullSelect ')'
-	| '(' inExprB ')';						/* Semantisch vielleicht andere BEdeutung als im anderen Fall */
+	| '(' inExprB ')';						//Semantisch vielleicht andere BEdeutung als im anderen Fall 
 ;
 inExprB:
 	 expression 
 	| inExprB ','  expression 
-;
+	;*/
 optNot:
-	/* empty */{$$ = UNDEF}
+	/* empty */{$$ = UNDEF;}
 	| TOK_NOT {$$ = NOT;}
 ;
-matchExpression:
-	expression 						/* muss zu einem String evaluieren... */
-;
-patternExpression:
+/*matchExpression:
+	expression 						// muss zu einem String evaluieren... 
+;*/
+/*patternExpression:
 	'\'' TOK_IDENTIFIER '\''
-;
-optSome:
+	;*/
+/*optSome:
 	| TOK_SOME
 	| TOK_ANY
 	| TOK_ALL
 ;
-
+*/
 %%
 static UtilList* cloneAL(){
 	UtilList * res = newList();
-	int i;
+	
 	ExpressionLight* exl;
 	for(exl = (ExpressionLight*)assignmentList->ft->getFirst(assignmentList);exl;exl = (ExpressionLight*)assignmentList->ft->getNext(assignmentList)){
 		res->ft->append(res,newExpressionLight(exl->name,UNDEF,NULL));

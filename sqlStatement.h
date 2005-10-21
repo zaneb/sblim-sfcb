@@ -22,12 +22,7 @@
 
 #include "utilft.h"
 
-//#include "cimXmlParser.h" //Provider operationen
-//#include "cmpidt.h"
-
-//#include "objectImpl.h"
-//#include "cmpimacs.h"
-//#include "genericlist.h"
+#include "cmpimacs.h"
 #include "avltree.h"
 
 #define DEFAULTDB "root/cimv2"
@@ -151,6 +146,20 @@ typedef struct updIns UpdIns;
 struct insert;
 typedef struct insert Insert;
 
+struct call;
+typedef struct call Call;
+
+struct call {
+	char * tableName;
+	char * procedureName; 
+	UtilList * keyList;
+	UtilList * parameterList;
+	void (*free)();
+	
+};
+
+
+
 struct updIns {
 	char * tname;
 	UtilList * colList; 
@@ -190,6 +199,7 @@ struct classDef {
 
 
 
+
 struct sqlWarning {
 	char* sqlstate;
 	char* reason;
@@ -204,7 +214,7 @@ struct resultSet {
 	char* tupel;
 	void (*setWarning)(ResultSet *this, char* s, char *r);
 	void (*addMeta)(ResultSet *this, Projection* prj);
-	int (*addSet)(ResultSet *this, FullSelect* fs);
+	int (*addSet)(ResultSet *this, AvlTree* t);
 	void (*free)();
 };
 
@@ -216,13 +226,9 @@ struct sqlStatement {
 	char* db;//namespace
 	//int currentType;
 	UtilList* cnode;
-	FullSelect * lasttos;//um Sigma in fs einfügen zu können. wenn der parser das sigma erstellt hat ist aber setB schon gefüllt und das aktuelle fs schon vom stack genommen.
-	//void* clipboard;
-	//int prevType;
-	//void* prevnode;
+	FullSelect * lasttos, *lastFs;//um Sigma in fs einfügen zu können. wenn der parser das sigma erstellt hat ist aber setB schon gefüllt und das aktuelle fs schon vom stack genommen.
+        //auch für Konstrukte der Form A u B u C
 	void (*free)();
-	//void (*setClipBoard)(SqlStatement* this, void * value);
-	//void* (*getClipBoard)(SqlStatement* this);
 	int (*addNode)(SqlStatement* this, int type, void * value);
 	int (*calculate)();
 };
@@ -320,8 +326,10 @@ struct sigma{
 		
 };
 
+
+/*Konstruktoren, zu den oben definierten Datentypen*/
 ResultSet* newResultSet(char* query);
-SqlStatement* newSqlStatement(int type, ResultSet* rs);
+//SqlStatement* newSqlStatement(int type, ResultSet* rs);
 FullSelect* newFullSelect();
 SubSelect* newSubSelect();
 SubSelect* newSubSelectC(SubSelect* sbsA,SubSelect* sbsB, int type);
@@ -331,15 +339,33 @@ Selection* newSelection(UtilList* orderBy, int fetchFirst);
 CrossJoin* newCrossJoin(SubSelect* sbsA,SubSelect* sbsB, int type);
 Row* newRow(int size);
 Order *newOrder(int nr, int type, int order);
-Sigma* newSigmachar(Column* colA, int op,char* value, Column* colB,char* valueB);
+Sigma* newSigma(Column* colA, int op,char* value, Column* colB,char* valueB);
 ExpressionLight* newExpressionLight(char* name, int op,char* value);
 UpdIns* newUpdIns(char* tname, UtilList* colList,UtilList* assignmentList,UtilList* where);
 Insert* newInsert(char* tname);
 ClassDef* newClassDef(int fieldCount, char * className, UtilList * fieldNameList, int fNameLength, char * superclass);
+Call* newCall(char * tname, char * pname, UtilList * klist, UtilList * pList);
 
 
-//int item_cmp(const void *item1, const void *item2);
-//char* type2sqlString(int type);
-//char * int2String(int v)
 
 
+/*Definition der Schnittstelle zum CIMOM, über die Zugfriff auf die Daten erlangt wird*/
+CMPIEnumeration * enumInstances(char * ns, char * cn);
+int createInstance(char * ns, char * cn, UtilList * ins);
+int createClass(char * ns, char * cn, char * scn, UtilList * colDef);
+int deleteClass(char * ns, char * cn);
+CMPIValue * string2cmpival(char * value, int type);
+int deleteInstance(char * ns, char * cn, UtilList *al);
+int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl);
+UtilList * getClassNames(char * ns, char *filter);
+UtilList * invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl);
+ClassDef * getClassDef(const char *ns, const char *cn);
+
+/*Der Teil des SQL-Prozessors, der die Metaanfragen bearbeitet*/
+/*geht über den Parser, das Ergebnis-Resultset muss noch als Antwort codiert werden*/
+ResultSet *createRS(char *query, int *rc);
+/*die Anfrage wird innerhalb der Funktion bearbeitet und gleich als Antworstring codiert*/
+char * processMetaTables(char * filter, char* db);
+char * processMetaColumns(char * filter,char * filtercol, char* db);
+char * processSuperTables(char * filter, char* db);
+char * processKeyTable(char * filter,char * db);

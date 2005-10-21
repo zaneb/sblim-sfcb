@@ -3,7 +3,27 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * CIMConnection.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface Connection for the CIM-JDBC
+ * 
+ *
+ * 
+ *
  */
+
 package com.ibm.wbem.jdbc;
 
 import java.io.BufferedReader;
@@ -23,7 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -77,11 +97,11 @@ public class CIMConnection implements Connection{
 	 * @see java.sql.Connection#close()
 	 */
 	public void close() throws SQLException {
-		System.out.println("close()");
+	    //System.out.println("close()");
 		if(s==null)
 			return;
 		out.println("1 2\n");out.flush();
-		System.out.println("1 2 gesendet");
+		//	System.out.println("1 2 gesendet");
 		try {
 			in.close();
 		} catch (IOException e) {

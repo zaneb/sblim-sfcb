@@ -3,7 +3,27 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * CIMPreparedStatement.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: Implementaion of the interface PreparedStatement for the CIM-JDBC
+ * 
+ *
+ * 
+ *
  */
+
 package com.ibm.wbem.jdbc;
 
 import java.io.InputStream;
@@ -27,7 +47,7 @@ import java.sql.Types;
 import java.util.Calendar;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -73,11 +93,11 @@ public class CIMPreparedStatement extends CIMStatement implements PreparedStatem
 	 */
 	private String formatSQL() throws SQLException {
 		String res = sql;
-		System.out.println(sql);
+		//System.out.println(sql);
 		for (int i = 0; i < values.length; i++) {
 			if(values[i]==null)
 				throw new SQLException(i+". value is not set");
-			System.out.println(values[i]);
+			//System.out.println(values[i]);
 			res = res.replaceFirst("\\?",values[i]);
 		}
 		return res;

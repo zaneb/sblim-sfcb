@@ -3,6 +3,25 @@
  *
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
+ *
+ * HFRame.java
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE COMMON PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Common Public License from
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
+ *
+ * Author:       Sebastian Bentele <seyrich@de.ibm.com>
+ *
+ * Description: A simple client for the CIM-JDBC. The result is shown with the html-renderer of JEditorPane
+ * 
+ *
+ * 
+ *
  */
 package htmlviewer;
 
@@ -34,7 +53,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 
 /**
- * @author seyrich
+ * @author bentele
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
@@ -141,17 +160,17 @@ public class HFrame extends JFrame {
 			
 			sb.append("<table bgcolor=\"#180579\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\">"+
 					"<tbody>\n" +
-					"<tr >\n" +
+					"<tr  bgcolor=\"#180579\">\n" +
 					"<td valign=\"top\"><b>"+ft2+"query:"+ftc+"</b></td> " +
-					"<td valign=\"top\"><pre><font color=\"#ffffff\">"+query+"</font><pre>\n" +
+					"<td valign=\"top\"><code><font color=\"#ffffff\">"+query+"</font><code>\n" +
 					" </td>\n" +
 					" </tr>\n" +
-					"<tr>\n" +
+					"<tr bgcolor=\"#180579\" >\n" +
 					"<td valign=\"top\"><b>"+ft2+"SQLState:"+ftc+"</b></td> " +
 					"<td valign=\"top\">"+ft2+sw.getSQLState()+ftc+"<br>\n" +
 					" </td>\n" +
 					" </tr>\n" +
-					"<tr>\n" +
+					"<tr bgcolor=\"#180579\">\n" +
 					"<td valign=\"top\"><b>"+ft2+"SQLWarningText:"+ftc+"</b></td>\n" +
 					" <td valign=\"top\">"+ft2+sw.getMessage()+ftc+"<br>\n" +
 					"</td>\n" +
@@ -165,55 +184,55 @@ public class HFrame extends JFrame {
 				int col = rsms.getColumnCount();
 				sb.append("<table border=\"0\" cellpadding=\"2\" cellspacing=\"2\" width=\"100%\"><tbody>\n" +
 						"<tr bgcolor=\"#180579\"><td valign=\"top\"><b>"+ft1+ft2+"Name"+ftc+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)	
+			    for (int i = 1; i <= col; i++)	
 					sb.append("<td valign=\"top\"><b>"+ft1+ft2+rsms.getColumnName(i)+ftc+ftc+"</b></td>");
 				
 				sb.append("</tr><tr bgcolor=\"#ACCDFF\"><td valign=\"top\"><b>"+ft1+"Lable"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getColumnLabel(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#96B3DE\"><td valign=\"top\"><b>"+ft1+"Tablename"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getTableName(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#ACCDFF\"><td valign=\"top\"><b>"+ft1+"Typename"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getColumnTypeName(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#96B3DE\"><td valign=\"top\"><b>"+ft1+"Type"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getColumnType(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#ACCDFF\"><td valign=\"top\"><b>"+ft1+"TypeClassName"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getColumnClassName(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#96B3DE\"><td valign=\"top\"><b>"+ft1+"Scale"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getScale(i)+ftc+"</td>"); 
 				
 				sb.append("</tr><tr bgcolor=\"#ACCDFF\"><td valign=\"top\"><b>"+ft1+"Precision"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getPrecision(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#96B3DE\"><td valign=\"top\"><b>"+ft1+"Nullable"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.isNullable(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#ACCDFF\"><td valign=\"top\"><b>"+ft1+"Readonly"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.isReadOnly(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#96B3DE\"><td valign=\"top\"><b>"+ft1+"Signed"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.isSigned(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#ACCDFF\"><td valign=\"top\"><b>"+ft1+"Writeable"+ftc+"</b></td>");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.isWritable(i)+ftc+"</td>");
 				
 				sb.append("</tr><tr bgcolor=\"#ACCDFF\"><td valign=\"top\"><b>"+ft1+"Displaysize"+ftc+"</b></td>\n");
-				for (int i = 0; i < col; i++)		
+				for (int i = 1; i <= col; i++)		
 					sb.append("<td valign=\"top\">"+ft1+rsms.getColumnDisplaySize(i)+ftc+"</td>\n");
 				int j=1;
 				String[] color={"bgcolor = \"#A5C5F5\"","bgcolor = \"#96B3DE\""};

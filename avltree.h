@@ -31,13 +31,13 @@ struct avlNode;
 typedef struct avlNode AvlNode;
 
 
-typedef struct avlNode {
+struct avlNode {
     void *item;
     struct avlNode *left, *right;
     signed char balance;
 };
 
-typedef struct avlTree {
+struct avlTree {
     AvlNode *root;
     int n;
     int (* compar)(const void * a, const void *b);

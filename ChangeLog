@@ -1,3 +1,14 @@
+2005-11-17    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* cimXmlGen.c (str2CMPIValue): 
+	Bug 1358952: Extended to properly handle array type values.
+
+	* cimXmlOps.y, cimXmlParser.h: 
+	Bug 1358952: Added productions for array type method parameters,
+	including reference arrays. Added parser support datatypes for
+	that.
+
+
 2005-10-21    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* avltree.h, dbpAdapter.c, sqlLexer.l, sqlParser.y,
@@ -11,7 +22,7 @@
 	jdbc/com/ibm/wbem/jdbc/CIMResultSetMetaData.java, 
 	jdbc/com/ibm/wbem/jdbc/CIMStatement.java,
 	jdbc/htmlviewer/HFrame.java: 
-	Enhancements for the exeperimental JDBC support/SQL adapter.
+	Enhancements for the experimental JDBC support/SQL adapter.
 
 2005-10-06    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 

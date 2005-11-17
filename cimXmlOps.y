@@ -151,6 +151,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokValue                     xtokValue;
    XtokValueArray                xtokValueArray;
    XtokValueReference            xtokValueReference;
+   XtokValueRefArray             xtokValueRefArray;
    XtokPropertyList              xtokPropertyList;
 
    XtokInstanceName              xtokInstanceName;
@@ -353,6 +354,10 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %type  <xtokValueReference>      valueReference
 %token <intValue>                ZTOK_VALUEREFERENCE
 
+%token <xtokValueRefArray>       XTOK_VALUEREFARRAY
+%type  <xtokValueRefArray>       valueRefArray
+%token <intValue>                ZTOK_VALUEREFARRAY
+
 %token <className>               XTOK_CLASSNAME
 %token <intValue>                ZTOK_CLASSNAME
 %type  <className>               className
@@ -406,6 +411,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <intValue>                ZTOK_PROPERTYREFERENCE
 
 %type  <xtokPropertyData>        propertyData
+%type  <xtokPropertyData>        propertyArray
 %type  <xtokProperty>            property
 
 %token <xtokParam>               XTOK_PARAM
@@ -601,17 +607,25 @@ paramValue
        $1.value=$2;
        addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
-    | XTOK_PARAMVALUE valueArray ZTOK_PARAMVALUE
+    | XTOK_PARAMVALUE propertyList ZTOK_PARAMVALUE
     {
-       $1.valueArray=$2;
+       $1.valueArray=$2.list;
+       $1.type=CMPI_ARRAY;
        addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
     | XTOK_PARAMVALUE valueReference ZTOK_PARAMVALUE
     {
        $1.valueRef=$2;
+       $1.type=CMPI_ref;
        addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
-
+    | XTOK_PARAMVALUE valueRefArray ZTOK_PARAMVALUE
+    {
+       $1.valueRefArray=$2;
+       $1.type=CMPI_ARRAY | CMPI_ref;
+       addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
+    }   
+;
 
 /*
  *    getClass
@@ -1903,6 +1917,10 @@ property
     {
        $$.val=$2;
     }
+    | propertyArray
+    {
+       $$.val=$1;
+    }
 ;
 
 propertyData 
@@ -1920,13 +1938,6 @@ propertyData
        $$.ref=$1;
     }
 ;  
-
-propertyArray
-    : XTOK_PROPERTYARRAY  ZTOK_PROPERTYARRAY
-    {
-  //  printf("--- propertyArray\n");
-    }
-;
 
 propertyList
     : XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY
@@ -1951,17 +1962,11 @@ qualifier
 
 
 propertyArray
-    : XTOK_PROPERTYARRAY  ZTOK_PROPERTYARRAY
+    : XTOK_PROPERTYARRAY valueArray ZTOK_PROPERTYARRAY
     {
- //   printf("--- propertyArray\n");
-    }
-;
-
-propertyList
-    : XTOK_VALUEARRAY valueArray ZTOK_VALUEARRAY
-    {
-       $2.values[$2.next]=NULL;
-       $$.list=$2;
+      $$.list = NULL;
+      //   printf("--- propertyArray\n");
+      /* need to translate valuearray */
     }
 ;
 
@@ -2086,6 +2091,22 @@ valueReference
        $$.type=typeValRef_InstanceName;
     }
 ;
+
+valueRefArray
+    : valueReference
+    {
+       $$.next=1;
+       $$.max=64;
+       $$.values=(XtokValueReference*)malloc(sizeof(XtokValueReference)*64);
+       $$.values[0]=$1;
+    }
+    | valueRefArray valueReference
+    {
+       $$.values[$$.next]=$2;
+       $$.next++;
+    }
+;
+
 
 boolValue
     : XTOK_VALUE ZTOK_VALUE

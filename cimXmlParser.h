@@ -169,6 +169,11 @@ typedef struct xtokKeyBinding {
    XtokValueReference ref;
 } XtokKeyBinding;
 
+typedef struct xtokValueRefArray {
+   int max,next;
+   XtokValueReference *values;
+} XtokValueRefArray;
+
 
 
 
@@ -185,11 +190,13 @@ typedef struct xtokQualifiers {
 } XtokQualifiers;
 
 
+struct xtokPropertyList;
 
 typedef struct xtokPropertyData {
    union {
       char *value;
       XtokValueReference ref;
+      struct xtokPropertyList *list;
    };   
    XtokQualifiers qualifiers;
 } XtokPropertyData;
@@ -247,6 +254,7 @@ typedef struct xtokParamValue {
      XtokValue value;
      XtokValueReference valueRef;
      XtokValueArray valueArray;
+     XtokValueRefArray valueRefArray;
   };
 } XtokParamValue;
 

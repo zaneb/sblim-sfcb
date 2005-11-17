@@ -246,8 +246,8 @@ CMPIType guessType(char *val)
          if (!isdigit(*c)) break;
       }
    }
-   else if (strcasecmp(val,"true")) return CMPI_boolean;
-   else if (strcasecmp(val,"false")) return CMPI_boolean;
+   else if (strcasecmp(val,"true") == 0) return CMPI_boolean;
+   else if (strcasecmp(val,"false") == 0) return CMPI_boolean;
    return CMPI_string;
 }
 
@@ -259,6 +259,30 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
 
    if (type==0) {
       type=guessType(val);
+   }
+
+   if (type & CMPI_ARRAY) {
+     /* array type received -- needs special handling */
+     int i, max;
+     CMPIValue v;
+     XtokValueArray *arr = (XtokValueArray*)ref;
+     XtokValueRefArray *refarr = (XtokValueRefArray*)arr;
+     max=arr->next-1;
+     if (type & CMPI_ref) {
+       t = CMPI_ref;
+     } else {
+       /* the guess type can go wrong */
+       t = guessType(arr->values[0]);
+     }
+     /* build an array by looping thru the elements */
+     value.array = TrackedCMPIArray(max+1,t,NULL);
+     if (value.array != NULL) {
+       for (i=0; i<max; i++) {
+	 v = str2CMPIValue(t, arr->values[i], refarr->values+i);
+	 CMSetArrayElementAt(value.array, i, &v, t); 
+       }
+       return value;
+     }
    }
    
    switch (type) {
@@ -311,7 +335,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t);
       break;
   default:
-      mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value %d-%s\n", __FILE__, __LINE__, (int) type, val);
+      mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value %d-%p\n", __FILE__, __LINE__, (int) type, val);
       abort();
    }
    return value;

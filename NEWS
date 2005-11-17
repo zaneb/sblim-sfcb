@@ -2,6 +2,7 @@ Changes in 0.9.4
 ================
 
 Bugs fixed:
+- 1358952 Method Array Parameter Support added.
 -         SQL/JDBC Enhancements.
 
 Changes in 0.9.3

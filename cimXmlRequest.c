@@ -121,7 +121,7 @@ static char *cimMsgId[] = {
 */
 static char iResponseIntro1[] =
   "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"
-  "<CIM CIMVERSION=\"2.0\" DTDVERSION=\"1.1\">\n" 
+  "<CIM CIMVERSION=\"2.0\" DTDVERSION=\"2.0\">\n" 
    "<MESSAGE ID=\"";
 static char iResponseIntro2[] =
                "\" PROTOCOLVERSION=\"1.0\">\n" 
@@ -144,7 +144,7 @@ static char iResponseTrailer1[] =
   
 static char responseIntro1[] =
   "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"
-  "<CIM CIMVERSION=\"2.0\" DTDVERSION=\"1.1\">\n" 
+  "<CIM CIMVERSION=\"2.0\" DTDVERSION=\"2.0\">\n" 
    "<MESSAGE ID=\"";
 static char responseIntro2[] =
                "\" PROTOCOLVERSION=\"1.0\">\n" 

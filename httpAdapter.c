@@ -227,10 +227,12 @@ static void handleSigUsr1(int sig)
 
 static void freeBuffer(Buffer * b)
 {
+   Buffer emptyBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
    if (b->data)
       free(b->data);
    if (b->content)
       free(b->content);
+   *b=emptyBuf;   
 }
 
 static char *getNextHdr(Buffer * b)
@@ -270,7 +272,7 @@ static void add2buffer(Buffer * b, char *str, size_t len)
 }
 
 static void genError(CommHndl conn_fd, Buffer * b, int status, char *title,
-                     char *more)
+                     char *more, int noExit)
 {
    char head[1000];
    char server[] = "Server: sfcHttpd\r\n";
@@ -278,17 +280,19 @@ static void genError(CommHndl conn_fd, Buffer * b, int status, char *title,
    char cclose[] = "Connection: close\r\n\r\n";
 
    snprintf(head, sizeof(head), "%s %d %s\r\n", b->protocol, status, title);
+//   fprintf(stderr,"+++ genError: %s\n",head);
    commWrite(conn_fd, head, strlen(head));
    if (more) {
       commWrite(conn_fd, more, strlen(more));
-      exit(1);
+      if (noExit==0) exit(1);
+      return;
    }
 
    commWrite(conn_fd, server, strlen(server));
    commWrite(conn_fd, clength, strlen(clength));
    commWrite(conn_fd, cclose, strlen(cclose));
    commFlush(conn_fd);
-   exit(1);
+   if (noExit==0) exit(1);
 }
 
 static int readData(CommHndl conn_fd, char *into, int length)
@@ -344,7 +348,7 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
    static char cach[] = {"Cache-Control: no-cache\r\n"};
    static char op[]   = {"CIMOperation: MethodResponse\r\n"};
    static char cclose[] = "Connection: close\r\n";
-   static char end[]  = {"\r\n\r\n"};
+   static char end[]  = {"\r\n"};
    char str[256];
    int len, i, ls[8];
 
@@ -652,12 +656,19 @@ static int doHttpRequest(CommHndl conn_fd)
    int badReq = 0;
 
    rc=getHdrs(conn_fd, &inBuf,"POST ");
+//   fprintf(stderr,"+++ rc: %d\n",rc);
    
-   if (rc==1) genError(conn_fd, &inBuf, 501, "Not Implemented", NULL);
-   if (rc==2) genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+   if (rc==1) { 
+      genError(conn_fd, &inBuf, 501, "Not Implemented", NULL,1);
+      freeBuffer(&inBuf);
+      rc=getHdrs(conn_fd, &inBuf,"POST ");
+   }   
+   
+   if (rc==1) genError(conn_fd, &inBuf, 501, "Not Implemented", NULL,1);   
+   if (rc==2) genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
    if (rc==3) {
       fprintf(stderr,"-#- Waited too long for data after accept - request rejected\n");
-      genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+      genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
    }
             
    if (inBuf.size == 0) {
@@ -675,8 +686,6 @@ static int doHttpRequest(CommHndl conn_fd)
          break;
       *path++ = 0;
       _SFCB_TRACE(1,("--- Header: %s",inBuf.httpHdr));
-      if (strcasecmp(inBuf.httpHdr, "POST") != 0)
-         genError(conn_fd, &inBuf, 501, "Not Implemented", NULL);
       path += strspn(path, " \t\r\n");
       inBuf.protocol = strpbrk(path, " \t\r\n");
       *inBuf.protocol++ = 0;
@@ -689,7 +698,7 @@ static int doHttpRequest(CommHndl conn_fd)
       badReq = 0;
    }
 
-   if (badReq) genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+   if (badReq) genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
 
    while ((hdr = getNextHdr(&inBuf)) != NULL) {
       _SFCB_TRACE(1,("--- Header: %s",hdr));
@@ -715,7 +724,7 @@ static int doHttpRequest(CommHndl conn_fd)
          cp += strspn(cp, " \t");
          inBuf.host = cp;
          if (strchr(inBuf.host, '/') != NULL || inBuf.host[0] == '.')
-            genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+            genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
       }
       else if (strncasecmp(hdr, "User-Agent:", 11) == 0) {
          cp = &hdr[11];
@@ -729,7 +738,7 @@ static int doHttpRequest(CommHndl conn_fd)
          inBuf.trailers=1;
       }
       else if (strncasecmp(hdr, "Expect:", 7) == 0) {
-         genError(conn_fd, &inBuf, 417, "Expectation Failed", NULL);  //more);
+         genError(conn_fd, &inBuf, 417, "Expectation Failed", NULL,0);  //more);
       }
    }
 
@@ -756,7 +765,7 @@ static int doHttpRequest(CommHndl conn_fd)
    if (doBa) {
      if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principal))) {
        //char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
-       genError(conn_fd, &inBuf, 401, "Unauthorized", NULL);  //more);
+       genError(conn_fd, &inBuf, 401, "Unauthorized", NULL,0);  //more);
      }
 #if defined USE_SSL
      else if (sfcbSSLMode) {
@@ -768,7 +777,7 @@ static int doHttpRequest(CommHndl conn_fd)
 
    len = inBuf.content_length;
    if (len < 0) {
-     genError(conn_fd, &inBuf, 411, "Length Required", NULL);
+     genError(conn_fd, &inBuf, 411, "Length Required", NULL,0);
    }
 
    hdr = (char *) malloc(strlen(inBuf.authorization) + 64);

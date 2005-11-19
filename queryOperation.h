@@ -71,20 +71,20 @@ typedef enum qlOpd {
 } QLOpd;
 
 typedef enum qlFnc {
-   QL_FNC_NoFunction,
-   QL_FNC_BadFunction,
-   QL_FNC_Classname,
-   QL_FNC_Namespacename,
-   QL_FNC_Namespacetype,
-   QL_FNC_Hostport,
-   QL_FNC_Modelpath,
-   QL_FNC_Classpath,
-   QL_FNC_Objectpath,
-   QL_FNC_InstanceToReference,
-   QL_FNC_CurrentDateTime,
-   QL_FNC_DateTime,
-   QL_FNC_MicrosecondsToTimestamp,
-   QL_FNC_MicrosecondsToInterval,
+   QL_FNC_NoFunction=0,
+   QL_FNC_BadFunction=1,
+   QL_FNC_Classname=2,
+   QL_FNC_Namespacename=3,
+   QL_FNC_Namespacetype=4,
+   QL_FNC_Hostport=5,
+   QL_FNC_Modelpath=6,
+   QL_FNC_Classpath=7,
+   QL_FNC_Objectpath=8,
+   QL_FNC_InstanceToReference=9,
+   QL_FNC_CurrentDateTime=10,
+   QL_FNC_DateTime=11,
+   QL_FNC_MicrosecondsToTimestamp=12,
+   QL_FNC_MicrosecondsToInterval=13
 } QLFnc;
 
 struct qlPropertyNameData {

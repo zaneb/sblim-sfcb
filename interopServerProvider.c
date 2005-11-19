@@ -231,7 +231,7 @@ static CMPIStatus NameSpaceProviderEnumInstances(CMPIInstanceMI * mi,
 static CMPIStatus NameSpaceProviderEnumInstanceNames(CMPIInstanceMI * mi,
                                              CMPIContext * ctx,
                                              CMPIResult * rslt,
-                                             CMPIObjectPath * ref)
+                                             CMPIObjectPath * ref, int nsOpt)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char *dir,*dn,hostName[512];
@@ -247,6 +247,12 @@ static CMPIStatus NameSpaceProviderEnumInstanceNames(CMPIInstanceMI * mi,
    strcpy(dn,dir);
    if (dir[strlen(dir)-1]!='/') strcat(dn,"/");
    strcat(dn,"repository");
+   
+   if (nsOpt) {
+      op=CMNewObjectPath(_broker,"root","__Namespace",NULL);
+      gatherNameSpacesData(dn,strlen(dn),rslt,op,NULL);  
+      _SFCB_RETURN(st);
+   }
    
    op=CMNewObjectPath(_broker,"root/interop","CIM_Namespace",NULL);
    
@@ -481,7 +487,9 @@ static CMPIStatus ServerProviderEnumInstanceNames(CMPIInstanceMI * mi,
    CMPIString *cls=CMGetClassName(ref,NULL);
    
    if (strcasecmp((char*)cls->hdl,"cim_namespace")==0) 
-      return NameSpaceProviderEnumInstanceNames(mi, ctx, rslt, ref);
+      return NameSpaceProviderEnumInstanceNames(mi, ctx, rslt, ref,0);
+   if (strcasecmp((char*)cls->hdl,"__namespace")==0) 
+      return NameSpaceProviderEnumInstanceNames(mi, ctx, rslt, ref,1);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanager")==0) 
       return ObjectManagerProviderEnumInstanceNames(mi, ctx, rslt, ref);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 

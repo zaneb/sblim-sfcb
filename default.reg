@@ -32,7 +32,7 @@
    provider: ServerProvider
    location: sfcInteropServerProvider
    type: instance
-   namespace: root/interop
+   namespace: *
 #
 [CIM_ObjectManager]
    provider: ServerProvider

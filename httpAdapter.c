@@ -373,7 +373,7 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
    PrintF("%s",head);
    commWrite(conn_fd, cont, strlen(cont));
    PrintF("%s",cont);
-   sprintf(str, "Content-Length: %d\r\n", len + 2);
+   sprintf(str, "Content-Length: %d\r\n", len);
    commWrite(conn_fd, str, strlen(str));
    PrintF("%s",str);
 //   commWrite(conn_fd, ext, strlen(ext));
@@ -584,7 +584,7 @@ static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
       
       add2buffer(b, buf, r);
       total+=r;
-      
+//      fprintf(stderr,"+++ buf: >%s<\n",buf);
       if (r && first) {
          if (strncasecmp(buf,cmd,strlen(cmd)) != 0) return 1;
          first=0;

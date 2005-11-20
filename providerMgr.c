@@ -162,9 +162,12 @@ int nameSpaceOk(ProviderInfo *info, char *nameSpace)
    
    _SFCB_TRACE(1,("--- testing for %s on %s",nameSpace,info->providerName));
    
-   if (info->ns) for (ns=info->ns; *ns; ns++) {
-      if (strcasecmp(*ns,nameSpace)==0) _SFCB_RETURN(1);
-   }   
+   if (info->ns) {
+      if (strcasecmp(*info->ns,"*")==0) _SFCB_RETURN(1);  
+      for (ns=info->ns; *ns; ns++) {
+         if (strcasecmp(*ns,nameSpace)==0) _SFCB_RETURN(1);
+      }
+   }      
    if (info==classProvInfoPtr) _SFCB_RETURN(1);
 
    if (strcasecmp(nameSpace,"root/pg_interop")==0) 

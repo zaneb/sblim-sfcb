@@ -267,7 +267,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
      CMPIValue v;
      XtokValueArray *arr = (XtokValueArray*)ref;
      XtokValueRefArray *refarr = (XtokValueRefArray*)arr;
-     max=arr->next-1;
+     max=arr->next;
      if (type & CMPI_ref) {
        t = CMPI_ref;
      } else {
@@ -275,7 +275,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
        t = guessType(arr->values[0]);
      }
      /* build an array by looping thru the elements */
-     value.array = TrackedCMPIArray(max+1,t,NULL);
+     value.array = TrackedCMPIArray(max,t,NULL);
      if (value.array != NULL) {
        for (i=0; i<max; i++) {
 	 v = str2CMPIValue(t, arr->values[i], refarr->values+i);

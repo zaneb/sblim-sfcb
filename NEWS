@@ -5,6 +5,7 @@ Bugs fixed:
 - 1362805 Changed License from CPL to EPL
 - 1358952 Method Array Parameter Support added.
 - 1356303 Incompatibility with SNIA/Pegasus Java client fixed.
+- 1352052 Fixed datetime double offset calculation
 - 1283987 Fixed provider problem caused by freeing a NULL pointer.
 - n/a     SQL/JDBC Enhancements (experimental).
 

@@ -1,3 +1,58 @@
+2005-11-20  bestorga-oss
+
+	* COPYING, Makefile.am, args.c, array.c, array.h, avltree.c,
+	avltree.h, brokerEnc.c, brokerOs.c, brokerUpc.c, cimXmlGen.c,
+	cimXmlGen.h, cimXmlOps.y, cimXmlParser.c, cimXmlParser.h,
+	cimXmlRequest.c, cimXmlRequest.h, classProvider.c, cmpidt.h,
+	cmpift.h, cmpiftx.h, cmpimacs.h, cmpimacsx.h, cmpios.h,
+	configure.ac, constClass.c, constClass.h, context.c, control.c,
+	control.h, datetime.c, dbpAdapter.c, enumeration.c,
+	fileRepository.c, fileRepository.h, genericlist.c, genericlist.h,
+	hashtable.c, hashtable.h, httpAdapter.c, httpComm.c, httpComm.h,
+	incoreClassSchema.h, indCIMXMLExport.c, indCIMXMLHandler.c,
+	instance.c, internalProvider.c, interopProvider.c,
+	interopServerProvider.c, mlog.c, mlog.h, mrwlock.c, mrwlock.h,
+	msgqueue.c, msgqueue.h, native.h, objectImpl.c, objectImpl.h,
+	objectpath.c, predicate.c, providerDrv.c, providerMgr.c,
+	providerMgr.h, providerRegister.c, providerRegister.h,
+	queryLexer.l, queryOperation.c, queryOperation.h, queryParser.y,
+	queryStatement.c, result.c, selectcond.c, selectexp.c, selectexp.h,
+	sfcBasicAuthentication.c, sfcBroker.c,
+	sfcCertificateAuthentication.c, sfcVersion.h, sqlLexer.l,
+	sqlParser.y, sqlStatement.c, sqlStatement.h, string.c, subcond.c,
+	support.c, support.h, trace.c, trace.h, utilFactory.c,
+	utilHashtable.c, utilStringBuffer.c, utilft.h, value.c, wbemcat,
+	xmltest, jdbc/com/ibm/wbem/jdbc/CIMCallableStatement.java,
+	jdbc/com/ibm/wbem/jdbc/CIMConnection.java,
+	jdbc/com/ibm/wbem/jdbc/CIMDatabaseMetaData.java,
+	jdbc/com/ibm/wbem/jdbc/CIMDriver.java,
+	jdbc/com/ibm/wbem/jdbc/CIMPreparedStatement.java,
+	jdbc/com/ibm/wbem/jdbc/CIMResultSet.java,
+	jdbc/com/ibm/wbem/jdbc/CIMResultSetMetaData.java,
+	jdbc/com/ibm/wbem/jdbc/CIMStatement.java,
+	jdbc/htmlviewer/HFrame.java: 
+	Bug: 1362805. Changed all license references to Eclipse Public license
+
+2005-11-20  a3schuur
+
+	* default.reg, httpAdapter.c, interopServerProvider.c,
+	providerMgr.c: 
+	Fixed [ 1356303 ] Cannot make connection by Java
+	based CIM Browser Corrected content-length problem caused by
+	previous fix Added support for __Namespace instanceNames
+	enumeration Added namespace: * support for providerRegister to
+	providerMgr.c	 Providers can now work on all namespaces. This is
+	used for the __Namespace entry
+
+2005-11-19  a3schuur
+
+	* cimXmlRequest.c, default.reg, httpAdapter.c,
+	interopServerProvider.c, queryOperation.h: 
+	Fixed [ 1356303 ] Cannot
+	make connection by Java based CIM Browser sfcb outputs 1 crlf to
+	much before response payload sfcb incorrectly close port when
+	detecting M-POST request
+
 2005-11-17    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* cimXmlGen.c (str2CMPIValue): 
@@ -23,6 +78,45 @@
 	jdbc/com/ibm/wbem/jdbc/CIMStatement.java,
 	jdbc/htmlviewer/HFrame.java: 
 	Enhancements for the experimental JDBC support/SQL adapter.
+
+2005-10-18  a3schuur
+
+	* queryOperation.c: Removed compile failure in newFncQueryOperand
+
+2005-10-18  a3schuur
+
+	* queryOperation.c, queryOperation.h, queryParser.y: 
+	Added CQL function definitions - not yet complete
+
+2005-10-18  a3schuur
+
+	* cimXmlGen.c: 
+	Fixed [ 1283987 ] sfcbd doesn't return instance for
+	Linux_BlockDeviceStati....  cimXmlGen tried to free a nullvalue
+	string
+
+2005-10-18  a3schuur
+
+	* queryLexer.l, queryOperation.h, queryParser.y: 
+	Initial support	for path name functions
+
+2005-10-17  a3schuur
+
+	* interopProvider.c, queryLexer.l, queryOperation.c,
+	queryOperation.h, queryParser.y, queryStatement.c: 
+	Prepared query support for CQL style queries
+
+2005-10-17  a3schuur
+
+	* classSchema2c.c, incoreClassSchema.h: 
+	Added initial support for incore classSchema files. 
+	classSchema2c.c makes out of an existing
+	classSchema file a binary blob that can be compiled
+
+2005-10-10  a3schuur
+
+	* classProvider.c: Correction of class data total size (excluding
+	DMY_ classes)
 
 2005-10-06    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 

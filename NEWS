@@ -1,9 +1,13 @@
-Changes in 0.9.4
+Changes in 1.0.0
 ================
 
 Bugs fixed:
+- 1362805 Changed License from CPL to EPL
 - 1358952 Method Array Parameter Support added.
--         SQL/JDBC Enhancements.
+- 1356303 Incompatibility with SNIA/Pegasus Java client fixed.
+- 1283987 Fixed provider problem caused by freeing a NULL pointer.
+- n/a     SQL/JDBC Enhancements (experimental).
+
 
 Changes in 0.9.3
 ================

@@ -1,3 +1,25 @@
+
+/*
+ * classSchema.c
+ *
+ * (C) Copyright IBM Corp. 2005
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Eclipse Public License from
+ * http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * Author:        Adrian Schuur <schuur@de.ibm.com>
+ *
+ * Description:
+ *
+ * A small program converting a classSchema file to a .c representation 
+ * that can be compiled.
+ *
+*/
+
 #include "utilft.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -1436,17 +1436,17 @@ associatorsParms
        $$.properties=0;
        $$.propertyList=0;
     }
-    | XTOK_IP_ROLE className ZTOK_IPARAMVALUE
+    | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
-       $$.role = $2;
+       $$.role = $2.value;
        $$.objNameSet=$$.flags = $$.flagsSet = 0 ;
        $$.assocClass=$$.resultClass=$$.resultRole=0;
        $$.properties=0;
        $$.propertyList=0;
     }
-    | XTOK_IP_RESULTROLE className ZTOK_IPARAMVALUE
+    | XTOK_IP_RESULTROLE value ZTOK_IPARAMVALUE
     {
-       $$.resultRole = $2;
+       $$.resultRole = $2.value;
        $$.objNameSet=$$.flags = $$.flagsSet = 0 ;
        $$.assocClass=$$.resultClass=$$.role=0;
        $$.properties=0;
@@ -1571,9 +1571,9 @@ referencesParms
        $$.properties=0;
        $$.propertyList=0;
     }
-    | XTOK_IP_ROLE className ZTOK_IPARAMVALUE
+    | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
-       $$.role = $2;
+       $$.role = $2.value;
        $$.objNameSet=$$.flags = $$.flagsSet = 0 ;
        $$.resultClass=0;
        $$.properties=0;
@@ -1684,15 +1684,15 @@ associatorNamesParms
        $$.objNameSet = 0 ;
        $$.assocClass=$$.role=$$.resultRole=0;
     }
-    | XTOK_IP_ROLE className ZTOK_IPARAMVALUE
+    | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
-       $$.role = $2;
+       $$.role = $2.value;
        $$.objNameSet = 0 ;
        $$.assocClass=$$.resultClass=$$.resultRole=0;
     }
-    | XTOK_IP_RESULTROLE className ZTOK_IPARAMVALUE
+    | XTOK_IP_RESULTROLE value ZTOK_IPARAMVALUE
     {
-       $$.resultRole = $2;
+       $$.resultRole = $2.value;
        $$.objNameSet= 0 ;
        $$.assocClass=$$.resultClass=$$.role=0;
     }
@@ -1766,9 +1766,9 @@ referenceNamesParms
        $$.objNameSet = 0 ;
        $$.role=0;
     }
-    | XTOK_IP_ROLE className ZTOK_IPARAMVALUE
+    | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
-       $$.role = $2;
+       $$.role = $2.value;
        $$.objNameSet = 0 ;
        $$.resultClass=0;
     }

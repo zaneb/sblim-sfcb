@@ -1,3 +1,10 @@
+Changes in 1.0.1
+================
+
+Bugs fixed:
+- 1371764 Fixed XML parsing for associator/references calls, when
+	  role and resultRole were specified.
+
 Changes in 1.0.0
 ================
 

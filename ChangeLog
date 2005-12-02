@@ -1,3 +1,9 @@
+2005-12-02    <mihajlov@localhost.localdomain>
+
+	* cimXmlOps.y: 
+	Fixed 1371764. Corrected productions for assoc role and
+	resultRole paramers.
+
 2005-11-21  a3schuur
 	* datetime.c:
 	Fixed [ 1352052 ] sfcb modifies datetime properties

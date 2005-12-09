@@ -1,4 +1,3 @@
-
 /*
  * brokerUpc.c
  *
@@ -802,8 +801,8 @@ static CMPIData invokeMethod(CMPIBroker * broker, CMPIContext * context,
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    InvokeMethodReq *sreq; // = BINREQ(OPS_InvokeMethod, 5);
-   OperationHdr oHdr = { OPS_GetInstance, 2 };
-   CMPIStatus st = { OPS_InvokeMethod, NULL };
+   OperationHdr oHdr = { OPS_InvokeMethod, 2 };
+   CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIArgs *tOut;
    int irc,i,s,x=0,size,n;
    CMPIString *name;

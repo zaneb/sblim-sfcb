@@ -16,6 +16,12 @@
    type: instance association method
    unload: never
 #
+[CIM_IndicationHandlerCIMXML]
+   provider: IndCIMXMLHandler
+   location: sfcIndCIMXMLHandler
+   type: instance method
+   namespace: root/interop
+#
 [CIM_ListenerDestinationCIMXML]
    provider: IndCIMXMLHandler
    location: sfcIndCIMXMLHandler

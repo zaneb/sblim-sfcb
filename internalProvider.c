@@ -36,6 +36,9 @@
 
 #define LOCALCLASSNAME "InternalProvider"
 
+static char * interopNs = "root/interop";
+static char * pg_interopNs = "root/pg_interop";
+
 extern ProviderInfo *interOpProvInfoPtr;
 extern ProviderInfo *forceNoProvInfoPtr;
 
@@ -55,6 +58,16 @@ typedef struct keyIds {
    CMPIString *key;
    CMPIData data;
 } KeyIds;
+
+
+static char * repositoryNs (char * nss)
+{
+  if (strcasecmp(nss,pg_interopNs)==0) {
+    return interopNs;
+  } else {
+    return nss;
+  }   
+}
 
 static int qCompare(const void *arg1, const void *arg2)
 {
@@ -181,8 +194,7 @@ static int testNameSpace(char *ns, CMPIStatus *st)
     char **nsp=nsTab;
     
     if (interOpProvInfoPtr==forceNoProvInfoPtr) {
-       if (strcasecmp(ns,"root/interop")==0 ||
-           strcasecmp(ns,"root/pg_interop")==0) {
+       if (strcasecmp(ns,interopNs)==0) {
           st->msg=native_new_CMPIString("Interop namespace disabled",NULL);
           st->rc=CMPI_RC_ERR_FAILED;
           return 0;
@@ -242,6 +254,7 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    CMPIObjectPath *cop;
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
+   char *bnss=repositoryNs(nss);
    int n,dp,elen,ekl,i,ac=0;
    char copKey[8192]="";
    char *kp,ch;
@@ -257,13 +270,13 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    in=CMNewArgs(Broker,NULL);
    out=CMNewArgs(Broker,NULL);
    CMAddArg(in,"class",cns,CMPI_chars);
-   op=CMNewObjectPath(Broker,nss,"$ClassProvider$",&sti);
+   op=CMNewObjectPath(Broker,bnss,"$ClassProvider$",&sti);
    rv=CBInvokeMethod(Broker,ctx,op,"getallchildren",in,out,&sti);     
    ar=CMGetArg(out,"children",NULL).value.array;
    if (ar) ac=CMGetArrayCount(ar,NULL);
    
    for (i=0; cns; i++) {
-      if ((bi=_getIndex(nss,cns))!=NULL) {
+      if ((bi=_getIndex(bnss,cns))!=NULL) {
          for (dp=0; dp<bi->dSize; ) {
             sscanf(bi->index+dp,"%d %d %1s%n",&elen,&ekl,&ch,&n);
             kp=bi->index+dp+n-1;
@@ -303,6 +316,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi, CMPIContext * ctx, void *rs
    CMPIString *ns = CMGetNameSpace(ref, NULL);
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
+   char *bnss=repositoryNs(nss);
    int len,i,ac=0;
    void *blob;
    CMPIInstance *ci;
@@ -319,7 +333,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi, CMPIContext * ctx, void *rs
    if (ignprov) CMAddArg(in,"classignoreprov",cns,CMPI_chars);
    else CMAddArg(in,"class",cns,CMPI_chars);
    
-   op=CMNewObjectPath(Broker,nss,"$ClassProvider$",&sti);
+   op=CMNewObjectPath(Broker,bnss,"$ClassProvider$",&sti);
    _SFCB_TRACE(1,("--- getallchildren"));
    rv=CBInvokeMethod(Broker,ctx,op,"getallchildren",in,out,&sti);     
    _SFCB_TRACE(1,("--- getallchildren rc: %d",sti.rc));
@@ -330,7 +344,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi, CMPIContext * ctx, void *rs
  
    for (i=0; cns; i++) {
        _SFCB_TRACE(1,("--- looking for %s",cns));
-      if ((bi=_getIndex(nss,cns))!=NULL) {
+      if ((bi=_getIndex(bnss,cns))!=NULL) {
          for (blob=getFirst(bi,&len); blob; blob=getNext(bi,&len)) {
             ci=relocateSerializedInstance(blob);
             _SFCB_TRACE(1,("--- returning instance %p",ci));
@@ -393,17 +407,18 @@ CMPIInstance *internalProviderGetInstance(CMPIObjectPath * cop, CMPIStatus *rc)
    void *blob;
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
+   char *bnss=repositoryNs(nss);
    CMPIStatus st = { CMPI_RC_OK, NULL };
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "internalProviderGetInstance");
    _SFCB_TRACE(1,("--- Get instance for %s %s %s",nss,cns,key));
    
-   if (testNameSpace(nss,rc)==0) {
+   if (testNameSpace(bnss,rc)==0) {
       _SFCB_TRACE(1,("--- Invalid namespace %s",nss));
       _SFCB_RETURN(NULL);
    }
 
-   blob=getBlob(nss,cns,key,&len);
+   blob=getBlob(bnss,cns,key,&len);
    
    if (blob==NULL) {
       _SFCB_TRACE(1,("--- Instance not found"));
@@ -449,14 +464,15 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    char *key = normalizeObjectPath(cop);
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
+   char *bnss=repositoryNs(nss);
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderCreateInstance");
    
-   if (testNameSpace(nss,&st)==0) {
+   if (testNameSpace(bnss,&st)==0) {
       return st;
    }
 
-   if (existingBlob(nss,cns,key)) {
+   if (existingBlob(bnss,cns,key)) {
       CMPIStatus st = { CMPI_RC_ERR_ALREADY_EXISTS, NULL };
       return st;
    }
@@ -465,7 +481,7 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    blob=malloc(len+64);
    getSerializedInstance(ci,blob);
    
-   if (addBlob(nss,cns,key,blob,(int)len)) {
+   if (addBlob(bnss,cns,key,blob,(int)len)) {
       CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
       st.msg=native_new_CMPIString("Unable to write to repository",NULL);
       return st;
@@ -490,14 +506,15 @@ CMPIStatus InternalProviderSetInstance(CMPIInstanceMI * mi,
    char *key = normalizeObjectPath(cop);
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
+   char *bnss=repositoryNs(nss);
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderSetInstance");
    
-   if (testNameSpace(nss,&st)==0) {
+   if (testNameSpace(bnss,&st)==0) {
       return st;
    }
 
-   if (existingBlob(nss,cns,key)==0) {
+   if (existingBlob(bnss,cns,key)==0) {
       CMPIStatus st = { CMPI_RC_ERR_NOT_FOUND, NULL };
       return st;
    }
@@ -505,7 +522,7 @@ CMPIStatus InternalProviderSetInstance(CMPIInstanceMI * mi,
    len=getInstanceSerializedSize(ci);
    blob=malloc(len+64);
    getSerializedInstance(ci,blob);
-   addBlob(nss,cns,key,blob,(int)len);
+   addBlob(bnss,cns,key,blob,(int)len);
 
    _SFCB_RETURN(st);
 }
@@ -521,19 +538,20 @@ CMPIStatus InternalProviderDeleteInstance(CMPIInstanceMI * mi,
    char *key = normalizeObjectPath(cop);
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
+   char *bnss=repositoryNs(nss);
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderDeleteInstance");
    
-   if (testNameSpace(nss,&st)==0) {
+   if (testNameSpace(bnss,&st)==0) {
       return st;
    }
 
-   if (existingBlob(nss,cns,key)==0) {
+   if (existingBlob(bnss,cns,key)==0) {
       CMPIStatus st = { CMPI_RC_ERR_NOT_FOUND, NULL };
       return st;
    }
 
-   deleteBlob(nss,cns,key);
+   deleteBlob(bnss,cns,key);
 
    _SFCB_RETURN(st);
 }

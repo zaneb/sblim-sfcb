@@ -527,7 +527,9 @@ SFCB_PAUSE_HTTP
 SFCB_TRACE=[0..4]
         Specifies the level of trace/debug messages for sfcb.
         Valid values are 0 (no trace messages), or 1 (key trace messages only)
-	to 4 (all messages). Note: SFCB_TRACE level is used in conjunction
+	to 4 (all messages). If not set, a default trace level of 1 will be
+	assumed for tracing.
+	Note: SFCB_TRACE level is used in conjunction
 	with sfcb's component-level tracing (see Section 11) to control the
 	level of detail of trace messages to display within each component. 
 

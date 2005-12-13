@@ -46,8 +46,9 @@
 #define _SFCB_TRACE_INIT() \
    _sfcb_trace_init();
 
-#define _SFCB_TRACE_START(n) \
-   _sfcb_trace_start(n);
+#define _SFCB_TRACE_START(n,m) {\
+   _sfcb_trace_start(n); \
+   _sfcb_set_trace_mask(m); }
 
 #define _SFCB_TRACE_STOP() \
    _sfcb_trace_stop();

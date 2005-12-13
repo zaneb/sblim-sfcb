@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
        remove("sfcbStat");
    }
    
-   _sfcb_set_trace_mask(tmask);
+   _SFCB_TRACE_START(1,tmask);
 
    setupControl(configfile);
 //        SFCB_DEBUG

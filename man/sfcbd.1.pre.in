@@ -11,7 +11,7 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
 
-.TH sfcbd 1 "August 2005" "sfcb Version @PACKAGE_VERSION@"
+.TH sfcbd 1 "December 2005" "sfcb Version @PACKAGE_VERSION@"
 
 .SH NAME
 sfcbd \- Open Source Small-Footprint CIM Broker (sfcb)
@@ -192,7 +192,8 @@ to the process.
 .B SFCB_TRACE
 Specifies the level of trace/debug messages for sfcb.
 Valid values are 0 (no trace messages), or 1 (key trace messages only)
-to 4 (all messages).
+to 4 (all messages). A default value of 1 will be assumed, if this
+variable is not set.
 .br
 [Note: SFCB_TRACE level is used in conjunction
 with sfcb's component-level tracing to control the

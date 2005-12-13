@@ -74,7 +74,9 @@ TraceId traceIds[]={
 
 void _sfcb_trace_start(int n)
 {
-   _sfcb_debug = n;
+  if (_sfcb_debug < n) {
+    _sfcb_debug = n;
+  }
 }
 
 void _sfcb_trace_stop()

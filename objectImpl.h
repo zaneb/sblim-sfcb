@@ -223,7 +223,7 @@ extern int ClClassGetMethodAt(ClClass *cls, int id, CMPIType *data, char **name,
 extern int ClClassGetMethQualifierAt(ClClass *cls, ClMethod *m, int qid, CMPIData *data, char **name);
 extern int ClClassGetMethParameterAt(ClClass *cls, ClMethod *m, int pid, CMPIParameter *parm, char **name);
 extern int ClClassGetMethParamQualifierAt(ClClass * cls, ClParameter *parm, int id, CMPIData *d, char **name);
-extern int isInstance(CMPIInstance *ci);
+extern int isInstance(const CMPIInstance *ci);
 extern ClInstance *ClInstanceNew(const char *ns, const char *cn);
 extern unsigned long ClSizeInstance(ClInstance *inst);
 extern ClInstance *ClInstanceRebuild(ClInstance *inst, void *area);

@@ -21,7 +21,7 @@
 */
 
 
-#define CMPI_VERSION 90
+//#define CMPI_VERSION 90
 
 #include "cimXmlGen.h"
 #include "cimXmlRequest.h"
@@ -59,15 +59,12 @@ extern const char *instGetClassName(CMPIInstance * ci);
 
 extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
                                 const char **name, CMPIStatus * rc);
-extern MsgSegment setObjectPathMsgSegment(CMPIObjectPath * op);
-extern void getSerializedObjectPath(CMPIObjectPath * op, void *area);
 extern BinResponseHdr *invokeProvider(BinRequestContext * ctx);
 extern CMPIArgs *relocateSerializedArgs(void *area);
 extern CMPIObjectPath *relocateSerializedObjectPath(void *area);
 extern CMPIInstance *relocateSerializedInstance(void *area);
 extern CMPIConstClass *relocateSerializedConstClass(void *area);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
-extern MsgSegment setCharsMsgSegment(char *str);
 extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
 extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
 extern void closeProviderContext(BinRequestContext * ctx);
@@ -249,8 +246,6 @@ char *getErrTrailer(int id, int rc, char *m)
 }
 
 
-extern unsigned long getObjectPathSerializedSize(CMPIObjectPath * op);
-extern void getSerializedObjectPath(CMPIObjectPath * op, void *area);
 
 static RespSegments iMethodErrResponse(RequestHdr * hdr, char *error)
 {
@@ -1658,7 +1653,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    for (p = req->paramValues.first; p; p = p->next) {
       // this is a problem: - paramvalue without type
-      if (p->type==NULL) p->type=CMPI_string;
+      if (p->type==0) p->type=CMPI_string;
       CMPIValue val = str2CMPIValue(p->type, p->value.value, &p->valueRef);
       CMAddArg(in, p->name, &val, p->type);
    }   

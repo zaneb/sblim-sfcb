@@ -20,7 +20,7 @@
 */
 
 
-#define CMPI_VERSION 90
+//#define CMPI_VERSION 90
 
 #include <stdio.h>
 #include <alloca.h>
@@ -35,6 +35,8 @@
        
 #include "fileRepository.h"
 #include "mlog.h"
+#include "control.h"
+
 
 #define BASE "repository"
 

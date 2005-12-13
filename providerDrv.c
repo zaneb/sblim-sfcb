@@ -38,6 +38,7 @@
 #include "selectexp.h"
 #include "control.h"
 #include "config.h"
+#include "constClass.h"
 
 #ifdef HAVE_INDICATIONS
 #define SFCB_INCL_INDICATION_SUPPORT 1
@@ -53,18 +54,14 @@ extern ProviderInfo *classProvInfoPtr;
 
 extern void processProviderInvocationRequests(char *);
 extern CMPIObjectPath *relocateSerializedObjectPath(void *area);
-extern MsgSegment setObjectPathMsgSegment(CMPIObjectPath * op);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * op);
 extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
-extern void getSerializedObjectPath(CMPIObjectPath * op, void *area);
-extern void getSerializedInstance(CMPIInstance * ci, void *area);
 extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
 extern void getSerializedConstClass(CMPIConstClass * cl, void *area);
 extern void getSerializedArgs(CMPIArgs * cl, void *area);
 extern CMPIConstClass *relocateSerializedConstClass(void *area);
 extern CMPIInstance *relocateSerializedInstance(void *area);
 extern CMPIConstClass *relocateSerializedConstClass(void *area);
-extern void getSerializedInstance(CMPIInstance * ci, void *area);
 extern CMPIArgs *relocateSerializedArgs(void *area);
 extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
 extern void dump(char *msg, void *a, int l);
@@ -199,10 +196,10 @@ static void stopProc(void *p)
    ctx = native_new_CMPIContext(MEM_TRACKED,NULL);
    for (pInfo=curProvProc->firstProv; pInfo; pInfo=pInfo->next) {
       if (pInfo->classMI) pInfo->classMI->ft->cleanup(pInfo->classMI, ctx);
-      if (pInfo->instanceMI) pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx);
-      if (pInfo->associationMI) pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx);
-      if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx);
-      if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx);
+      if (pInfo->instanceMI) pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx, 1);
+      if (pInfo->associationMI) pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx, 1);
+      if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx, 1);
+      if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx, 1);
    }
    mlogf(M_INFO,M_SHOW,"---  stopped %s %d\n",processName,getpid());
    exit(0);
@@ -302,11 +299,11 @@ void* providerIdleThread()
                         if (pInfo->library==NULL) continue;
                         if (pInfo->indicationMI!=NULL) continue;
                         if (crc.rc==0 && pInfo->instanceMI) 
-                           crc = pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx);
+                           crc = pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx,0);
                         if (crc.rc==0 && pInfo->associationMI) 
-                           crc = pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx);
+                           crc = pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx,0);
                         if (crc.rc==0 && pInfo->methodMI) 
-                           crc = pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx);
+                           crc = pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx,0);
                         _SFCB_TRACE(1, ("--- Cleanup rc: %d %s-%d",crc.rc,processName,currentProc));
                         if (crc.rc==CMPI_RC_NEVER_UNLOAD) doNotExit=1;
                         if (crc.rc==CMPI_RC_DO_NOT_UNLOAD) doNotExit=noBreak=1;
@@ -1013,7 +1010,7 @@ static BinResponseHdr *getInstance(BinRequestHdr * hdr, ProviderInfo * info,
    if (req->count>2) props=makePropertyList(req->count-2,req->properties);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
-   rci = info->instanceMI->ft->getInstance(info->instanceMI, ctx, result, path,props);
+   rci = info->instanceMI->ft->getInstance(info->instanceMI, ctx, result, path, (const char**)props);
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    r = native_result2array(result);
@@ -1128,8 +1125,8 @@ static BinResponseHdr *modifyInstance(BinRequestHdr * hdr, ProviderInfo * info,
    if (req->count>3) props=makePropertyList(req->count-3,req->properties);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
-   rci = info->instanceMI->ft->setInstance(info->instanceMI, ctx, result,
-                                            path, inst, props);
+   rci = info->instanceMI->ft->modifyInstance(info->instanceMI, ctx, result,
+                                            path, inst, (const char **)props);
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    if (rci.rc == CMPI_RC_OK) {
@@ -1168,7 +1165,7 @@ static BinResponseHdr *enumInstances(BinRequestHdr * hdr, ProviderInfo * info,
    if (req->count>2) props=makePropertyList(req->count-2,req->properties);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
-   rci = info->instanceMI->ft->enumInstances(info->instanceMI, ctx, result, path, props);
+   rci = info->instanceMI->ft->enumInstances(info->instanceMI, ctx, result, path, (const char**)props);
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    if (rci.rc == CMPI_RC_OK) {
@@ -1303,8 +1300,13 @@ static BinResponseHdr *execQuery(BinRequestHdr * hdr, ProviderInfo * info, int r
       qs->propSrc.sns=qs->sns;
       qs->cop=CMNewObjectPath(Broker,"*",qs->fClasses[0],NULL);
       
-      if (qs->allProps) kar=Broker->eft->getKeyList(Broker, NULL, qs->cop, NULL);
-      else kar=getKeyListAndVerifyPropertyList(qs->cop, qs->spNames, &ok, NULL);
+      if (qs->allProps) {	
+	CMPIConstClass *cc = getConstClass(CMGetNameSpace(qs->cop,NULL)->hdl,
+					   CMGetClassName(qs->cop,NULL)->hdl);
+	kar=cc->ft->getKeyList(cc);
+      } else {
+	kar=getKeyListAndVerifyPropertyList(qs->cop, qs->spNames, &ok, NULL);
+      }
       
       if (ok) {
          c=kar->ft->getSize(kar,NULL);
@@ -1363,7 +1365,7 @@ static BinResponseHdr *associators(BinRequestHdr * hdr, ProviderInfo * info, int
                                             PROVCHARS(req->resultClass.data),
                                             PROVCHARS(req->role.data),
                                             PROVCHARS(req->resultRole.data),
-                                            props);
+                                            (const char**)props);
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    if (rci.rc == CMPI_RC_OK) {
@@ -1400,7 +1402,7 @@ static BinResponseHdr *references(BinRequestHdr * hdr, ProviderInfo * info, int 
                                            path,
                                            PROVCHARS(req->resultClass.data),
                                            PROVCHARS(req->role.data),
-                                           props);
+                                           (const char**)props);
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    if (rci.rc == CMPI_RC_OK) {
@@ -1491,7 +1493,6 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    NativeSelectExp *se=NULL,*prev=NULL;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
-   CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
    CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPIFlags flgs=0;
    int makeActive=0;
@@ -1527,32 +1528,30 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    }
    
    _SFCB_TRACE(1, ("--- Calling authorizeFilter %s",info->providerName));
-   rci = info->indicationMI->ft->authorizeFilter(info->indicationMI, ctx, result,
+   rci = info->indicationMI->ft->authorizeFilter(info->indicationMI, ctx,
                                                (CMPISelectExp*)se, type, path,
                                                PROVCHARS(req->principal.data));
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
    
    if (rci.rc==CMPI_RC_OK) {
       _SFCB_TRACE(1, ("--- Calling mustPoll %s",info->providerName));
-      rci = info->indicationMI->ft->mustPoll(info->indicationMI, ctx, result, 
+      rci = info->indicationMI->ft->mustPoll(info->indicationMI, ctx, 
                                                (CMPISelectExp*)se, type, path);
       _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
       
+      _SFCB_TRACE(1, ("--- Calling activateFilter %s",info->providerName));
+      rci = info->indicationMI->ft->activateFilter(info->indicationMI, ctx,
+						   (CMPISelectExp*)se, type, path, 1);
+      _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
+      
+      if (indicationEnabled==0 && rci.rc==CMPI_RC_OK) {
+	indicationEnabled=1;      
+	info->indicationMI->ft->enableIndications(info->indicationMI,ctx);
+      }   
+      
       if (rci.rc==CMPI_RC_OK) {
-         _SFCB_TRACE(1, ("--- Calling activateFilter %s",info->providerName));
-         rci = info->indicationMI->ft->activateFilter(info->indicationMI, ctx, result, 
-                                               (CMPISelectExp*)se, type, path, 1);
-         _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
-   
-         if (indicationEnabled==0 && rci.rc==CMPI_RC_OK) {
-            indicationEnabled=1;      
-            info->indicationMI->ft->enableIndications(info->indicationMI);
-         }   
-            
-         if (rci.rc==CMPI_RC_OK) {
-            resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
-            resp->rc=1;
-         }   
+	resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+	resp->rc=1;
       }   
    }
    
@@ -1579,7 +1578,6 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    NativeSelectExp *se=NULL,**sef=&activFilters;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
-   CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
    CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPIFlags flgs=0;
    
@@ -1598,7 +1596,7 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
          if (activFilters==NULL) indicationEnabled=0;   
             
          _SFCB_TRACE(1, ("--- Calling deactivateFilter %s",info->providerName));
-         rci = info->indicationMI->ft->deActivateFilter(info->indicationMI, ctx, result, 
+         rci = info->indicationMI->ft->deActivateFilter(info->indicationMI, ctx,
                                                (CMPISelectExp*)se, "", path, 1);
          if (rci.rc==CMPI_RC_OK) {
             resp->rc=1;

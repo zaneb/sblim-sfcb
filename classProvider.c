@@ -47,7 +47,7 @@
 
 #define LOCALCLASSNAME "ClassProvider"
 
-static CMPIBroker *_broker;
+static const CMPIBroker *_broker;
 
 extern char * configfile;
 extern ProviderRegister *pReg;
@@ -74,7 +74,7 @@ struct _Class_Register_FT {
    ClassRegister *(*clone) (ClassRegister * br);
    CMPIConstClass *(*getClass) (ClassRegister * br, const char *clsName);
    int (*putClass) (ClassRegister * br, CMPIConstClass * cls);
-   int (*removeClass) (ClassRegister * br, const char *className);
+   void (*removeClass) (ClassRegister * br, const char *className);
    UtilList *(*getChildren) (ClassRegister * br, const char *className);
    void (*rLock)(ClassRegister * cr);
    void (*wLock)(ClassRegister * cr);
@@ -384,8 +384,8 @@ static int addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
 
 static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
 {
-   DIR *dir;
-   struct dirent *de, *de_test;
+   DIR *dir, *dir_test;
+   struct dirent *de;
    char *n;
    int l;
    ClassRegister *cr;
@@ -405,12 +405,12 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
      strcpy(n,dn);
      strcat(n,"/");
      strcat(n,de->d_name);
-     de_test = opendir(n);
-     if (de_test == NULL) {
+     dir_test = opendir(n);
+     if (dir_test == NULL) {
        free(n);
        continue;
      }
-     free(de_test);
+     closedir(dir_test);
      cr=newClassRegister(n);
      if (cr) {
        ns->ft->put(ns, n+nsBaseLen, cr);
@@ -443,7 +443,7 @@ static UtilHashTable *buildClassRegisters()
 }    
 
 
-static ClassRegister *getNsReg(CMPIObjectPath *ref, int *rc)
+static ClassRegister *getNsReg(const CMPIObjectPath *ref, int *rc)
 {
    char *ns;
    CMPIString *nsi=CMGetNameSpace(ref,NULL);
@@ -930,18 +930,20 @@ static void loopOnChildCount(ClassRegister *cReg, char *cn, int *i, int ignprov)
 }
 
 
-static CMPIStatus ClassProviderMethodCleanup(CMPIMethodMI * mi, CMPIContext * ctx)
+static CMPIStatus ClassProviderMethodCleanup(CMPIMethodMI * mi, 
+				      const CMPIContext * ctx, 
+				      CMPIBoolean terminate)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    return st;
 }
 
 static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
-                                     CMPIContext * ctx,
-                                     CMPIResult * rslt,
-                                     CMPIObjectPath * ref,
+                                     const CMPIContext * ctx,
+                                     const CMPIResult * rslt,
+                                     const CMPIObjectPath * ref,
                                      const char *methodName,
-                                     CMPIArgs * in, CMPIArgs * out)
+                                     const CMPIArgs * in, CMPIArgs * out)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIArray *ar;

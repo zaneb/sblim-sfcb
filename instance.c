@@ -29,6 +29,7 @@
 #include "native.h"
 
 #include "objectImpl.h"
+#include "providerMgr.h"
 #include "config.h"
 
 #ifdef SFCB_IX86
@@ -81,13 +82,13 @@ static void __release_list(char **list)
 }
 
 
-static char **__duplicate_list(char **list)
+static char **__duplicate_list(const char **list)
 {
    char **result = NULL;
 
    if (list) {
       size_t size = 1;
-      char **tmp = list;
+      char **tmp = (char**)list;
 
       while (*tmp++) ++size;
       result = calloc(1,size*sizeof(char *));
@@ -136,15 +137,15 @@ static CMPIStatus __ift_release(CMPIInstance * instance)
 }
 
 
-static CMPIInstance *__ift_clone(CMPIInstance * instance, CMPIStatus * rc)
+static CMPIInstance *__ift_clone(const CMPIInstance * instance, CMPIStatus * rc)
 {
    struct native_instance *i = (struct native_instance*) instance;
    struct native_instance *new = (struct native_instance*)
        malloc(sizeof(struct native_instance));
 
    new->mem_state=MEM_NOT_TRACKED;
-   new->property_list = __duplicate_list(i->property_list);
-   new->key_list = __duplicate_list(i->key_list);
+   new->property_list = __duplicate_list((const char**)i->property_list);
+   new->key_list = __duplicate_list((const char**)i->key_list);
 
    ((CMPIInstance*)new)->hdl =
        ClInstanceRebuild((ClInstance *) instance->hdl, NULL);
@@ -154,7 +155,7 @@ static CMPIInstance *__ift_clone(CMPIInstance * instance, CMPIStatus * rc)
 }
 
 
-CMPIData __ift_getPropertyAt(CMPIInstance * ci, CMPICount i, CMPIString ** name,
+CMPIData __ift_getPropertyAt(const CMPIInstance * ci, CMPICount i, CMPIString ** name,
                              CMPIStatus * rc)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
@@ -188,7 +189,7 @@ CMPIData __ift_getPropertyAt(CMPIInstance * ci, CMPICount i, CMPIString ** name,
    return rv;
 }
 
-CMPIData __ift_getProperty(CMPIInstance * ci, const char *id, CMPIStatus * rc)
+CMPIData __ift_getProperty(const CMPIInstance * ci, const char *id, CMPIStatus * rc)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
    ClSection *prps = &inst->properties;
@@ -204,7 +205,7 @@ CMPIData __ift_getProperty(CMPIInstance * ci, const char *id, CMPIStatus * rc)
    return rv;
 }
 
-static CMPICount __ift_getPropertyCount(CMPIInstance * ci, CMPIStatus * rc)
+static CMPICount __ift_getPropertyCount(const CMPIInstance * ci, CMPIStatus * rc)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
    if (rc)
@@ -215,7 +216,7 @@ static CMPICount __ift_getPropertyCount(CMPIInstance * ci, CMPIStatus * rc)
 
 static CMPIStatus __ift_setProperty(CMPIInstance * instance,
                                     const char *name,
-                                    CMPIValue * value, CMPIType type)
+                                    const CMPIValue * value, CMPIType type)
 {
    struct native_instance *i = (struct native_instance *) instance;
    ClInstance *inst = (ClInstance *) instance->hdl;
@@ -262,7 +263,7 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
 }
 
 
-static CMPIObjectPath *__ift_getObjectPath(CMPIInstance * instance,
+static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
                                            CMPIStatus * rc)
 {
    static UtilHashTable *klt = NULL;
@@ -295,14 +296,14 @@ static CMPIObjectPath *__ift_getObjectPath(CMPIInstance * instance,
    if (f == 0) {
       CMPIArray *kl;
       CMPIData d;
-      CMPIContext *ctx;
       unsigned int e, m;
 
       if (klt == NULL) klt = UtilFactory->newHashTable(61,
                  UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
 
       if ((kl = klt->ft->get(klt, cn)) == NULL) {
-         kl = Broker->eft->getKeyList(Broker, ctx, cop, NULL);
+	 CMPIConstClass * cc = getConstClass(ns,cn);
+	 kl = cc->ft->getKeyList(cc);
          klt->ft->put(klt, strdup(cn), kl);
       }
       m = kl->ft->getSize(kl, NULL);
@@ -321,7 +322,8 @@ static CMPIObjectPath *__ift_getObjectPath(CMPIInstance * instance,
 
 
 static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
-                                          char **propertyList, char **keys)
+                                          const char **propertyList, 
+					  const char **keys)
 {
    struct native_instance *i = (struct native_instance *) instance;
 //printf("__ift_setPropertyFilter %p %p\n",propertyList,keys);
@@ -414,13 +416,13 @@ static CMPIInstanceFT ift = {
 
 CMPIInstanceFT *CMPI_Instance_FT = &ift;
 
-unsigned long getInstanceSerializedSize(CMPIInstance * ci)
+unsigned long getInstanceSerializedSize(const CMPIInstance * ci)
 {
    ClInstance *cli = (ClInstance *) ci->hdl;
    return ClSizeInstance(cli) + sizeof(struct native_instance);
 }
 
-void getSerializedInstance(CMPIInstance * ci, void *area)
+void getSerializedInstance(const CMPIInstance * ci, void *area)
 {
    memcpy(area, ci, sizeof(struct native_instance));
    ClInstanceRebuild((ClInstance *) ci->hdl,
@@ -448,7 +450,7 @@ MsgSegment setInstanceMsgSegment(CMPIInstance * ci)
    return s;
 }
 
-CMPIInstance *internal_new_CMPIInstance(int mode, CMPIObjectPath * cop,
+CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
                                         CMPIStatus * rc)
 {
    static CMPIInstance i = {
@@ -503,7 +505,7 @@ CMPIInstance *internal_new_CMPIInstance(int mode, CMPIObjectPath * cop,
    return (CMPIInstance*)tInst;
 }
 
-CMPIInstance *TrackedCMPIInstance(CMPIObjectPath * cop, CMPIStatus * rc)
+CMPIInstance *TrackedCMPIInstance(const CMPIObjectPath * cop, CMPIStatus * rc)
 {
    return internal_new_CMPIInstance(MEM_TRACKED, cop, rc);
 }

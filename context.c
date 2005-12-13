@@ -56,7 +56,7 @@ static CMPIStatus __cft_release(CMPIContext * ctx)
 }
 
 
-static CMPIContext *__cft_clone(CMPIContext * ctx, CMPIStatus * rc)
+static CMPIContext *__cft_clone(const CMPIContext * ctx, CMPIStatus * rc)
 {
    if (rc)
       CMSetStatus(rc, CMPI_RC_ERR_NOT_SUPPORTED);
@@ -64,7 +64,7 @@ static CMPIContext *__cft_clone(CMPIContext * ctx, CMPIStatus * rc)
 }
 
 
-static CMPIData __cft_getEntry(CMPIContext * ctx,
+static CMPIData __cft_getEntry(const CMPIContext * ctx,
                                const char *name, CMPIStatus * rc)
 {
    struct native_context *c = (struct native_context *) ctx;
@@ -73,7 +73,7 @@ static CMPIData __cft_getEntry(CMPIContext * ctx,
 }
 
 
-static CMPIData __cft_getEntryAt(CMPIContext * ctx,
+static CMPIData __cft_getEntryAt(const CMPIContext * ctx,
                                  unsigned int index,
                                  CMPIString ** name, CMPIStatus * rc)
 {
@@ -83,7 +83,7 @@ static CMPIData __cft_getEntryAt(CMPIContext * ctx,
 }
 
 
-static unsigned int __cft_getEntryCount(CMPIContext * ctx, CMPIStatus * rc)
+static unsigned int __cft_getEntryCount(const CMPIContext * ctx, CMPIStatus * rc)
 {
    struct native_context *c = (struct native_context *) ctx;
 
@@ -93,7 +93,7 @@ static unsigned int __cft_getEntryCount(CMPIContext * ctx, CMPIStatus * rc)
 
 static CMPIStatus __cft_addEntry(CMPIContext * ctx,
                                  const char *name,
-                                 CMPIValue * value, CMPIType type)
+                                 const CMPIValue * value, CMPIType type)
 {
    struct native_context *c = (struct native_context *) ctx;
 
@@ -156,7 +156,7 @@ void native_release_CMPIContext(CMPIContext * ctx)
    }
 }
 
-CMPIContext *native_clone_CMPIContext(CMPIContext* ctx) 
+CMPIContext *native_clone_CMPIContext(const CMPIContext* ctx) 
 {
    CMPIString *name;
    struct native_context *c = (struct native_context *) ctx;
@@ -218,7 +218,7 @@ static int __addProperty ( struct native_property ** prop,
 			   const char * name,
 			   CMPIType type,
 			   CMPIValueState state, 
-			   CMPIValue * value )
+			   const CMPIValue * value )
 {
 	CMPIValue v;
 

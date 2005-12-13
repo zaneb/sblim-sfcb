@@ -52,7 +52,7 @@ static CMPIStatus __eft_release(CMPIEnumeration * enumeration)
 }
 
 
-static CMPIEnumeration *__eft_clone(CMPIEnumeration * enumeration,
+static CMPIEnumeration *__eft_clone(const CMPIEnumeration * enumeration,
                                     CMPIStatus * rc)
 {
    CMPIStatus tmp;
@@ -70,21 +70,21 @@ static CMPIEnumeration *__eft_clone(CMPIEnumeration * enumeration,
 }
 
 
-static CMPIData __eft_getNext(CMPIEnumeration * enumeration, CMPIStatus * rc)
+static CMPIData __eft_getNext(const CMPIEnumeration * enumeration, CMPIStatus * rc)
 {
    struct native_enum *e = (struct native_enum *) enumeration;
    return CMGetArrayElementAt(e->data, e->current++, rc);
 }
 
 
-static CMPIBoolean __eft_hasNext(CMPIEnumeration * enumeration, CMPIStatus * rc)
+static CMPIBoolean __eft_hasNext(const CMPIEnumeration * enumeration, CMPIStatus * rc)
 {
    struct native_enum *e = (struct native_enum *) enumeration;
    return (e->current < CMGetArrayCount(e->data, rc));
 }
 
 
-static CMPIArray *__eft_toArray(CMPIEnumeration * enumeration, CMPIStatus * rc)
+static CMPIArray *__eft_toArray(const CMPIEnumeration * enumeration, CMPIStatus * rc)
 {
    struct native_enum *e = (struct native_enum *) enumeration;
    rc->rc = CMPI_RC_OK;

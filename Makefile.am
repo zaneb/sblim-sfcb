@@ -222,7 +222,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	cimXmlRequest.h  genericlist.h  objectImpl.h   trace.h \
 	hashtable.h      utilft.h mlog.h \
 	cmpidt.h cmpift.h cmpiftx.h cmpimacs.h cmpimacsx.h cmpios.h \
-	fileRepository.h \
+	fileRepository.h internalProvider.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h
 

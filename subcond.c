@@ -54,7 +54,7 @@ static CMPIStatus __eft_release(CMPISubCond * cond)
 }
 
 
-static CMPISubCond *__eft_clone(CMPISubCond * cond, CMPIStatus * rc)
+static CMPISubCond *__eft_clone(const CMPISubCond * cond, CMPIStatus * rc)
 {
    NativeSubCond *c = (NativeSubCond *) cond;
 
@@ -62,7 +62,7 @@ static CMPISubCond *__eft_clone(CMPISubCond * cond, CMPIStatus * rc)
 }
 
 
-static CMPICount __eft_getCount(CMPISubCond* cond, CMPIStatus* rc)
+static CMPICount __eft_getCount(const CMPISubCond* cond, CMPIStatus* rc)
 {
    NativeSubCond *c = (NativeSubCond *) cond;
    CMPIArray *conds=(CMPIArray*)c->cond.ptr;
@@ -74,7 +74,7 @@ static CMPICount __eft_getCount(CMPISubCond* cond, CMPIStatus* rc)
 }
               
 static CMPIPredicate* __eft_getPredicateAt
-              (CMPISubCond* cond, unsigned int index, CMPIStatus* rc)
+              (const CMPISubCond* cond, unsigned int index, CMPIStatus* rc)
 {
    NativeSubCond *c = (NativeSubCond *)cond;
    CMPIValuePtr pvp={NULL,0};
@@ -99,7 +99,7 @@ static CMPIPredicate* __eft_getPredicateAt
 }              
               
 static CMPIPredicate* __eft_getPredicate
-              (CMPISubCond* cond, const char *id, CMPIStatus* rc)
+              (const CMPISubCond* cond, const char *id, CMPIStatus* rc)
 {
     if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_SUPPORTED);
     return NULL;   

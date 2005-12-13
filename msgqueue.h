@@ -114,7 +114,7 @@ typedef struct mqgStat {
   char teintr,eintr,rdone;
 } MqgStat;
 
-extern MsgSegment setCharsMsgSegment(char *);
+extern MsgSegment setCharsMsgSegment(const char *);
 
 extern ComSockets sfcbSockets;
 extern ComSockets providerSockets;

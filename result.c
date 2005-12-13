@@ -26,6 +26,7 @@
 #include "constClass.h"
 #include "queryOperation.h"
 #include "utilft.h"
+#include "objectImpl.h"
 #include "mlog.h"
 
 extern void native_array_reset_size(CMPIArray * array, CMPICount increment);
@@ -34,11 +35,6 @@ extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
 extern int sendResponse(int requestor, BinResponseHdr * hdr);
 extern int spSendAck(int to);
 extern int spRcvAck(int from);
-extern int isInstance(CMPIInstance *ci);
-extern int getObjectPathSerializedSize(CMPIObjectPath*);
-extern void getSerializedObjectPath(CMPIObjectPath* ci, void *area);
-extern int getInstanceSerializedSize(CMPIInstance*);
-extern void getSerializedInstance(CMPIInstance * ci, void *area);
 extern int getConstClassSerializedSize(CMPIConstClass*);
 extern void getSerializedConstClass(CMPIConstClass * cl, void *area);
 extern int getControlNum(char *id, long *val);
@@ -166,7 +162,7 @@ static CMPIStatus __rft_release(CMPIResult * result)
 }
 
 
-static CMPIResult *__rft_clone(CMPIResult * result, CMPIStatus * rc)
+static CMPIResult *__rft_clone(const CMPIResult * result, CMPIStatus * rc)
 {
    NativeResult *or = (NativeResult*)result;
    NativeResult *nr = __new_empty_result(MEM_NOT_TRACKED, rc);
@@ -193,7 +189,7 @@ static CMPIResult *__rft_clone(CMPIResult * result, CMPIStatus * rc)
 }
 
 
-static CMPIStatus returnData(CMPIResult * result,
+static CMPIStatus returnData(const CMPIResult * result,
                                    const CMPIValue * val, CMPIType type)
 {
    NativeResult *r = (NativeResult*) result;
@@ -209,7 +205,7 @@ static CMPIStatus returnData(CMPIResult * result,
    return CMSetArrayElementAt(r->array, r->current++, val, type); 
 }
 
-static CMPIStatus __rft_returnData(CMPIResult * result,
+static CMPIStatus __rft_returnData(const CMPIResult * result,
                                    const CMPIValue * val, CMPIType type)
 {
 //   NativeResult *r = (NativeResult*) result;
@@ -222,10 +218,10 @@ static CMPIStatus __rft_returnData(CMPIResult * result,
    return returnData(result,val,type);
 }
 
-extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
+extern UtilStringBuffer *instanceToString(const CMPIInstance * ci, char **props);
 
-static CMPIStatus __rft_returnInstance(CMPIResult * result,
-                                       CMPIInstance * instance)
+static CMPIStatus __rft_returnInstance(const CMPIResult * result,
+                                       const CMPIInstance * instance)
 {
    int size,isInst=isInstance(instance);
    void *ptr;
@@ -239,12 +235,12 @@ static CMPIStatus __rft_returnInstance(CMPIResult * result,
       int irc;
 
       if (r->qs->where) {
-         r->qs->propSrc.data=instance;
+         r->qs->propSrc.data=(CMPIInstance *)instance;
          irc=r->qs->where->ft->evaluate(r->qs->where,&r->qs->propSrc);
          if (irc==1) {
             if (r->qs->allProps==0) {
                instance=
-                  r->qs->ft->cloneAndFilter(r->qs,instance,r->qs->cop,r->qs->keys);
+                  r->qs->ft->cloneAndFilter(r->qs,(CMPIInstance *)instance,r->qs->cop,r->qs->keys);
                releaseInstance=1;
             }     
          }   
@@ -252,7 +248,7 @@ static CMPIStatus __rft_returnInstance(CMPIResult * result,
       }
       else {
          if (r->qs->allProps==0) {
-            instance=r->qs->ft->cloneAndFilter(r->qs,instance,r->qs->cop,r->qs->keys);
+            instance=r->qs->ft->cloneAndFilter(r->qs,(CMPIInstance *)instance,r->qs->cop,r->qs->keys);
             releaseInstance=1;
          }
       }        
@@ -262,9 +258,9 @@ static CMPIStatus __rft_returnInstance(CMPIResult * result,
       CMPIValue v;
       CMPIStatus rc;
       _SFCB_TRACE(1,("--- Legacy Mode"));
-      v.inst = instance;
+      v.inst = (CMPIInstance *) instance;
       rc=returnData(result, &v, CMPI_instance);
-      if (releaseInstance) instance->ft->release(instance);
+      if (releaseInstance) instance->ft->release((CMPIInstance*)instance);
       _SFCB_RETURN(rc);
    }
 
@@ -281,13 +277,13 @@ static CMPIStatus __rft_returnInstance(CMPIResult * result,
       getSerializedConstClass((CMPIConstClass*)instance,ptr);
    }
 
-   if (releaseInstance) instance->ft->release(instance);
+   if (releaseInstance) instance->ft->release((CMPIInstance*)instance);
    _SFCB_RETURN(st);
 }
 
 
-static CMPIStatus __rft_returnObjectPath(CMPIResult * result,
-                                         CMPIObjectPath * cop)
+static CMPIStatus __rft_returnObjectPath(const CMPIResult * result,
+                                         const CMPIObjectPath * cop)
 {
    int size;
    void *ptr;
@@ -295,7 +291,7 @@ static CMPIStatus __rft_returnObjectPath(CMPIResult * result,
 
    if (r->legacy) {
       CMPIValue v;
-      v.ref = cop;
+      v.ref = (CMPIObjectPath*)cop;
       return returnData(result, &v, CMPI_ref);
    }   
   
@@ -307,7 +303,7 @@ static CMPIStatus __rft_returnObjectPath(CMPIResult * result,
 }
 
 
-static CMPIStatus __rft_returnDone(CMPIResult * result)
+static CMPIStatus __rft_returnDone(const CMPIResult * result)
 {
    CMReturn(CMPI_RC_OK);
 }

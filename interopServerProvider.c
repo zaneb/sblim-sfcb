@@ -45,7 +45,7 @@
 #include "cmpimacsx.h"
 
 
-static CMPIBroker *_broker;
+static const CMPIBroker *_broker;
 static CMPIStatus invClassSt = { CMPI_RC_ERR_INVALID_CLASS, NULL };
 static CMPIStatus notSuppSt = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
 
@@ -90,8 +90,9 @@ static char *getSfcbUuid()
 //------------------------------------------------------------------
 
 
-static int genNameSpaceData(char *ns, char *dn, int dbl, CMPIResult * rslt, CMPIObjectPath *op, 
-   CMPIInstance *ci,int nsOpt)
+static int genNameSpaceData(const char *ns, const char *dn, int dbl, 
+			    const CMPIResult * rslt, CMPIObjectPath *op, 
+			    CMPIInstance *ci,int nsOpt)
 {
    if (op) {
       if (nsOpt) CMAddKey(op,"Name",dn,CMPI_chars);
@@ -107,8 +108,9 @@ static int genNameSpaceData(char *ns, char *dn, int dbl, CMPIResult * rslt, CMPI
 }   
 
 
-static void gatherNameSpacesData(char *dn, int dbl, CMPIResult * rslt, CMPIObjectPath *op, 
-     CMPIInstance *ci, int nsOpt)
+static void gatherNameSpacesData(const char *dn, int dbl, 
+				 const CMPIResult * rslt, 
+				 CMPIObjectPath *op, CMPIInstance *ci, int nsOpt)
 {
    DIR *dir, *de_test;
    struct dirent *de;
@@ -141,8 +143,10 @@ static void gatherNameSpacesData(char *dn, int dbl, CMPIResult * rslt, CMPIObjec
 } 
 
 
-static void gatherOldNameSpacesData(char *dn, int dbl, CMPIResult * rslt, CMPIObjectPath *op, 
-     CMPIInstance *ci)
+static void gatherOldNameSpacesData(const char *dn, int dbl, 
+				    const CMPIResult * rslt, 
+				    CMPIObjectPath *op, 
+				    CMPIInstance *ci)
 {
    
    char *ns = (char*)CMGetNameSpace(op,NULL)->hdl; 
@@ -155,10 +159,10 @@ static void gatherOldNameSpacesData(char *dn, int dbl, CMPIResult * rslt, CMPIOb
 }     
 
 static CMPIStatus NameSpaceProviderGetInstance(CMPIInstanceMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * cop,
-                                       char **properties)
+					       const CMPIContext * ctx,
+					       const CMPIResult * rslt,
+					       const CMPIObjectPath * cop,
+					       const char **properties)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char *dirn,*dn,hostName[512];
@@ -208,9 +212,10 @@ static CMPIStatus NameSpaceProviderGetInstance(CMPIInstanceMI * mi,
 }
 
 static CMPIStatus NameSpaceProviderEnumInstances(CMPIInstanceMI * mi, 
-                                          CMPIContext * ctx, 
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * ref, char **properties)
+						 const CMPIContext * ctx, 
+						 const CMPIResult * rslt,
+						 const CMPIObjectPath * ref, 
+						 const char **properties)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char *dir,*dn,hostName[512];
@@ -247,9 +252,10 @@ static CMPIStatus NameSpaceProviderEnumInstances(CMPIInstanceMI * mi,
 }
 
 static CMPIStatus NameSpaceProviderEnumInstanceNames(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref, int nsOpt)
+						     const CMPIContext * ctx,
+						     const CMPIResult * rslt,
+						     const CMPIObjectPath * ref,
+						     int nsOpt)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char *dir,*dn,hostName[512];
@@ -291,9 +297,9 @@ static CMPIStatus NameSpaceProviderEnumInstanceNames(CMPIInstanceMI * mi,
 //------------------------------------------------------------------
 
 static CMPIStatus ObjectManagerProviderEnumInstanceNames(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref)
+							 const CMPIContext * ctx,
+							 const CMPIResult * rslt,
+							 const CMPIObjectPath * ref)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char hostName[512];
@@ -316,9 +322,10 @@ static CMPIStatus ObjectManagerProviderEnumInstanceNames(CMPIInstanceMI * mi,
 }
 
 static CMPIStatus ObjectManagerProviderEnumInstances(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref, char **properties)
+						     const CMPIContext * ctx,
+						     const CMPIResult * rslt,
+						     const CMPIObjectPath * ref,
+						     const char **properties)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char str[512];
@@ -355,9 +362,10 @@ static CMPIStatus ObjectManagerProviderEnumInstances(CMPIInstanceMI * mi,
 
 
 static CMPIStatus ObjectManagerProviderGetInstance(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref, char **properties)
+						   const CMPIContext * ctx,
+						   const CMPIResult * rslt,
+						   const CMPIObjectPath * ref, 
+						   const char **properties)
 {
   CMPIStatus st = { CMPI_RC_OK, NULL };
   CMPIString *name=CMGetKey(ref,"name",NULL).value.string;
@@ -377,9 +385,9 @@ static CMPIStatus ObjectManagerProviderGetInstance(CMPIInstanceMI * mi,
 // ---------------------------------------------------------------
 
 static CMPIStatus ComMechProviderEnumInstanceNames(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref)
+						   const CMPIContext * ctx,
+						   const CMPIResult * rslt,
+						   const CMPIObjectPath * ref)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char hostName[512];
@@ -402,9 +410,10 @@ static CMPIStatus ComMechProviderEnumInstanceNames(CMPIInstanceMI * mi,
 }
 
 static CMPIStatus ComMechProviderEnumInstances(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref, char **properties)
+					       const CMPIContext * ctx,
+					       const CMPIResult * rslt,
+					       const CMPIObjectPath * ref, 
+					       const char **properties)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char hostName[512];
@@ -452,9 +461,10 @@ static CMPIStatus ComMechProviderEnumInstances(CMPIInstanceMI * mi,
 }
 
 static CMPIStatus ComMechProviderGetInstance(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref, char **properties)
+                                             const CMPIContext * ctx,
+                                             const CMPIResult * rslt,
+                                             const CMPIObjectPath * ref, 
+					     const char **properties)
 {
   CMPIStatus st = { CMPI_RC_OK, NULL };
   CMPIString *name=CMGetKey(ref,"name",NULL).value.string;
@@ -473,7 +483,7 @@ static CMPIStatus ComMechProviderGetInstance(CMPIInstanceMI * mi,
 
 // ---------------------------------------------------------------
 
-static CMPIStatus ServerProviderCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
+static CMPIStatus ServerProviderCleanup(CMPIInstanceMI * mi, const CMPIContext * ctx, CMPIBoolean terminate)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    
@@ -481,10 +491,10 @@ static CMPIStatus ServerProviderCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
 }
 
 static CMPIStatus ServerProviderGetInstance(CMPIInstanceMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * ref,
-                                       char **properties)
+					    const CMPIContext * ctx,
+					    const CMPIResult * rslt,
+					    const CMPIObjectPath * ref,
+					    const char **properties)
 {
    CMPIString *cls=CMGetClassName(ref,NULL);
    
@@ -499,9 +509,9 @@ static CMPIStatus ServerProviderGetInstance(CMPIInstanceMI * mi,
 }
 
 static CMPIStatus ServerProviderEnumInstanceNames(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref)
+						  const CMPIContext * ctx,
+						  const CMPIResult * rslt,
+						  const CMPIObjectPath * ref)
 {
    CMPIString *cls=CMGetClassName(ref,NULL);
    
@@ -518,9 +528,10 @@ static CMPIStatus ServerProviderEnumInstanceNames(CMPIInstanceMI * mi,
 }                                                
 
 static CMPIStatus ServerProviderEnumInstances(CMPIInstanceMI * mi, 
-                                          CMPIContext * ctx, 
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * ref, char **properties)
+					      const CMPIContext * ctx, 
+					      const CMPIResult * rslt,
+					      const CMPIObjectPath * ref, 
+					      const char **properties)
 {
    CMPIString *cls=CMGetClassName(ref,NULL);
    
@@ -535,36 +546,38 @@ static CMPIStatus ServerProviderEnumInstances(CMPIInstanceMI * mi,
 }                                                
 
 static CMPIStatus ServerProviderCreateInstance(CMPIInstanceMI * mi,
-                                          CMPIContext * ctx,
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * cop,
-                                          CMPIInstance * ci)
+					       const CMPIContext * ctx,
+					       const CMPIResult * rslt,
+					       const CMPIObjectPath * cop,
+					       const CMPIInstance * ci)
 {
    return notSuppSt;
 }
 
-static CMPIStatus ServerProviderSetInstance(CMPIInstanceMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * cop,
-                                       CMPIInstance * ci, char **properties)
+static CMPIStatus ServerProviderModifyInstance(CMPIInstanceMI * mi,
+					       const CMPIContext * ctx,
+					       const CMPIResult * rslt,
+					       const CMPIObjectPath * cop,
+					       const CMPIInstance * ci, 
+					       const char **properties)
 {
    return notSuppSt;
 }
 
 static CMPIStatus ServerProviderDeleteInstance(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref)
+					       const CMPIContext * ctx,
+					       const CMPIResult * rslt,
+					       const CMPIObjectPath * ref)
 {
    return notSuppSt;
 }
 
 static CMPIStatus ServerProviderExecQuery(CMPIInstanceMI * mi,
-                                     CMPIContext * ctx,
-                                     CMPIResult * rslt,
-                                     CMPIObjectPath * cop,
-                                     char *lang, char *query)
+					  const CMPIContext * ctx,
+					  const CMPIResult * rslt,
+					  const CMPIObjectPath * cop,
+					  const char *lang, 
+					  const char *query)
 {
    return notSuppSt;
 }

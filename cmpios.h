@@ -38,9 +38,14 @@ struct timespec {
 };
 
 #elif defined( CMPI_PLATFORM_ZOS_ZSERIES_IBM)
-   #define CMPI_THREAD_CDECL    __cdecl
-   #define CMPI_THREAD_KEY_TYPE  pthread_key_t
 
+#ifndef __cplusplus
+   #define CMPI_THREAD_CDECL
+#else
+   #define CMPI_THREAD_CDECL    __cdecl
+#endif
+
+   #define CMPI_THREAD_KEY_TYPE  pthread_key_t
 #else
    #define CMPI_THREAD_CDECL
    #define CMPI_THREAD_KEY_TYPE unsigned long int

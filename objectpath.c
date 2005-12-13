@@ -72,7 +72,7 @@ static CMPIStatus __oft_release(CMPIObjectPath * cop)
 }
 
 
-static CMPIObjectPath *__oft_clone(CMPIObjectPath * op, CMPIStatus * rc)
+static CMPIObjectPath *__oft_clone(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    CMPIStatus tmp;
    struct native_cop *ncop = __new_empty_cop(MEM_NOT_TRACKED, &tmp);
@@ -90,7 +90,7 @@ static CMPIStatus __oft_setNameSpace(CMPIObjectPath * op, const char *nameSpace)
    CMReturn(CMPI_RC_OK);
 }
 
-CMPIString *__oft_getNameSpace(CMPIObjectPath * op, CMPIStatus * rc)
+CMPIString *__oft_getNameSpace(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    return native_new_CMPIString(ClObjectPathGetNameSpace(cop), rc);
@@ -104,7 +104,7 @@ static CMPIStatus __oft_setHostName(CMPIObjectPath * op, const char *hostName)
    CMReturn(CMPI_RC_OK);
 }
 
-CMPIString *__oft_getHostName(CMPIObjectPath * op, CMPIStatus * rc)
+CMPIString *__oft_getHostName(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    return native_new_CMPIString(ClObjectPathGetHostName(cop), rc);
@@ -119,26 +119,26 @@ static CMPIStatus __oft_setClassName(CMPIObjectPath * op, const char *className)
    CMReturn(CMPI_RC_OK);
 }
 
-CMPIString *__oft_getClassName(CMPIObjectPath * op, CMPIStatus * rc)
+CMPIString *__oft_getClassName(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    return native_new_CMPIString(ClObjectPathGetClassName(cop), rc);
 }
 
-const char *opGetClassNameChars(CMPIObjectPath * op)
+const char *opGetClassNameChars(const CMPIObjectPath * op)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    return ClObjectPathGetClassName(cop);
 }
 
-const char *opGetNameSpaceChars(CMPIObjectPath * op)
+const char *opGetNameSpaceChars(const CMPIObjectPath * op)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    return ClObjectPathGetNameSpace(cop);
 }
 
 
-CMPIData opGetKeyCharsAt(CMPIObjectPath * op,
+CMPIData opGetKeyCharsAt(const CMPIObjectPath * op,
                          unsigned int i, char **name, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
@@ -170,7 +170,7 @@ CMPIData opGetKeyCharsAt(CMPIObjectPath * op,
 }
 
 
-CMPIData __oft_getKeyAt(CMPIObjectPath * op, CMPICount i, CMPIString ** name,
+CMPIData __oft_getKeyAt(const CMPIObjectPath * op, CMPICount i, CMPIString ** name,
                         CMPIStatus * rc)
 {
    char *n;
@@ -182,7 +182,7 @@ CMPIData __oft_getKeyAt(CMPIObjectPath * op, CMPICount i, CMPIString ** name,
    return rv; 
 }
 
-CMPIData __oft_getKey(CMPIObjectPath * op, const char *id, CMPIStatus * rc)
+CMPIData __oft_getKey(const CMPIObjectPath * op, const char *id, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    ClSection *prps = &cop->properties;
@@ -198,7 +198,7 @@ CMPIData __oft_getKey(CMPIObjectPath * op, const char *id, CMPIStatus * rc)
    return rv;
 }
 
-static CMPICount __oft_getKeyCount(CMPIObjectPath * op, CMPIStatus * rc)
+static CMPICount __oft_getKeyCount(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    if (rc)
@@ -208,7 +208,7 @@ static CMPICount __oft_getKeyCount(CMPIObjectPath * op, CMPIStatus * rc)
 
 static CMPIStatus __oft_addKey(CMPIObjectPath * op,
                                const char *name,
-                               CMPIValue * value, CMPIType type)
+                               const CMPIValue * value, CMPIType type)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    CMPIData data = { type, CMPI_goodValue, {0} };
@@ -234,7 +234,7 @@ static CMPIStatus __oft_addKey(CMPIObjectPath * op,
 
 
 static CMPIStatus __oft_setNameSpaceFromObjectPath(CMPIObjectPath * op,
-                                                   CMPIObjectPath * src)
+                                                   const CMPIObjectPath * src)
 {
    ClObjectPath *s = (ClObjectPath *) src->hdl;
    return __oft_setNameSpace(op, ClObjectPathGetNameSpace(s));
@@ -242,7 +242,7 @@ static CMPIStatus __oft_setNameSpaceFromObjectPath(CMPIObjectPath * op,
 
 extern char *value2Chars(CMPIType type, CMPIValue * value);
 
-char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str)
+char *pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
 {
 //            "//atp:9999/root/cimv25:TennisPlayer.first="Patrick",last="Rafter";
 
@@ -279,14 +279,14 @@ char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str)
    return str;
 }
 
-CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc)
+CMPIString *__oft_toString(const CMPIObjectPath * cop, CMPIStatus * rc)
 {
    char str[4096] = { 0 };
    pathToChars(cop, rc, str);
    return native_new_CMPIString(str, rc);
 }
 
-char *oft_toCharsNormalized(CMPIObjectPath * cop, CMPIConstClass * cls,
+char *oft_toCharsNormalized(const CMPIObjectPath * cop, CMPIConstClass * cls,
                             int full, CMPIStatus * rc)
 {
    char str[2048] = { 0 };
@@ -352,13 +352,13 @@ static CMPIObjectPathFT oft = {
 
 CMPIObjectPathFT *CMPI_ObjectPath_FT = &oft;
 
-unsigned long getObjectPathSerializedSize(CMPIObjectPath * op)
+unsigned long getObjectPathSerializedSize(const CMPIObjectPath * op)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    return ClSizeObjectPath(cop) + sizeof(struct native_cop);
 }
 
-void getSerializedObjectPath(CMPIObjectPath * op, void *area)
+void getSerializedObjectPath(const CMPIObjectPath * op, void *area)
 {
    memcpy(area, op, sizeof(struct native_cop));
    ClObjectPathRebuild((ClObjectPath *) op->hdl,
@@ -375,10 +375,10 @@ CMPIObjectPath *relocateSerializedObjectPath(void *area)
    return (CMPIObjectPath *) cop;
 }
 
-MsgSegment setObjectPathMsgSegment(CMPIObjectPath * op)
+MsgSegment setObjectPathMsgSegment(const CMPIObjectPath * op)
 {
    MsgSegment s;
-   s.data = op;
+   s.data = (CMPIObjectPath*)op;
    s.type = MSG_SEG_OBJECTPATH;
    s.length = getObjectPathSerializedSize(op);
    return s;

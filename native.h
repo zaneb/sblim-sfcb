@@ -25,7 +25,7 @@
 
 #define NATIVE_FT_VERSION 1
 
-#define CMPI_VERSION 90
+//#define CMPI_VERSION 90
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@ struct native_propertyFT {
    //! Adds a new native_property to a list.
    int (*addProperty) (struct native_property **,
                        int,
-                       const char *, CMPIType, CMPIValueState, CMPIValue *);
+                       const char *, CMPIType, CMPIValueState, const CMPIValue *);
 
    //! Resets the values of an existing native_property, if existant.
    int (*setProperty) (struct native_property *,
@@ -82,13 +82,13 @@ struct native_propertyFT {
 
 struct _NativeCMPIBrokerFT {
    CMPIBrokerFT brokerFt;
-   CMPIArray *(*getKeyNames) (CMPIBroker * broker,
+   CMPIArray *(*getKeyNames) (const CMPIBroker * broker,
                               CMPIContext * context, CMPIObjectPath * cop,
                               CMPIStatus * rc);
-   CMPIString *(*getMessage) (CMPIBroker * mb, const char *msgId,
+   CMPIString *(*getMessage) (const CMPIBroker * mb, const char *msgId,
                               const char *defMsg, CMPIStatus * rc,
                               unsigned int count, va_list);
-    CMPIBoolean(*classPathIsA) (CMPIBroker * broker, CMPIObjectPath * cop,
+    CMPIBoolean(*classPathIsA) (const CMPIBroker * broker, CMPIObjectPath * cop,
                                 const char *type, CMPIStatus * rc);
 };
 
@@ -98,7 +98,7 @@ typedef struct _NativeCMPIBrokerFT NativeCMPIBrokerFT;
 /****************************************************************************/
 
 void native_release_CMPIValue(CMPIType, CMPIValue * val);
-CMPIValue native_clone_CMPIValue(CMPIType, CMPIValue * val, CMPIStatus *);
+CMPIValue native_clone_CMPIValue(CMPIType, const CMPIValue * val, CMPIStatus *);
 
 CMPIString *native_new_CMPIString(const char *, CMPIStatus *);
 
@@ -107,15 +107,15 @@ CMPIArray *internal_new_CMPIArray(int mode, CMPICount size, CMPIType type,
 CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus *);
 CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus *);
 
-void native_array_increase_size(CMPIArray *, CMPICount);
+void native_array_increase_size(const CMPIArray *, CMPICount);
 CMPIResult *native_new_CMPIResult(int, int, CMPIStatus *);
 CMPIArray *native_result2array(CMPIResult *);
 
 CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray *, CMPIStatus *);
 
 CMPIInstance *NewCMPIInstance(CMPIObjectPath *, CMPIStatus *);
-CMPIInstance *TrackedCMPIInstance(CMPIObjectPath *, CMPIStatus *);
-CMPIInstance *internal_new_CMPIInstance(int mode, CMPIObjectPath *,
+CMPIInstance *TrackedCMPIInstance(const CMPIObjectPath *, CMPIStatus *);
+CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath *,
                                         CMPIStatus *);
 
 CMPIObjectPath *NewCMPIObjectPath(const char *, const char *, CMPIStatus *);
@@ -136,13 +136,19 @@ CMPISelectExp *native_new_CMPISelectExp(const char *,
                                         
 CMPIContext *native_new_CMPIContext(int mem_state, void*);
 void native_release_CMPIContext(CMPIContext *);
-CMPIContext *native_clone_CMPIContext(CMPIContext *ctx);
+CMPIContext *native_clone_CMPIContext(const CMPIContext *ctx);
 
 extern CMPIBrokerExtFT *CMPI_BrokerExt_Ftab;
 
-MsgSegment setObjectPathMsgSegment(CMPIObjectPath * op);
+MsgSegment setObjectPathMsgSegment(const CMPIObjectPath * op);
 CMPIInstance *relocateSerializedInstance(void *area);
+void getSerializedInstance(const CMPIInstance * ci, void *area);
+unsigned long getInstanceSerializedSize(const CMPIInstance * ci);
+void getSerializedObjectPath(const CMPIObjectPath * op, void *area);
+unsigned long getObjectPathSerializedSize(const CMPIObjectPath * op);
+
 CMPIObjectPath *relocateSerializedObjectPath(void *area);
+void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time);
 
 
 /****************************************************************************/

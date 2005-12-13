@@ -70,17 +70,13 @@ extern ProviderRegister *pReg;
 
 extern void processProviderInvocationRequests(ProviderInfo *);
 extern CMPIObjectPath *relocateSerializedObjectPath(void *area);
-extern MsgSegment setObjectPathMsgSegment(CMPIObjectPath * op);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * op);
 extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
-extern void getSerializedObjectPath(CMPIObjectPath * op, void *area);
-extern void getSerializedInstance(CMPIInstance * ci, void *area);
 extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
 extern void getSerializedConstClass(CMPIConstClass * cl, void *area);
 extern void getSerializedArgs(CMPIArgs * cl, void *area);
 extern CMPIConstClass *relocateSerializedConstClass(void *area);
 extern CMPIInstance *relocateSerializedInstance(void *area);
-extern void getSerializedInstance(CMPIInstance * ci, void *area);
 extern CMPIArgs *relocateSerializedArgs(void *area);
 extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
 extern void dump(char *msg, void *a, int l);

@@ -430,6 +430,7 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
 BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
                                  int *count);
 BinResponseHdr *invokeProvider(BinRequestContext * ctx);
+CMPIConstClass *getConstClass(const char *ns, const char *cn);
 
 typedef struct providerProcess {
    char *group;

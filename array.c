@@ -75,7 +75,7 @@ static CMPIStatus __aft_release(CMPIArray * array)
 }
 
 
-static CMPIArray *__aft_clone(CMPIArray * array, CMPIStatus * rc)
+static CMPIArray *__aft_clone(const CMPIArray * array, CMPIStatus * rc)
 {
    CMPIStatus tmp;
    struct native_array *a = (struct native_array *) array;
@@ -102,7 +102,7 @@ static CMPIArray *__aft_clone(CMPIArray * array, CMPIStatus * rc)
 }
 
 
-static CMPICount __aft_getSize(CMPIArray * array, CMPIStatus * rc)
+static CMPICount __aft_getSize(const CMPIArray * array, CMPIStatus * rc)
 {
    struct native_array *a = (struct native_array *) array;
 
@@ -112,7 +112,7 @@ static CMPICount __aft_getSize(CMPIArray * array, CMPIStatus * rc)
 }
 
 
-static CMPIType __aft_getSimpleType(CMPIArray * array, CMPIStatus * rc)
+static CMPIType __aft_getSimpleType(const CMPIArray * array, CMPIStatus * rc)
 {
    struct native_array *a = (struct native_array *) array;
 
@@ -122,7 +122,7 @@ static CMPIType __aft_getSimpleType(CMPIArray * array, CMPIStatus * rc)
 }
 
 
-static CMPIData __aft_getElementAt(CMPIArray * array,
+static CMPIData __aft_getElementAt(const CMPIArray * array,
                                    CMPICount index, CMPIStatus * rc)
 {
    struct native_array *a = (struct native_array *) array;
@@ -187,7 +187,7 @@ static CMPIStatus __aft_setElementAt(CMPIArray * array,
    CMReturn(CMPI_RC_ERR_FAILED);
 }
 */
-static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue * val,
+static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, const CMPIValue * val,
        CMPIType type, int opt )
 {
    struct native_array * a = (struct native_array *) array;
@@ -224,7 +224,7 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, CMPIValue *
    CMReturn ( CMPI_RC_ERR_FAILED );
 }
 
-static CMPIStatus __aft_setElementAt ( CMPIArray * array, CMPICount index, CMPIValue * val,
+static CMPIStatus __aft_setElementAt (  CMPIArray * array, CMPICount index, const CMPIValue * val,
           CMPIType type )
 { 
    return setElementAt(array,index,val,type,0);
@@ -265,7 +265,7 @@ CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
 
 
 
-void native_array_increase_size(CMPIArray * array, CMPICount increment)
+void native_array_increase_size(const CMPIArray * array, CMPICount increment)
 {
    struct native_array *a = (struct native_array *) array;
 
@@ -280,7 +280,7 @@ void native_array_increase_size(CMPIArray * array, CMPICount increment)
 }
 
 
-void native_array_reset_size(CMPIArray * array, CMPICount increment)
+void native_array_reset_size(const CMPIArray * array, CMPICount increment)
 {
    struct native_array *a = (struct native_array *) array;
    a->size = increment;

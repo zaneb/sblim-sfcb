@@ -1635,7 +1635,7 @@ int ClClassGetMethParameterAt(ClClass * cls, ClMethod *m, int pid, CMPIParameter
 //-----
 //-------------------------------------------------------
 
-int isInstance(CMPIInstance *ci) 
+int isInstance(const CMPIInstance *ci) 
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
    if (inst->hdr.type == HDR_Instance) return 1;

@@ -52,14 +52,14 @@ static CMPIStatus __eft_release(CMPIPredicate * pred)
 }
 
 
-static CMPIPredicate *__eft_clone(CMPIPredicate * pred, CMPIStatus * rc)
+static CMPIPredicate *__eft_clone(const CMPIPredicate * pred, CMPIStatus * rc)
 {
    NativePredicate *p = (NativePredicate *) pred;
 
    return (CMPIPredicate *) __new_predicate(MEM_NOT_TRACKED,p->op,rc);
 }
 
-static CMPIStatus __eft_getData(CMPIPredicate* pred, CMPIType* type,
+static CMPIStatus __eft_getData(const CMPIPredicate* pred, CMPIType* type,
                CMPIPredOp* opc, CMPIString** lhs, CMPIString** rhs)
 {
    NativePredicate *p = (NativePredicate *) pred;
@@ -87,7 +87,7 @@ static CMPIStatus __eft_getData(CMPIPredicate* pred, CMPIType* type,
    return irc;
 }
 
-static int __eft_evaluate (CMPIPredicate* pr, CMPIValue* value,
+static int __eft_evaluate (const CMPIPredicate* pr, const CMPIValue* value,
                CMPIType type, CMPIStatus* rc)
 {
     if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_SUPPORTED);

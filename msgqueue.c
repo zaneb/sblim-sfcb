@@ -150,10 +150,10 @@ int remSem()
       return semctl(sfcbSem,0,IPC_RMID,0);
 }
 
-MsgSegment setCharsMsgSegment(char *str)
+MsgSegment setCharsMsgSegment(const char *str)
 {
    MsgSegment s;
-   s.data = str;
+   s.data = (char*)str;
    if (str)
       s.length = strlen(str) + 1;
    else

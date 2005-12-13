@@ -42,7 +42,7 @@ struct native_datetime {
 };
 
 
-static struct native_datetime *__new_datetime(int state, char* cimDt, CMPIStatus *rc);
+static struct native_datetime *__new_datetime(int state, const char* cimDt, CMPIStatus *rc);
 
 /****************************************************************************/
 
@@ -82,7 +82,7 @@ static CMPIStatus __dtft_release(CMPIDateTime * dt)
   \return a copy of the given CMPIDateTime object that won't be freed
   from memory before calling __dtft_release().
  */
-static CMPIDateTime *__dtft_clone(CMPIDateTime * dt, CMPIStatus * rc)
+static CMPIDateTime *__dtft_clone(const CMPIDateTime * dt, CMPIStatus * rc)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
    struct native_datetime *new = __new_datetime(MEM_NOT_TRACKED, ndt->cimDt,rc);
@@ -194,7 +194,7 @@ static void bin2chars(CMPIUint64 msecs, CMPIBoolean interval, CMPIStatus * rc, c
 
   \return an amount of microseconds.
  */
-static CMPIUint64 __dtft_getBinaryFormat(CMPIDateTime * dt, CMPIStatus * rc)
+static CMPIUint64 __dtft_getBinaryFormat(const CMPIDateTime * dt, CMPIStatus * rc)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
@@ -221,7 +221,7 @@ void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time)
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
 }
 
-static CMPIString *__dtft_getStringFormat(CMPIDateTime * dt, CMPIStatus * rc)
+static CMPIString *__dtft_getStringFormat(const CMPIDateTime * dt, CMPIStatus * rc)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
@@ -229,7 +229,7 @@ static CMPIString *__dtft_getStringFormat(CMPIDateTime * dt, CMPIStatus * rc)
    return native_new_CMPIString(ndt->cimDt, rc);
 }
 
-static CMPIBoolean __dtft_isInterval(CMPIDateTime * dt, CMPIStatus * rc)
+static CMPIBoolean __dtft_isInterval(const CMPIDateTime * dt, CMPIStatus * rc)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
@@ -252,7 +252,7 @@ static CMPIBoolean __dtft_isInterval(CMPIDateTime * dt, CMPIStatus * rc)
   \return a fully initialized native_datetime object pointer.
  */
 static struct native_datetime *__new_datetime(int mm_add,
-                                              char *cimDt,
+                                              const char *cimDt,
                                               CMPIStatus * rc)
 {
    static CMPIDateTimeFT dtft = {

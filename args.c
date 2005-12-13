@@ -72,7 +72,7 @@ static CMPIStatus __aft_release(CMPIArgs * args)
 }
 
 
-static CMPIArgs *__aft_clone(CMPIArgs * args, CMPIStatus * rc)
+static CMPIArgs *__aft_clone(const CMPIArgs * args, CMPIStatus * rc)
 {
    struct native_args *a = (struct native_args *) args;
    struct native_args *na = __new_empty_args(MEM_NOT_TRACKED, rc);
@@ -85,8 +85,8 @@ static CMPIArgs *__aft_clone(CMPIArgs * args, CMPIStatus * rc)
 }
 
 
-static CMPIStatus __aft_addArg(CMPIArgs * args, const char *name,
-                               CMPIValue * value, CMPIType type)
+static CMPIStatus __aft_addArg(const CMPIArgs * args, const char *name,
+                               const CMPIValue * value, CMPIType type)
 {
    ClArgs *ca = (ClArgs *) args->hdl;
    CMPIData data = { type, CMPI_goodValue, {0} };
@@ -109,7 +109,7 @@ static CMPIStatus __aft_addArg(CMPIArgs * args, const char *name,
 }
 
 
-static CMPIData __aft_getArgAt(CMPIArgs * args,
+static CMPIData __aft_getArgAt(const CMPIArgs * args,
                                unsigned int i,
                                CMPIString ** name, CMPIStatus * rc)
 {
@@ -144,7 +144,7 @@ static CMPIData __aft_getArgAt(CMPIArgs * args,
    return rv;
 }
 
-static CMPIData __aft_getArg(CMPIArgs * args, const char *name, CMPIStatus * rc)
+static CMPIData __aft_getArg(const CMPIArgs * args, const char *name, CMPIStatus * rc)
 {
    ClArgs *ca = (ClArgs *) args->hdl;
    ClSection *prps = &ca->properties;
@@ -161,7 +161,7 @@ static CMPIData __aft_getArg(CMPIArgs * args, const char *name, CMPIStatus * rc)
 }
 
 
-static unsigned int __aft_getArgCount(CMPIArgs * args, CMPIStatus * rc)
+static unsigned int __aft_getArgCount(const CMPIArgs * args, CMPIStatus * rc)
 {
    ClArgs *ca = (ClArgs *) args->hdl;
    if (rc)

@@ -60,7 +60,7 @@ static CMPIStatus __eft_release(CMPISelectExp * exp)
 }
 
 
-static CMPISelectExp *__eft_clone(CMPISelectExp * exp, CMPIStatus * rc)
+static CMPISelectExp *__eft_clone(const CMPISelectExp * exp, CMPIStatus * rc)
 {
    NativeSelectExp *e = (NativeSelectExp *) exp;
 
@@ -70,12 +70,12 @@ static CMPISelectExp *__eft_clone(CMPISelectExp * exp, CMPIStatus * rc)
 
 
 
-CMPIBoolean __eft_evaluate(CMPISelectExp * exp,
-                           CMPIInstance * inst, CMPIStatus * rc)
+CMPIBoolean __eft_evaluate(const CMPISelectExp * exp,
+                           const CMPIInstance * inst, CMPIStatus * rc)
 {
    int irc;
    NativeSelectExp *e = (NativeSelectExp *) exp;
-   struct qlPropertySource src={inst,NULL,queryGetValue};
+   struct qlPropertySource src={(CMPIInstance*)inst,NULL,queryGetValue};
    
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    if (e->qs->where==NULL) return 1;
@@ -86,14 +86,14 @@ CMPIBoolean __eft_evaluate(CMPISelectExp * exp,
 }
 
 
-CMPIString *__eft_getString(CMPISelectExp * exp, CMPIStatus * rc)
+CMPIString *__eft_getString(const CMPISelectExp * exp, CMPIStatus * rc)
 {
    NativeSelectExp *e = (NativeSelectExp *) exp;
    return native_new_CMPIString(e->queryString,rc);
 }
 
 
-CMPISelectCond *__eft_getDOC(CMPISelectExp * exp, CMPIStatus * rc)
+CMPISelectCond *__eft_getDOC(const CMPISelectExp * exp, CMPIStatus * rc)
 {
    NativeSelectExp *e = (NativeSelectExp *) exp;
    PredicateDisjunction *pc=NULL;   
@@ -105,7 +105,7 @@ CMPISelectCond *__eft_getDOC(CMPISelectExp * exp, CMPIStatus * rc)
 }
 
 
-CMPISelectCond *__eft_getCOD(CMPISelectExp * exp, CMPIStatus * rc)
+CMPISelectCond *__eft_getCOD(const CMPISelectExp * exp, CMPIStatus * rc)
 {
    NativeSelectExp *e = (NativeSelectExp *) exp;
    PredicateConjunction *pc=NULL;   
@@ -116,8 +116,8 @@ CMPISelectCond *__eft_getCOD(CMPISelectExp * exp, CMPIStatus * rc)
    return TrackedCMPISelectCond(pc,1,rc);       
 }
 
-CMPIBoolean __eft_evaluateUsingAccessor(CMPISelectExp * se,
-                                        CMPIAccessor * accessor,
+CMPIBoolean __eft_evaluateUsingAccessor(const CMPISelectExp * se,
+                                        const CMPIAccessor * accessor,
                                         void *parm, CMPIStatus * rc)
 {
    if (rc)

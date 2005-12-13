@@ -31,19 +31,9 @@
 #include "trace.h"
 #include "fileRepository.h"
 #include "providerMgr.h"
+#include "internalProvider.h" 
 #include "cimXmlRequest.h" 
 
-extern CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
-      CMPIContext * ctx, CMPIResult * rslt, CMPIObjectPath * ref);
-extern CMPIStatus InternalProviderEnumInstances(CMPIInstanceMI * mi,
-      CMPIContext * ctx, CMPIResult * rslt, CMPIObjectPath * ref, char **properties);
-extern CMPIInstance *internalProviderGetInstance(CMPIObjectPath * cop, CMPIStatus *rc);
-extern CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
-       CMPIContext * ctx, CMPIResult * rslt, CMPIObjectPath * cop, CMPIInstance * ci);
-extern CMPIStatus InternalProviderGetInstance(CMPIInstanceMI * mi,
-       CMPIContext * ctx, CMPIResult * rslt, CMPIObjectPath * cop, char **properties);
-extern CMPIStatus InternalProviderDeleteInstance(CMPIInstanceMI * mi,
-       CMPIContext * ctx, CMPIResult * rslt, CMPIObjectPath * cop);
 extern void closeProviderContext(BinRequestContext* ctx);
 extern int exportIndication(char *url, char *payload, char **resp, char **msg);
 extern void dumpSegments(void*);
@@ -53,9 +43,9 @@ extern UtilStringBuffer *newStringBuffer(int);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
 
-static CMPIBroker *_broker;
+static const CMPIBroker *_broker;
  
-static int interOpNameSpace(CMPIObjectPath *cop, CMPIStatus *st) 
+static int interOpNameSpace(const CMPIObjectPath *cop, CMPIStatus *st) 
  {   
    char *ns=(char*)CMGetNameSpace(cop,NULL)->hdl;   
    if (strcasecmp(ns,"root/interop") && strcasecmp(ns,"root/pg_interop")) {
@@ -69,7 +59,7 @@ static int interOpNameSpace(CMPIObjectPath *cop, CMPIStatus *st)
  * Instance MI Cleanup
  * ------------------------------------------------------------------ */
 
-CMPIStatus IndCIMXMLHandlerCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
+CMPIStatus IndCIMXMLHandlerCleanup(CMPIInstanceMI * mi, const CMPIContext * ctx, CMPIBoolean terminating)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerCleanup");
@@ -82,9 +72,9 @@ CMPIStatus IndCIMXMLHandlerCleanup(CMPIInstanceMI * mi, CMPIContext * ctx)
 
 
 CMPIStatus IndCIMXMLHandlerEnumInstanceNames(CMPIInstanceMI * mi,
-                                             CMPIContext * ctx,
-                                             CMPIResult * rslt,
-                                             CMPIObjectPath * ref)
+                                             const CMPIContext * ctx,
+                                             const CMPIResult * rslt,
+                                             const CMPIObjectPath * ref)
 {
    CMPIStatus st;
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstanceNames");
@@ -93,10 +83,10 @@ CMPIStatus IndCIMXMLHandlerEnumInstanceNames(CMPIInstanceMI * mi,
 }
 
 CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
-                                         CMPIContext * ctx,
-                                         CMPIResult * rslt,
-                                         CMPIObjectPath * ref,
-                                         char **properties)
+                                         const CMPIContext * ctx,
+                                         const CMPIResult * rslt,
+                                         const CMPIObjectPath * ref,
+                                         const char **properties)
 {
    CMPIStatus st;
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstances");
@@ -106,10 +96,10 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
 
 
 CMPIStatus IndCIMXMLHandlerGetInstance(CMPIInstanceMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * cop,
-                                       char **properties)
+                                       const CMPIContext * ctx,
+                                       const CMPIResult * rslt,
+                                       const CMPIObjectPath * cop,
+                                       const char **properties)
 {
    CMPIStatus st;
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerGetInstance");
@@ -118,10 +108,10 @@ CMPIStatus IndCIMXMLHandlerGetInstance(CMPIInstanceMI * mi,
 }
 
 CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
-                                          CMPIContext * ctx,
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * cop,
-                                          CMPIInstance * ci)
+                                          const CMPIContext * ctx,
+                                          const CMPIResult * rslt,
+                                          const CMPIObjectPath * cop,
+                                          const CMPIInstance * ci)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIArgs *in,*out=NULL;
@@ -156,11 +146,12 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-CMPIStatus IndCIMXMLHandlerSetInstance(CMPIInstanceMI * mi,
-                                       CMPIContext * ctx,
-                                       CMPIResult * rslt,
-                                       CMPIObjectPath * cop,
-                                       CMPIInstance * ci, char **properties)
+CMPIStatus IndCIMXMLHandlerModifyInstance(CMPIInstanceMI * mi,
+					  const CMPIContext * ctx,
+					  const CMPIResult * rslt,
+					  const CMPIObjectPath * cop,
+					  const CMPIInstance * ci, 
+					  const char **properties)
 {
    CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerSetInstance");   
@@ -168,9 +159,9 @@ CMPIStatus IndCIMXMLHandlerSetInstance(CMPIInstanceMI * mi,
 }
 
 CMPIStatus IndCIMXMLHandlerDeleteInstance(CMPIInstanceMI * mi,
-                                          CMPIContext * ctx,
-                                          CMPIResult * rslt,
-                                          CMPIObjectPath * cop)
+                                          const CMPIContext * ctx,
+                                          const CMPIResult * rslt,
+                                          const CMPIObjectPath * cop)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIArgs *in,*out=NULL;
@@ -198,10 +189,10 @@ CMPIStatus IndCIMXMLHandlerDeleteInstance(CMPIInstanceMI * mi,
 }
 
 CMPIStatus IndCIMXMLHandlerExecQuery(CMPIInstanceMI * mi,
-                                     CMPIContext * ctx,
-                                     CMPIResult * rslt,
-                                     CMPIObjectPath * cop,
-                                     char *lang, char *query)
+                                     const CMPIContext * ctx,
+                                     const CMPIResult * rslt,
+                                     const CMPIObjectPath * cop,
+                                     const char *lang, const char *query)
 {
    CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerExecQuery");   
@@ -213,7 +204,9 @@ CMPIStatus IndCIMXMLHandlerExecQuery(CMPIInstanceMI * mi,
 /*                        Method Provider Interface                           */
 /* ---------------------------------------------------------------------------*/
 
-CMPIStatus IndCIMXMLHandlerMethodCleanup(CMPIMethodMI * mi, CMPIContext * ctx)
+CMPIStatus IndCIMXMLHandlerMethodCleanup(CMPIMethodMI * mi, 
+					 const CMPIContext * ctx, 
+					 CMPIBoolean terminating)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerMethodCleanup");   
@@ -221,11 +214,11 @@ CMPIStatus IndCIMXMLHandlerMethodCleanup(CMPIMethodMI * mi, CMPIContext * ctx)
 }
 
 CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
-                                     CMPIContext * ctx,
-                                     CMPIResult * rslt,
-                                     CMPIObjectPath * ref,
-                                     const char *methodName,
-                                     CMPIArgs * in, CMPIArgs * out)
+					const CMPIContext * ctx,
+					const CMPIResult * rslt,
+					const CMPIObjectPath * ref,
+					const char *methodName,
+					const CMPIArgs * in, CMPIArgs * out)
 { 
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIInstance *hci,*ind;

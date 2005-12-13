@@ -41,10 +41,10 @@
 extern int indicationEnabled;
 #endif
 
-extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
+extern MsgSegment setArgsMsgSegment(const CMPIArgs * args);
 extern CMPIArgs *relocateSerializedArgs(void *area);
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
-extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
+extern MsgSegment setInstanceMsgSegment(const CMPIInstance * ci);
 extern void memLinkObjectPath(CMPIObjectPath *op);
 
 extern ProviderInfo *activProvs;
@@ -57,8 +57,6 @@ extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
 void closeProviderContext(BinRequestContext * ctx);
 
-CMPIContext *native_clone_CMPIContext(CMPIContext *ctx);
-
 //---------------------------------------------------
 //---
 //-     Thread support
@@ -68,18 +66,18 @@ CMPIContext *native_clone_CMPIContext(CMPIContext *ctx);
 
 static CMPI_MUTEX_TYPE mtx=NULL;
 
-void lockUpCall(CMPIBroker* mb)
+void lockUpCall(const CMPIBroker* mb)
 {
    if (mtx==NULL) mtx=mb->xft->newMutex(0);
    mb->xft->lockMutex(mtx);
 }
 
-void unlockUpCall(CMPIBroker* mb)
+void unlockUpCall(const CMPIBroker* mb)
 {
    mb->xft->unlockMutex(mtx);
 }
 
-static CMPIContext* prepareAttachThread(CMPIBroker* mb, CMPIContext* ctx) 
+static CMPIContext* prepareAttachThread(const CMPIBroker* mb, const CMPIContext* ctx) 
 {
    CMPIContext *nctx;
    _SFCB_ENTER(TRACE_INDPROVIDER | TRACE_UPCALLS, "prepareAttachThread");
@@ -87,24 +85,24 @@ static CMPIContext* prepareAttachThread(CMPIBroker* mb, CMPIContext* ctx)
    _SFCB_RETURN(nctx);
 }
 
-static CMPIStatus attachThread(CMPIBroker* mb, CMPIContext* ctx) 
+static CMPIStatus attachThread(const CMPIBroker* mb, const CMPIContext* ctx) 
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER | TRACE_UPCALLS, "attachThread");
    _SFCB_RETURN(st);
 }
 
-static CMPIStatus detachThread(CMPIBroker* mb, CMPIContext* ctx) 
+static CMPIStatus detachThread(const CMPIBroker* mb, const CMPIContext* ctx) 
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER | TRACE_UPCALLS, "detachThread");
-    ctx->ft->release(ctx);
+    ctx->ft->release((CMPIContext*)ctx);
    _SFCB_RETURN(st);
 }
 
 
-static CMPIStatus deliverIndication(CMPIBroker* mb, CMPIContext* ctx,
-       const char *ns, CMPIInstance* ind) 
+static CMPIStatus deliverIndication(const CMPIBroker* mb, const CMPIContext* ctx,
+       const char *ns, const CMPIInstance* ind) 
 {
 #ifdef SFCB_INCL_INDICATION_SUPPORT 
    
@@ -203,7 +201,7 @@ static CMPIStatus setErrorStatus(int code)
 }
 
 static void setContext(BinRequestContext * binCtx, OperationHdr * oHdr,
-                       BinRequestHdr * bHdr, int size, CMPIObjectPath * cop)
+                       BinRequestHdr * bHdr, int size, const CMPIObjectPath * cop)
 {
    memset(binCtx,0,sizeof(BinRequestContext));
    oHdr->nameSpace = setCharsMsgSegment((char *)
@@ -263,10 +261,10 @@ static void cpyResponse(BinResponseHdr *resp, CMPIArray *ar, int *c, CMPIType ty
 //---------------------------------------------------
 
 
-static CMPIInstance *getInstance(CMPIBroker * broker,
-                                 CMPIContext * context,
-                                 CMPIObjectPath * cop,
-                                 char **props, CMPIStatus * rc)
+static CMPIInstance *getInstance(const CMPIBroker * broker,
+                                 const CMPIContext * context,
+                                 const CMPIObjectPath * cop,
+                                 const char **props, CMPIStatus * rc)
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
@@ -327,10 +325,10 @@ static CMPIInstance *getInstance(CMPIBroker * broker,
    _SFCB_RETURN(tInst);
 }
 
-static CMPIObjectPath *createInstance(CMPIBroker * broker,
-                                      CMPIContext * context,
-                                      CMPIObjectPath * cop,
-                                      CMPIInstance * inst, CMPIStatus * rc)
+static CMPIObjectPath *createInstance(const CMPIBroker * broker,
+                                      const CMPIContext * context,
+                                      const CMPIObjectPath * cop,
+                                      const CMPIInstance * inst, CMPIStatus * rc)
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
@@ -393,14 +391,14 @@ static CMPIObjectPath *createInstance(CMPIBroker * broker,
    _SFCB_RETURN(tOp);
 }
 
-static CMPIStatus modifyInstance(CMPIBroker * broker,
-                              CMPIContext * context,
-                              CMPIObjectPath * cop,
-                              CMPIInstance * inst, char **props)
+static CMPIStatus modifyInstance(const CMPIBroker * broker,
+                              const CMPIContext * context,
+                              const CMPIObjectPath * cop,
+                              const CMPIInstance * inst, const char **props)
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   char **p=props;
+   const char **p=props;
    ModifyInstanceReq *sreq=NULL;
    OperationHdr oHdr = { OPS_ModifyInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -432,7 +430,7 @@ static CMPIStatus modifyInstance(CMPIBroker * broker,
          if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
             CMPIResult *result = native_new_CMPIResult(0,1,NULL);
             unlockUpCall(broker);
-            st = pInfo->instanceMI->ft->setInstance(pInfo->instanceMI,context,result,cop,inst,props);
+            st = pInfo->instanceMI->ft->modifyInstance(pInfo->instanceMI,context,result,cop,inst,props);
             if (sreq) free(sreq);
             return st;   
          }
@@ -458,8 +456,8 @@ static CMPIStatus modifyInstance(CMPIBroker * broker,
    _SFCB_RETURN(st);
 }
 
-static CMPIStatus deleteInstance(CMPIBroker * broker,
-                                 CMPIContext * context, CMPIObjectPath * cop)
+static CMPIStatus deleteInstance(const CMPIBroker * broker,
+                                 const CMPIContext * context, const CMPIObjectPath * cop)
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
@@ -509,9 +507,9 @@ static CMPIStatus deleteInstance(CMPIBroker * broker,
 }
 
 
-static CMPIEnumeration *execQuery(CMPIBroker * broker,
-                                  CMPIContext * context,
-                                  CMPIObjectPath * cop, const char *query,
+static CMPIEnumeration *execQuery(const CMPIBroker * broker,
+                                  const CMPIContext * context,
+                                  const CMPIObjectPath * cop, const char *query,
                                   const char *lang, CMPIStatus * rc)
 {
    BinRequestContext binCtx;
@@ -531,8 +529,8 @@ static CMPIEnumeration *execQuery(CMPIBroker * broker,
       setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data)); 
       
-      sreq.query = setCharsMsgSegment((char*)query);
-      sreq.queryLang = setCharsMsgSegment((char*)lang);
+      sreq.query = setCharsMsgSegment(query);
+      sreq.queryLang = setCharsMsgSegment(lang);
       
       irc = getProviderContext(&binCtx, &oHdr);
 
@@ -550,7 +548,7 @@ static CMPIEnumeration *execQuery(CMPIBroker * broker,
                   local=1;
                   unlockUpCall(broker);
                   rci = pInfo->instanceMI->ft->execQuery(
-                     pInfo->instanceMI, context, result, cop, (char*)query, (char*)lang);
+                     pInfo->instanceMI, context, result, cop, query, lang);
                   lockUpCall(broker);
                   if (rci.rc == CMPI_RC_OK) cpyResult(result, ar, &c);  
                   else st=rci; 
@@ -582,10 +580,10 @@ static CMPIEnumeration *execQuery(CMPIBroker * broker,
    _SFCB_RETURN(enm);
 }
 
-static CMPIEnumeration *enumInstances(CMPIBroker * broker,
-                                      CMPIContext * context,
-                                      CMPIObjectPath * cop,
-                                      char **props, CMPIStatus * rc)
+static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
+                                      const CMPIContext * context,
+                                      const CMPIObjectPath * cop,
+                                      const char **props, CMPIStatus * rc)
 {
    BinRequestContext binCtx;
    EnumInstancesReq sreq = BINREQ(OPS_EnumerateInstances, 2);
@@ -651,9 +649,9 @@ static CMPIEnumeration *enumInstances(CMPIBroker * broker,
    _SFCB_RETURN(enm);
 }
 
-static CMPIEnumeration *enumInstanceNames(CMPIBroker * broker,
-                                          CMPIContext * context,
-                                          CMPIObjectPath * cop, CMPIStatus * rc)
+static CMPIEnumeration *enumInstanceNames(const CMPIBroker * broker,
+                                          const CMPIContext * context,
+                                          const CMPIObjectPath * cop, CMPIStatus * rc)
 {
    BinRequestContext binCtx;
    EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, 2);
@@ -726,13 +724,13 @@ static CMPIEnumeration *enumInstanceNames(CMPIBroker * broker,
 
 
 
-static CMPIEnumeration *associators(CMPIBroker * broker,
-                                    CMPIContext * context,
-                                    CMPIObjectPath * cop,
+static CMPIEnumeration *associators(const CMPIBroker * broker,
+                                    const CMPIContext * context,
+                                    const CMPIObjectPath * cop,
                                     const char *assocclass,
                                     const char *resultclass,
                                     const char *role,
-                                    const char *resultrole, char **props,
+                                    const char *resultrole, const char **props,
                                     CMPIStatus * rc)
 {
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
@@ -741,9 +739,9 @@ static CMPIEnumeration *associators(CMPIBroker * broker,
    return NULL;
 }
 
-static CMPIEnumeration *associatorNames(CMPIBroker * broker,
-                                        CMPIContext * context,
-                                        CMPIObjectPath * cop,
+static CMPIEnumeration *associatorNames(const CMPIBroker * broker,
+                                        const CMPIContext * context,
+                                        const CMPIObjectPath * cop,
                                         const char *assocclass,
                                         const char *resultclass,
                                         const char *role,
@@ -755,11 +753,11 @@ static CMPIEnumeration *associatorNames(CMPIBroker * broker,
    return NULL;
 }
 
-static CMPIEnumeration *references(CMPIBroker * broker,
-                                   CMPIContext * context,
-                                   CMPIObjectPath * cop,
+static CMPIEnumeration *references(const CMPIBroker * broker,
+                                   const CMPIContext * context,
+                                   const CMPIObjectPath * cop,
                                    const char *assocclass,
-                                   const char *role, char **props,
+                                   const char *role, const char **props,
                                    CMPIStatus * rc)
 {
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
@@ -768,9 +766,9 @@ static CMPIEnumeration *references(CMPIBroker * broker,
    return NULL;
 }
 
-static CMPIEnumeration *referenceNames(CMPIBroker * broker,
-                                       CMPIContext * context,
-                                       CMPIObjectPath * cop,
+static CMPIEnumeration *referenceNames(const CMPIBroker * broker,
+                                       const CMPIContext * context,
+                                       const CMPIObjectPath * cop,
                                        const char *assocclass,
                                        const char *role, CMPIStatus * rc)
 {
@@ -794,9 +792,9 @@ struct native_args {
 };
 
 
-static CMPIData invokeMethod(CMPIBroker * broker, CMPIContext * context,
-                             CMPIObjectPath * cop, const char *method,
-                             CMPIArgs * in, CMPIArgs * out, CMPIStatus * rc)
+static CMPIData invokeMethod(const CMPIBroker * broker, const CMPIContext * context,
+                             const CMPIObjectPath * cop, const char *method,
+                             const CMPIArgs * in, CMPIArgs * out, CMPIStatus * rc)
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
@@ -826,7 +824,7 @@ static CMPIData invokeMethod(CMPIBroker * broker, CMPIContext * context,
       
       sreq->in = setArgsMsgSegment(in);
       sreq->out = setArgsMsgSegment(NULL);
-      sreq->method = setCharsMsgSegment((char*)method);
+      sreq->method = setCharsMsgSegment(method);
       
       if (x) for (n=5,i=0,s=CMGetArgCount(in,NULL); i<s; i++) {
          CMPIData d=CMGetArgAt(in,i,NULL,NULL);
@@ -879,17 +877,17 @@ static CMPIData invokeMethod(CMPIBroker * broker, CMPIContext * context,
 
 
 
-static CMPIStatus setProperty(CMPIBroker * broker,
-                              CMPIContext * context,
-                              CMPIObjectPath * cop, const char *name,
-                              CMPIValue * value, CMPIType type)
+static CMPIStatus setProperty(const CMPIBroker * broker,
+                              const CMPIContext * context,
+                              const CMPIObjectPath * cop, const char *name,
+                              const CMPIValue * value, CMPIType type)
 {
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
    return rci;
 }
 
-static CMPIData getProperty(CMPIBroker * broker, CMPIContext * context,
-                            CMPIObjectPath * cop, const char *name,
+static CMPIData getProperty(const CMPIBroker * broker, const CMPIContext * context,
+                            const CMPIObjectPath * cop, const char *name,
                             CMPIStatus * rc)
 {
    CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };

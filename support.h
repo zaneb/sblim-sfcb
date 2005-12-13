@@ -24,7 +24,7 @@
 #ifndef CMPI_TOOL_H
 #define CMPI_TOOL_H
 
-#define CMPI_VERSION 90
+//#define CMPI_VERSION 90
 
 #include "cmpidt.h"
 #include "cmpift.h"

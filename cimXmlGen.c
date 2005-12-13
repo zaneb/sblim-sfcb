@@ -21,7 +21,7 @@
 */
 
 
-#define CMPI_VERSION 90
+//#define CMPI_VERSION 90
 
 #include "cimXmlRequest.h"
 #include "cimXmlParser.h"

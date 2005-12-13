@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-// defintion of version numbers to be used by providers using CMBrokerVersion()
+// Definition of version numbers to be used by providers using CMBrokerVersion()
 // They indicate what CMPI version is supported by both the broker and its adapter
 
    #define CMPIVersion051 51     //  0.51
@@ -39,7 +39,7 @@ extern "C" {
    #define CMPIVersion086 86     //  0.86
    #define CMPIVersion087 87     //  0.87
    #define CMPIVersion090 90     //  0.90
-
+   #define CMPIVersion100 100    //  1.00
 
 // CMPI_VERSION compile switch should be used during MI compilation only.
 // It is used define minimal version support needed from Management Broker.
@@ -56,11 +56,13 @@ extern "C" {
      #define CMPI_VER_87 1
    #elif (CMPI_VERSION==90)
      #define CMPI_VER_90 1
+   #elif (CMPI_VERSION==100)
+     #define CMPI_VER_100 1
   #else
      #error Unsupported CMPI_VERSION defined
   #endif
 #else
-  #define CMPI_VER_86
+  #define CMPI_VER_100
 #endif
 
 
@@ -75,8 +77,14 @@ extern "C" {
 // During MI loading MBs must ensure that
 //  <mi-name>_Create<mi-type>MI.miVersion<=<mi-name>_Create<mi-type>MI.ftVersion
 // If this is not the case, the MI might require higher version MB support.
-
-#if   defined (CMPI_VER_90) || defined(CMPI_VER_ALL)
+#if   defined (CMPI_VER_100) || defined(CMPI_VER_ALL)
+  #define CMPI_VER_90
+  #define CMPI_VER_87
+  #define CMPI_VER_86
+  #define CMPI_VER_85
+  #define CMPI_VER_80
+  #define CMPICurrentVersion CMPIVersion100
+#elif   defined (CMPI_VER_90) || defined(CMPI_VER_ALL)
    // added Ext function table and getKeyList
   #define CMPI_VER_87
   #define CMPI_VER_86
@@ -369,8 +377,15 @@ extern "C" {
    #define CMPI_FLAG_IncludeQualifiers  4
    #define CMPI_FLAG_IncludeClassOrigin 8
 
-   #define CMPIInvocationFlags "CMPIInvocationFlags"
+  /* Authenticated ID of the user requesting this MI invocation.*/
    #define CMPIPrincipal "CMPIPrincipal"
+  /* CMPIFlags -  invocation flags as specified by the client. */
+   #define CMPIInvocationFlags "CMPIInvocationFlags"
+  /* Namespace for which the MI is started. */
+   #define CMPIInitNameSpace   "CMPIInitNameSpace"
+  /* The role assumed by the current authenticated user.*/
+   #define CMPIRole            "CMPIRole"
+
 
    typedef enum _CMPIrc {
      CMPI_RC_OK                               =0,
@@ -391,8 +406,13 @@ extern "C" {
      CMPI_RC_ERR_INVALID_QUERY                =15,
      CMPI_RC_ERR_METHOD_NOT_AVAILABLE         =16,
      CMPI_RC_ERR_METHOD_NOT_FOUND             =17,
+     /* The following return codes are used by cleanup() calls only. */
      CMPI_RC_DO_NOT_UNLOAD                    =50,
      CMPI_RC_NEVER_UNLOAD                     =51,
+     /* Internal CMPI return codes. */
+     CMPI_RC_ERR_INVALID_HANDLE               =60,
+     CMPI_RC_ERR_INVALID_DATA_TYPE            =61,
+     /* Hosting OS errors. */
      CMPI_RC_ERROR_SYSTEM                     =100,
      CMPI_RC_ERROR                            =200
    } CMPIrc;
@@ -415,6 +435,16 @@ extern "C" {
    #define CMPI_MB_Supports_QueryNormalization 0x00000800
    #define CMPI_MB_Supports_Qualifier          0x00001000
    #define CMPI_MB_Supports_Schema             0x00003000
+
+#define CMPI_MB_BasicRead 0x00000001
+#define CMPI_MB_BasicWrite 0x00000003
+#define CMPI_MB_InstanceManipulation 0x00000007
+#define CMPI_MB_AssociationTraversal 0x00000009
+#define CMPI_MB_QueryExecution 0x00000011
+#define CMPI_MB_QueryNormalization 0x00000031
+#define CMPI_MB_BasicQualifierSupport 0x00000047
+#define CMPI_MB_OSEncapsulationSupport 0x00000100
+
 
    /* Query Predicate operations */
 

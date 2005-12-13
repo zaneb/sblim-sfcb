@@ -52,14 +52,14 @@ static CMPIStatus __sft_release(CMPIString * string)
 }
 
 
-static CMPIString *__sft_clone(CMPIString * string, CMPIStatus * rc)
+static CMPIString *__sft_clone(const CMPIString * string, CMPIStatus * rc)
 {
    return (CMPIString *)
        __new_string(MEM_NOT_TRACKED, string->ft->getCharPtr(string, rc), rc);
 }
 
 
-static char *__sft_getCharPtr(CMPIString * string, CMPIStatus * rc)
+static char *__sft_getCharPtr(const CMPIString * string, CMPIStatus * rc)
 {
    return (char *) string->hdl;
 }

@@ -55,7 +55,7 @@ static CMPIStatus __eft_release(CMPISelectCond * cond)
 }
 
 
-static CMPISelectCond *__eft_clone(CMPISelectCond * cond, CMPIStatus * rc)
+static CMPISelectCond *__eft_clone(const CMPISelectCond * cond, CMPIStatus * rc)
 {
    NativeSelectCond *c = (NativeSelectCond *) cond;
 
@@ -64,7 +64,7 @@ static CMPISelectCond *__eft_clone(CMPISelectCond * cond, CMPIStatus * rc)
 
 
 static CMPICount __eft_getCountAndType
-              (CMPISelectCond* cond, int* type, CMPIStatus* rc)
+              (const CMPISelectCond* cond, int* type, CMPIStatus* rc)
 {
    NativeSelectCond *c = (NativeSelectCond *) cond;
    CMPICount count=0;
@@ -76,7 +76,7 @@ static CMPICount __eft_getCountAndType
 }
               
 static CMPISubCond* __eft_getSubCondAt
-              (CMPISelectCond* cond, unsigned int index, CMPIStatus* rc)
+              (const CMPISelectCond* cond, unsigned int index, CMPIStatus* rc)
 {
    NativeSelectCond *c = (NativeSelectCond *) cond;
    CMPIValuePtr vp={NULL,0};

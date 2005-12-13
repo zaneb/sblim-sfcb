@@ -96,7 +96,7 @@ typedef struct nameSpaces {
 static UtilHashTable *nsHt=NULL;
 static int nsBaseLen;
 
-void buildInheritanceTable(ClassRegister * cr)
+static void buildInheritanceTable(ClassRegister * cr)
 {
    ClassBase *cb = (ClassBase *) (cr + 1);
    UtilHashTable *ct = cb->ht, *it;
@@ -270,7 +270,7 @@ static ClassRegister *newClassRegister(char *fname)
    return cr;
 }
 
-int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
+static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
 {
    ClClass *ccl=(ClClass*)cc->hdl;  
    CMPIData d;
@@ -324,7 +324,7 @@ int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
    return 0;
 }
 
-CMPIStatus mergeParents(ClassRegister * cr, ClClass *cl, char *p, CMPIConstClass *cc)
+static CMPIStatus mergeParents(ClassRegister * cr, ClClass *cl, char *p, CMPIConstClass *cc)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIConstClass *pcc=getClass(cr,p);
@@ -521,7 +521,7 @@ static void removeClass(ClassRegister * cr,  const char *clsName)
 
 static CMPIConstClass *getClass(ClassRegister * cr, const char *clsName)
 {
-   _SFCB_ENTER(TRACE_PROVIDERS, "ClassProviderEnumClassNames");
+   _SFCB_ENTER(TRACE_PROVIDERS, "getClass");
    _SFCB_TRACE(1,("--- classname %s cReg %p",clsName,cr));
    ClassBase *cb = (ClassBase *) cr->hdl;
    CMPIConstClass *cls = cb->ht->ft->get(cb->ht, clsName);
@@ -550,7 +550,7 @@ Class_Register_FT *ClassRegisterFT = &ift;
  * Class MI Cleanup
  * ------------------------------------------------------------------ */
 
-CMPIStatus ClassProviderCleanup(CMPIClassMI * mi, CMPIContext * ctx)
+static CMPIStatus ClassProviderCleanup(CMPIClassMI * mi, CMPIContext * ctx)
 {
 /* 
    ClassBase *cb;
@@ -590,7 +590,7 @@ static void loopOnChildNames(ClassRegister *cReg, char *cn, CMPIResult * rslt)
 }
  
 
-CMPIStatus ClassProviderEnumClassNames(CMPIClassMI * mi,
+static CMPIStatus ClassProviderEnumClassNames(CMPIClassMI * mi,
                                           CMPIContext * ctx,
                                           CMPIResult * rslt,
                                           CMPIObjectPath * ref)
@@ -672,7 +672,7 @@ static void loopOnChildren(ClassRegister *cReg, char *cn, CMPIResult * rslt)
  
  
 
-CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
+static CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
                                       CMPIContext * ctx,
                                       CMPIResult * rslt,
                                       CMPIObjectPath * ref)
@@ -734,7 +734,7 @@ CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
 }
 
 
-CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
+static CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
                                     CMPIContext * ctx,
                                     CMPIResult * rslt,
                                     CMPIObjectPath * ref, char **properties)
@@ -770,7 +770,7 @@ CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
    _SFCB_RETURN(st);
 }
 
-CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
+static CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
                                        CMPIContext * ctx,
                                        CMPIResult * rslt,
                                        CMPIObjectPath * ref, CMPIConstClass * cc)
@@ -811,7 +811,7 @@ CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
    _SFCB_RETURN(st);
 }
 
-CMPIStatus ClassProviderSetClass(CMPIClassMI * mi,
+static CMPIStatus ClassProviderSetClass(CMPIClassMI * mi,
                                     CMPIContext * ctx,
                                     CMPIResult * rslt,
                                     CMPIObjectPath * cop,
@@ -821,7 +821,7 @@ CMPIStatus ClassProviderSetClass(CMPIClassMI * mi,
    return st;
 }
 
-CMPIStatus ClassProviderDeleteClass(CMPIClassMI * mi,
+static CMPIStatus ClassProviderDeleteClass(CMPIClassMI * mi,
                                        CMPIContext * ctx,
                                        CMPIResult * rslt, CMPIObjectPath * cop)
 {
@@ -930,13 +930,13 @@ static void loopOnChildCount(ClassRegister *cReg, char *cn, int *i, int ignprov)
 }
 
 
-CMPIStatus ClassProviderMethodCleanup(CMPIMethodMI * mi, CMPIContext * ctx)
+static CMPIStatus ClassProviderMethodCleanup(CMPIMethodMI * mi, CMPIContext * ctx)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    return st;
 }
 
-CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
+static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
                                      CMPIContext * ctx,
                                      CMPIResult * rslt,
                                      CMPIObjectPath * ref,

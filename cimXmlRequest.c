@@ -321,7 +321,7 @@ static RespSegments ctxErrResponse(RequestHdr * hdr,
 
 
 
-RespSegments iMethodGetTrailer(UtilStringBuffer * sb)
+static RespSegments iMethodGetTrailer(UtilStringBuffer * sb)
 {
    RespSegments rs = { NULL,0,0,NULL,
       {{2, (char *) sb},
@@ -336,7 +336,7 @@ RespSegments iMethodGetTrailer(UtilStringBuffer * sb)
    _SFCB_RETURN(rs);
 }
 
-RespSegments iMethodResponse(RequestHdr * hdr, UtilStringBuffer * sb)
+static RespSegments iMethodResponse(RequestHdr * hdr, UtilStringBuffer * sb)
 {
    RespSegments rs = { NULL,0,0,NULL,
       {{0, iResponseIntro1},
@@ -350,7 +350,7 @@ RespSegments iMethodResponse(RequestHdr * hdr, UtilStringBuffer * sb)
    _SFCB_RETURN(rs);
 };
 
-RespSegments methodResponse(RequestHdr * hdr, UtilStringBuffer * sb)
+static RespSegments methodResponse(RequestHdr * hdr, UtilStringBuffer * sb)
 {
    RespSegments rs = { NULL,0,0,NULL,
       {{0, responseIntro1},

@@ -51,7 +51,7 @@ extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
 const char *opGetClassNameChars(CMPIObjectPath * cop);
 
 
-char *XMLEscape(char *in)
+static char *XMLEscape(char *in)
 {
    int i, l;
    char *out;
@@ -234,7 +234,7 @@ static char *keyType(CMPIType type)
    return "*??*";
 }
 
-CMPIType guessType(char *val)
+static CMPIType guessType(char *val)
 {
    if (((*val=='-' || *val=='+') && strlen(val)>1) || isdigit(*val)) {
       char *c;

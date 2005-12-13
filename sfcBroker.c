@@ -63,10 +63,10 @@ extern TraceId traceIds[];
 extern int sfcBrokerPid;
 
 extern unsigned long exFlags;
-int startHttp = 0;
+static int startHttp = 0;
 
 #ifdef HAVE_JDBC
-int startDbp = 1;
+static int startDbp = 1;
 #endif
 
 char *name;
@@ -83,12 +83,6 @@ static int adaptersStopped=0,providersStopped=0,restartBroker=0;
 
 extern char * configfile;
 
-void clean_up(int sd, const char *the_file)
-{
-   close(sd);
-   unlink(the_file);
-}
-
 typedef struct startedAdapter {
    struct startedAdapter *next;
    int stopped;
@@ -97,7 +91,7 @@ typedef struct startedAdapter {
 
 StartedAdapter *lastStartedAdapter=NULL;
 
-void addStartedAdapter(int pid)
+static void addStartedAdapter(int pid)
 {
    StartedAdapter *sa=(StartedAdapter*)malloc(sizeof(StartedAdapter));
 
@@ -107,7 +101,7 @@ void addStartedAdapter(int pid)
    lastStartedAdapter=sa;
 }
 
-int testStartedAdapter(int pid, int *left) 
+static int testStartedAdapter(int pid, int *left) 
 {
    StartedAdapter *sa=lastStartedAdapter;
    int stopped=0;
@@ -121,7 +115,7 @@ int testStartedAdapter(int pid, int *left)
    return stopped;
 }         
 
-int stopNextAdapter()
+static int stopNextAdapter()
 {
    StartedAdapter *sa=lastStartedAdapter;
    
@@ -293,7 +287,7 @@ static void handleSigAbort(int sig)
 }
 */
 
-int startHttpd(int argc, char *argv[], int sslMode)
+static int startHttpd(int argc, char *argv[], int sslMode)
 {
    int pid,sfcPid=currentProc;
 
@@ -319,7 +313,7 @@ int startHttpd(int argc, char *argv[], int sslMode)
 #ifdef HAVE_JDBC
 
 extern int dbpDaemon(int argc, char *argv[], int sslMode, int sfcbPid);
-int startDbpd(int argc, char *argv[], int sslMode)
+static int startDbpd(int argc, char *argv[], int sslMode)
 {
 	int pid,sfcPid=currentProc;
 	//sleep(2);

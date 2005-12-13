@@ -103,7 +103,7 @@ static CMPIStatus detachThread(CMPIBroker* mb, CMPIContext* ctx)
 }
 
 
-CMPIStatus deliverIndication(CMPIBroker* mb, CMPIContext* ctx,
+static CMPIStatus deliverIndication(CMPIBroker* mb, CMPIContext* ctx,
        const char *ns, CMPIInstance* ind) 
 {
 #ifdef SFCB_INCL_INDICATION_SUPPORT 
@@ -147,7 +147,7 @@ CMPIStatus deliverIndication(CMPIBroker* mb, CMPIContext* ctx,
 #endif
 }
 
-void buildStatus(BinResponseHdr *resp, CMPIStatus *st)
+static void buildStatus(BinResponseHdr *resp, CMPIStatus *st)
 {
    if (st==NULL) return;
    st->rc=resp->rc;

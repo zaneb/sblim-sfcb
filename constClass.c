@@ -114,7 +114,7 @@ static CMPICount getPropertyCount(CMPIConstClass * cc, CMPIStatus * rc)
    return (CMPICount) ClClassGetPropertyCount(cls);
 }
 
-CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
+static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
                        unsigned long *quals, CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
@@ -148,7 +148,7 @@ CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
    return rv;
 }
 
-CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
+static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
                         CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
@@ -175,7 +175,7 @@ CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
    return rv;
 }
 
-CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i,
+static CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i,
                             CMPIString ** name, CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
@@ -203,7 +203,7 @@ CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i,
    return rv;
 }
 
-CMPIData getProperty(CMPIConstClass * cc, const char *id, unsigned long *quals,
+static CMPIData getProperty(CMPIConstClass * cc, const char *id, unsigned long *quals,
                      CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
@@ -220,7 +220,7 @@ CMPIData getProperty(CMPIConstClass * cc, const char *id, unsigned long *quals,
    return rv;
 }
 
-CMPIArray *getKeyList(CMPIConstClass * cc)
+static CMPIArray *getKeyList(CMPIConstClass * cc)
 {
    int i, m, c;
    unsigned long quals;

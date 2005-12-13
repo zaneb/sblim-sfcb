@@ -40,7 +40,7 @@
 
 static char *repfn=NULL;
 
-char *getRepDir()
+static char *getRepDir()
 {
    int keyl;
    char *dir;

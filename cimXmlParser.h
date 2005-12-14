@@ -181,7 +181,10 @@ typedef struct xtokQualifier {
    struct xtokQualifier *next;
    char *name;
    CMPIType type;
-   char *value;
+   union {
+     char *value;
+     XtokValueArray valueArray;
+   };
    char propagated, overridable, tosubclass, toinstance, translatable;
 } XtokQualifier;
 

@@ -632,28 +632,43 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    qs=&c->qualifiers;
    for (q=qs->first; q; q=q->next) {
-      d.state=CMPI_goodValue;
-      d.value=str2CMPIValue(q->type,q->value,NULL);
-      d.type=q->type;
-      ClClassAddQualifier(&cl->hdr, &cl->qualifiers, q->name, d);
+     if (q->value == NULL) {
+       d.state=CMPI_nullValue;
+       d.value.uint64=0;
+     } else {
+       d.state=CMPI_goodValue;
+       d.value=str2CMPIValue(q->type,q->value,NULL);
+     }
+     d.type=q->type;
+     ClClassAddQualifier(&cl->hdr, &cl->qualifiers, q->name, d);
    }
                   
    ps=&c->properties;
    for (p=ps->first; p; p=p->next) {
       ClProperty *prop;
       int propId;
-      d.state=CMPI_goodValue;
-      d.value=str2CMPIValue(p->valueType,p->val.value,&p->val.ref);       
+      if (p->val.value == NULL) {
+	d.state=CMPI_nullValue;
+	d.value.uint64=0;
+      } else {
+	d.state=CMPI_goodValue;
+	d.value=str2CMPIValue(p->valueType,p->val.value,&p->val.ref);
+      }       
       d.type=p->valueType;
       propId=ClClassAddProperty(cl, p->name, d);
      
       qs=&p->val.qualifiers;
       prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;
       for (q=qs->first; q; q=q->next) {
-         d.state=CMPI_goodValue;
-         d.value=str2CMPIValue(q->type,q->value,NULL);
-         d.type=q->type;
-         ClClassAddPropertyQualifier(&cl->hdr, prop, q->name, d);
+	if (q->value == NULL) {
+	  d.state=CMPI_nullValue;
+	  d.value.uint64=0;
+	} else {
+	  d.state=CMPI_goodValue;
+	  d.value=str2CMPIValue(q->type,q->value,NULL);
+	}
+	d.type=q->type;
+	ClClassAddPropertyQualifier(&cl->hdr, prop, q->name, d);
       }
    }
    
@@ -668,10 +683,15 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
       
       qs=&m->qualifiers;
       for (q=qs->first; q; q=q->next) {
-         d.state=CMPI_goodValue;
-         d.value=str2CMPIValue(q->type,q->value,NULL);
-         d.type=q->type;
-         ClClassAddMethodQualifier(&cl->hdr, meth, q->name, d);
+	if (q->value == NULL) {
+	  d.state=CMPI_nullValue;
+	  d.value.uint64=0;
+	} else {
+	  d.state=CMPI_goodValue;
+	  d.value=str2CMPIValue(q->type,q->value,NULL);
+	}
+	d.type=q->type;
+	ClClassAddMethodQualifier(&cl->hdr, meth, q->name, d);
       }
       
       rs=&m->params;
@@ -684,10 +704,15 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
          qs=&r->qualifiers;
          for (q=qs->first; q; q=q->next) {
-            d.state=CMPI_goodValue;
-            d.value=str2CMPIValue(q->type,q->value,NULL);
-            d.type=q->type;
-            ClClassAddMethParamQualifier(&cl->hdr, parm, q->name, d);
+	   if (q->value == NULL) {
+	     d.state=CMPI_nullValue;
+	     d.value.uint64=0;
+	   } else {
+	     d.state=CMPI_goodValue;
+	     d.value=str2CMPIValue(q->type,q->value,NULL);
+	   }
+	   d.type=q->type;
+	   ClClassAddMethParamQualifier(&cl->hdr, parm, q->name, d);
          }
       }
    }
@@ -977,8 +1002,10 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    inst = NewCMPIInstance(path, NULL);
                
    for (p = req->instance.properties.first; p; p = p->next) {
-      val = str2CMPIValue(p->valueType, p->val.value, &p->val.ref);
-      CMSetProperty(inst, p->name, &val, p->valueType);
+     if (p->val.value) {
+       val = str2CMPIValue(p->valueType, p->val.value, &p->val.ref);
+       CMSetProperty(inst, p->name, &val, p->valueType);
+     }
    }
                   
    sreq.instance = setInstanceMsgSegment(inst);
@@ -1056,8 +1083,10 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    inst = NewCMPIInstance(path, NULL);
    for (p = xci->properties.first; p; p = p->next) {
-      val = str2CMPIValue(p->valueType, p->val.value, &p->val.ref);
-      CMSetProperty(inst, p->name, &val, p->valueType);
+     if (p->val.value) {
+       val = str2CMPIValue(p->valueType, p->val.value, &p->val.ref);
+       CMSetProperty(inst, p->name, &val, p->valueType);
+     }
    }
    sreq->instance = setInstanceMsgSegment(inst);
    sreq->path = setObjectPathMsgSegment(path);
@@ -1654,8 +1683,10 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    for (p = req->paramValues.first; p; p = p->next) {
       // this is a problem: - paramvalue without type
       if (p->type==0) p->type=CMPI_string;
-      CMPIValue val = str2CMPIValue(p->type, p->value.value, &p->valueRef);
-      CMAddArg(in, p->name, &val, p->type);
+      if (p->value.value) {
+	CMPIValue val = str2CMPIValue(p->type, p->value.value, &p->valueRef);
+	CMAddArg(in, p->name, &val, p->type);
+      }
    }   
    sreq.in = setArgsMsgSegment(in);
    sreq.out = setArgsMsgSegment(NULL);

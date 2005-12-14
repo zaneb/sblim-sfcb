@@ -356,6 +356,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 
 %token <xtokValueRefArray>       XTOK_VALUEREFARRAY
 %type  <xtokValueRefArray>       valueRefArray
+%type  <xtokValueRefArray>       valueRefList
 %token <intValue>                ZTOK_VALUEREFARRAY
 
 %token <className>               XTOK_CLASSNAME
@@ -412,6 +413,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 
 %type  <xtokPropertyData>        propertyData
 %type  <xtokPropertyData>        propertyArray
+%type  <xtokPropertyData>        qualifierList
 %type  <xtokProperty>            property
 
 %token <xtokParam>               XTOK_PARAM
@@ -1909,13 +1911,13 @@ instanceData
 */
 
 property
-    : XTOK_PROPERTY propertyData ZTOK_PROPERTY
+    : XTOK_PROPERTY qualifierList propertyData ZTOK_PROPERTY
     {
-       $$.val=$2;
+       $$.val=$3;
     }  
-    | XTOK_PROPERTYREFERENCE propertyData ZTOK_PROPERTYREFERENCE
+    | XTOK_PROPERTYREFERENCE qualifierList propertyData ZTOK_PROPERTYREFERENCE
     {
-       $$.val=$2;
+       $$.val=$3;
     }
     | propertyArray
     {
@@ -1923,12 +1925,20 @@ property
     }
 ;
 
-propertyData 
-    : propertyData qualifier
+qualifierList
+    :
+    {
+    }
+    | qualifierList qualifier
     {
        addQualifier(&(((ParserControl*)parm)->qualifiers),&$2);
     }
-    | value
+;
+
+propertyData 
+    : {$$.value = NULL;}   
+    |
+      value
     {
 //       printf("--- value: %s\n",$1.value);
        $$.value=$1.value;
@@ -1958,11 +1968,16 @@ qualifier
 //       printf("--- qualifier %s: %s\n",$1.name,$2.value);
        $$.value=$2.value;
     }
+    | XTOK_QUALIFIER propertyList ZTOK_QUALIFIER
+    {
+//       printf("--- qualifier %s: %s\n",$1.name,$2.value);
+       $$.valueArray=$2.list;
+    }
 ;
 
 
 propertyArray
-    : XTOK_PROPERTYARRAY valueArray ZTOK_PROPERTYARRAY
+    : XTOK_PROPERTYARRAY qualifierList valueArray ZTOK_PROPERTYARRAY
     {
       $$.list = NULL;
       //   printf("--- propertyArray\n");
@@ -2093,6 +2108,13 @@ valueReference
 ;
 
 valueRefArray
+    : XTOK_VALUEREFARRAY valueRefList ZTOK_VALUEREFARRAY
+    {
+       $$=$1;
+    }
+;
+
+valueRefList
     : valueReference
     {
        $$.next=1;
@@ -2106,7 +2128,6 @@ valueRefArray
        $$.next++;
     }
 ;
-
 
 boolValue
     : XTOK_VALUE ZTOK_VALUE

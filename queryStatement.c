@@ -154,11 +154,11 @@ static void qsRelease(QLStatement *st)
 }
 
 static CMPIInstance* qsCloneAndFilter(QLStatement *st, CMPIInstance *ci, CMPIObjectPath *cop, 
-         char **kNames)
+         const char **kNames)
 {
    CMPIInstance *nic=CMNewInstance(Broker,cop,NULL);
    CMPICount i,c=CMGetPropertyCount(ci,NULL);
-   CMSetPropertyFilter(nic,st->spNames,kNames);
+   CMSetPropertyFilter(nic,(const char**)st->spNames,kNames);
    for (i=0; i<c; i++) {
       CMPIString *name;
       CMPIData d=CMGetPropertyAt(ci,i,&name,NULL);
@@ -241,8 +241,9 @@ QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc)
    ofs=0;
    ctl.statement=qs=newQLStatement(8,mode);
    if (strcasecmp(lang,"wql")==0) ctl.statement->lang=QL_WQL;
-   else if (strcasecmp(lang,"cql")==0) ctl.statement->lang=QL_CQL;
-   else ctl.statement->lang=0;
+   else if (strcasecmp(lang,"cql")==0 || strcasecmp(lang,"cim:cql")==0) {
+     ctl.statement->lang=QL_CQL;
+   } else ctl.statement->lang=0;
    
    *rc=sfcQueryparse(&ctl);
    if (sns) qs->sns=strdup(sns);

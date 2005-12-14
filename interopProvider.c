@@ -365,7 +365,7 @@ CMPIStatus deactivateFilter(
    if (irc == MSG_X_PROVIDER) {      
       _SFCB_TRACE(1, ("--- Invoking Providers"));
       resp = invokeProviders(&binCtx,&err,&cnt);      
-      setStatus(&st,resp[err]->rc,NULL);
+      setStatus(&st,resp[err==0?0:err-1]->rc,NULL);
       _SFCB_TRACE(1, ("--- Invoking Provider rc: %d",st.rc));
    }
    
@@ -440,7 +440,7 @@ CMPIStatus activateSubscription(
    if (irc == MSG_X_PROVIDER) {      
       _SFCB_TRACE(1, ("--- Invoking Providers"));
       resp = invokeProviders(&binCtx,&err,&cnt);
-      setStatus(&st,resp[err]->rc,NULL);
+      setStatus(&st,resp[err==0?0:err-1]->rc,NULL);
    }
    
    else {
@@ -822,7 +822,8 @@ CMPIStatus InteropProviderCreateInstance(
       }
       lng[n]=0;      
        
-      if (strcasecmp(lng,"wql")!=0) {
+      _SFCB_TRACE(2,("--- CIM query language %s %s",lang->hdl,lng));
+      if (strcasecmp(lng,"wql") && strcasecmp(lng,"cql") && strcasecmp(lng,"cim:cql")) {
          setStatus(&st,CMPI_RC_ERR_QUERY_LANGUAGE_NOT_SUPPORTED,NULL);
          _SFCB_RETURN(st);  
       }   
@@ -895,9 +896,7 @@ CMPIStatus InteropProviderDeleteInstance(
          if (fi->useCount==1) {
             char **fClasses=fi->qs->ft->getFromClassList(fi->qs);
             for ( ; *fClasses; fClasses++) {
-               if (isa(fi->sns,*fClasses,"cim_processindication")) {
-                  deactivateFilter(ctx, ns, *fClasses, fi);
-               }
+	      deactivateFilter(ctx, ns, *fClasses, fi);
             }
          }   
          removeSubscription(su,key);

@@ -334,10 +334,9 @@ CMPIStatus deactivateFilter(
    BinRequestContext binCtx;
    OperationHdr req = {OPS_IndicationLookup, 2};
    char *principal=ctx->ft->getEntry(ctx,CMPIPrincipal,NULL).value.string->hdl;;
-   int irc,err,cnt;
+   int irc,err,cnt,i;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "deactivateFilter"); 
-   printf( "deactivateFilter\n"); 
    
    path = TrackedCMPIObjectPath(ns, cn, &st);
    
@@ -364,8 +363,19 @@ CMPIStatus deactivateFilter(
  
    if (irc == MSG_X_PROVIDER) {      
       _SFCB_TRACE(1, ("--- Invoking Providers"));
-      resp = invokeProviders(&binCtx,&err,&cnt);      
-      setStatus(&st,resp[err==0?0:err-1]->rc,NULL);
+      /* one good provider makes success */
+      resp = invokeProviders(&binCtx,&err,&cnt);
+      if (err == 0) {
+	setStatus(&st,0,NULL);
+      } else {
+	setStatus(&st,resp[err-1]->rc,NULL);
+	for (i=0; i<binCtx.pCount; i++) {
+	  if (resp[i]->rc == 0) {
+	    setStatus(&st,0,NULL);
+	    break;
+	  }
+	}
+      }
       _SFCB_TRACE(1, ("--- Invoking Provider rc: %d",st.rc));
    }
    
@@ -408,7 +418,7 @@ CMPIStatus activateSubscription(
    BinResponseHdr **resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = {OPS_IndicationLookup, 2};
-   int irc=0,err,cnt;
+   int irc=0,err,cnt,i;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "activateSubscription");
    
@@ -440,7 +450,19 @@ CMPIStatus activateSubscription(
    if (irc == MSG_X_PROVIDER) {      
       _SFCB_TRACE(1, ("--- Invoking Providers"));
       resp = invokeProviders(&binCtx,&err,&cnt);
-      setStatus(&st,resp[err==0?0:err-1]->rc,NULL);
+      /* one good provider makes success */
+      resp = invokeProviders(&binCtx,&err,&cnt);
+      if (err == 0) {
+	setStatus(&st,0,NULL);
+      } else {
+	setStatus(&st,resp[err-1]->rc,NULL);
+	for (i=0; i<binCtx.pCount; i++) {
+	  if (resp[i]->rc == 0) {
+	    setStatus(&st,0,NULL);
+	    break;
+	  }
+	}
+      }
    }
    
    else {

@@ -1593,8 +1593,12 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    for (se = activFilters; se; se = se->next) {
       if (se->filterId == req->filterId) {
          *sef=se->next;
-         if (activFilters==NULL) indicationEnabled=0;   
-            
+         if (activFilters==NULL) {
+	   _SFCB_TRACE(1, ("--- Calling disableIndications %s",info->providerName));
+	   indicationEnabled=0;   
+	   info->indicationMI->ft->disableIndications(info->indicationMI,ctx);
+	 }   
+               
          _SFCB_TRACE(1, ("--- Calling deactivateFilter %s",info->providerName));
          rci = info->indicationMI->ft->deActivateFilter(info->indicationMI, ctx,
                                                (CMPISelectExp*)se, "", path, 1);

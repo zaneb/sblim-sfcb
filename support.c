@@ -181,18 +181,28 @@ typedef CMPIPropertyMI *(*FIXED_PropertyMI) (CMPIBroker * broker,
 CMPIPropertyMI *loadPropertyMI(const char *provider, void *library,
                                      CMPIBroker * broker, CMPIContext * ctx)
 {
+   CMPIPropertyMI *mi; 
+
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadPropertyMI");
    GENERIC_PropertyMI g =
-       (GENERIC_PropertyMI) getGenericEntryPoint(library,
-                                                      "Property");
+       (GENERIC_PropertyMI) getGenericEntryPoint(library,"Property");
    if (g == NULL) {
       FIXED_PropertyMI f =
           (FIXED_PropertyMI) getFixedEntryPoint(provider, library,
                                                      "Property");
       if (f == NULL) _SFCB_RETURN(NULL);
-      return (f) (broker, ctx);
+      if (broker) {
+         mi=(f)(broker, ctx);
+         _SFCB_RETURN(mi);
+      }   
+      _SFCB_RETURN((CMPIPropertyMI*)(void*)-1);
    }
-   return (g) (broker, ctx, provider);
+
+   if (broker)  {
+      mi=(g)(broker,ctx, provider);
+      _SFCB_RETURN(mi);
+   }
+   _SFCB_RETURN((CMPIPropertyMI*)(void*)-1);
 };
 
 
@@ -207,6 +217,9 @@ CMPIIndicationMI *loadIndicationMI(const char *provider,
                                          void *library,
                                          CMPIBroker * broker, CMPIContext * ctx)
 {
+   CMPIIndicationMI *mi; 
+
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "loadIndicationMI");
    GENERIC_IndicationMI g =
        (GENERIC_IndicationMI) getGenericEntryPoint(library,
                                                         "Indication");
@@ -214,10 +227,19 @@ CMPIIndicationMI *loadIndicationMI(const char *provider,
       FIXED_IndicationMI f =
           (FIXED_IndicationMI) getFixedEntryPoint(provider, library,
                                                        "Indication");
-      if (f == NULL) return NULL;
-      return (f) (broker, ctx);
+      if (f == NULL) _SFCB_RETURN(NULL);
+      if (broker) {
+         mi=(f)(broker, ctx);
+         _SFCB_RETURN(mi);
+      }   
+      _SFCB_RETURN((CMPIIndicationMI*)(void*)-1);
    }
-   return (g) (broker, ctx, provider);
+
+   if (broker)  {
+      mi=(g)(broker,ctx, provider);
+      _SFCB_RETURN(mi);
+   }
+   _SFCB_RETURN((CMPIIndicationMI*)(void*)-1);
 };
 
 
@@ -229,11 +251,19 @@ CMPIClassMI *loadClassMI(const char *provider,
                                          void *library,
                                          CMPIBroker * broker, CMPIContext * ctx)
 {
+   CMPIClassMI *mi; 
+
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "loadClassMI");
    FIXED_ClassMI f =
           (FIXED_ClassMI) getFixedEntryPoint(provider, library,
                                                        "Class");
-   if (f == NULL) return NULL;
-   return (f) (broker, ctx);
+   if (f == NULL) _SFCB_RETURN(NULL);
+   
+   if (broker)  {
+      mi=(f)(broker,ctx);
+      _SFCB_RETURN(mi);
+   }
+   _SFCB_RETURN((CMPIClassMI*)(void*)-1);
 };
 
 /****************************************************************************/

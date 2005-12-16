@@ -535,10 +535,9 @@ int main(int argc, char *argv[])
    initSocketPairs(pSockets,dSockets,sSockets);
 
    setSignal(SIGQUIT, handleSigquit,0);
-   setSignal(SIGTERM, handleSigquit,0);
    setSignal(SIGINT,  handleSigquit,0);
    
-   setSignal(SIGKILL, handleSigterm,0);
+   setSignal(SIGTERM, handleSigterm,0); /* kill cannot be intercepted */
    setSignal(SIGHUP,  handleSigHup,0);
    
    if (startHttp) {

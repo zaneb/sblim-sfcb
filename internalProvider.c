@@ -205,7 +205,7 @@ static int testNameSpace(char *ns, CMPIStatus *st)
        nsp++;
     }
     if (existingNameSpace(ns)) {
-      nsTab=nsp=realloc(nsp,sizeof(nsp)*(nsTabLen+1));
+      nsTab=nsp=realloc(nsTab,sizeof(nsp)*(nsTabLen+2));
       nsp[nsTabLen++]=strdup(ns);
       nsp[nsTabLen]=NULL;
       return 1;

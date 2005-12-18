@@ -110,12 +110,21 @@ static UtilStringBuffer *normalize_ObjectPath(const CMPIObjectPath * cop)
       sb->ft->appendChars(sb,"=");
       if (ids[i].data.type==CMPI_ref) {
          CMPIString *cn=CMGetClassName(ids[i].data.value.ref,NULL);
+	 CMPIString *ns=CMGetNameSpace(ids[i].data.value.ref,NULL);
          UtilStringBuffer *sbt= normalize_ObjectPath(ids[i].data.value.ref);
+	 char *nss;
          cp=(char*)cn->hdl;
          while (*cp) {
             *cp=tolower(*cp);
             cp++; 
          }
+	 if (ns==NULL) {
+	   nss = CMGetCharPtr(CMGetNameSpace(cop,NULL));
+	 } else {
+	   nss = CMGetCharPtr(ns);
+	 }
+         sb->ft->appendChars(sb,nss);
+         sb->ft->appendChars(sb,":");
          sb->ft->appendChars(sb,(char*)cn->hdl);
          sb->ft->appendChars(sb,".");
          sb->ft->appendChars(sb,sbt->ft->getCharPtr(sbt));

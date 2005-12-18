@@ -181,8 +181,11 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
    ProviderInfo *info;
    UtilHashTable **ht=provHt(type,0);
    
-   if (*ht == NULL) *ht =  UtilFactory->newHashTable(61,
+   if (*ht == NULL) {
+     *ht =  UtilFactory->newHashTable(61,
             UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
+     (*ht)->ft->setReleaseFunctions(*ht, free, NULL);
+   }
 
    info = (ProviderInfo*) (*ht)->ft->get(*ht, className);
    st->rc=0;
@@ -204,7 +207,7 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
       info = pReg->ft->getProvider(pReg, cls, type);
       if (info && nameSpaceOk(info,nameSpace)) {
          if ((*ht)->ft->get(*ht, cls)==NULL)
-            (*ht)->ft->put(*ht, cls, info);
+	   (*ht)->ft->put(*ht, strdup(cls), info);
          _SFCB_RETURN(info);
       }
       else {
@@ -273,8 +276,11 @@ static UtilList *lookupProviders(long type, char *className, char *nameSpace,
    strcat(id,"|");
    strcat(id,className);
    
-   if (*ht == NULL) *ht =  UtilFactory->newHashTable(61,
+   if (*ht == NULL) {
+     *ht =  UtilFactory->newHashTable(61,
                   UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
+     (*ht)->ft->setReleaseFunctions(*ht, free, NULL);
+   }
 
    lst = (*ht)->ft->get(*ht, id);
 
@@ -286,7 +292,7 @@ static UtilList *lookupProviders(long type, char *className, char *nameSpace,
          st->rc=rc;
          _SFCB_RETURN(NULL);
       }
-      (*ht)->ft->put(*ht, id, lst);
+      (*ht)->ft->put(*ht, strdup(id), lst);
    }
 
    free(id);
@@ -410,9 +416,11 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
 
    _SFCB_ENTER(TRACE_PROVIDERASSOCMGR, "getAssocProvider");
    
-   if (assocProviderHt == NULL)
+   if (assocProviderHt == NULL) {
       assocProviderHt = UtilFactory->newHashTable(61,
         UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
+     assocProviderHt->ft->setReleaseFunctions(assocProviderHt, free, NULL);
+   }
 
    info = (ProviderInfo *) assocProviderHt->ft->get(assocProviderHt, className);
    if (info) _SFCB_RETURN(info);
@@ -420,7 +428,7 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
    while (cls != NULL) {
       info = pReg->ft->getProvider(pReg, cls, type);
       if (info) {
-         assocProviderHt->ft->put(assocProviderHt, className, info);
+	assocProviderHt->ft->put(assocProviderHt, strdup(className), info);
          _SFCB_RETURN(info);
       }
       else {
@@ -476,9 +484,11 @@ static UtilList *getAssocProviders(char *className, char *nameSpace)
    UtilList *lst = NULL;
    _SFCB_ENTER(TRACE_PROVIDERASSOCMGR, "getAssocProviders");
 
-   if (assocProvidersHt == NULL)
+   if (assocProvidersHt == NULL) {
       assocProvidersHt = UtilFactory->newHashTable(61,
            UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
+     assocProvidersHt->ft->setReleaseFunctions(assocProvidersHt, free, NULL);
+   }
 
    if (className)
       lst = assocProvidersHt->ft->get(assocProvidersHt, className);
@@ -488,7 +498,7 @@ static UtilList *getAssocProviders(char *className, char *nameSpace)
          lst->ft->release(lst);
          _SFCB_RETURN(NULL);
       }
-      assocProvidersHt->ft->put(assocProvidersHt, className, lst);
+      assocProvidersHt->ft->put(assocProvidersHt, strdup(className), lst);
    }
    _SFCB_RETURN(lst);
 }
@@ -557,10 +567,11 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
 
    _SFCB_ENTER(TRACE_PROVIDERMGR, "getMethodProvider");
    
-   if (methodProviderHt == NULL)
+   if (methodProviderHt == NULL) {
       methodProviderHt = UtilFactory->newHashTable(61,
          UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
-
+     methodProviderHt->ft->setReleaseFunctions(methodProviderHt, free, NULL);
+   }
    info = (ProviderInfo *) methodProviderHt->ft->get(methodProviderHt, className);
    if (info) _SFCB_RETURN(info);
 
@@ -571,7 +582,7 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
    while (cls != NULL) {
       info = pReg->ft->getProvider(pReg, cls, type);
       if (info) {
-         methodProviderHt->ft->put(methodProviderHt, className, info);
+	methodProviderHt->ft->put(methodProviderHt, strdup(className), info);
          _SFCB_RETURN(info);
       }
       else {

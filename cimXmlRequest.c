@@ -21,7 +21,6 @@
 */
 
 
-//#define CMPI_VERSION 90
 
 #include "cimXmlGen.h"
 #include "cimXmlRequest.h"
@@ -535,14 +534,15 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (irc == MSG_X_PROVIDER) {
       resp = invokeProvider(&binCtx);
       closeProviderContext(&binCtx);
-      free(sreq);
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) { 
          cls = relocateSerializedConstClass(resp->object[0].data);
          sb = UtilFactory->newStrinBuffer(1024);
          cls2xml(cls, sb, binCtx.bHdr->flags);
+	 free(sreq);
          _SFCB_RETURN(iMethodResponse(hdr, sb));
       }
+      free(sreq);
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc, 
         (char*)resp->object[0].data)));
    }
@@ -913,15 +913,16 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (irc == MSG_X_PROVIDER) {
       resp = invokeProvider(&binCtx);
       closeProviderContext(&binCtx);
-      free(sreq);
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          inst = relocateSerializedInstance(resp->object[0].data);
          sb = UtilFactory->newStrinBuffer(1024);
          instance2xml(inst, sb, binCtx.bHdr->flags);
          rsegs=iMethodResponse(hdr, sb);
+	 free(sreq);
          _SFCB_RETURN(rsegs);
       }
+      free(sreq);
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc, 
         (char*)resp->object[0].data)));
    }
@@ -1225,14 +1226,19 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
       resp = invokeProviders(&binCtx, &err, &l);
       _SFCB_TRACE(1, ("--- Back from Providers"));
       closeProviderContext(&binCtx);
-      free(sreq);
       
       if (noChunking || ctx->teTrailers==0) {
-         if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
+         if (err == 0) {
+	   RespSegments rs = genResponses(&binCtx, resp, l);
+	   free(sreq);
+	   _SFCB_RETURN(rs);
+	 }
+	 free(sreq);
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));
       }
       
+      free(sreq);
       rs.chunkedMode=1;
       rs.rc=err;
       rs.errMsg=NULL; 
@@ -1470,14 +1476,19 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
       _SFCB_TRACE(1, ("--- Back from Provider"));
       
       closeProviderContext(&binCtx);
-      free(sreq);
       
       if (noChunking || ctx->teTrailers==0) {
-         if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
+         if (err == 0) {
+	   RespSegments rs = genResponses(&binCtx, resp, l);
+	   free(sreq);
+	   _SFCB_RETURN(rs);
+	 }
+	 free(sreq);
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));
       }
       
+      free(sreq);
       rs.chunkedMode=1;
       rs.rc=err;
       rs.errMsg=NULL; 
@@ -1631,14 +1642,19 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
       resp = invokeProviders(&binCtx, &err, &l);
       _SFCB_TRACE(1, ("--- Back from Provider"));
       closeProviderContext(&binCtx);
-      free(sreq);
       
       if (noChunking || ctx->teTrailers==0) {
-         if (err == 0) _SFCB_RETURN(genResponses(&binCtx, resp, l))
+	if (err == 0) { 
+	   RespSegments rs = genResponses(&binCtx, resp, l);
+	   free(sreq);
+	   _SFCB_RETURN(rs);
+	 }
+	free(sreq);
         _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp[err-1]->rc, 
            (char*)resp[err-1]->object[0].data)));
       }
       
+      free(sreq);
       rs.chunkedMode=1;
       rs.rc=err;
       rs.errMsg=NULL; 

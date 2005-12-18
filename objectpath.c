@@ -430,36 +430,57 @@ static int refLookAhead(char *u, char **nu)
    char *pu = NULL;
    for (i = 0; u[i] != 0; i++) {
       switch (state) {
-      case 0:
+      case 0: /* start */
          if (isalnum(u[i]))
             state = 1;
          break;
-      case 1:
+      case 1: /* lhs: key property name */
          if (u[i] == '=')
             state = 2;
          break;
-      case 2:
+      case 2: /* rhs: value */
          if (isalnum(u[i]))
             state = 3;
          else
             return 0;
          break;
-      case 3:
-         if (u[i] == '=')
+      case 3: /* rhs: some identifier or value */
+         if (u[i] == ',')
             return 0;
          if (u[i] == '.') {
             state = 4;
-            pu = u + i;
          }
          break;
-      case 4:
+      case 4: /* rhs: start of key property of an ref value */
          if (!isalnum(u[i]))
             return 0;
-         *nu = u + i;
-         return 1;
+	 state = 5;
+	 break;
+      case 5: /* rhs: key property of an ref value */
+	 if (u[i] == '=') {
+  	   state = 6;
+	   if (u[i+1]==0) {
+	      *nu = u + i;
+	      return 1;
+	   }
+	 }
+	 break;
+      case 6: /* rhs: key property of a ref value's key property */
+	 if (u[i] == ',') {
+	    if (refLookAhead(u+i,&pu)) {
+  	       *nu = u + i;
+	       return 1;
+	    }
+	 }
+	 break;
       }
    }
-   return 0;
+   if (state>4) {
+      *nu = u + i;
+      return 1;
+   } else {
+      return 0;
+   }
 }
 
 
@@ -476,8 +497,11 @@ static void addKey(CMPIObjectPath * op, char *kd, int ref)
    char *val = strchr(kd, '=');
    *val = 0;
    val++;
-   if (ref);
-   else if (*val == '"') {
+   if (ref) {
+     char * msg;
+     CMPIObjectPath *keyOp = getObjectPath(val,&msg);
+     op->ft->addKey(op, kd, (CMPIValue*)&keyOp, CMPI_ref);
+   } else if (*val == '"') {
       val++;
       val[strlen(val) - 1] = 0;
       op->ft->addKey(op, kd, (CMPIValue *) val, CMPI_chars);
@@ -533,10 +557,15 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
 
    for (u = p + 1; ; u = p + 1) {
       if ((ref = refLookAhead(u, &un))) {
-         char *t = strnDup(u, un - u - 1);
-         addKey(op, t, ref);
-         free(t);
-         u = un;
+	char *t; 
+        p = un;
+	if (*p == 0) {
+	  break;
+	}
+	t = strnDup(u, un - u);
+	addKey(op, t, ref);
+	free(t);
+	continue;
       }
       if ((p = strpbrk(u, ",\"")) == NULL)
          break;
@@ -575,9 +604,3 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
 }
 
 
-/****************************************************************************/
-
-/*** Local Variables:  ***/
-/*** mode: C           ***/
-/*** c-basic-offset: 8 ***/
-/*** End:              ***/

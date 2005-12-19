@@ -21,7 +21,6 @@
 */
 
 
-//#define CMPI_VERSION 90
 
 #include "cimXmlRequest.h"
 #include "cimXmlParser.h"
@@ -436,14 +435,35 @@ static int keyBinding2xml(CMPIObjectPath * op, UtilStringBuffer * sb);
 static int nsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "nsPath2xml");
-   sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
-   sb->ft->appendChars(sb, "<HOST>linux</HOST>\n");
-   sb->ft->appendChars(sb, "<LOCALNAMESPACEPATH>\n");
-   sb->ft->appendChars(sb, "<NAMESPACE NAME=\"root\"/>\n");  //????
-   sb->ft->appendChars(sb, "<NAMESPACE NAME=\"cimv2\"/>\n");
-   sb->ft->appendChars(sb, "</LOCALNAMESPACEPATH>\n");
-   sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
-
+   char * ns = CMGetCharPtr(CMGetNameSpace(ci,NULL));
+   char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
+   if (hn && *hn) {
+     sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
+     sb->ft->appendChars(sb, "<HOST>");
+     sb->ft->appendChars(sb, hn);
+     sb->ft->appendChars(sb, "</HOST>\n");
+   }
+   if (ns && *ns) {
+     char *nsc = strdup(ns);
+     char *nsp;
+     ns = nsc;
+     sb->ft->appendChars(sb, "<LOCALNAMESPACEPATH>\n");
+     do {
+       nsp = strchr(ns,'/');
+       if (nsp) {
+	 *nsp = 0;
+       }
+       sb->ft->appendChars(sb, "<NAMESPACE NAME=\"");
+       sb->ft->appendChars(sb, ns);
+       sb->ft->appendChars(sb, "\"/>\n");
+       ns = nsp + 1;
+     } while (nsp);
+     free(nsc);
+     sb->ft->appendChars(sb, "</LOCALNAMESPACEPATH>\n");  
+   }
+   if (hn && *hn) {
+     sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
+   }
    _SFCB_RETURN(0);
 }
 
@@ -457,6 +477,30 @@ int instanceName2xml(CMPIObjectPath * cop, UtilStringBuffer * sb)
    sb->ft->appendChars(sb, "</INSTANCENAME>\n");
 
    _SFCB_RETURN(0);
+}
+
+static int refValue2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
+{
+  _SFCB_ENTER(TRACE_CIMXMLPROC, "refValue2xml");
+  char * ns = CMGetCharPtr(CMGetNameSpace(ci,NULL));
+  char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
+  
+  sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
+  if (hn && *hn && ns && *ns) {
+    sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+    nsPath2xml(ci, sb);
+  } else if (ns && *ns) {
+    sb->ft->appendChars(sb, "<LOCALINSTANCEPATH>\n");
+    nsPath2xml(ci, sb);
+  }
+  instanceName2xml(ci, sb);
+  if (hn && *hn && ns && *ns) {
+    sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
+  } else if (ns && *ns) {
+    sb->ft->appendChars(sb, "</LOCALINSTANCEPATH>\n");
+  }
+  sb->ft->appendChars(sb, "</VALUE.REFERENCE>\n");
+  _SFCB_RETURN(0);
 }
 
 static void method2xml(CMPIType type, CMPIString *name, char *bTag, char *eTag,
@@ -507,7 +551,6 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
    else {
       type = dataType(data->type);
       if (*type == '*') {
-         char *cn;
          sb->ft->appendChars(sb, bTag);
          sb->ft->appendChars(sb, (char *) name->hdl);
          sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
@@ -515,12 +558,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (inst) {
-            sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
-            sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
-            nsPath2xml(data->value.ref, sb);
-            instanceName2xml(data->value.ref, sb);
-            sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
-            sb->ft->appendChars(sb, "</VALUE.REFERENCE>\n");
+	   refValue2xml(data->value.ref,sb);
          }
          sb->ft->appendChars(sb, eTag);
       }
@@ -840,12 +878,7 @@ static int keyBinding2xml(CMPIObjectPath * op, UtilStringBuffer * sb)
       sb->ft->appendChars(sb, "\">\n");
       type = keyType(data.type);
       if (*type == '*') {
-         sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
-         sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
-         nsPath2xml(data.value.ref, sb);
-         instanceName2xml(data.value.ref, sb);
-         sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
-         sb->ft->appendChars(sb, "</VALUE.REFERENCE>\n");
+	refValue2xml(data.value.ref,sb);
       }
       else {
          sb->ft->appendChars(sb, "<KEYVALUE VALUETYPE=\"");
@@ -874,6 +907,7 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
    CMPIObjectPath *cop;
    CMPIInstance *ci;
    CMPIConstClass *cl;
+   CMPIString *hs;
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "enum2xml");
    
@@ -890,6 +924,11 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
       else if (type == CMPI_instance) {
          ci = CMGetNext(enm, NULL).value.inst;
          cop = CMGetObjectPath(ci, NULL);
+	 hs = CMGetHostname(cop,NULL);
+	 if (hs == NULL || CMGetCharPtr(hs)==NULL) {
+	   /* required for value.objectwithpath */
+	   CMSetHostname(cop,"localhost");
+	 } 
          if (xmlAs==XML_asObj) {
             sb->ft->appendChars(sb, "<VALUE.OBJECTWITHPATH>\n");
             sb->ft->appendChars(sb, "<INSTANCEPATH>\n");

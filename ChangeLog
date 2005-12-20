@@ -1,8 +1,151 @@
+2005-12-20    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* httpComm.c: 
+	Related to 1356235. Enhanced tracing and implemented an explicit
+	commClose function.
+	
+	* httpAdapter.c: 
+	Related to 1356235. Made the error responses more graceful in respect
+	to the client. I.e., keep the connection open for some kind of errors.
+
+2005-12-19    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* cimXmlGen.c: 
+	Fixed 1382741: Added to code to insert host and namespace information to instance
+	names. Also added logic to create the correct (local) path XML.
+
+2005-12-18    <mihajlov@localhost.localdomain>
+
+	* objectpath.c: 
+	Fixed 1381312. Corrected the objectpath string parser to deal with reference type
+	properties.
+
+	* internalProvider.c: 
+	Fixed 1384612. In the object path normalization the namespace for
+	REF properties is included. If not specified, then the namespace of
+	the object path itself is used.
+
+	* providerMgr.c: 
+	Fixed 1382712. Duplicate keys (class names) now for provider hashtables
+	in order to avoid invalid accesses. Added key release function for
+	the hashtables.
+
+	* cimXmlRequest.c: 
+	Fixed 1382712. Delay release of sreq structures in various functions.
+
+2005-12-17  a3schuur
+
+	* Makefile.am, classProviderGz.c: 
+	Fixed 1386191. Added caching ClassProviderGz.c,
+	optionally accepting compressed classSchemas files.
+
+	This provider does not keep complete classSchemas file in memory
+	but uses a cache instead. Cache limit is currently set to a maximum
+	of 16 classes. When reaching this limit the least recently used
+	class is removed from the cache. All class retrieval goes through
+	the cache except for enumerateClasses operations, which causes
+	enumerateClasses operation to take longer as usual but prevents
+	useless flushing of cache contents.
+
+	classProviderGz does not support createClass, modifyClass and
+	deleteClass operations.
+
+	classProviderGz can handle compressed (zipped) classSchemas files
+	as wel as non-zipped files. Zipping should be done using the gzip
+	program. The class provider looks for either classSchemas or
+	classSchemas.gz files.
+
+	Regisstation is as follows:
+
+	[$ClassProvider$]    provider: ClassProvider	location:
+	sfcClassProviderGz    type: class method    unload: never
+
+2005-12-16    <mihajlov@localhost.localdomain>
+
+	* internalProvider.c: 
+	Fixed 1382722. Corrected namespace table reallocation code.
+
+	* sfcBroker.c: SIGKILL sigaction removed, as this is without effect.
+
+	* support.c, interopProvider.c: Added more trace statements.
+
+2005-12-15    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* providerDrv.c: 
+	Fix for 1379327. The deactivate code did not call disableIndications.
+	
+	* interopProvider.c: 
+	More fixes for 1379327. The activate/deactivate code doesn't have to
+	require that all providers have to successfully activate a filter. One
+	is sufficient to qualify as success.
+
+2005-12-14    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* queryStatement.c, interopProvider.c: 
+	Fixed 1380471. Added CIM:CQL and CQL to the list of accepted query
+	languages.
+
+	* cimXmlOps.y, cimXmlParser.h: 
+	Fixed 1380442. 	Added productions for qualifier related issues. 
+	Fixed an ambiguos rule for reference arrays. 
+
+	* cimXmlRequest.c:
+	Fixed 1380442. Added null value check.
+
+2005-12-13    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* Makefile.am, args.c, array.c, brokerEnc.c, brokerUpc.c, cimXmlGen.c,
+	cimXmlRequest.c, classProvider.c, cmpidt.h, cmpift.h, cmpimacs.h,
+	cmpios.h, context.c, datetime.c, enumeration.c, fileRepository.c,
+	indCIMXMLHandler.c, instance.c, internalProvider.c, 
+	interopProvider.c, interopServerProvider.c, msgqueue.c, msgqueue.h,
+	native.h, objectImpl.c, objectImpl.h, objectpath.c, predicate.c,
+	providerDrv.c, providerMgr.c, providerMgr.h, result.c, selectcond.c,
+	selectexp.c, string.c, subcond.c, support.h, value.c:
+	Fixed 1379315. Changes for CMPI 1.0 compliance.
+	
+	* interopProvider.c: 
+	Fixed 1379315, 1379327. Relaxed the filter checking and modified the 
+	code to activate multiple providers for a given filter if needed. 
+	Changed the function signatures for CMPI 1.0 compliance.
+	
+	* trace.h, trace.c, sfcBroker.c, README, man/sfcbd.1.pre.in: 
+	Fixed 1379313. Trace level is set to 1, if the tracing command
+	line option is specified. The SFCB_TRACE variable is still honored,
+	if a higher trace level is specified there.
+
+2005-12-13  a3schuur
+
+	* mofpp.c: Added Mofpp (mof preprocessor) this program merges
+	#pragma include files into one mof file
+
+2005-12-13  a3schuur
+
+	* brokerUpc.c, cimXmlGen.c, cimXmlRequest.c, classProvider.c,
+	constClass.c, fileRepository.c, sfcBroker.c: Cleaning up function
+	prototypes - Adding static where global functions are not needed
+
+2005-12-09    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* internalProvider.c: 
+	Fixed 1376965. Added a repository namespace calculation function.
+
+	* default.reg, interop.mof: 
+	Fixed 1376959. Added CIM_IndicationHandlerCIMXML to default
+	registration and interop MOF.
+	
+	* brokerUpc.c: 
+	Fixed 1376955. Use correct opcode for invokeMethod.
+
 2005-12-02    <mihajlov@localhost.localdomain>
 
 	* cimXmlOps.y: 
 	Fixed 1371764. Corrected productions for assoc role and
 	resultRole paramers.
+
+2005-11-29  a3schuur
+
+	* classSchema2c.c: Added copyright statements
 
 2005-11-21  a3schuur
 	* datetime.c:

@@ -4,6 +4,20 @@ Changes in 1.0.1
 Bugs fixed:
 - 1371764 Fixed XML parsing for associator/references calls, when
 	  role and resultRole were specified.
+- 1376955 Fixed invokeMethod upcall.
+- 1376959 Added support for CIM_IndicationHandlerCIMXML class.
+- 1376965 Fixed interop namespace alias processing in internal provider.
+- 1379313 Removed requirement to specify SFCB_TRACE
+- 1379315 Made provider interface CMPI 1.0 compliant
+- 1379327 Enhanced lifecycle indication processing
+- 1380442 Fixed CIM XML parsing issues with qualifiers and null values.
+- 1380471 Allow CQL for indication filters.
+- 1382722 Fixed namespace table reallocation
+- 1382712 Fixed access of released memory problems.
+- 1384612 Added REF property namespace informaton in internal provider.
+- 1381312 Fixed incorrectly constructed object paths.
+- 1382741 Fixed incorrect namespace information in instance names.
+- 1356235 Enhanced HTTP error response processing.
 
 Changes in 1.0.0
 ================

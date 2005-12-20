@@ -21,7 +21,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 1.0.0, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 1.0.1, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE
@@ -94,6 +94,7 @@ esac
 
 AC_SUBST(SFCB_CMPI_PLATFORM)
 AC_SUBST(SFCB_CMPI_OS)
+AC_SUBST(SFCB_LIBZ)
 
 # Checks for programs.
 AC_PROG_CC
@@ -109,6 +110,7 @@ AC_PROG_LIBTOOL
 # Checks for libraries.
 AC_CHECK_LIB(pthread,main)
 AC_CHECK_LIB(dl,main)
+AC_CHECK_LIB(z,main,[SFCB_LIBZ=-lz],[AC_MSG_ERROR([Could not find required libz])])
 if test "$enable_indications" == "yes"; then
    AC_DEFINE(HAVE_INDICATIONS,,[Indication support enabled.])
    AC_CHECK_LIB(curl,main)
@@ -121,7 +123,7 @@ fi
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([fcntl.h limits.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([fcntl.h limits.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h unistd.h zlib.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

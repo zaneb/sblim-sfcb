@@ -206,7 +206,7 @@ libsfcIndCIMXMLHandler_la_LIBADD=-lsfcBrokerCore -lsfcInternalProvider -lsfcCimX
 
 libsfcClassProviderGz_la_SOURCES = \
    classProviderGz.c
-libsfcClassProviderGz_la_LIBADD=-lsfcBrokerCore
+libsfcClassProviderGz_la_LIBADD=-lsfcBrokerCore @SFCB_LIBZ@
 
 libsfcClassProvider_la_SOURCES = \
    classProvider.c

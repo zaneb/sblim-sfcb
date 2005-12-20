@@ -44,8 +44,8 @@ void commInit()
    if (sfcbSSLMode) {
       _SFCB_TRACE(1,("--- SSL mode"));
       if (!SSL_library_init()) {
-         fprintf(stderr, "** OpenSSL initialization failed!\n");
-         exit(-1);
+	mlogf(M_ERROR,M_SHOW,"** OpenSSL initialization failed!\n");
+	exit(-1);
       }
       SSL_load_error_strings();
       RAND_load_file("/dev/urandom", 1024);
@@ -59,13 +59,13 @@ int commWrite(CommHndl to, void *data, size_t count)
 {
    int rc=0;
 
-   _SFCB_ENTER(TRACE_HTTPDAEMON, "commWrite");
+   _SFCB_ENTER(TRACE_HTTPDAEMON | TRACE_XMLOUT, "commWrite");
 
 #ifdef SFCB_DEBUG
   if ((_sfcb_trace_mask & TRACE_XMLOUT) ) {
      char *mp,*m=alloca(count*2),*d=(char*)data;
      int i;
-     fprintf(stderr,"->> xmlOut %d bytes:\n",count);
+     _SFCB_TRACE(1,("->> xmlOut %d bytes:\n",count));
      for (mp=m,i=0; i<count; i++)
         switch (d[i]) {
         case '\r': *mp++='\\'; *mp++='r'; break;
@@ -74,8 +74,8 @@ int commWrite(CommHndl to, void *data, size_t count)
         default:   *mp++=d[i];
      } 
      *mp=0;  
-     fprintf(stderr,"%s\n",m);
-     fprintf(stderr,"-<< xmlOut end\n");
+     _SFCB_TRACE(1,("%s\n",m));
+     _SFCB_TRACE(1,("-<< xmlOut end\n"));
   }
 #endif 
   
@@ -117,6 +117,8 @@ int commRead(CommHndl from, void *data, size_t count)
 
 void commFlush(CommHndl hndl)
 {
+  _SFCB_ENTER(TRACE_HTTPDAEMON, "commFlush");
+
 #if defined USE_SSL
    if (hndl.bio) {
      BIO_flush(hndl.bio);
@@ -125,4 +127,28 @@ void commFlush(CommHndl hndl)
      if (hndl.file) {
        fflush(hndl.file);
      }
+  _SFCB_EXIT();
+}
+
+void commClose(CommHndl hndl)
+{
+  
+  _SFCB_ENTER(TRACE_HTTPDAEMON, "commClose");
+#if defined USE_SSL
+  if (hndl.ssl) {
+    if ((SSL_get_shutdown(hndl.ssl) & SSL_RECEIVED_SHUTDOWN))
+      SSL_shutdown(hndl.ssl);
+    else SSL_clear(hndl.ssl);
+    SSL_free(hndl.ssl);
+  } else 
+#endif
+    if (hndl.file == NULL) {
+      close(hndl.socket);
+    } else {
+      fclose(hndl.file);
+      if (hndl.buf) {
+	free(hndl.buf);
+      }
+    }
+  _SFCB_EXIT();
 }

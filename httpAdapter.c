@@ -272,27 +272,32 @@ static void add2buffer(Buffer * b, char *str, size_t len)
 }
 
 static void genError(CommHndl conn_fd, Buffer * b, int status, char *title,
-                     char *more, int noExit)
+                     char *more)
 {
    char head[1000];
    char server[] = "Server: sfcHttpd\r\n";
    char clength[] = "Content-Length: 0\r\n";
-   char cclose[] = "Connection: close\r\n\r\n";
+   char cclose[] = "Connection: close\r\n";
+   char end[] = "\r\n";
+
+   _SFCB_ENTER(TRACE_HTTPDAEMON, "genError");
 
    snprintf(head, sizeof(head), "%s %d %s\r\n", b->protocol, status, title);
 //   fprintf(stderr,"+++ genError: %s\n",head);
+   _SFCB_TRACE(1,("--- genError response: %s",head));
    commWrite(conn_fd, head, strlen(head));
    if (more) {
       commWrite(conn_fd, more, strlen(more));
-      if (noExit==0) exit(1);
-      return;
    }
 
    commWrite(conn_fd, server, strlen(server));
    commWrite(conn_fd, clength, strlen(clength));
-   commWrite(conn_fd, cclose, strlen(cclose));
+   if (keepaliveTimeout==0 || numRequest >= keepaliveMaxRequest ) {
+     _SFCB_TRACE(1,("--- closing after error\n"));
+     commWrite(conn_fd, cclose, strlen(cclose));
+   }
+   commWrite(conn_fd, end, strlen(end));
    commFlush(conn_fd);
-   if (noExit==0) exit(1);
 }
 
 static int readData(CommHndl conn_fd, char *into, int length)
@@ -337,9 +342,6 @@ void dumpResponse(RespSegments * rs)
    }
 }
 
-//#define PrintF(s,d) fprintf(stderr,s,d)
-#define PrintF(s,d)
-
 static void writeResponse(CommHndl conn_fd, RespSegments rs)
 {
 
@@ -368,28 +370,16 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
       }
    }
 
-   PrintF("%s","-----------------\n");
    commWrite(conn_fd, head, strlen(head));
-   PrintF("%s",head);
    commWrite(conn_fd, cont, strlen(cont));
-   PrintF("%s",cont);
    sprintf(str, "Content-Length: %d\r\n", len);
    commWrite(conn_fd, str, strlen(str));
-   PrintF("%s",str);
-//   commWrite(conn_fd, ext, strlen(ext));
-//   PrintF("%s",ext);
    commWrite(conn_fd, cach, strlen(cach));
-   PrintF("%s",cach);
-//   commWrite(conn_fd, man, strlen(man));
-//   PrintF("%s",man);
    commWrite(conn_fd, op, strlen(op));
-   PrintF("%s",op);
    if (keepaliveTimeout == 0 || numRequest >= keepaliveMaxRequest) {
      commWrite(conn_fd, cclose, strlen(cclose));
-     PrintF("%s",cclose);
    }
    commWrite(conn_fd, end, strlen(end));
-   PrintF("%s",end);
 
    for (len = 0, i = 0; i < 7; i++) {
       if (rs.segments[i].txt) {
@@ -397,20 +387,17 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
             UtilStringBuffer *sb = (UtilStringBuffer *) rs.segments[i].txt;
             if (sb) {
                commWrite(conn_fd, (void*)sb->ft->getCharPtr(sb), ls[i]);
-               PrintF("%s",sb->ft->getCharPtr(sb));
                sb->ft->release(sb);
             }
          }
          else {
             commWrite(conn_fd, rs.segments[i].txt, ls[i]);
-               PrintF("%s",rs.segments[i].txt);
             if (rs.segments[i].mode == 1)
                free(rs.segments[i].txt);
          }
       }
    }
    commFlush(conn_fd);
-   PrintF("%s","-----------------\n");
    
    _SFCB_EXIT();
 }
@@ -425,25 +412,21 @@ static void writeChunkHeaders(BinRequestContext *ctx)
    static char tenc[] = {"Transfer-encoding: chunked\r\n"};
    static char trls[] = {"Trailer: CIMError, CIMStatusCode, CIMStatusCodeDescription\r\n"};
    static char cclose[] = "Connection: close\r\n";
+   static char end[] = "\r\n";
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "writeChunkHeaders");
    
    commWrite(*(ctx->commHndl), head, strlen(head));
-   PrintF("%s",head);
    commWrite(*(ctx->commHndl), cont, strlen(cont));
-   PrintF("%s",cont);
    commWrite(*(ctx->commHndl), cach, strlen(cach));
-   PrintF("%s",cach);
    commWrite(*(ctx->commHndl), op, strlen(op));
-   PrintF("%s",op);
    commWrite(*(ctx->commHndl), tenc, strlen(tenc));
-   PrintF("%s",tenc);
    commWrite(*(ctx->commHndl), trls, strlen(trls));
-   PrintF("%s",trls);
    if (keepaliveTimeout == 0 || numRequest >= keepaliveMaxRequest) {
      commWrite(*(ctx->commHndl), cclose, strlen(cclose));
-     PrintF("%s",cclose);
    }
+   commWrite(*(ctx->commHndl), end, strlen(end));
+   commFlush(*(ctx->commHndl));
    
    _SFCB_EXIT();
 }
@@ -502,7 +485,6 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
 
       sprintf(str, "\r\n%x\r\n",len);
       commWrite(*(ctx->commHndl), str, strlen(str));
-      PrintF("%s",str);
 
       for (len = 0, i = 0; i < 7; i++) {
          if (rs.segments[i].txt) {
@@ -510,13 +492,11 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
                UtilStringBuffer *sb = (UtilStringBuffer *) rs.segments[i].txt;
                if (sb) {
                   commWrite(*(ctx->commHndl), (void*)sb->ft->getCharPtr(sb), ls[i]);
-                  PrintF("%s",sb->ft->getCharPtr(sb));
                   sb->ft->release(sb);
                }         
             }
             else {
                commWrite(*(ctx->commHndl), rs.segments[i].txt, ls[i]);
-                  PrintF("%s",rs.segments[i].txt);
                if (rs.segments[i].mode == 1)
                   free(rs.segments[i].txt);
             }
@@ -536,17 +516,13 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
       if (rh->rc!=1) desc=getErrTrailer(73,rh->rc-1,NULL);
 
       commWrite(*(ctx->commHndl), eStr, strlen(eStr));
-      PrintF("%s",eStr);
       commWrite(*(ctx->commHndl), status, strlen(status));
-      PrintF("%s",status);
       if (desc) {
          commWrite(*(ctx->commHndl), desc, strlen(desc));
-         PrintF("%s",desc);
          free(desc);
       }   
       eStr="\r\n";
       commWrite(*(ctx->commHndl), eStr, strlen(eStr));
-      PrintF("%s",eStr);
    }
    commFlush(*(ctx->commHndl));
    _SFCB_EXIT();
@@ -557,8 +533,6 @@ static ChunkFunctions httpChunkFunctions = {
 };
 
 
-#undef PrintF
-
 #define hdrBufsize 5000
 #define hdrLimmit 5000
 
@@ -567,6 +541,7 @@ static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
    int first=1,total=0,isReady;
    struct timeval httpTimeout;
    fd_set httpfds;
+   int state=0;
    
    FD_ZERO(&httpfds);
    FD_SET(conn_fd.socket,&httpfds);
@@ -586,7 +561,11 @@ static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
       total+=r;
 //      fprintf(stderr,"+++ buf: >%s<\n",buf);
       if (r && first) {
-         if (strncasecmp(buf,cmd,strlen(cmd)) != 0) return 1;
+         if (strncasecmp(buf,cmd,strlen(cmd)) != 0) { 
+	   /* not what we expected - still continue to read to
+	      not confuse the client */
+	   state = 1;
+	 }
          first=0;
       }
       
@@ -597,10 +576,11 @@ static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
       
       if (total>=hdrLimmit) {
          mlogf(M_ERROR,M_SHOW,"-#- Possible DOS attempt detected\n");
-         return 2;
+	 state = 2;
+         break;
       }
    }
-   return 0;
+   return state;
 }
 
 int pauseCodec(char *name)
@@ -639,6 +619,7 @@ static int doHttpRequest(CommHndl conn_fd)
    static RespSegments nullResponse = { NULL, 0, 0, NULL, { {0, NULL} } };
    int len, hl, rc;
    char *hdr, *path;
+   int discardInput=0;
    MsgSegment msgs[2];
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "doHttpRequest");
@@ -649,6 +630,7 @@ static int doHttpRequest(CommHndl conn_fd)
    }
       
    inBuf.authorization = "";
+   inBuf.protocol="HTTP/1.1";
    inBuf.content_type = NULL;
    inBuf.content_length = -1;
    inBuf.host = NULL;
@@ -656,25 +638,31 @@ static int doHttpRequest(CommHndl conn_fd)
    int badReq = 0;
 
    rc=getHdrs(conn_fd, &inBuf,"POST ");
-//   fprintf(stderr,"+++ rc: %d\n",rc);
    
    if (rc==1) { 
-      genError(conn_fd, &inBuf, 501, "Not Implemented", NULL,1);
-      freeBuffer(&inBuf);
-      rc=getHdrs(conn_fd, &inBuf,"POST ");
+      genError(conn_fd, &inBuf, 501, "Not Implemented", NULL);
+      /* we continue to parse headers and empty the socket
+	 to be graceful with the client */
+      discardInput=1;
    }   
    
-   if (rc==1) genError(conn_fd, &inBuf, 501, "Not Implemented", NULL,1);   
-   if (rc==2) genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
+   if (rc==2) {
+     genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+      discardInput=2;
+      _SFCB_TRACE(1, ("--- potential DOS attempt discovered."));      
+   }
    if (rc==3) {
-      fprintf(stderr,"-#- Waited too long for data after accept - request rejected\n");
-      genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
+      genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+      _SFCB_TRACE(1, ("--- exiting after request timeout."));
+      commClose(conn_fd);
+      exit(1);
    }
             
    if (inBuf.size == 0) {
      /* no buffer data - end of file - quit */
      _SFCB_TRACE(1,("--- HTTP connection EOF, quit %d ", currentProc));   
-     _SFCB_RETURN(1);
+     commClose(conn_fd);
+     exit(1);
    }
    
    inBuf.httpHdr = getNextHdr(&inBuf);
@@ -698,7 +686,12 @@ static int doHttpRequest(CommHndl conn_fd)
       badReq = 0;
    }
 
-   if (badReq) genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
+   if (badReq) {
+     genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+      _SFCB_TRACE(1, ("--- exiting after malformed header."));      
+      commClose(conn_fd);
+      exit(1);
+   }
 
    while ((hdr = getNextHdr(&inBuf)) != NULL) {
       _SFCB_TRACE(1,("--- Header: %s",hdr));
@@ -723,8 +716,10 @@ static int doHttpRequest(CommHndl conn_fd)
          cp = &hdr[5];
          cp += strspn(cp, " \t");
          inBuf.host = cp;
-         if (strchr(inBuf.host, '/') != NULL || inBuf.host[0] == '.')
-            genError(conn_fd, &inBuf, 400, "Bad Request", NULL,0);
+         if (strchr(inBuf.host, '/') != NULL || inBuf.host[0] == '.') {
+	   genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+	   discardInput=2;
+	 }
       }
       else if (strncasecmp(hdr, "User-Agent:", 11) == 0) {
          cp = &hdr[11];
@@ -738,7 +733,8 @@ static int doHttpRequest(CommHndl conn_fd)
          inBuf.trailers=1;
       }
       else if (strncasecmp(hdr, "Expect:", 7) == 0) {
-         genError(conn_fd, &inBuf, 417, "Expectation Failed", NULL,0);  //more);
+         genError(conn_fd, &inBuf, 417, "Expectation Failed", NULL);  //more);
+	 discardInput=2;
       }
    }
 
@@ -757,6 +753,7 @@ static int doHttpRequest(CommHndl conn_fd)
        /* this should never happen ;-) famous last words */
        mlogf(M_ERROR,M_SHOW,
 	     "\n--- Client certificate not accessible - closing connection\n");
+       commClose(conn_fd);
        exit(1);
      }     
    }
@@ -765,7 +762,10 @@ static int doHttpRequest(CommHndl conn_fd)
    if (doBa) {
      if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principal))) {
        //char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
-       genError(conn_fd, &inBuf, 401, "Unauthorized", NULL,0);  //more);
+       genError(conn_fd, &inBuf, 401, "Unauthorized", NULL);  //more);
+       /* we continue to parse headers and empty the socket
+	  to be graceful with the client */
+       discardInput=1;
      }
 #if defined USE_SSL
      else if (sfcbSSLMode) {
@@ -777,7 +777,10 @@ static int doHttpRequest(CommHndl conn_fd)
 
    len = inBuf.content_length;
    if (len < 0) {
-     genError(conn_fd, &inBuf, 411, "Length Required", NULL,0);
+     genError(conn_fd, &inBuf, 411, "Length Required", NULL);
+     _SFCB_TRACE(1, ("--- exiting after missing content length."));      
+     commClose(conn_fd);
+     exit(1);
    }
 
    hdr = (char *) malloc(strlen(inBuf.authorization) + 64);
@@ -785,6 +788,11 @@ static int doHttpRequest(CommHndl conn_fd)
        sprintf(hdr, "<!-- xml -->\n<!-- auth: %s -->\n", inBuf.authorization);
 
    getPayload(conn_fd, &inBuf);
+   if (discardInput) {
+     free(hdr);
+     freeBuffer(&inBuf);
+     _SFCB_RETURN(discardInput-1);
+   }
 
    msgs[0].data = hdr;
    msgs[0].length = hl;
@@ -943,23 +951,7 @@ static void handleHttpRequest(int connFd)
 	}
       } while (1);
 
-#if defined USE_SSL
-      if (sfcbSSLMode) {
-	if ((SSL_get_shutdown(conn_fd.ssl) & SSL_RECEIVED_SHUTDOWN))
-	  SSL_shutdown(conn_fd.ssl);
-	else SSL_clear(conn_fd.ssl);
-	SSL_free(conn_fd.ssl);
-      } else 
-#endif
-	if (conn_fd.file == NULL) {
-	  close(conn_fd.socket);
-	} else {
-	  fclose(conn_fd.file);
-	  if (conn_fd.buf) {
-	    free(conn_fd.buf);
-	  }
-	}
-
+      commClose(conn_fd);
       if (!doFork) return;
 
       _SFCB_TRACE(1, ("--- Xml handler exiting %d", currentProc));

@@ -1,3 +1,9 @@
+Changes in 1.0.2
+================
+
+Bugs fixed:
+- 1387264 Fixed invalid array addressing with array type properties.
+
 Changes in 1.0.1
 ================
 

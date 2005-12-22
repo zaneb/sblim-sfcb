@@ -131,7 +131,7 @@ static CMPIData __aft_getArgAt(const CMPIArgs * args,
       rv.value.ref = getObjectPath(
          (char*)ClObjectGetClString(&ca->hdr, (ClString *) & rv.value.chars), &msg);
    }
-   else if (rv.type & CMPI_ARRAY) {
+   else if (rv.type & CMPI_ARRAY && rv.value.array) {
       rv.value.array =
           native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &ca->hdr);
    }

@@ -159,9 +159,9 @@ CMPIData opGetKeyCharsAt(const CMPIObjectPath * op,
       rv.value.ref = getObjectPath(
          (char*)ClObjectGetClString(&cop->hdr, (ClString *) & rv.value.chars), &msg);
    }
-   else if (rv.type & CMPI_ARRAY) {     // should nor occcur
+   else if (rv.type & CMPI_ARRAY && rv.value.array) {     // should nor occcur
       rv.value.array =
-          native_make_CMPIArray((CMPIData *) & rv.value.array, NULL,&cop->hdr);
+          native_make_CMPIArray((CMPIData *) rv.value.array, NULL,&cop->hdr);
    }
 
    if (rc)

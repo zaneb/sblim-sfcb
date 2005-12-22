@@ -528,7 +528,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
    if (data->type & CMPI_ARRAY) { 
       CMPIArray *ar = data->value.array;
       CMPIData d;
-      int j, ac = CMGetArrayCount(ar, NULL);
+      int j, ac = ar ? CMGetArrayCount(ar, NULL) : 0;
 
       sb->ft->appendChars(sb, bTag);
       sb->ft->appendChars(sb, (char *) name->hdl);

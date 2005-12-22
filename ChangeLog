@@ -1,3 +1,12 @@
+2005-12-22    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* args.c, constClass.c, instance.c, objectpath.c: 
+	Fixed 1387264. Check for NULL array and pass in the correct pointer to the
+	array if not NULL.
+
+	* cimXmlGen.c:
+	Also 1387264. Check for NULL array before looking for the element count.
+
 2005-12-20    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* httpComm.c: 

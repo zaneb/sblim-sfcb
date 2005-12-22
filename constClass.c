@@ -135,9 +135,9 @@ static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** na
          rv.value.ref = getObjectPath(
             (char*)ClObjectGetClString(&cls->hdr,(ClString *) & rv.value.chars), &msg);
    }
-   if (rv.type & CMPI_ARRAY) {
+   if (rv.type & CMPI_ARRAY && rv.value.array) {
       rv.value.array =
-          native_make_CMPIArray((CMPIData *) & rv.value.array, NULL, &cls->hdr);
+          native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &cls->hdr);
    }
    if (name) {
       *name = native_new_CMPIString(n, NULL);
@@ -163,8 +163,8 @@ static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** n
          (&cls->hdr, (ClString *) & rv.value.chars), NULL);
       rv.type = CMPI_string;
    }
-   if (rv.type & CMPI_ARRAY) {
-      rv.value.array = native_make_CMPIArray((CMPIData *) & rv.value.array, 
+   if (rv.type & CMPI_ARRAY && rv.value.array) {
+      rv.value.array = native_make_CMPIArray((CMPIData *) rv.value.array, 
          NULL, &cls->hdr);
    }
    if (name) {
@@ -191,7 +191,7 @@ static CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i
          (&cls->hdr, (ClString *) & rv.value.chars), NULL);
       rv.type = CMPI_string;
    }
-   if (rv.type & CMPI_ARRAY) {
+   if (rv.type & CMPI_ARRAY && rv.value.dataPtr.ptr ) {
       rv.value.array = native_make_CMPIArray((CMPIData *) rv.value.dataPtr.ptr, 
          NULL, &cls->hdr);
    }

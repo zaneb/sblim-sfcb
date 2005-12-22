@@ -175,7 +175,7 @@ CMPIData __ift_getPropertyAt(const CMPIInstance * ci, CMPICount i, CMPIString **
       rv.value.ref = getObjectPath(
          (char*)ClObjectGetClString(&inst->hdr, (ClString*)&rv.value.chars), &msg);
    }
-   else if (rv.type & CMPI_ARRAY) {
+   else if (rv.type & CMPI_ARRAY && rv.value.array) {
       rv.value.array =
           native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &inst->hdr);
    }

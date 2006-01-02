@@ -1,3 +1,8 @@
+2006-01-02    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* configure.ac, Makefile.am: 
+	Fixed 1395350. Use $srcdir to ensure location-independ builds.
+	
 2005-12-22    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* args.c, constClass.c, instance.c, objectpath.c: 

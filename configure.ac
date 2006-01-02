@@ -157,11 +157,11 @@ fi
 AC_SUBST(INIT_STYLE)
 
 # Checks for subdirectories
-if test -d test; then
+if test -d $srcdir/test; then
    AC_CONFIG_SUBDIRS([test])
 fi
 
-if test -d mofc; then
+if test -d $srcdir/mofc; then
    MOFC_DIR=mofc
    export sfcb_recursed=yes
    export with_sfcb=yes

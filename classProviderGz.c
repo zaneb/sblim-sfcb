@@ -49,7 +49,7 @@
 #define LOCALCLASSNAME "ClassProvider"
 #define Iterator HashTableIterator*
 
-static int cacheLimit=2;
+static int cacheLimit=10;
 
 static const CMPIBroker *_broker;
 
@@ -94,7 +94,7 @@ struct _Class_Register_FT {
    int (*putClass) (ClassRegister * br,  const char *className, ClassRecord * cls);
    void (*removeClass) (ClassRegister * br, const char *className);
    void (*releaseClass) (ClassRegister *br, void *id);
-   
+
    UtilList *(*getChildren) (ClassRegister * br, const char *className);
    void (*addChild)(ClassRegister *cr, const char *p, const char *child);
    
@@ -284,7 +284,7 @@ static void pruneCache(ClassRegister * cr)
 static ClassRegister *newClassRegister(char *fname)
 {
    ClassRegister *cr =
-       (ClassRegister *) malloc(sizeof(ClassRegister) + sizeof(ClassBase));
+       (ClassRegister *) calloc(1,sizeof(ClassRegister) + sizeof(ClassBase));
    ClassBase *cb = (ClassBase *) (cr + 1);
    char fin[1024];
    long s, total=0;

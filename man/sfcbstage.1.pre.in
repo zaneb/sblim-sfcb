@@ -13,16 +13,20 @@ permission notice identical to this one.
 
 .TH sfcbstage 1 "August 2005" "sfcbstage Version @PACKAGE_VERSION@"
 .SH NAME
-sfcbstage \- Script to copy SBLIM provider MOF and registration files to the 
+sfcbstage \- Script to copy provider MOF and registration files to the 
 Small-Footprint CIM Broker (sfcb) staging area
 .SH SYNOPSIS
 .B sfcbstage
 [\fIoptions\fR] [\fImof...\fR]
 .SH DESCRIPTION
-sfcbstage copies SBLIM provider mof and registration files to the sfcb staging area.
+sfcbstage copies provider mof and registration files to the sfcb staging area.
 Used to add classes to sfcb offline. The class repository must be rebuilt with
 sfcbrepos and the sfcb CIMOM restarted before changes take effect.
 .SH OPTIONS
+.TP
+\fB\-n\fR \fInamespace\fR
+Namespace for which the class MOFs are to be registered.
+Default is \fIroot/cimv2\fR
 .TP
 \fB\-s\fR \fIstagingdir\fR
 Path to sfcb staging area containing class MOFs and registration files

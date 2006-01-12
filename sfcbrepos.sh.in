@@ -106,6 +106,7 @@ then
 	fi
     fi
 
+    # Creating empty default namespace directories
     mkdir -p $registrationdir/repository/root/cimv2 &&
     mkdir -p $registrationdir/repository/root/interop &&
     cp $stagingdir/default.reg $registrationdir/providerRegister
@@ -123,22 +124,32 @@ then
 	    exit 1
 	fi
     fi
-
-    if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
+    
+    if false
     then
-	if ! sfcbmof -o $registrationdir/repository/root/cimv2/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/mofs/*.mof
+    # Note: do we need "legacy" support -- don't think so
+	if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
 	then
-	    echo Failed compiling the MOF files. >&2
-	    exit 1
+	    cp $stagingdir/mofs/*.mof $stagingdir/mofs/root/cimv2
 	fi
     fi
-
-    # Setup interop class support
-    if ! sfcbmof -o $registrationdir/repository/root/interop/classSchemas -I $cimschemadir -i CIM_Schema.mof $stagingdir/interop.mof
-    then 
-        echo Failed compiling interop MOF file. >&2
-        exit 1
-    fi
+    
+    # Compile all staged namespace directories
+    mofsubdirs=`find $stagingdir/mofs -type d -print 2> /dev/null`
+    for mofdir in $mofsubdirs
+    do
+	if ls $mofdir/*.mof > /dev/null 2>&1
+	then
+	    namespace=`echo $mofdir | sed s?$stagingdir/mofs??`
+	    repositorydir=$registrationdir/repository/$namespace
+	    [ -d $repositorydir ] || mkdir -p $repositorydir
+	    if ! sfcbmof -o $repositorydir/classSchemas -I $cimschemadir -i CIM_Schema.mof $mofdir/*.mof
+	    then
+		echo Failed compiling the MOF files. >&2
+		exit 1
+	    fi
+	fi
+    done
 
 else
     echo Could not find required staging files. Please check your setup. >&2

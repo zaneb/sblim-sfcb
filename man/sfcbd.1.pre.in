@@ -112,7 +112,7 @@ Whether sfcb should provide the interop namespace for indication support.
 Default=\fItrue\fR
 .TP
 .B provProcs
-Maximum number of simultaneous SBLIM provider processes. After this
+Maximum number of simultaneous provider processes. After this
 point if a new incoming request requires loading a new provider,
 then one of the existing providers will first be automatically
 unloaded. Default=\fI32\fR 
@@ -180,7 +180,7 @@ to \fIignore\fR. Default=\fIsfcCertificateAuthentication\fR
 .SH ENVIRONMENT
 .TP
 .B SFCB_PAUSE_PROVIDER
-Specifies the name of the SBLIM provider to pause after first
+Specifies the name of the provider to pause after first
 being loaded to facilitate attaching a runtime debugger to the
 provider's process for debugging purposes.
 .TP
@@ -241,7 +241,7 @@ SSL client certificate / trus store for sfcb.
 Binaries for sfcb runtime libraries.
 .TP
 .I @libdir@/cmpi/*
-Binaries for SBLIM providers
+Binaries for providers
 .SH AUTHOR
 Adrian Schuur <schuur@de.ibm.com>
 .SH CONRIBUTORS

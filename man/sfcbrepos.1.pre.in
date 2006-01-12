@@ -50,10 +50,10 @@ Display usage information and exit.
 CIM Schema
 .TP
 \fI@localstatedir@/lib/sfcb/registration/providerRegister\fR
-Contains registration data for all installed SBLIM providers.
+Contains registration data for all installed providers.
 .TP
 \fI@localstatedir@/lib/sfcb/registration/providerRegister.previous\fR
-Contains registration data for all installed SBLIM providers from
+Contains registration data for all installed providers from
 previous time sfcbrepos was run. This can be used to restore an
 earlier class repository in case sfcbrepos generates a corrupt one.
 .TP
@@ -76,10 +76,10 @@ Dummy classes used to added CIM indication support to the
 default interop namespace.
 .TP
 \fI@localstatedir@/lib/sfcb/registration/stage/mofs/*.mof\fR
-Class definitions for all installed SBLIM providers.
+Class definitions for all installed providers.
 .TP
 \fI@localstatedir@/lib/sfcb/registration/stage/regs/*.reg\fR
-Registration info for all installed SBLIM providers.
+Registration info for all installed providers.
 .SH LIBRARIES
 Requires libsfcBrokerCore.a
 .SH AUTHOR

@@ -13,15 +13,19 @@ permission notice identical to this one.
 
 .TH sfcbunstage 1 "August 2005" "sfcbunstage Version @PACKAGE_VERSION@"
 .SH NAME
-sfcbstage \- Script to remove SBLIM provider MOF and registration files from the Small-Footprint CIM Broker (sfcb) staging area
+sfcbstage \- Script to remove provider MOF and registration files from the Small-Footprint CIM Broker (sfcb) staging area
 .SH SYNOPSIS
 .B sfcbstage
 [\fIoptions\fR] [\fImof...\fR]
 .SH DESCRIPTION
-sfcbunstage removes SBLIM provider mof and registration files from the sfcb staging area.
+sfcbunstage removes provider mof and registration files from the sfcb staging area.
 Used to remove classes from sfcb offline. The class repository must be rebuilt
 with sfcbrepos and the sfcb CIMOM restarted before changes take effect.
 .SH OPTIONS
+.TP
+\fB\-n\fR \fInamespace\fR
+Namespace for which the class MOFs are to be deregistered.
+Default is \fIroot/cimv2\fR
 .TP
 \fB\-s\fR \fIstagingdir\fR
 Path to sfcb staging area containing class MOFs and registration files

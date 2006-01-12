@@ -85,7 +85,7 @@ void processFile(char *fn, FILE *in, FILE *out)
             fclose(incFile);
          }
          else {
-            fprintf(stderr,"--- %s:%d File not found: %s\n",fn,nl,s);
+            fprintf(stderr,"%s:%d File not found: %s\n",fn,nl,s);
          }
       }
       else {
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
    FILE *in;
    
    if (argc!=2) {
-      fprintf(stderr,"%s: usage %s <file-name>\n",argv[0],argv[0]);
+      fprintf(stderr,"usage: %s filename\n",argv[0],argv[0]);
       return 2;
    }
    
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
    
    if (in) processFile(strdup(fn),in,stdout);
    else {
-      fprintf(stderr,"--- file %s not found\n",fn);
+      fprintf(stderr,"file %s not found\n",fn);
       return 1;
    }
    

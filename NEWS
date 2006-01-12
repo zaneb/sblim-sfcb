@@ -4,6 +4,7 @@ Changes in 1.0.2
 Bugs fixed:
 - 1387264 Fixed invalid array addressing with array type properties.
 - 1395350 Fixed location dependence in configure script and Makefile.
+- 1404047 Added support for namespaces and includes during registration.
 
 Changes in 1.0.1
 ================

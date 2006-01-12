@@ -71,6 +71,9 @@ endif
 sbin_PROGRAMS = \
    sfcbd 
 
+bin_PROGRAMS = \
+   sfcbmofpp
+
 if JDBC
 libsfcBrokerCore_la_SOURCES = \
     args.c \
@@ -222,6 +225,8 @@ libsfcCimXmlCodec_la_LIBADD=-lsfcBrokerCore
 sfcbd_SOURCES=sfcBroker.c
 sfcbd_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter
 
+sfcbmofpp_SOURCES=mofpp.c
+
 noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \
 	cimXmlParser.h    native.h       support.h cimXmlGen.h \
@@ -294,14 +299,14 @@ unittest:
 
 install-data-local:
 	test -d $(DESTDIR)$(sfcbstatedir)/registration/repository || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/registration/repository
-	test -d $(DESTDIR)$(sfcbstatedir)/stage/mofs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/mofs
+	test -d $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
 	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
-	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage
+	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 
 uninstall-local:
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
-	rm -f $(DESTDIR)$(sfcbstatedir)/stage/interop.mof
+	rm -f $(DESTDIR)$(sfcbstatedir)/stage/root/interop/interop.mof
 
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcbunstage sfcbuuid sfcb.cfg getSchema.sh sfcb \

@@ -2,10 +2,10 @@
 
 usage() 
 {
-    echo "usage: $0 [-h] [ -s stagingdir] [ -r regfile ] [ mof ... ]  " 1>&2 
+    echo "usage: $0 [-h] [-n namespace] [ -s stagingdir] [ -r regfile ] [ mof ... ]  " 1>&2 
 }
 
-args=`getopt hr:s: $*`
+args=`getopt hn:r:s: $*`
 rc=$?
 
 if [ $rc = 127 ]
@@ -25,6 +25,8 @@ do
   case $1 in
       -h) help=1; 
 	  shift;;
+      -n) namespace=$2 
+	  shift;;
       -s) stagingdir=$2
 	  shift 2;;
       -r) regfile=$2
@@ -39,8 +41,9 @@ if [ "$help" = "1" ]
 then
     usage
     echo -e "\t-h display help message"
+    echo -e "\t-n specify CIM namespace [root/cimv2]"
     echo -e "\t-s specify staging directory [@localstatedir@/lib/sfcb/stage]"
-    echo -e "\t-r specify sfcb registration file "
+    echo -e "\t-r specify sfcb registration file"
     echo
     echo Use this command to copy registration files to the sfcb staging area.
     exit 0
@@ -52,6 +55,11 @@ then
     exit 1
 fi
 
+if [ -z "$namespace" ]
+then
+    namespace=root/cimv2
+fi
+
 if [ -z "$stagingdir" ]
 then
     stagingdir=@localstatedir@/lib/sfcb/stage
@@ -59,7 +67,7 @@ fi
 
 if [ -n "$regfile" ]
 then
-    test -d $stagingdir/regs || mkdir $stagingdir/regs
+    test -d $stagingdir/regs || mkdir -p $stagingdir/regs
     if ! cp $regfile $stagingdir/regs
     then
 	echo "Error: could not copy registration files " 1>&2
@@ -69,10 +77,13 @@ fi
 
 if [ -n "$*" ]
 then
-    test -d $stagingdir/mofs || mkdir $stagingdir/mofs
-    if ! cp $* $stagingdir/mofs
-    then
-	echo "Error: could not copy schema files " 1>&2    
-	exit 1
-    fi
+    test -d $stagingdir/mofs/$namespace || mkdir -p $stagingdir/mofs/$namespace
+    for mofname in $*
+    do
+      if ! sfcbmofpp $mofname > $stagingdir/mofs/$namespace/`basename $mofname`
+      then
+	  echo "Error: could not copy schema files " 1>&2    
+	  exit 1
+      fi
+    done
 fi

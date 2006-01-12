@@ -2,7 +2,7 @@
 
 usage() 
 {
-    echo "usage: $0 [-h] [ -s stagingdir] [ -r regfile ] [ mof ... ]  " 1>&2 
+    echo "usage: $0 [-h] [-n namespace] [ -s stagingdir] [ -r regfile ] [ mof ... ]  " 1>&2 
 }
 
 
@@ -26,6 +26,8 @@ do
   case $1 in
       -h) help=1; 
 	  shift;;
+      -n) namespace=$2 
+	  shift;;
       -s) stagingdir=$2
 	  shift 2;;
       -r) regfile=$2
@@ -40,6 +42,7 @@ if [ "$help" = "1" ]
 then
     usage
     echo -e "\t-h display help message"
+    echo -e "\t-n specify CIM namespace [root/cimv2]"
     echo -e "\t-s specify staging directory [@localstatedir@/lib/sfcb/stage]"
     echo -e "\t-r specify sfcb registration file "
     echo
@@ -51,6 +54,11 @@ if [ -z "$*" ] && [ -z "$regfile" ]
 then
     usage $0
     exit 1
+fi
+
+if [ -z "$namespace" ]
+then
+    namespace=root/cimv2
 fi
 
 if [ -z "$stagingdir" ]
@@ -70,9 +78,9 @@ fi
 
 if [ -n "$*" ]
 then
-    if test -d $stagingdir/mofs
+    if test -d $stagingdir/mofs/$namespace
     then
-	cd $stagingdir/mofs
+	cd $stagingdir/mofs/$namespace
 	rm -f $* ||
 	echo "Error: could not remove schema files " 1>&2    
     fi

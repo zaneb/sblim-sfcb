@@ -1,3 +1,10 @@
+2006-01-16  a3schuur
+
+	* args.c, providerDrv.c, support.c: fixed [ 1407244 ] memory leak
+	with args objects
+	args objects created by providerDrv.c not garbage collected.
+	restructured args.c
+
 2006-01-12    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* man/sfcbd.1.pre.in, man/sfcbstage.1.pre.in, man/sfcbstage.1.pre.in, 
@@ -11,6 +18,13 @@
 	* sfcbrepos.sh.in, sfcbstage.sh.in, sfcbunstage.sh.in: 
 	Fix for 1404047. Added support for alternative namespaces and
 	hierarchical class MOF files.
+
+2006-01-10  a3schuur
+
+	* classProviderGz.c, constClass.c: Fixed [ 1386191 ] sfcb memory
+	footprint for large schemas too high
+	Fixed memory leak in constClass::release Fixed bug in
+	classProviderGz.c Changed class cache size from 2 to 10
 
 2006-01-02    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 

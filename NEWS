@@ -2,9 +2,12 @@ Changes in 1.0.2
 ================
 
 Bugs fixed:
+- 1386191 Reduced class provider memory footprint using an alternative
+	  caching class provider.
 - 1387264 Fixed invalid array addressing with array type properties.
 - 1395350 Fixed location dependence in configure script and Makefile.
 - 1404047 Added support for namespaces and includes during registration.
+- 1407244 Fixed memory leak in args structure.
 
 Changes in 1.0.1
 ================

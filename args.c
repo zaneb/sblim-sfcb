@@ -62,12 +62,14 @@ static CMPIStatus __aft_release(CMPIArgs * args)
 {
    struct native_args *a = (struct native_args *) args;
 
-   if (a->mem_state == MEM_NOT_TRACKED) {
+   if (a->mem_state && a->mem_state != MEM_RELEASED) {
       ClArgsFree((ClArgs *) a->args.hdl);
+      memUnlinkEncObj(a->mem_state);
+      a->mem_state = MEM_RELEASED;
       free(args);
       CMReturn(CMPI_RC_OK);
    }
-
+   
    CMReturn(CMPI_RC_ERR_FAILED);
 }
 
@@ -171,7 +173,7 @@ static unsigned int __aft_getArgCount(const CMPIArgs * args, CMPIStatus * rc)
 
 
 static CMPIArgsFT aft = {
-   NATIVE_FT_VERSION,
+   NATIVE_FT_VERSION, 
    __aft_release,
    __aft_clone,
    __aft_addArg,
@@ -186,28 +188,30 @@ static struct native_args *__new_empty_args(int mm_add, CMPIStatus * rc)
       "CMPIArgs",
       &aft
    };
+   
+   struct native_args args, *tArgs;
+   int state;
 
-   struct native_args *args = (struct native_args *)
-       tool_mm_alloc(mm_add, sizeof(struct native_args));
-
-   args->args = a;
-   args->mem_state = mm_add;
-   args->args.hdl = ClArgsNew();
-
-   if (rc)
-      CMSetStatus(rc, CMPI_RC_OK);
-   return args;
+   args.args = a;
+   tArgs=memAddEncObj(mm_add, &args, sizeof(args),&state);
+   tArgs->mem_state = state;
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+   return (struct native_args*) tArgs;
 }
 
 
 CMPIArgs *NewCMPIArgs(CMPIStatus * rc)
 {
-   return (CMPIArgs *) __new_empty_args(MEM_NOT_TRACKED, rc);
+   struct native_args *args = __new_empty_args(MEM_NOT_TRACKED, rc);
+   args->args.hdl = ClArgsNew();
+   return (CMPIArgs *)args;
 }
 
 CMPIArgs *TrackedCMPIArgs(CMPIStatus * rc)
 {
-   return (CMPIArgs *) __new_empty_args(MEM_TRACKED, rc);
+   struct native_args *args = __new_empty_args(MEM_TRACKED, rc);
+   args->args.hdl = ClArgsNew();
+   return (CMPIArgs *)args;
 }
 
 unsigned long getArgsSerializedSize(CMPIArgs * args)

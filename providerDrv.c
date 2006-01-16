@@ -931,7 +931,7 @@ static BinResponseHdr *invokeMethod(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    char *method = (char *) req->method.data;
    CMPIArgs *in,*tIn = relocateSerializedArgs(req->in.data);
-   CMPIArgs *out = NewCMPIArgs(NULL);
+   CMPIArgs *out = TrackedCMPIArgs(NULL);
    CMPIStatus rci = { CMPI_RC_OK, NULL };
    CMPIArray *r;
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);

@@ -586,7 +586,7 @@ void *memAddEncObj(int mode, void *ptr, size_t size, int *memId)
    memcpy(object, ptr, size);
 
    if (mode != MEM_TRACKED) {
-      *memId=-1;
+      *memId=MEM_NOT_TRACKED;
       _SFCB_RETURN(object);
    }   
 

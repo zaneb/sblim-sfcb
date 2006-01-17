@@ -53,7 +53,8 @@ lib_LTLIBRARIES = \
    libsfcHttpAdapter.la \
    libsfcBasicAuthentication.la \
    libsfcCertificateAuthentication.la \
-   libsfcIndCIMXMLHandler.la
+   libsfcIndCIMXMLHandler.la \
+   libsfcObjectImplSwapEndian.la
 else
 lib_LTLIBRARIES = \
    libsfcBrokerCore.la \
@@ -65,7 +66,8 @@ lib_LTLIBRARIES = \
    libsfcCimXmlCodec.la \
    libsfcHttpAdapter.la \
    libsfcBasicAuthentication.la \
-   libsfcCertificateAuthentication.la 
+   libsfcCertificateAuthentication.la \
+   libsfcObjectImplSwapEndian.la
 endif
 
 sbin_PROGRAMS = \
@@ -193,6 +195,10 @@ libsfcInternalProvider_la_SOURCES = \
    internalProvider.c \
    fileRepository.c
 libsfcInternalProvider_la_LIBADD=-lsfcBrokerCore
+
+libsfcObjectImplSwapEndian_la_SOURCES = \
+   objectImplSwapEndian.c \
+libsfcObjectImplSwapEndian_la_LIBADD=-lsfcBrokerCore
 
 libsfcInteropProvider_la_SOURCES = \
    interopProvider.c 

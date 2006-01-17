@@ -191,7 +191,8 @@ static ClassRegister *newClassRegister(char *fname)
    cr->vr = NULL;
    cr->assocs = cr->topAssocs = 0;
    
-   strcpy(fin, fname);
+   strcpy(fin, fname); 
+
    strcat(fin, "/classSchemas");
    in = fopen(fin, "r");
    
@@ -205,6 +206,7 @@ static ClassRegister *newClassRegister(char *fname)
    }
 
    cr->fn = strdup(fin);
+   cr->vr=NULL;
    cb->ht = UtilFactory->newHashTable(61,
                UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
    MRWInit(&cb->mrwLock);
@@ -215,9 +217,11 @@ static ClassRegister *newClassRegister(char *fname)
       char *cn;
       
       if (first) {
-         if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version &&
-            strcmp(vrp->id,"sfcd-rep")==0) vRec=1;
-         first=0;
+         if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version) vRec=1;
+         else if (vrp->size==sizeof(ClVersionRecord)<<24 && vrp->type==HDR_Version) {
+            mlogf(M_ERROR,M_SHOW,"--- %s is in wrong endian format - directory skipped\n",fin);
+            return NULL;
+         }
       }
       
       if (vRec==0 && hdr.type!=HDR_Class) {
@@ -232,19 +236,37 @@ static ClassRegister *newClassRegister(char *fname)
       }
       
       s=hdr.size;
-      *((ClObjectHdr *) buf) = hdr;
+      *((ClObjectHdr *) buf) = hdr; 
+
       
       if (fread(buf + sizeof(hdr), 1, hdr.size - sizeof(hdr), in) == hdr.size - sizeof(hdr)) {
          if (vRec) {
             cr->vr=(ClVersionRecord*)buf;
-            continue;
+            if (strcmp(cr->vr->id,"sfcb-rep")) {
+               mlogf(M_ERROR,M_SHOW,"--- %s contains invalid version record - directory skipped\n",fin);
+               return NULL;
+            }   
+            vRec=0;
          }
+         
+         if (first) {
+            int v=-1;
+            first=0;
+            if (ClVerifyObjImplLevel(cr->vr)) continue;
+            if (cr->vr) v=cr->vr->objImplLevel;
+            mlogf(M_ERROR,M_SHOW,"--- %s contains unsupported object implementation format (%d) - directory skipped\n",
+               fin,v);
+            return NULL;
+         }
+
+         
          cc = NEW(CMPIConstClass);
          cc->hdl = buf;
          cc->ft = CMPIConstClassFT;
          cc->ft->relocate(cc);
          cn=(char*)cc->ft->getCharClassName(cc);
-         if (strncmp(cn,"DMY_",4)!=0) {
+         if (strncmp(cn,"DMY_",4)!=0) {    
+
             total+=s;
             cb->ht->ft->put(cb->ht, cn, cc);
             if (cc->ft->isAssociation(cc)) {
@@ -257,11 +279,14 @@ static ClassRegister *newClassRegister(char *fname)
          mlogf(M_ERROR,M_SHOW,"--- %s contains invalid record(s) - directory skipped\n",fin);
          return NULL;
       }
-   }
+      first=0;
+
+   }     
+
  
    if (cr->vr) {
-      mlogf(M_INFO,M_SHOW,"--- ClassProvider for %s (%d.%d) using %ld bytes\n", 
-          fname, cr->vr->version, cr->vr->level, total);
+      mlogf(M_INFO,M_SHOW,"--- ClassProvider for %s (%d.%d-%d) using %ld bytes\n", 
+          fname, cr->vr->version, cr->vr->level, cr->vr->objImplLevel, total);
    }
    else mlogf(M_INFO,M_SHOW,"--- ClassProvider for %s (no-version) using %ld bytes\n", fname, total);
 

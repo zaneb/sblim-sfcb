@@ -28,20 +28,39 @@
 
 #include "native.h"
 
-#define MALLOCED(a) (((a) & 0xff000000)!=0xff000000)
+#define SFCB_LOCAL_ENDIAN       0
+#define SFCB_LITTLE_ENDIAN      1
+#define SFCB_BIG_ENDIAN         2
 
 #define ClCurrentVersion 1
 #define ClCurrentLevel 0
 #define ClTypeClassRep 1
 
+#define ClCurrentObjImplLevel 1
+
+#define GetLo15b(x) (x&0x7fff)
+#define GetHi1b(x)  (x&0x8000)
+
+#define GetMax(f)   (GetLo15b((f)))
+#define IsMallocedMax(x) (GetHi1b((x)))
+
+
 typedef struct {
-   unsigned long size;    // used to determine endianes
+   union {
+      unsigned long size;  // used to determine endianes - byter order in designated host order
+      unsigned char sByte[4];
+   };
+   unsigned short zeros;   // all remaining integer fields in network order 
    unsigned short type;
-   char id[10];           // "sfcb-rep\0" used to determine asci/ebcdic char encoding  
+   char id[10];            // "sfcb-rep\0" used to determine asci/ebcdic char encoding  
    unsigned short version;
    unsigned short level;
+   unsigned short objImplLevel;
    unsigned short options;
-   unsigned short reserved[5];
+   unsigned char  ptr64;
+   unsigned char  reservedc;
+   char creationDate[32];
+   unsigned short reserveds[3];
 } ClVersionRecord;   
 
 typedef struct {
@@ -51,25 +70,52 @@ typedef struct {
 
 typedef struct {
    //enum sectionType;
-   long offset;
-   short used, max;
+   union {
+      long sectionOffset;
+      void *sectionPtr;
+   };
+   unsigned short used, max;
 } ClSection;
+
+typedef struct {
+   unsigned short iUsed,iMax;
+   long indexOffset;
+   long *indexPtr;
+   long bUsed, bMax;
+   CMPIData buf[1];
+} ClArrayBuf;
+
+typedef struct {
+   unsigned short iUsed,iMax;
+   long indexOffset;
+   long *indexPtr;
+   long bUsed, bMax;
+   char buf[1];
+} ClStrBuf;
 
 typedef struct {
    long size;
    //enum hdrType;
-   short flags;
+   unsigned short flags;
 #define HDR_Rebuild 1
 #define HDR_RebuildStrings 2
 #define HDR_ContainsEmbeddedObject 4
-   short type;
+#define HDR_StrBufferMalloced 16
+#define HDR_ArrayBufferMalloced 32 
+   unsigned short type;
 #define HDR_Class 1
 #define HDR_Instance 2
 #define HDR_ObjectPath 3
 #define HDR_Args 4
-#define HDR_Version 128
-   long strBufOffset;
-   long arrayBufOffset;
+#define HDR_Version 0x1010
+   union {
+      long strBufOffset;
+      ClStrBuf *strBuffer;
+   };
+   union {
+      long arrayBufOffset;
+      ClArrayBuf *arrayBuffer;
+   };   
 } ClObjectHdr;
 
 typedef struct {
@@ -124,22 +170,6 @@ typedef struct {
 } ClInstance;
 
 typedef struct {
-   short iUsed, iMax;
-   long iOffset;
-   long *aIndex;
-   long bUsed, bMax;
-   CMPIData buf[1];
-} ClArrayBuf;
-
-typedef struct {
-   short iUsed, iMax;
-   long iOffset;
-   long *sIndex;
-   long bUsed, bMax;
-   char buf[1];
-} ClStrBuf;
-
-typedef struct {
    int type;
    long data;
 } ClData;
@@ -187,8 +217,124 @@ typedef struct {
    ClSection qualifiers;
 } ClParameter;
 
+
+
+inline static void *getSectionPtr(ClObjectHdr *hdr, ClSection *s)
+{
+   if (IsMallocedMax(s->max)) return s->sectionPtr;
+   return (void*) ((char*) hdr + abs(s->sectionOffset));
+}
+
+inline static int isMallocedSection(ClSection *s)
+{
+   return IsMallocedMax(s->max);
+}
+
+inline static void setSectionOffset(ClSection *s, long offs)
+{
+   s->sectionOffset=offs;
+   s->max &= 0x7fff;
+}
+
+inline static void* setSectionPtr(ClSection *s, void *ptr)
+{
+   s->max |= 0x8000;
+   return s->sectionPtr=ptr;
+}
+
+
+
+inline static ClStrBuf *getStrBufPtr(ClObjectHdr *hdr)
+{
+   if (hdr->flags & HDR_StrBufferMalloced) return hdr->strBuffer;
+   return  (ClStrBuf *) ((char *) hdr + abs(hdr->strBufOffset));
+}
+
+inline static ClStrBuf *setStrBufPtr(ClObjectHdr *hdr, void *buf)
+{
+   hdr->flags |= HDR_StrBufferMalloced;
+   return  hdr->strBuffer=(ClStrBuf*)buf;
+}
+
+inline static void setStrBufOffset(ClObjectHdr *hdr, long offs)
+{
+   hdr->flags &= ~HDR_StrBufferMalloced;
+   hdr->strBufOffset=-offs;
+}
+
+inline static long *setStrIndexPtr(ClStrBuf *buf, void *idx)
+{
+   buf->iMax |= 0x8000;
+   return buf->indexPtr=(long*)idx;
+}
+
+inline static void setStrIndexOffset(ClObjectHdr *hdr, ClStrBuf *buf, long offs)
+{
+   buf->iMax &= 0x7fff;
+   buf->indexPtr=(long*)(((char*)hdr) + offs);
+   buf->indexOffset=offs;
+}
+
+
+
+inline static ClArrayBuf *getArrayBufPtr(ClObjectHdr *hdr)
+{
+   if (hdr->flags & HDR_ArrayBufferMalloced) return hdr->arrayBuffer;
+   else return (ClArrayBuf *) ((char *) hdr + abs(hdr->arrayBufOffset));
+}
+
+inline static ClArrayBuf *setArrayBufPtr(ClObjectHdr *hdr, void *buf)
+{
+   hdr->flags |= HDR_ArrayBufferMalloced;
+   return  hdr->arrayBuffer=(ClArrayBuf*)buf;
+}
+
+inline static void setArrayBufOffset(ClObjectHdr *hdr, long offs)
+{
+   hdr->flags &= ~HDR_ArrayBufferMalloced;
+   hdr->arrayBufOffset=-offs;
+}
+
+inline static long *setArrayIndexPtr(ClArrayBuf *buf, void *idx)
+{
+   buf->iMax |= 0x8000;
+   return buf->indexPtr=(long*)idx;
+}
+
+inline static void setArrayIndexOffset(ClObjectHdr *hdr, ClArrayBuf *buf, long offs)
+{
+   buf->iMax &= 0x7fff;
+   buf->indexPtr=(long*)(((char*)hdr) + offs);
+   buf->indexOffset=offs;
+}
+
+
+
+
+inline static int isMallocedStrBuf(ClObjectHdr *hdr)
+{
+   return hdr->flags & HDR_StrBufferMalloced;
+}
+
+inline static int isMallocedStrIndex(ClStrBuf *buf)
+{
+   return IsMallocedMax(buf->iMax);
+}   
+   
+inline static int isMallocedArrayBuf(ClObjectHdr *hdr)
+{
+   return hdr->flags & HDR_ArrayBufferMalloced;
+}
+
+inline static int isMallocedArrayIndex(ClArrayBuf *buf)
+{
+   return IsMallocedMax(buf->iMax);
+}   
+   
 /* objectImpl.c */
 
+extern ClVersionRecord ClBuildVersionRecord(unsigned short opt, int endianMmode, long *size);
+extern int ClVerifyObjImplLevel(ClVersionRecord* vr);
 extern const char *ClObjectGetClString(ClObjectHdr *hdr, ClString *id);
 extern const CMPIData *ClObjectGetClArray(ClObjectHdr *hdr, ClArray *id);
 extern void *ClObjectGetClSection(ClObjectHdr *hdr, ClSection *s);

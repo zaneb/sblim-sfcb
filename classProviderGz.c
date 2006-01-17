@@ -318,6 +318,7 @@ static ClassRegister *newClassRegister(char *fname)
    if (cr->f == NULL)  return cr;
 
    cr->fn = strdup(fin);
+   cr->vr=NULL;
    pos=gztell(cr->f);
 
    while ((s = gzread(cr->f, &hdr, sizeof(hdr))) == sizeof(hdr)) {
@@ -348,9 +349,24 @@ static ClassRegister *newClassRegister(char *fname)
       if (gzread(cr->f, buf + sizeof(hdr), hdr.size - sizeof(hdr)) == hdr.size - sizeof(hdr)) {
          if (vRec) {
             cr->vr=(ClVersionRecord*)buf;
+            if (strcmp(cr->vr->id,"sfcb-rep")) {
+               mlogf(M_ERROR,M_SHOW,"--- %s contains invalid version record - directory skipped\n",fin);
+               return NULL;
+            }   
             pos=gztell(cr->f);
-            continue;
+            vRec=0;
          }
+         
+         if (first) {
+            int v=-1;
+            first=0;
+            if (ClVerifyObjImplLevel(cr->vr)) continue;
+            if (cr->vr) v=cr->vr->objImplLevel;
+            mlogf(M_ERROR,M_SHOW,"--- %s contains unsupported object implementation format (%d) - directory skipped\n",
+               fin,v);
+            return NULL;
+         }
+         
          cc = NEW(CMPIConstClass);
          cc->hdl = buf;
          cc->ft = CMPIConstClassFT;
@@ -374,6 +390,7 @@ static ClassRegister *newClassRegister(char *fname)
                if (pn == NULL) cr->topAssocs++;
             }   
          } 
+         first=0;
       }
       else {
          mlogf(M_ERROR,M_SHOW,"--- %s contains invalid record(s) - directory skipped\n",fin);
@@ -385,8 +402,8 @@ static ClassRegister *newClassRegister(char *fname)
    }
  
    if (cr->vr) {
-      mlogf(M_INFO,M_SHOW,"--- Caching ClassProvider for %s (%d.%d) using %ld bytes\n", 
-          fin, cr->vr->version, cr->vr->level, total);
+      mlogf(M_INFO,M_SHOW,"--- Caching ClassProvider for %s (%d.%d-%d) using %ld bytes\n", 
+          fin, cr->vr->version, cr->vr->level, cr->vr->objImplLevel, total);
    }
    else mlogf(M_INFO,M_SHOW,"--- Caching ClassProvider for %s (no-version) using %ld bytes\n", fin, total);
 

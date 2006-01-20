@@ -31,13 +31,9 @@ static void swapEndianData(ClObjectHdr *hdr, CMPIData *d)
       case CMPI_char16:
       case CMPI_uint16:
       case CMPI_sint16:
-         d->value.uint16=bswap_16(d->value.uint16);
-         break;
       case CMPI_uint32:
       case CMPI_sint32:
       case CMPI_real32:
-         d->value.uint32=bswap_32(d->value.uint32);
-         break;
       case CMPI_uint64:
       case CMPI_sint64:
       case CMPI_real64:
@@ -52,15 +48,15 @@ static void swapEndianData(ClObjectHdr *hdr, CMPIData *d)
                for (i = 0, m = (int) av->value.sint32; i < m; i++)
                   swapEndianData(hdr,(CMPIData*)&av[i+1]);
                
-               av->value.sint32=bswap_32(av->value.sint32);
+               av->value.uint64=bswap_64(av->value.uint64);
                av->type=bswap_16(av->type);
                av->state=bswap_16(av->state);
             }
-            d->value.uint32=bswap_32(d->value.uint32);
+            d->value.uint64=bswap_64(d->value.uint64);
             
          }
          else if ((d->type & CMPI_ENC) == CMPI_ENC) 
-            d->value.uint32=bswap_32(d->value.uint32);
+            d->value.uint64=bswap_64(d->value.uint64);
    }
    
    d->type=bswap_16(d->type);

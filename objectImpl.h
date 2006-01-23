@@ -19,95 +19,139 @@
  *
 */
 
+#ifdef SETCLPFX
+ #ifdef CLOBJECTS_H
+ #undef CLOBJECTS_H
+ #endif
+#endif
+
 #ifndef CLOBJECTS_H
 #define CLOBJECTS_H
 
-#include "cmpidt.h"
-#include "cmpift.h"
-#include "cmpimacs.h"
+#ifndef SETCLPFX
 
-#include "native.h"
+ #include "cmpidt.h"
+ #include "cmpift.h"
+ #include "cmpimacs.h"
 
-#define SFCB_LOCAL_ENDIAN       0
-#define SFCB_LITTLE_ENDIAN      1
-#define SFCB_BIG_ENDIAN         2
+ #include "native.h"
 
-#define ClCurrentVersion 1
-#define ClCurrentLevel 0
-#define ClTypeClassRep 1
+ #define SFCB_LOCAL_ENDIAN       0
+ #define SFCB_LITTLE_ENDIAN      1
+ #define SFCB_BIG_ENDIAN         2
 
-#define ClCurrentObjImplLevel 1
+ #define ClCurrentVersion 1
+ #define ClCurrentLevel 0
+ #define ClTypeClassRep 1
 
-#define GetLo15b(x) (x&0x7fff)
-#define GetHi1b(x)  (x&0x8000)
+ #define ClCurrentObjImplLevel 1
 
-#define GetMax(f)   (GetLo15b((f)))
-#define IsMallocedMax(x) (GetHi1b((x)))
+ #define GetLo15b(x) (x&0x7fff)
+ #define GetHi1b(x)  (x&0x8000)
 
+ #define GetMax(f)   (GetLo15b((f)))
+ #define IsMallocedMax(x) (GetHi1b((x)))
+
+ #define CLALIGN 8
+ #define CLEXTRA 4
+ 
+ #define ALIGN(x,y) ((((x-1)/y)+1)*y)
+
+#endif
+
+
+// The PFX macro enables one to add a prefix to the Cl structures in this header file
+// This will be used to have multiple HW platform specific alignments in one compile.
+// An example of its usage is in ObjectImplSwapI32toP32.c
+// PFX prepends the string indicated by the the CLPFX preprocesor #define to the Cl structure names
+
+
+#ifdef SETCLPFX
+ #ifdef CLPFX
+   #undef CLPFX
+ #endif
+ #define CLPFX SETCLPFX
+#else
+ #define CLPFX
+#endif
+
+#define _XPFX(p,x) p ## x
+#define PFX(p,x) _XPFX(p,x) 
 
 typedef struct {
    union {
-      unsigned long size;  // used to determine endianes - byter order in designated host order
-      unsigned char sByte[4];
-   };
-   unsigned short zeros;   // all remaining integer fields in network order 
-   unsigned short type;
-   char id[10];            // "sfcb-rep\0" used to determine asci/ebcdic char encoding  
-   unsigned short version;
-   unsigned short level;
-   unsigned short objImplLevel;
-   unsigned short options;
-   unsigned char  ptr64;
-   unsigned char  reservedc;
-   char creationDate[32];
-   unsigned short reserveds[3];
-} ClVersionRecord;   
+      struct {
+         union {
+            unsigned int size;  // used to determine endianes - byter order in designated host order
+            unsigned char sByte[4];
+         };
+         unsigned short zeros;   // all remaining integer fields in network order 
+         unsigned short type;
+         char id[10];            // "sfcb-rep\0" used to determine asci/ebcdic char encoding  
+         unsigned short version;
+         unsigned short level;
+         unsigned short objImplLevel;
+         unsigned short options;
+         unsigned short flags;
+         char creationDate[32];
+      };
+      struct {                   // used to force 96 bytes record length
+         unsigned int fixedSize[23];  
+         unsigned int lastInt;
+      };
+   };   
+}  PFX(CLPFX,ClVersionRecord);   
+
 
 typedef struct {
    char *str;
-   int used, max;
-} stringControl;
+   unsigned int used, max;
+} PFX(CLPFX,stringControl);
 
 typedef struct {
-   //enum sectionType;
    union {
       long sectionOffset;
       void *sectionPtr;
    };
    unsigned short used, max;
-} ClSection;
+} PFX(CLPFX,ClSection);
 
 typedef struct {
    unsigned short iUsed,iMax;
-   long indexOffset;
-   long *indexPtr;
-   long bUsed, bMax;
-   CMPIData buf[1];
-} ClArrayBuf;
-
-typedef struct {
-   unsigned short iUsed,iMax;
-   long indexOffset;
-   long *indexPtr;
-   long bUsed, bMax;
+   int indexOffset;
+   int *indexPtr;
+   unsigned int bUsed, bMax;
    char buf[1];
-} ClStrBuf;
+} PFX(CLPFX,ClStrBuf);
+
+#ifndef CLP32   // different layout for power 32
+typedef struct {
+   unsigned short iUsed,iMax;
+   int indexOffset;
+   int *indexPtr;
+   unsigned int bUsed, bMax;
+   PFX(CLPFX,CMPIData) buf[1];
+} PFX(CLPFX,ClArrayBuf);
+#endif
 
 typedef struct {
-   long size;
-   //enum hdrType;
+   unsigned int size;
    unsigned short flags;
-#define HDR_Rebuild 1
-#define HDR_RebuildStrings 2
-#define HDR_ContainsEmbeddedObject 4
-#define HDR_StrBufferMalloced 16
-#define HDR_ArrayBufferMalloced 32 
+   #ifndef SETCLPFX
+    #define HDR_Rebuild 1
+    #define HDR_RebuildStrings 2
+    #define HDR_ContainsEmbeddedObject 4
+    #define HDR_StrBufferMalloced 16
+    #define HDR_ArrayBufferMalloced 32 
+   #endif
    unsigned short type;
-#define HDR_Class 1
-#define HDR_Instance 2
-#define HDR_ObjectPath 3
-#define HDR_Args 4
-#define HDR_Version 0x1010
+   #ifndef SETCLPFX
+    #define HDR_Class 1
+    #define HDR_Instance 2
+    #define HDR_ObjectPath 3
+    #define HDR_Args 4
+    #define HDR_Version 0x1010
+   #endif
    union {
       long strBufOffset;
       ClStrBuf *strBuffer;
@@ -116,108 +160,117 @@ typedef struct {
       long arrayBufOffset;
       ClArrayBuf *arrayBuffer;
    };   
-} ClObjectHdr;
+} PFX(CLPFX,ClObjectHdr);
 
 typedef struct {
-   long id;
-} ClString;
+   int id;
+} PFX(CLPFX,ClString);
 
 typedef struct {
-   long id;
-} ClArray;
+   int id;
+} PFX(CLPFX,ClArray);
 
 typedef struct {
-   ClObjectHdr hdr;
+   PFX(CLPFX,ClObjectHdr) hdr;
    unsigned char quals;
-#define ClClass_Q_Abstract 1
-#define ClClass_Q_Association 2
-#define ClClass_Q_Indication 4
-#define ClClass_Q_Deprecated 8
+   #ifndef SETCLPFX
+    #define ClClass_Q_Abstract 1
+    #define ClClass_Q_Association 2
+    #define ClClass_Q_Indication 4
+    #define ClClass_Q_Deprecated 8
+   #endif
    unsigned char parents;
    unsigned short reserved;
-   ClString name;
-   ClString parent;
-   ClSection qualifiers;
-   ClSection properties;
-   ClSection methods;
-} ClClass;
+   PFX(CLPFX,ClString) name;
+   PFX(CLPFX,ClString) parent;
+   PFX(CLPFX,ClSection) qualifiers;
+   PFX(CLPFX,ClSection) properties;
+   PFX(CLPFX,ClSection) methods;
+} PFX(CLPFX,ClClass);
 
 typedef struct {
    ClObjectHdr hdr;
-   ClString hostName;
-   ClString nameSpace;
-   ClString className;
-   ClSection properties;
-} ClObjectPath;
+   PFX(CLPFX,ClString) hostName;
+   PFX(CLPFX,ClString) nameSpace;
+   PFX(CLPFX,ClString) className;
+   PFX(CLPFX,ClSection) properties;
+} PFX(CLPFX,ClObjectPath);
 
 typedef struct {
-   ClObjectHdr hdr;
-   ClSection properties;
-} ClArgs;
+   PFX(CLPFX,ClObjectHdr) hdr;
+   PFX(CLPFX,ClSection) properties;
+} PFX(CLPFX,ClArgs);
 
 typedef struct {
-   ClObjectHdr hdr;
+   PFX(CLPFX,ClObjectHdr) hdr;
    unsigned char quals;
-#define ClInst_Q_Association 2
-#define ClInst_Q_Indication 4
+   #ifndef SETCLPFX
+    #define ClInst_Q_Association 2
+    #define ClInst_Q_Indication 4
+   #endif 
    unsigned char parents;
    unsigned short reserved;
-   ClString className;
-   ClString nameSpace;
-   ClSection qualifiers;
-   ClSection properties;
-   ClObjectPath *path;
-} ClInstance;
+   PFX(CLPFX,ClString) className;
+   PFX(CLPFX,ClString) nameSpace;
+   PFX(CLPFX,ClSection) qualifiers;
+   PFX(CLPFX,ClSection) properties;
+   PFX(CLPFX,ClObjectPath) *path;
+} PFX(CLPFX,ClInstance);
 
 typedef struct {
    int type;
    long data;
-} ClData;
+} PFX(CLPFX,ClData);
 
 typedef struct {
-   ClString id;
-   CMPIData data;
-} ClQualifier;
+   PFX(CLPFX,ClString) id;
+   PFX(CLPFX,CMPIData) data;
+} PFX(CLPFX,ClQualifier);
 
 typedef struct {
-   ClString id;
-   CMPIData data;
+   PFX(CLPFX,ClString) id;
+   PFX(CLPFX,CMPIData) data;
    unsigned short flags;
-#define ClProperty_EmbeddedObjectAsString 1
-#define ClProperty_Deleted 2
+   #ifndef SETCLPFX
+    #define ClProperty_EmbeddedObjectAsString 1
+    #define ClProperty_Deleted 2
+   #endif 
    unsigned char quals;
-#define ClProperty_Q_Key 1
-#define ClProperty_Q_Propagated 2
-#define ClProperty_Q_Deprecated 4
-#define ClProperty_Q_EmbeddedObject 8
+   #ifndef SETCLPFX
+    #define ClProperty_Q_Key 1
+    #define ClProperty_Q_Propagated 2
+    #define ClProperty_Q_Deprecated 4
+    #define ClProperty_Q_EmbeddedObject 8
+   #endif 
    unsigned char originId;
-   ClSection qualifiers;
-} ClProperty;
+   PFX(CLPFX,ClSection) qualifiers;
+} PFX(CLPFX,ClProperty);
 
 typedef struct {
-   ClString id;
-   CMPIType type;
+   PFX(CLPFX,ClString) id;
+   PFX(CLPFX,CMPIType) type;
    unsigned short flags;
    unsigned char quals;
    unsigned char originId;
-   ClSection qualifiers;
-   ClSection parameters;
-} ClMethod;
+   PFX(CLPFX,ClSection) qualifiers;
+   PFX(CLPFX,ClSection) parameters;
+} PFX(CLPFX,ClMethod);
 
 typedef struct {
-   CMPIType type;
+   PFX(CLPFX,CMPIType) type;
    unsigned int arraySize;
    char *refName;  
-} CMPIParameter;
+} PFX(CLPFX,CMPIParameter);
 
 typedef struct {
-   ClString id;
-   CMPIParameter parameter;
+   PFX(CLPFX,ClString) id;
+   PFX(CLPFX,CMPIParameter) parameter;
    unsigned short quals;
-   ClSection qualifiers;
-} ClParameter;
+   PFX(CLPFX,ClSection) qualifiers;
+} PFX(CLPFX,ClParameter);
 
 
+#ifndef SETCLPFX
 
 inline static void *getSectionPtr(ClObjectHdr *hdr, ClSection *s)
 {
@@ -262,16 +315,16 @@ inline static void setStrBufOffset(ClObjectHdr *hdr, long offs)
    hdr->strBufOffset=-offs;
 }
 
-inline static long *setStrIndexPtr(ClStrBuf *buf, void *idx)
+inline static int *setStrIndexPtr(ClStrBuf *buf, void *idx)
 {
    buf->iMax |= 0x8000;
-   return buf->indexPtr=(long*)idx;
+   return buf->indexPtr=(int*)idx;
 }
 
 inline static void setStrIndexOffset(ClObjectHdr *hdr, ClStrBuf *buf, long offs)
 {
    buf->iMax &= 0x7fff;
-   buf->indexPtr=(long*)(((char*)hdr) + offs);
+   buf->indexPtr=(int*)(((char*)hdr) + offs);
    buf->indexOffset=offs;
 }
 
@@ -295,16 +348,16 @@ inline static void setArrayBufOffset(ClObjectHdr *hdr, long offs)
    hdr->arrayBufOffset=-offs;
 }
 
-inline static long *setArrayIndexPtr(ClArrayBuf *buf, void *idx)
+inline static int *setArrayIndexPtr(ClArrayBuf *buf, void *idx)
 {
    buf->iMax |= 0x8000;
-   return buf->indexPtr=(long*)idx;
+   return buf->indexPtr=(int*)idx;
 }
 
 inline static void setArrayIndexOffset(ClObjectHdr *hdr, ClArrayBuf *buf, long offs)
 {
    buf->iMax &= 0x7fff;
-   buf->indexPtr=(long*)(((char*)hdr) + offs);
+   buf->indexPtr=(int*)(((char*)hdr) + offs);
    buf->indexOffset=offs;
 }
 
@@ -406,4 +459,6 @@ extern int ClArgsGetArgCount(ClArgs *arg);
 extern int ClArgsGetArgAt(ClArgs *arg, int id, CMPIData *data, char **name);
 extern int ClArgsAddArg(ClArgs *arg, const char *id, CMPIData d);
 
+#endif // SETCLPFX
+   
 #endif

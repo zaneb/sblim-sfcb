@@ -159,6 +159,7 @@ MsgSegment setCharsMsgSegment(const char *str)
    else
       s.length = 0;
    s.type = MSG_SEG_CHARS;
+   if (s.length) s.length=((((s.length-1)/4)+1)*4);
    return s;
 }
 

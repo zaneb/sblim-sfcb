@@ -97,7 +97,7 @@ static CMPIData _ClDataSint32(long n, CMPIValueState s)
 
 ClVersionRecord ClBuildVersionRecord(unsigned short opt, int endianMode, long *size)
 {
-   ClVersionRecord rec={
+   ClVersionRecord rec={{{
       {0},
       0,
       HDR_Version,
@@ -105,9 +105,8 @@ ClVersionRecord ClBuildVersionRecord(unsigned short opt, int endianMode, long *s
       ClCurrentVersion,
       ClCurrentLevel,
       ClCurrentObjImplLevel,
-      opt,0,0,
-      {0},
-      {0,0,0}
+      opt,0,
+      {0}}}
    };
    
    time_t tm=time(NULL);
@@ -391,10 +390,10 @@ static long sizeStringBuf(ClObjectHdr * hdr)
 
    buf = getStrBufPtr(hdr);   
 
-   sz = sizeof(*buf) + buf->bUsed + (buf->iUsed * sizeof(*buf->indexPtr));
+   sz = sizeof(*buf) + ALIGN(buf->bUsed,4) + (buf->iUsed * sizeof(*buf->indexPtr));
    DEB(printf("--- sizeStringBuf: %lu-%p\n", sz, (void *) sz));
 
-   _SFCB_RETURN(sz);
+   _SFCB_RETURN(ALIGN(sz,CLALIGN));
 }
 
 static long sizeArrayBuf(ClObjectHdr * hdr)
@@ -412,7 +411,7 @@ static long sizeArrayBuf(ClObjectHdr * hdr)
 
    DEB(printf("--- sizeArrayBuf: %lu-%p\n", sz, (void *) sz));
 
-   _SFCB_RETURN(sz);
+   _SFCB_RETURN(ALIGN(sz,CLALIGN));
 }
 
 static void replaceClString(ClObjectHdr * hdr, int id, const char *str)
@@ -500,13 +499,14 @@ static int copyStringBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
    memcpy(tb, fb, l);
    tb->bMax = tb->bUsed;
    setStrBufOffset(th, ofs);
+   l=ALIGN(l,4);
    ofs += l;
 
    memcpy(((char *) th) + ofs, fb->indexPtr, il);
    tb->iMax = tb->iUsed;
    setStrIndexOffset(th,tb,ofs);
 
-   _SFCB_RETURN(l + il);
+   _SFCB_RETURN(ALIGN(l + il,CLALIGN));
 }
 
 static int copyArrayBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
@@ -533,7 +533,7 @@ static int copyArrayBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
    tb->iMax = tb->iUsed;
    setArrayIndexOffset(th,tb,ofs);
 
-   _SFCB_RETURN(l + il);
+   _SFCB_RETURN(ALIGN(l + il,CLALIGN));
 }
 
 
@@ -757,8 +757,7 @@ static long sizeQualifiers(ClObjectHdr * hdr, ClSection * s)
    long sz;
 
    sz = s->used * sizeof(ClQualifier);
-   DEB(printf("--- sizeQualifiers: %lu-%p\n", sz, (void *) sz));
-   return sz;
+   return ALIGN(sz,CLALIGN);
 }
 
 static int copyQualifiers(int ofs, int max, char *to, ClSection * ts,
@@ -772,7 +771,7 @@ static int copyQualifiers(int ofs, int max, char *to, ClSection * ts,
 
    memcpy(to + ofs, q, l);
    setSectionOffset(ts, ofs);
-   return l;
+   return ALIGN(l,CLALIGN);
 }
 
 static int ClGetQualifierAt(ClClass * cls, ClQualifier *q, int id, CMPIData * data, char **name)
@@ -877,8 +876,7 @@ static long sizeParameters(ClObjectHdr * hdr, ClSection * s)
       if (p->qualifiers.used)
          sz += sizeQualifiers(hdr, &p->qualifiers);
    }      
-   DEB(printf("--- sizeParameters: %lu-%p\n", sz, (void *) sz));
-   return sz;
+   return ALIGN(sz,CLALIGN);
 }
 
 static long copyParameters(int ofs, int max, char *to, ClSection * ts,
@@ -899,7 +897,7 @@ static long copyParameters(int ofs, int max, char *to, ClSection * ts,
          l += copyQualifiers(ofs + l, max, to, &tp->qualifiers, from, &fp->qualifiers);
    }                          
 
-   return l;
+   return ALIGN(l,CLALIGN);
 }
 
 static void freeParameters(ClObjectHdr * hdr, ClSection * s)
@@ -976,7 +974,7 @@ static long sizeMethods(ClObjectHdr * hdr, ClSection * s)
          sz += sizeParameters(hdr, &m->parameters);
    }      
    DEB(printf("--- sizeMethods: %lu-%p\n", sz, (void *) sz));
-   return sz;
+   return ALIGN(sz,CLALIGN);
 }
 
 static long copyMethods(int ofs, int max, char *to, ClSection * ts,
@@ -1001,7 +999,7 @@ static long copyMethods(int ofs, int max, char *to, ClSection * ts,
                              &fp->parameters);
    }                          
 
-   return l;
+   return ALIGN(l,CLALIGN);
 }
 
 static void freeMethods(ClObjectHdr * hdr, ClSection * s)
@@ -1141,8 +1139,7 @@ static long sizeProperties(ClObjectHdr * hdr, ClSection * s)
       if (p->qualifiers.used)
          sz += sizeQualifiers(hdr, &p->qualifiers);
    }      
-   DEB(printf("--- sizeProperties: %lu-%p\n", sz, (void *) sz));
-   return sz;
+   return ALIGN(sz,CLALIGN);
 }
 
 static long copyProperties(int ofs, int max, char *to, ClSection * ts,
@@ -1163,7 +1160,7 @@ static long copyProperties(int ofs, int max, char *to, ClSection * ts,
          l += copyQualifiers(ofs + l, max, to, &tp->qualifiers, from,
                              &fp->qualifiers);
 
-   return l;
+   return ALIGN(l,CLALIGN);
 }
 
 
@@ -1175,7 +1172,7 @@ void showClHdr(void *ihdr)
    
    x = ihdr;
    printf("ClObjectHdr: %p->%p\n", ihdr, x->hdr);
-   printf("\tsize:  %lu\n", x->hdr->size);
+   printf("\tsize:  %u\n", x->hdr->size);
    printf("\ttype:  %d\n", x->hdr->type);
    printf("\tflags: %d\n", x->hdr->flags);
    printf("\tsbo:   %p-%ld\n", (void *) x->hdr->strBufOffset,
@@ -1306,7 +1303,7 @@ static void ClObjectRelocateStringBuffer(ClObjectHdr * hdr, ClStrBuf * buf)
 {
    if (buf == NULL) return;
    buf = getStrBufPtr(hdr);
-   buf->indexPtr = (long *) ((char *) hdr + buf->indexOffset);
+   buf->indexPtr = (int *) ((char *) hdr + buf->indexOffset);
    buf->iMax=GetMax(buf->iMax);
 }
 
@@ -1314,7 +1311,7 @@ static void ClObjectRelocateArrayBuffer(ClObjectHdr * hdr, ClArrayBuf * buf)
 {
    if (buf == NULL) return;
    buf = getArrayBufPtr(hdr);
-   buf->indexPtr = (long*) ((char*) hdr + buf->indexOffset);
+   buf->indexPtr = (int*) ((char*) hdr + buf->indexOffset);
    buf->iMax=GetMax(buf->iMax);
 }
 
@@ -1376,7 +1373,7 @@ static long sizeClassH(ClObjectHdr * hdr, ClClass * cls)
    sz += sizeStringBuf(hdr);
    sz += sizeArrayBuf(hdr);
 
-   return sz;
+   return ALIGN(sz,CLALIGN);
 }
 
 unsigned long ClSizeClass(ClClass * cls)
@@ -1388,6 +1385,8 @@ static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area)
 {
    int ofs = sizeof(ClClass);
    int sz = ClSizeClass(cls);
+   
+   sz=ALIGN(sz,CLALIGN);
    ClClass *nc = area ? (ClClass *) area : (ClClass *) malloc(sz);
 
    *nc = *cls;
@@ -1401,9 +1400,7 @@ static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area)
    ofs += copyStringBuf(ofs, sz, &nc->hdr, hdr);
    ofs += copyArrayBuf(ofs, sz, &nc->hdr, hdr);
    
-   //printArrayBuf(&nc->hdr);
-   
-   nc->hdr.size = sz;
+   nc->hdr.size = ALIGN(sz,CLALIGN);
 
    return nc;
 }
@@ -1659,7 +1656,7 @@ static long sizeInstanceH(ClObjectHdr * hdr, ClInstance * inst)
    sz += sizeStringBuf(hdr);
    sz += sizeArrayBuf(hdr);
 
-   return sz;
+   return ALIGN(sz,CLALIGN);
 }
 
 unsigned long ClSizeInstance(ClInstance * inst)
@@ -1681,7 +1678,8 @@ static ClInstance *rebuildInstanceH(ClObjectHdr * hdr, ClInstance * inst,
                          &inst->properties);
    ofs += copyStringBuf(ofs, sz, &ni->hdr, hdr);
    ofs += copyArrayBuf(ofs, sz, &ni->hdr, hdr);
-   ni->hdr.size = sz;
+   
+   ni->hdr.size = ALIGN(sz,CLALIGN);
 
    return ni;
 }
@@ -1843,7 +1841,7 @@ static long sizeObjectPathH(ClObjectHdr * hdr, ClObjectPath * op)
    sz += sizeProperties(hdr, &op->properties);
    sz += sizeStringBuf(hdr);
 
-   _SFCB_RETURN(sz);
+   _SFCB_RETURN(ALIGN(sz,CLALIGN));
 }
 
 unsigned long ClSizeObjectPath(ClObjectPath * op)
@@ -1865,7 +1863,7 @@ static ClObjectPath *rebuildObjectPathH(ClObjectHdr * hdr, ClObjectPath * op,
    ofs += copyProperties(ofs, sz, (char *) nop, &nop->properties, hdr,
                          &op->properties);
    ofs += copyStringBuf(ofs, sz, &nop->hdr, hdr);
-   nop->hdr.size = sz;
+   nop->hdr.size = ALIGN(sz,CLALIGN);
 
    _SFCB_RETURN(nop);
 }
@@ -2018,7 +2016,7 @@ static long sizeArgsH(ClObjectHdr * hdr, ClArgs * arg)
    sz += sizeStringBuf(hdr);
    sz += sizeArrayBuf(hdr);
 
-   _SFCB_RETURN(sz);
+   _SFCB_RETURN(ALIGN(sz,CLALIGN));
 }
 
 unsigned long ClSizeArgs(ClArgs * arg)
@@ -2038,7 +2036,7 @@ static ClArgs *rebuildArgsH(ClObjectHdr * hdr, ClArgs * arg, void *area)
                          &arg->properties);
    ofs += copyStringBuf(ofs, sz, &nop->hdr, hdr);
    ofs += copyArrayBuf(ofs, sz, &nop->hdr, hdr);
-   nop->hdr.size = sz;
+   nop->hdr.size = ALIGN(sz,CLALIGN);
 
    _SFCB_RETURN(nop);
 }

@@ -64,37 +64,6 @@ extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str);
 
 static ClString nls = { 0 };
 
-/*
-static void setDefaultMalloc()
-{
-    malloc = malloc;
-    realloc = realloc;
-    free = free;
-}
-*/
-/*
-static CMPIData _ClDataString(char *str, CMPIValueState s)
-{
-    CMPIData d;
-    d.type = CMPI_chars;
-    d.state = s;
-    if (s & CMPI_nullValue) d.value.sint64 = 0;
-    else d.value.chars = str;
-    return d;
-}
-*/
-/*
-static CMPIData _ClDataSint32(long n, CMPIValueState s)
-{
-    CMPIData d;
-    d.type = CMPI_sint32;
-    d.state = s;
-    if (s & CMPI_nullValue) d.value.sint64 = 0;
-    else d.value.sint32 = n;
-    return d;
-}
-*/
-
 ClVersionRecord ClBuildVersionRecord(unsigned short opt, int endianMode, long *size)
 {
    ClVersionRecord rec={{{
@@ -122,7 +91,9 @@ ClVersionRecord ClBuildVersionRecord(unsigned short opt, int endianMode, long *s
    if (endianMode == SFCB_BIG_ENDIAN) rec.sByte[3]=sizeof(ClVersionRecord);
    else if (endianMode == SFCB_LITTLE_ENDIAN) rec.sByte[0]=sizeof(ClVersionRecord);
    else rec.size = sizeof(ClVersionRecord);
+   
    *size=sizeof(ClVersionRecord);
+   rec.lastInt=0x25252525;
    
    return rec;  
 }     
@@ -488,7 +459,7 @@ static int copyStringBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
    ClStrBuf *fb, *tb;
    long l, il;
    
-   if (fh->strBufOffset == 0) _SFCB_RETURN(ofs);
+   if (fh->strBufOffset == 0) _SFCB_RETURN(0);
 
    tb = (ClStrBuf *) (((char *) th) + ofs);
    fb = getStrBufPtr(fh);   
@@ -516,7 +487,7 @@ static int copyArrayBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
    ClArrayBuf *fb, *tb;
    long l, il;
 
-   if (fh->arrayBufOffset == 0) _SFCB_RETURN(ofs);
+   if (fh->arrayBufOffset == 0) _SFCB_RETURN(0);
 
    tb = (ClArrayBuf *) (((char *) th) + ofs);
    fb = getArrayBufPtr(fh);   
@@ -1386,10 +1357,12 @@ static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area)
    int ofs = sizeof(ClClass);
    int sz = ClSizeClass(cls);
    
-   sz=ALIGN(sz,CLALIGN);
+   sz=ALIGN(sz,CLALIGN) + CLEXTRA;
    ClClass *nc = area ? (ClClass *) area : (ClClass *) malloc(sz);
 
    *nc = *cls;
+   
+   nc->hdr.flags &= ~HDR_Rebuild;
    ofs += copyQualifiers(ofs, sz, (char *) nc, &nc->qualifiers, hdr,
                          &cls->qualifiers);
    ofs += copyProperties(ofs, sz, (char *) nc, &nc->properties, hdr,
@@ -1401,6 +1374,8 @@ static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area)
    ofs += copyArrayBuf(ofs, sz, &nc->hdr, hdr);
    
    nc->hdr.size = ALIGN(sz,CLALIGN);
+   
+   if (CLEXTRA) memcpy(((char*)nc)+sz-4,"%%%%",4);
 
    return nc;
 }
@@ -1672,6 +1647,7 @@ static ClInstance *rebuildInstanceH(ClObjectHdr * hdr, ClInstance * inst,
    ClInstance *ni = area ? (ClInstance *) area : (ClInstance *) malloc(sz);
 
    *ni = *inst;
+   ni->hdr.flags &= ~HDR_Rebuild;
    ofs += copyQualifiers(ofs, sz, (char *) ni, &ni->qualifiers, hdr,
                          &inst->qualifiers);
    ofs += copyProperties(ofs, sz, (char *) ni, &ni->properties, hdr,
@@ -1860,6 +1836,7 @@ static ClObjectPath *rebuildObjectPathH(ClObjectHdr * hdr, ClObjectPath * op,
        (ClObjectPath *) malloc(sz);
 
    *nop = *op;
+   nop->hdr.flags &= ~HDR_Rebuild;
    ofs += copyProperties(ofs, sz, (char *) nop, &nop->properties, hdr,
                          &op->properties);
    ofs += copyStringBuf(ofs, sz, &nop->hdr, hdr);
@@ -2032,6 +2009,7 @@ static ClArgs *rebuildArgsH(ClObjectHdr * hdr, ClArgs * arg, void *area)
    ClArgs *nop = area ? (ClArgs *) area : (ClArgs *) malloc(sz);
 
    *nop = *arg;
+   nop->hdr.flags &= ~HDR_Rebuild;
    ofs += copyProperties(ofs, sz, (char *) nop, &nop->properties, hdr,
                          &arg->properties);
    ofs += copyStringBuf(ofs, sz, &nop->hdr, hdr);

@@ -1,6 +1,6 @@
 
 /*
- * objectImplSwapEndian.c
+ * objectImplSwapI32toP32.c
  *
  * (C) Copyright IBM Corp. 2005
  *
@@ -223,7 +223,7 @@ static long p32SizeStringBuf(ClObjectHdr * hdr)
 
    buf = getStrBufPtr(hdr);   
 
-   sz = sizeof(*buf) + buf->bUsed + (buf->iUsed * sizeof(*buf->indexPtr));
+   sz = sizeof(*buf) + ALIGN(buf->bUsed,4) + (buf->iUsed * sizeof(*buf->indexPtr));
 
    return ALIGN(sz,CLALIGN);
 }
@@ -236,7 +236,7 @@ static int copyI32toP32StringBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * 
    
    if (fh->strBufOffset == 0) return 0;
 
-   l = sizeof(*fb) + fb->bUsed;
+   l = sizeof(*fb) + ALIGN(fb->bUsed,4);
    il = fb->iUsed * sizeof(*fb->indexPtr);
 
    tb->bMax=bswap_16(fb->bUsed);
@@ -247,7 +247,7 @@ static int copyI32toP32StringBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * 
    
    tb->iMax=bswap_16(fb->iUsed);
    tb->iUsed=bswap_16(fb->iUsed); 
-   tb->indexPtr=(int*)(((char*)tb) + ofs);  
+   tb->indexPtr=(int*)(((char*)tb) + ofs+l);  
    tb->indexOffset=bswap_32(ofs+l);
    
    for (i=0; i>fb->iUsed; i++)
@@ -292,8 +292,8 @@ static int copyI32toP32ArrayBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * f
    
    tb->iMax=bswap_16(fb->iUsed);
    tb->iUsed=bswap_16(fb->iUsed); 
-   tb->indexPtr=(int*)(((char*)tb) + ofs);  
-   tb->indexOffset=bswap_32(ofs+l);
+   tb->indexPtr=(int*)(((char*)tb) + ofs + l);  
+   tb->indexOffset=bswap_32(ofs + l);
    
    for (i=0; i>fb->iUsed; i++)
       tb->indexPtr[i]=bswap_32(fb->indexPtr[i]);
@@ -321,7 +321,7 @@ void *swapI32toP32Class(ClClass * cls, int *size)
 {
    ClObjectHdr * hdr = &cls->hdr;
    int ofs = sizeof(CLP32_ClClass);
-   int sz=p32SizeClassH(hdr,cls);
+   int sz=p32SizeClassH(hdr,cls) + CLEXTRA;
    struct utsname uName;
    static int first=1;
    
@@ -357,6 +357,7 @@ void *swapI32toP32Class(ClClass * cls, int *size)
    ofs += copyI32toP32ArrayBuf(ofs, &nc->hdr, hdr);
    
    *size = sz;
+   if (CLEXTRA) memcpy(((char*)nc)+sz-4,"%%%%",4);
    
    return nc;
 }

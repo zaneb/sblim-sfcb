@@ -275,7 +275,7 @@ typedef struct {
 inline static void *getSectionPtr(ClObjectHdr *hdr, ClSection *s)
 {
    if (IsMallocedMax(s->max)) return s->sectionPtr;
-   return (void*) ((char*) hdr + abs(s->sectionOffset));
+   return (void*) ((char*) hdr + s->sectionOffset);
 }
 
 inline static int isMallocedSection(ClSection *s)
@@ -300,7 +300,7 @@ inline static void* setSectionPtr(ClSection *s, void *ptr)
 inline static ClStrBuf *getStrBufPtr(ClObjectHdr *hdr)
 {
    if (hdr->flags & HDR_StrBufferMalloced) return hdr->strBuffer;
-   return  (ClStrBuf *) ((char *) hdr + abs(hdr->strBufOffset));
+   return  (ClStrBuf *) ((char *) hdr + hdr->strBufOffset);
 }
 
 inline static ClStrBuf *setStrBufPtr(ClObjectHdr *hdr, void *buf)
@@ -312,7 +312,7 @@ inline static ClStrBuf *setStrBufPtr(ClObjectHdr *hdr, void *buf)
 inline static void setStrBufOffset(ClObjectHdr *hdr, long offs)
 {
    hdr->flags &= ~HDR_StrBufferMalloced;
-   hdr->strBufOffset=-offs;
+   hdr->strBufOffset=offs;
 }
 
 inline static int *setStrIndexPtr(ClStrBuf *buf, void *idx)
@@ -333,7 +333,7 @@ inline static void setStrIndexOffset(ClObjectHdr *hdr, ClStrBuf *buf, long offs)
 inline static ClArrayBuf *getArrayBufPtr(ClObjectHdr *hdr)
 {
    if (hdr->flags & HDR_ArrayBufferMalloced) return hdr->arrayBuffer;
-   else return (ClArrayBuf *) ((char *) hdr + abs(hdr->arrayBufOffset));
+   else return (ClArrayBuf *) ((char *) hdr + hdr->arrayBufOffset);
 }
 
 inline static ClArrayBuf *setArrayBufPtr(ClObjectHdr *hdr, void *buf)
@@ -345,7 +345,7 @@ inline static ClArrayBuf *setArrayBufPtr(ClObjectHdr *hdr, void *buf)
 inline static void setArrayBufOffset(ClObjectHdr *hdr, long offs)
 {
    hdr->flags &= ~HDR_ArrayBufferMalloced;
-   hdr->arrayBufOffset=-offs;
+   hdr->arrayBufOffset=offs;
 }
 
 inline static int *setArrayIndexPtr(ClArrayBuf *buf, void *idx)

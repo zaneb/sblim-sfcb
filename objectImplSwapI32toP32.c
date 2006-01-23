@@ -125,7 +125,7 @@ static int copyI32toP32Properties(int ofs, char *to, CLP32_ClSection * ts,
       tp->id.id = bswap_32(fp->id.id);
       tp->data = copyI32toP32Data(&fp->data);
       tp->flags = bswap_16(fp->flags);     
-      if (tp->qualifiers.used)
+      if (fp->qualifiers.used)
          l += copyI32toP32Qualifiers(ofs + l, to, &tp->qualifiers, from,
                              &fp->qualifiers);
    }                          
@@ -165,7 +165,7 @@ static long copyI32toP32Parameters(int ofs, char *to, CLP32_ClSection * ts,
       tp->parameter.type=bswap_16(fp->parameter.type);
       tp->parameter.arraySize=bswap_32(fp->parameter.arraySize);
       tp->parameter.refName=(void*)bswap_32((int)(fp->parameter.refName));
-      if (tp->qualifiers.used)
+      if (fp->qualifiers.used)
          l += copyI32toP32Qualifiers(ofs + l, to, &tp->qualifiers, from, &fp->qualifiers);
    }                          
 
@@ -203,10 +203,10 @@ static int copyI32toP32Methods(int ofs, char *to, CLP32_ClSection * ts,
       tm->id.id = bswap_32(fm->id.id);
       tm->type = bswap_16(fm->type);
       tm->flags = bswap_16(fm->flags);
-      if (tm->qualifiers.used)
+      if (fm->qualifiers.used)
          l += copyI32toP32Qualifiers(ofs + l, to, &tm->qualifiers, from,
                              &fm->qualifiers);
-      if (tm->parameters.used)
+      if (fm->parameters.used)
          l += copyI32toP32Parameters(ofs + l, to, &tm->parameters, from,
                              &fm->parameters);
    }                          
@@ -233,6 +233,7 @@ static int copyI32toP32StringBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * 
    ClStrBuf *fb = getStrBufPtr(fh);
    CLP32_ClStrBuf *tb = (CLP32_ClStrBuf *) (((char *) th) + ofs);
    int i,  l, il;
+   unsigned short flags;
    
    if (fh->strBufOffset == 0) return 0;
 
@@ -240,14 +241,18 @@ static int copyI32toP32StringBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * 
    il = fb->iUsed * sizeof(*fb->indexPtr);
 
    tb->bMax=bswap_16(fb->bUsed);
-   tb->bUsed=bswap_16(fb->bUsed);   
-   th->flags &= ~HDR_StrBufferMalloced;
-   th->strBufOffset=bswap_32(ofs);
+   tb->bUsed=bswap_16(fb->bUsed);  
+    
+   flags = fh->flags &= ~HDR_StrBufferMalloced; 
+   th->flags = bswap_16(flags);
+   
+   th->strBufOffset=bswap_32(ofs);      
    memcpy(tb->buf, fb->buf, l - (sizeof(*fb)-1));
    
    tb->iMax=bswap_16(fb->iUsed);
-   tb->iUsed=bswap_16(fb->iUsed); 
-   tb->indexPtr=(int*)(((char*)tb) + ofs+l);  
+   tb->iUsed=bswap_16(fb->iUsed);
+    
+   tb->indexPtr=(int*)(((char*)th) + ofs+l);  
    tb->indexOffset=bswap_32(ofs+l);
    
    for (i=0; i>fb->iUsed; i++)
@@ -277,6 +282,7 @@ static int copyI32toP32ArrayBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * f
    ClArrayBuf *fb = getArrayBufPtr(fh);
    CLP32_ClArrayBuf *tb = (CLP32_ClArrayBuf *) (((char *) th) + ofs);
    int i,  l, il;
+   unsigned short flags;
    
    if (fh->arrayBufOffset == 0) return 0;
 
@@ -284,15 +290,19 @@ static int copyI32toP32ArrayBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * f
    il = fb->iUsed * sizeof(*fb->indexPtr);
 
    tb->bMax=bswap_16(fb->bUsed);
-   tb->bUsed=bswap_16(fb->bUsed);   
-   th->flags &= ~HDR_ArrayBufferMalloced;
-   th->strBufOffset=bswap_32(ofs);
+   tb->bUsed=bswap_16(fb->bUsed); 
+     
+   flags = fh->flags &= ~HDR_ArrayBufferMalloced;
+   th->flags = bswap_16(flags);
+
+   th->arrayBufOffset=bswap_32(ofs);
    for (i=0; i>fb->bUsed; i++)
       tb->buf[i]=copyI32toP32Data(&fb->buf[i]);
    
    tb->iMax=bswap_16(fb->iUsed);
    tb->iUsed=bswap_16(fb->iUsed); 
-   tb->indexPtr=(int*)(((char*)tb) + ofs + l);  
+   
+   tb->indexPtr=(int*)(((char*)th) + ofs + l);  
    tb->indexOffset=bswap_32(ofs + l);
    
    for (i=0; i>fb->iUsed; i++)

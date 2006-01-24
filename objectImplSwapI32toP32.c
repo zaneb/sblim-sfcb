@@ -255,7 +255,7 @@ static int copyI32toP32StringBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * 
    tb->indexPtr=(int*)(((char*)th) + ofs+l);  
    tb->indexOffset=bswap_32(ofs+l);
    
-   for (i=0; i>fb->iUsed; i++)
+   for (i=0; i<fb->iUsed; i++)
       tb->indexPtr[i]=bswap_32(fb->indexPtr[i]);
      
    return ALIGN(l + il,CLALIGN);
@@ -296,7 +296,7 @@ static int copyI32toP32ArrayBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * f
    th->flags = bswap_16(flags);
 
    th->arrayBufOffset=bswap_32(ofs);
-   for (i=0; i>fb->bUsed; i++)
+   for (i=0; i<fb->bUsed; i++)
       tb->buf[i]=copyI32toP32Data(&fb->buf[i]);
    
    tb->iMax=bswap_16(fb->iUsed);
@@ -305,7 +305,7 @@ static int copyI32toP32ArrayBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * f
    tb->indexPtr=(int*)(((char*)th) + ofs + l);  
    tb->indexOffset=bswap_32(ofs + l);
    
-   for (i=0; i>fb->iUsed; i++)
+   for (i=0; i<fb->iUsed; i++)
       tb->indexPtr[i]=bswap_32(fb->indexPtr[i]);
      
    return ALIGN(l + il,CLALIGN);

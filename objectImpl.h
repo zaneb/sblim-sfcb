@@ -222,11 +222,14 @@ typedef struct {
    long data;
 } PFX(CLPFX,ClData);
 
+#ifndef CLP32   // different layout for power 32
 typedef struct {
    PFX(CLPFX,ClString) id;
    PFX(CLPFX,CMPIData) data;
 } PFX(CLPFX,ClQualifier);
+#endif
 
+#ifndef CLP32   // different layout for power 32
 typedef struct {
    PFX(CLPFX,ClString) id;
    PFX(CLPFX,CMPIData) data;
@@ -245,6 +248,7 @@ typedef struct {
    unsigned char originId;
    PFX(CLPFX,ClSection) qualifiers;
 } PFX(CLPFX,ClProperty);
+#endif
 
 typedef struct {
    PFX(CLPFX,ClString) id;

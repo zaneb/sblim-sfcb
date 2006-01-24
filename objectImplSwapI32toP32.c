@@ -16,7 +16,8 @@
  *
  * Description:
  *
- * Byteswaps all integer values of ClClass constructs
+ * Converts a classSchemas file from 32 bit i386 format to 32 bit power format.
+ * This code uses CLP32:* structures that anticipate alignemtn rules for the 32 bit power arch.
  *
 */
 
@@ -48,6 +49,8 @@ typedef struct _CLP32_CMPIData {
    CLP32_CMPIValue value;
 } CLP32_CMPIData;
 
+#include "objectImpl.h"
+
 typedef struct {
    unsigned short iUsed,iMax;
    int indexOffset;
@@ -57,13 +60,80 @@ typedef struct {
    CLP32_CMPIData buf[1];
 } CLP32_ClArrayBuf;
 
-#include "objectImpl.h"
+typedef struct {
+   CLP32_ClString id;
+   int fillP32;
+   CLP32_CMPIData data;
+} CLP32_ClQualifier;
 
-static CLP32_CMPIData copyI32toP32Data(CMPIData *fd)
+
+typedef struct {
+   CLP32_ClString id;
+   int fillP32_1;
+   CLP32_CMPIData data;
+   unsigned short flags;
+   #ifndef SETCLPFX
+    #define ClProperty_EmbeddedObjectAsString 1
+    #define ClProperty_Deleted 2
+   #endif 
+   unsigned char quals;
+   #ifndef SETCLPFX
+    #define ClProperty_Q_Key 1
+    #define ClProperty_Q_Propagated 2
+    #define ClProperty_Q_Deprecated 4
+    #define ClProperty_Q_EmbeddedObject 8
+   #endif 
+   unsigned char originId;
+   int fillP32_2;
+   CLP32_ClSection qualifiers;
+} CLP32_ClProperty;
+
+static CLP32_CMPIData copyI32toP32Data(ClObjectHdr * hdr, CMPIData *fd)
 {
    CLP32_CMPIData td;
    
-   td.value.uint64=bswap_64(fd->value.uint64);
+   td.value.sint64=0;
+   td.fillP32=0;
+   
+   if (fd->state & 8) {
+      td.value.sint32=bswap_32(fd->value.sint32);
+      fd->state &= ~8;
+   }
+
+   else switch (fd->type) {
+   case CMPI_boolean:
+   case CMPI_uint8:
+   case CMPI_sint8:
+      td.value.sint8=fd->value.sint8;
+      break;
+   case CMPI_char16:
+   case CMPI_uint16:
+   case CMPI_sint16:
+      td.value.sint16=bswap_16(fd->value.sint16);
+      break;
+   case CMPI_real32:
+   case CMPI_uint32:
+   case CMPI_sint32:
+      td.value.sint32=bswap_32(fd->value.sint32);
+      break;
+   case CMPI_real64:
+   case CMPI_uint64:
+   case CMPI_sint64:
+      td.value.sint64=bswap_64(fd->value.sint64);
+      break;
+   default:
+      if ((fd->type & (CMPI_ENC | CMPI_ARRAY))==CMPI_ENC) {
+         td.value.sint32=bswap_32(fd->value.sint32);
+      }   
+      else if ((fd->type & (CMPI_ENC | CMPI_ARRAY))==(CMPI_ENC | CMPI_ARRAY)) {
+        if (fd->value.array) {
+            CMPIData *av=(CMPIData*)ClObjectGetClArray(hdr, (ClArray*)&fd->value.array);
+            av->state |= 8;
+            td.value.sint32=bswap_32(fd->value.sint32);
+         }
+      }
+   }   
+
    td.type=bswap_16(fd->type);
    td.state=bswap_16(fd->state);
    return td;
@@ -86,10 +156,11 @@ static int copyI32toP32Qualifiers(int ofs, char *to, CLP32_ClSection * ts,
    
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
+   tq->fillP32=0;
 
    for (i = 0; i<fs->used; i++, tq++, fq++) {
       tq->id.id = bswap_32(fq->id.id);
-      tq->data = copyI32toP32Data(&fq->data);
+      tq->data = copyI32toP32Data(from, &fq->data);
    }
    
    ts->sectionOffset = bswap_32(ofs);
@@ -121,9 +192,13 @@ static int copyI32toP32Properties(int ofs, char *to, CLP32_ClSection * ts,
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
 
+   tp->quals = fp->quals;
+   tp->originId = fp->originId;
+   tp->fillP32_1 =  tp->fillP32_2 =0;
+   
    for (i = fs->used; i > 0; i--, fp++, tp++) {
       tp->id.id = bswap_32(fp->id.id);
-      tp->data = copyI32toP32Data(&fp->data);
+      tp->data = copyI32toP32Data(from, &fp->data);
       tp->flags = bswap_16(fp->flags);     
       if (fp->qualifiers.used)
          l += copyI32toP32Qualifiers(ofs + l, to, &tp->qualifiers, from,
@@ -159,6 +234,8 @@ static long copyI32toP32Parameters(int ofs, char *to, CLP32_ClSection * ts,
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
 
+   tp->quals = fp->quals;
+   
    for (i = fs->used; i > 0; i--, fp++, tp++) {
       tp->id.id = bswap_32(fp->id.id);
       tp->quals = bswap_16(fp->quals);
@@ -199,6 +276,9 @@ static int copyI32toP32Methods(int ofs, char *to, CLP32_ClSection * ts,
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
 
+   tm->quals = fm->quals;
+   tm->originId = fm->originId;
+   
    for (i = fs->used; i > 0; i--, fm++, tm++) {
       tm->id.id = bswap_32(fm->id.id);
       tm->type = bswap_16(fm->type);
@@ -223,7 +303,7 @@ static long p32SizeStringBuf(ClObjectHdr * hdr)
 
    buf = getStrBufPtr(hdr);   
 
-   sz = sizeof(*buf) + ALIGN(buf->bUsed,4) + (buf->iUsed * sizeof(*buf->indexPtr));
+   sz = sizeof(CLP32_ClStrBuf) + ALIGN(buf->bUsed,4) + (buf->iUsed * sizeof(*buf->indexPtr));
 
    return ALIGN(sz,CLALIGN);
 }
@@ -237,11 +317,11 @@ static int copyI32toP32StringBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * 
    
    if (fh->strBufOffset == 0) return 0;
 
-   l = sizeof(*fb) + ALIGN(fb->bUsed,4);
+   l = sizeof(CLP32_ClStrBuf) + ALIGN(fb->bUsed,4);
    il = fb->iUsed * sizeof(*fb->indexPtr);
 
-   tb->bMax=bswap_16(fb->bUsed);
-   tb->bUsed=bswap_16(fb->bUsed);  
+   tb->bMax=bswap_32(fb->bUsed);
+   tb->bUsed=bswap_32(fb->bUsed);  
     
    flags = fh->flags &= ~HDR_StrBufferMalloced; 
    th->flags = bswap_16(flags);
@@ -271,7 +351,7 @@ static long p32SizeArrayBuf(ClObjectHdr * hdr)
 
    buf = getArrayBufPtr(hdr);   
 
-   sz = sizeof(*buf) + (buf->bUsed * sizeof(CLP32_CMPIData)) +
+   sz = sizeof(CLP32_ClArrayBuf) + (buf->bUsed * sizeof(CLP32_CMPIData)) +
        (buf->iUsed * sizeof(*buf->indexPtr));
 
    return ALIGN(sz,CLALIGN);
@@ -286,18 +366,19 @@ static int copyI32toP32ArrayBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * f
    
    if (fh->arrayBufOffset == 0) return 0;
 
-   l = sizeof(*fb) + fb->bUsed;
+   l = sizeof(CLP32_ClArrayBuf) + (fb->bUsed * sizeof(CLP32_CMPIData));
    il = fb->iUsed * sizeof(*fb->indexPtr);
 
-   tb->bMax=bswap_16(fb->bUsed);
-   tb->bUsed=bswap_16(fb->bUsed); 
+   tb->bMax=bswap_32(fb->bUsed);
+   tb->bUsed=bswap_32(fb->bUsed); 
+   tb->fillP32=0; 
      
    flags = fh->flags &= ~HDR_ArrayBufferMalloced;
    th->flags = bswap_16(flags);
 
    th->arrayBufOffset=bswap_32(ofs);
    for (i=0; i<fb->bUsed; i++)
-      tb->buf[i]=copyI32toP32Data(&fb->buf[i]);
+      tb->buf[i]=copyI32toP32Data(fh, &fb->buf[i]);
    
    tb->iMax=bswap_16(fb->iUsed);
    tb->iUsed=bswap_16(fb->iUsed); 
@@ -334,6 +415,7 @@ void *swapI32toP32Class(ClClass * cls, int *size)
    int sz=p32SizeClassH(hdr,cls) + CLEXTRA;
    struct utsname uName;
    static int first=1;
+   char *cn;
    
    if (first) {
       uname(&uName);
@@ -345,16 +427,19 @@ void *swapI32toP32Class(ClClass * cls, int *size)
       first=0;
    }
    
+   cn=(char*)ClObjectGetClString(&cls->hdr, &cls->name);
+   
    CLP32_ClClass *nc = (CLP32_ClClass *) malloc(sz);
 
    nc->hdr.size=bswap_32(sz);
    nc->hdr.flags=bswap_16(hdr->flags);
    nc->hdr.type=bswap_16(hdr->type);
    
+   nc->quals=cls->quals;
+   nc->parents=cls->parents;
    nc->reserved=bswap_16(cls->reserved);
    nc->name.id=bswap_32(cls->name.id);
    nc->parent.id=bswap_32(cls->parent.id);
-   
    
    ofs += copyI32toP32Qualifiers(ofs, (char *) nc, &nc->qualifiers, hdr,
                          &cls->qualifiers);

@@ -21,7 +21,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 1.0.2, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 1.0.99, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE
@@ -50,7 +50,7 @@ AC_ARG_ENABLE(indications,
 	)
 
 if test "$enable_debug" == "yes"; then
-   CPPFLAGS="-D SFCB_DEBUG $CPPFLAGS"
+   SFCB_CPPFLAGS="-D SFCB_DEBUG $SFCB_CPPFLAGS"
 fi
 
 if test "$enable_jdbc" == "yes"; then
@@ -61,21 +61,15 @@ AC_CANONICAL_HOST
 case $host_os in
      openedition*)	SFCB_CMPI_PLATFORM="-D CMPI_PLATFORM_LINUX_GENERIC_GNU"
 		SFCB_CMPI_OS="-D CMPI_OS_LINUX"
-		CPPFLAGS=-W"c,SSCOM"
-		CPPFLAGS="-D_OPEN_SOURCE=3 -D_ENHANCED_ASCII_EXT=0xFFFFFFFF $CPPFLAGS"
-		CFLAGS=-W"c,ASCII,dll,expo,langlvl(extended),float"
-		LDFLAGS=-W"l,XPLINK,dll,EDIT=NO"
-if test "$enable_debug" != "no"; then
-		CFLAGS="-g $CFLAGS"
-fi
+		SFCB_CPPFLAGS=-W"c,SSCOM"
+		SFCB_CPPFLAGS="-D_OPEN_SOURCE=3 -D_ENHANCED_ASCII_EXT=0xFFFFFFFF $SFCB_CPPFLAGS"
+		SFCB_CFLAGS=-W"c,ASCII,dll,expo,langlvl(extended),float"
+		SFCB_LDFLAGS=-W"l,XPLINK,dll,EDIT=NO"
 		CXX="c++ -+"
 		;;
      linux*)	SFCB_CMPI_PLATFORM="-D CMPI_PLATFORM_LINUX_GENERIC_GNU"
 		SFCB_CMPI_OS="-D CMPI_OS_LINUX"
-		CFLAGS="-Wall -fsigned-char"
-if test "$enable_debug" != "no"; then
-		CFLAGS="-g $CFLAGS"
-fi
+		SFCB_CFLAGS="-Wall -fno-strict-aliasing -fsigned-char $SFCB_CFLAGS"
 		;;
      hpux*)	SFCB_CMPI_PLATFORM="-D CMPI_OS_HPUX"
 		case $host_arch in
@@ -95,6 +89,9 @@ esac
 AC_SUBST(SFCB_CMPI_PLATFORM)
 AC_SUBST(SFCB_CMPI_OS)
 AC_SUBST(SFCB_LIBZ)
+AC_SUBST(SFCB_CFLAGS)
+AC_SUBST(SFCB_CPPFLAGS)
+AC_SUBST(SFCB_LDFLAGS)
 
 # Checks for programs.
 AC_PROG_CC
@@ -126,6 +123,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h limits.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h unistd.h zlib.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
 AC_C_CONST
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
@@ -172,9 +170,12 @@ fi
 AM_CONDITIONAL(INDICATIONS,[test "$enable_indications" == "yes"]) 
 AM_CONDITIONAL(JDBC,[test "$enable_jdbc" == "yes"]) 
 
-AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
-		 sfcb.init-redhat sfcb.init-suse sfcb.init-none man/genSslCert.1.pre  man/sfcbmof.1.pre 
-                 man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre   man/sfcbrepos.1.pre  man/wbemcat.1.pre
+AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
+	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
+		 sfcb.init-redhat sfcb.init-suse sfcb.init-none 
+		 man/genSslCert.1.pre  man/sfcbmof.1.pre 
+                 man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
+		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
 		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre ])
 AC_OUTPUT
 

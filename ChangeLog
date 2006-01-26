@@ -1,3 +1,9 @@
+2006-01-26    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* configure.ac, Makefile.am: 
+	Fixed 1414767. VPATH build failure after CVS checkout. Improved
+	xFLAGS processing.
+
 2006-01-16  a3schuur
 
 	* args.c, providerDrv.c, support.c: fixed [ 1407244 ] memory leak

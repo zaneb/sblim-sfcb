@@ -37,7 +37,10 @@ AM_YFLAGS=-d
 AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfdir)\" \
 	-DSFCB_STATEDIR=\"$(sfcbstatedir)\" \
 	-DSFCB_LIBDIR=\"$(libdir)\" \
-	-DSFCB_BINARY=\"$(sbindir)/sfcbd\"
+	-DSFCB_BINARY=\"$(sbindir)/sfcbd\" \
+	@SFCB_CPPFLAGS@
+AM_CFLAGS=@SFCB_CFLAGS@
+AM_LDFLAGS=@SFCB_LDFLAGS@
 
 SUBDIRS=. $(MOFC_DIR)
 
@@ -74,7 +77,10 @@ sbin_PROGRAMS = \
    sfcbd 
 
 bin_PROGRAMS = \
-   sfcbmofpp
+   sfcbmofpp sfcbdump
+
+noinst_PROGRAMS = \
+   sfcbdumpP32onI32	
 
 if JDBC
 libsfcBrokerCore_la_SOURCES = \
@@ -168,17 +174,17 @@ libsfcBrokerCore_la_CFLAGS = @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@
 
 if JDBC
 sqlLexer.c: $(srcdir)/sqlLexer.l
-	$(LEX) -t sqlLexer.l | sed -e "s/yy/sfcSql/g" > sqlLexer.c
+	$(LEX) -t $< | sed -e "s/yy/sfcSql/g" > $@
 
 sqlParser.c: $(srcdir)/sqlParser.y
-	$(YACC) $(AM_YFLAGS) -p sfcSql -o sqlParser.c sqlParser.y
+	$(YACC) $(AM_YFLAGS) -p sfcSql -o $@ $< 
 endif
 
 queryLexer.c: $(srcdir)/queryLexer.l
-	$(LEX) -t queryLexer.l | sed -e "s/yy/sfcQuery/g" > queryLexer.c
+	$(LEX) -t $< | sed -e "s/yy/sfcQuery/g" > $@
 
 queryParser.c: $(srcdir)/queryParser.y
-	$(YACC) $(AM_YFLAGS) -p sfcQuery -o queryParser.c queryParser.y  
+	$(YACC) $(AM_YFLAGS) -p sfcQuery -o $@ $< 
 
 libsfcHttpAdapter_la_SOURCES = \
    httpAdapter.c \
@@ -232,6 +238,8 @@ sfcbd_SOURCES=sfcBroker.c
 sfcbd_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter
 
 sfcbmofpp_SOURCES=mofpp.c
+
+sfcbdump_SOURCES=sfcbdump.c
 
 noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \

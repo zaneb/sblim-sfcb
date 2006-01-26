@@ -203,7 +203,7 @@ libsfcInternalProvider_la_SOURCES = \
 libsfcInternalProvider_la_LIBADD=-lsfcBrokerCore
 
 libsfcObjectImplSwapI32toP32_la_SOURCES = \
-   objectImplSwapI32toP32.c \
+   objectImplSwapI32toP32.c 
 libsfcObjectImplSwapI32toP32_la_LIBADD=-lsfcBrokerCore
 
 libsfcInteropProvider_la_SOURCES = \

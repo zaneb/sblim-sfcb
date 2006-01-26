@@ -199,10 +199,10 @@ int main(int argc, char * argv[])
 	  clob = (CLP32_ClObjectHdr*) fillBuf;
 	  printf("== Unspecified Record Type %d\n",clob->type);
 	  if (rc == 0) {
-	    rc = dumpStringBuffer(&clob,"   ");
+	    rc = dumpStringBuffer(clob,"   ");
 	  }	  
 	  if (rc == 0) {
-	    rc = dumpArrayBuffer(&clob,"   ");
+	    rc = dumpArrayBuffer(clob,"   ");
 	  }	  
 	  if (rc == 0) {
 	    state = REC_HDR;

@@ -41,6 +41,12 @@ Display usage information and exit.
 \fImof\fR
 Path(s) to one or more class MOF files containing the CIM class definitions
 for the class(es) implemented by the provider.
+.SH ENVIRONMENT
+.TP
+.B DESTDIR
+If set, the value of this variable is prepended to the registration directory 
+names. This can be useful to store the repository in a different location, i.e.
+when cross-compiling providers.
 .SH AUTHOR
 Viktor Mihajlovski <MIHAJLOV@de.ibm.com>
 .SH BUGS

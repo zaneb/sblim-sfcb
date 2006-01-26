@@ -42,6 +42,10 @@ Force option. Without this option you will be prompted to confirm creating a
 new class repository (and delete the old one). Setting this option will
 rebuild the new sfcb repository without prompting.
 .TP
+\fB\-X\fR \fIplatform\fR
+Build repository for different platform type. Currently only supported on
+ix86 environments. Only valid value is P32 meaning powerpc 32 bit mode. 
+.TP
 \fB\-h\fR
 Display usage information and exit.
 .SH FILES
@@ -66,20 +70,26 @@ from the previous time sfcbrepos was run. This can be used to restore an
 earlier class repository in case sfcbrepos generates a corrupt one.
 .TP
 \fI@localstatedir@/lib/sfcb/registration/repository/.../classSchemas\fR
-
+Class data for a namespace.
 .TP
-\fI@localstatedir@/lib/sfcb/registration/stage/default.reg\fR
+\fI@localstatedir@/lib/sfcb/stage/default.reg\fR
 Registration data for the default built-in sfcb internal providers.
 .TP
-\fi@localstatedir@/lib/sfcb/registration/stage/interop.mof\fR
+\fI@localstatedir@/lib/sfcb/stage/mofs/root/interop/interop.mof\fR
 Dummy classes used to added CIM indication support to the
 default interop namespace.
 .TP
-\fI@localstatedir@/lib/sfcb/registration/stage/mofs/*.mof\fR
+\fI@localstatedir@/lib/sfcb/registration/stage/mofs/.../*.mof\fR
 Class definitions for all installed providers.
 .TP
 \fI@localstatedir@/lib/sfcb/registration/stage/regs/*.reg\fR
 Registration info for all installed providers.
+.SH ENVIRONMENT
+.TP
+.B DESTDIR
+If set, the value of this variable is prepended to the registration directory 
+names. This can be useful to store the repository in a different location, i.e.
+when cross-compiling providers.
 .SH LIBRARIES
 Requires libsfcBrokerCore.a
 .SH AUTHOR

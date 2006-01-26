@@ -5,7 +5,7 @@ usage()
     echo "usage: $0 [-h] [-f] [-c cimschemadir] [-s stagingdir] [-r registrationdir] " 1>&2 
 }
 
-args=`getopt fhs:r:c: $*`
+args=`getopt fhs:r:c:X: $*`
 rc=$?
 
 if [ $rc = 127 ]
@@ -27,6 +27,8 @@ do
 	  shift;;
       -f) force=1
 	  shift;;
+      -X) xformat="-b $2"
+	  shift 2;;
       -s) stagingdir=$2
 	  shift 2;;
       -r) registrationdir=$2
@@ -44,6 +46,7 @@ then
     usage
     echo -e "\t-h display help message"
     echo -e "\t-f force repository creation"
+    echo -e "\t-X create repository in non-native format as specifed by argument"
     echo -e "\t-s specify staging directory [@localstatedir@/lib/sfcb/stage]"
     echo -e "\t-r specify repository directory [@localstatedir@/lib/sfcb/registration]"
     echo -e "\t-c specify directory containing CIM Schema MOFs [@datadir@/sfcb/CIM]"
@@ -69,17 +72,17 @@ fi
 
 if [ -z "$stagingdir" ]
 then
-    stagingdir=@localstatedir@/lib/sfcb/stage
+    stagingdir=${DESTDIR}@localstatedir@/lib/sfcb/stage
 fi
 
 if [ -z "$registrationdir" ]
 then
-    registrationdir=@localstatedir@/lib/sfcb/registration
+    registrationdir=${DESTDIR}@localstatedir@/lib/sfcb/registration
 fi
 
 if [ -z "$cimschemadir" ]
 then
-    cimschemadir=@datadir@/sfcb/CIM
+    cimschemadir=${DESTDIR}@datadir@/sfcb/CIM
 fi
 
 if [ -d $stagingdir ] && [ -f $stagingdir/default.reg ] &&
@@ -143,7 +146,7 @@ then
 	    namespace=`echo $mofdir | sed s?$stagingdir/mofs??`
 	    repositorydir=$registrationdir/repository/$namespace
 	    [ -d $repositorydir ] || mkdir -p $repositorydir
-	    if ! sfcbmof -o $repositorydir/classSchemas -I $cimschemadir -i CIM_Schema.mof $mofdir/*.mof
+	    if ! sfcbmof -o $repositorydir/classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $mofdir/*.mof
 	    then
 		echo Failed compiling the MOF files. >&2
 		exit 1

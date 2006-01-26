@@ -62,7 +62,7 @@ fi
 
 if [ -z "$stagingdir" ]
 then
-    stagingdir=@localstatedir@/lib/sfcb/stage
+    stagingdir=${DESTDIR}@localstatedir@/lib/sfcb/stage
 fi
 
 if [ -n "$regfile" ]

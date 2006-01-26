@@ -1,5 +1,9 @@
 2006-01-26    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
+	* sfcbstage.sh.in, sfcbunstage.sh.in, sfcbrepos.sh.in: 
+	Support for 1408327. Added cross compile flag to sfcbrepos and
+	DESTDIR evaluation for all the shell scripts.
+
 	* configure.ac, Makefile.am: 
 	Fixed 1414767. VPATH build failure after CVS checkout. Improved
 	xFLAGS processing.

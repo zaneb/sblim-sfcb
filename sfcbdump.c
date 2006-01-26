@@ -146,10 +146,10 @@ int main(int argc, char * argv[])
 	  clob = (ClObjectHdr*) fillBuf;
 	  printf("== Unspecified Record Type %d\n",clob->type);
 	  if (rc == 0) {
-	    rc = dumpStringBuffer(&cls->hdr,"   ");
+	    rc = dumpStringBuffer(clob,"   ");
 	  }	  
 	  if (rc == 0) {
-	    rc = dumpArrayBuffer(&cls->hdr,"   ");
+	    rc = dumpArrayBuffer(clob,"   ");
 	  }	  
 	  if (rc == 0) {
 	    state = REC_HDR;

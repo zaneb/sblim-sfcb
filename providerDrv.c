@@ -2034,7 +2034,8 @@ void processProviderInvocationRequests(char *name)
       
       rc = spRecvReq(&providerSockets.receive, &parms->requestor,
                      (void **) &parms->req, &rl, &mqg);
-      if (mqg.rdone) {               
+      if (mqg.rdone) {
+	int debug_break = 0;
          if (rc!=0)mlogf(M_ERROR,M_SHOW,"oops\n");               
 
          _SFCB_TRACE(1, ("--- Got something %d-%p on %d-%lu", 
@@ -2042,6 +2043,7 @@ void processProviderInvocationRequests(char *name)
             providerSockets.receive,getInode(providerSockets.receive)));
 
          if (once && debugMode && parms->req->operation != OPS_LoadProvider) for (;;) {
+	   if (debug_break) break;
             fprintf(stdout,"-#- Pausing for provider: %s -pid: %d\n",name,currentProc);
             once=0;      
             sleep(5);

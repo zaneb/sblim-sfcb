@@ -192,14 +192,13 @@ static int copyI32toP32Properties(int ofs, char *to, CLP32_ClSection * ts,
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
 
-   tp->quals = fp->quals;
-   tp->originId = fp->originId;
-   tp->fillP32_1 =  tp->fillP32_2 =0;
-   
    for (i = fs->used; i > 0; i--, fp++, tp++) {
       tp->id.id = bswap_32(fp->id.id);
       tp->data = copyI32toP32Data(from, &fp->data);
       tp->flags = bswap_16(fp->flags);     
+      tp->quals = fp->quals;     
+      tp->originId = fp->originId;
+      tp->fillP32_1 =  tp->fillP32_2 =0;
       if (fp->qualifiers.used)
          l += copyI32toP32Qualifiers(ofs + l, to, &tp->qualifiers, from,
                              &fp->qualifiers);

@@ -156,6 +156,10 @@ static int copyI32toP32Qualifiers(int ofs, char *to, CLP32_ClSection * ts,
    
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
+   ts->sectionOffset = 0;
+   
+   if (l == 0) return 0;
+   
    tq->fillP32=0;
 
    for (i = 0; i<fs->used; i++, tq++, fq++) {
@@ -174,6 +178,8 @@ static int p32SizeProperties(ClObjectHdr * hdr, ClSection * s)
    long sz = s->used * sizeof(CLP32_ClProperty);
    ClProperty *p = (ClProperty *) ClObjectGetClSection(hdr, s);
 
+   if (s->used == 0) return 0;
+   
    for (l = s->used; l > 0; l--, p++) {
      if (p->qualifiers.used)
          sz += p32SizeQualifiers(hdr, &p->qualifiers);
@@ -187,11 +193,15 @@ static int copyI32toP32Properties(int ofs, char *to, CLP32_ClSection * ts,
    ClProperty *fp = (ClProperty *) ClObjectGetClSection(from, fs);
    CLP32_ClProperty *tp = (CLP32_ClProperty *) (to + ofs);   
    int i, l = fs->used * sizeof(CLP32_ClProperty);
+   
    if (l == 0) return 0;
    
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
+   ts->sectionOffset = 0;
 
+   if (l == 0) return 0;
+   
    for (i = fs->used; i > 0; i--, fp++, tp++) {
       tp->id.id = bswap_32(fp->id.id);
       tp->data = copyI32toP32Data(from, &fp->data);
@@ -214,6 +224,8 @@ static int p32SizeParameters(ClObjectHdr * hdr, ClSection * s)
    long sz = s->used * sizeof(CLP32_ClParameter);
    ClParameter *p = (ClParameter *) ClObjectGetClSection(hdr, s);
 
+   if (s->used ==0) return 0;
+   
    for (l = s->used; l > 0; l--, p++) {
       if (p->qualifiers.used)
          sz += p32SizeQualifiers(hdr, &p->qualifiers);
@@ -228,11 +240,12 @@ static long copyI32toP32Parameters(int ofs, char *to, CLP32_ClSection * ts,
    CLP32_ClParameter *tp = (CLP32_ClParameter *) (to + ofs);
    int i,l = fs->used * sizeof(CLP32_ClParameter);
    
-   if (l == 0) return 0;
-   
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
+   ts->sectionOffset = 0;
 
+   if (l == 0) return 0;
+   
    tp->quals = fp->quals;
    
    for (i = fs->used; i > 0; i--, fp++, tp++) {
@@ -245,6 +258,7 @@ static long copyI32toP32Parameters(int ofs, char *to, CLP32_ClSection * ts,
          l += copyI32toP32Qualifiers(ofs + l, to, &tp->qualifiers, from, &fp->qualifiers);
    }                          
 
+   ts->sectionOffset = bswap_32(ofs);
    return ALIGN(l,CLALIGN);
 }
 
@@ -254,6 +268,8 @@ static int p32SizeMethods(ClObjectHdr * hdr, ClSection * s)
    long sz = s->used * sizeof(CLP32_ClMethod);
    ClMethod *m = (ClMethod *) ClObjectGetClSection(hdr, s);
 
+   if (s->used == 0) return 0;
+   
    for (l = s->used; l > 0; l--, m++) {
       if (m->qualifiers.used) 
          sz += p32SizeQualifiers(hdr, &m->qualifiers);
@@ -270,11 +286,12 @@ static int copyI32toP32Methods(int ofs, char *to, CLP32_ClSection * ts,
    CLP32_ClMethod *tm = (CLP32_ClMethod *) (to + ofs);
    int i, l = fs->used * sizeof(CLP32_ClMethod);
    
-   if (l == 0) return 0;
-   
    ts->max = bswap_16(fs->max);
    ts->used = bswap_16(fs->used);
+   ts->sectionOffset = 0;
 
+   if (l == 0) return 0;
+   
    tm->quals = fm->quals;
    tm->originId = fm->originId;
    
@@ -298,6 +315,7 @@ static long p32SizeStringBuf(ClObjectHdr * hdr)
 {
    ClStrBuf *buf;
    long sz = 0;
+   
    if (hdr->strBufOffset == 0) return 0;
 
    buf = getStrBufPtr(hdr);   
@@ -314,7 +332,10 @@ static int copyI32toP32StringBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * 
    int i,  l, il;
    unsigned short flags;
    
-   if (fh->strBufOffset == 0) return 0;
+   if (fh->strBufOffset == 0) {
+      th->strBufOffset = 0;
+      return 0;
+   }
 
    l = sizeof(CLP32_ClStrBuf) + ALIGN(fb->bUsed,4);
    il = fb->iUsed * sizeof(*fb->indexPtr);
@@ -346,6 +367,7 @@ static long p32SizeArrayBuf(ClObjectHdr * hdr)
 {
    ClArrayBuf *buf;
    long sz = 0;
+   
    if (hdr->arrayBufOffset == 0) return 0;
 
    buf = getArrayBufPtr(hdr);   
@@ -363,7 +385,10 @@ static int copyI32toP32ArrayBuf(int ofs, CLP32_ClObjectHdr * th, ClObjectHdr * f
    int i,  l, il;
    unsigned short flags;
    
-   if (fh->arrayBufOffset == 0) return 0;
+   if (fh->arrayBufOffset == 0) {
+      th->arrayBufOffset = 0;
+      return 0;
+   }
 
    l = sizeof(CLP32_ClArrayBuf) + (fb->bUsed * sizeof(CLP32_CMPIData));
    il = fb->iUsed * sizeof(*fb->indexPtr);

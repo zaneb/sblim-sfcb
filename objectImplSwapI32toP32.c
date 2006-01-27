@@ -68,7 +68,7 @@ typedef struct {
 
 
 typedef struct {
-   CLP32_ClString id;
+   CLP32_ClString id; 
    int fillP32_1;
    CLP32_CMPIData data;
    unsigned short flags;
@@ -84,8 +84,8 @@ typedef struct {
     #define ClProperty_Q_EmbeddedObject 8
    #endif 
    unsigned char originId;
-   int fillP32_2;
    CLP32_ClSection qualifiers;
+   int fillP32_2;
 } CLP32_ClProperty;
 
 static CLP32_CMPIData copyI32toP32Data(ClObjectHdr * hdr, CMPIData *fd)

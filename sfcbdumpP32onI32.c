@@ -75,8 +75,8 @@ typedef struct {
     #define ClProperty_Q_EmbeddedObject 8
    #endif 
    unsigned char originId;
-   int fillP32_2;
    CLP32_ClSection qualifiers;
+   int fillP32_2;
 } CLP32_ClProperty;
 #define BINARY_NAME argv[0]
 #define SCHEMA_NAME argv[optind]

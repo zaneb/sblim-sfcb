@@ -44,7 +44,7 @@
  #define ClCurrentLevel 0
  #define ClTypeClassRep 1
 
- #define ClCurrentObjImplLevel 1
+ #define ClCurrentObjImplLevel 2
 
  #define GetLo15b(x) (x&0x7fff)
  #define GetHi1b(x)  (x&0x8000)
@@ -231,8 +231,8 @@ typedef struct {
 
 #ifndef CLP32   // different layout for power 32
 typedef struct {
-   PFX(CLPFX,ClString) id;
    PFX(CLPFX,CMPIData) data;
+   PFX(CLPFX,ClString) id;
    unsigned short flags;
    #ifndef SETCLPFX
     #define ClProperty_EmbeddedObjectAsString 1

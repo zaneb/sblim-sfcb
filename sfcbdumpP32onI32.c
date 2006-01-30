@@ -59,9 +59,8 @@ typedef struct {
 
 
 typedef struct {
-   CLP32_ClString id;
-   int fillP32_1;
    CLP32_CMPIData data;
+   CLP32_ClString id;
    unsigned short flags;
    #ifndef SETCLPFX
     #define ClProperty_EmbeddedObjectAsString 1
@@ -76,7 +75,6 @@ typedef struct {
    #endif 
    unsigned char originId;
    CLP32_ClSection qualifiers;
-   int fillP32_2;
 } CLP32_ClProperty;
 #define BINARY_NAME argv[0]
 #define SCHEMA_NAME argv[optind]

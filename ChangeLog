@@ -1,3 +1,44 @@
+2006-01-30  a3schuur
+
+	* objectImpl.h, objectImplSwapI32toP32.c, sfcbdumpP32onI32.c:
+	[1408327] sfcbmof does not support big/little endian in
+	cross-compile readjusting ClProperty - removing 8 bytes of filler.
+
+2006-01-27  a3schuur
+
+	* objectImplSwapI32toP32.c: [ 1408327 ] sfcbmof does not support
+	big/little endian in cross-compile sectionOffsets not set when
+	section is empty.  arrayBufferOffset and strBufOffset not cleared
+	when buffer empty.
+
+2006-01-26  mihajlov
+
+	* Makefile.am: Fixed make distcheck problem, syntax error in
+	Makefile.am.
+
+2006-01-26  mihajlov
+
+	* man/sfcbrepos.1.pre.in, man/sfcbstage.1.pre.in,
+	man/sfcbunstage.1.pre.in: [ 1408327 ] sfcbmof does not support
+	big/little endian in cross-compile.  Updated man pages.
+
+2006-01-26  mihajlov
+
+	* mofc/mofparse.c: Enhancement: allow multiple backend options to
+	be specified.
+
+2006-01-26  mihajlov
+
+	* sfcbdumpP32onI32.c: Minor: fixed incorrect parameter passing.
+
+2006-01-26  mihajlov
+
+	* sfcbdump.c, sfcbdumpP32onI32.c: Minor: removed compile warning.
+
+2006-01-26  mihajlov
+
+	* providerDrv.c: Minor: added helper variable for debugging.
+
 2006-01-26    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* sfcbstage.sh.in, sfcbunstage.sh.in, sfcbrepos.sh.in: 
@@ -7,6 +48,47 @@
 	* configure.ac, Makefile.am: 
 	Fixed 1414767. VPATH build failure after CVS checkout. Improved
 	xFLAGS processing.
+
+2006-01-25  a3schuur
+
+	* sfcbdumpP32onI32.c: SFCB Repository Dump Program for Power32
+	classSchemas file on Intel32
+
+2006-01-24  a3schuur
+
+	* objectImpl.h, objectImplSwapI32toP32.c: [ 1408327 ] sfcbmof does
+	not support big/little endian in cross-compile Additional alignment
+	fixes - now generating same length classSchema files.
+
+2006-01-24  mihajlov
+
+	* sfcbdump.c: SFCB Repository Dump Program.
+
+2006-01-23  a3schuur
+
+	* Makefile.am, msgqueue.c, objectImpl.c, objectImpl.h,
+	objectImplMP.h, objectImplSwapEndian.c, objectImplSwapI32toP32.c,
+	mofc/backend_sfcb.c: [ 1408327 ] sfcbmof does not support
+	big/little endian in cross-compile Previous fix did not correctly
+	anticipate Power32 alignment rules.  objectImplSwapEndian.c has
+	been removed because totally inadequate.  objectImpiI32toP32.c has
+	been created instead. It recreates classSchemas files for Power32
+	systems.  sfcbmof now requires -b P32 to invoke the cross compile
+	support.  -b P32 only works one way only: It must be executed on a
+	ix86 machine and it will only generate classSchemas files for
+	Power32.
+
+2006-01-20  a3schuur
+
+	* objectImplMP.h, objectImplSwapI32toP32.c: [ 1408327 ] sfcbmof
+	does not support big/little endian in cross-compile Additional
+	support for mofc cross-compile
+
+2006-01-17  a3schuur
+
+	* classProvider.c, classProviderGz.c, objectImpl.c, objectImpl.h,
+	mofc/backend_sfcb.c, mofc/configure.ac: fix for [ 1408327 ] sfcbmof
+	does not support big/little endian in cross-compile
 
 2006-01-16  a3schuur
 

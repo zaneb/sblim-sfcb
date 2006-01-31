@@ -1,11 +1,28 @@
 #!/bin/sh
 #Script to fetch CIM schema for sfcb.
 
-trap "rm -f /tmp/cimv290.zip" exit 
+# Depending on the schema version it's necessary to modify some of the lines
+# below, currently we use V2.9 in sfcb.
+
+TMPZIP=/tmp/cimv290.zip
+MOFZIPURL="http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip"
+SCHEMAMOF=CIM_Schema.mof
+HASSUBDIRS=no
+
+trap "rm -f $TMPZIP" exit 
 
 usage()
 {
-    echo usage: $1 [schemadir] >&2
+    echo usage: $1 [-f] [schemadir] >&2
+}
+
+fixschema()
+{
+  cd $sfcbdir/CIM
+  if [ $SCHEMAMOF != CIM_Schema.mof ]
+  then
+      cp $SCHEMAMOF CIM_Schema.mof
+  fi
 }
 
 args=`getopt f $*`
@@ -58,10 +75,16 @@ then
 	  fi
       fi
       mkdir -p $sfcbdir/CIM
+      if [ $HASSUBDIRS = yes ]
+      then
+	  ZIPFLAGS=
+      else
+	  ZIPFLAGS=-j
+      fi
       if [ $? = 0 ]; then
-	  /usr/bin/curl -o /tmp/cimv290.zip \
- http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip &&
-	  unzip -jd $sfcbdir/CIM /tmp/cimv290.zip &&
+	  /usr/bin/curl -o $TMPZIP $MOFZIPURL &&
+	  unzip $ZIPFLAGS -d $sfcbdir/CIM $TMPZIP &&
+          fixschema &&
 	  exit 0
       fi
       echo "Failed to fetch and install CIM schema" 1>&2 

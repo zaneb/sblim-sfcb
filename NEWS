@@ -1,3 +1,10 @@
+Changes in 1.1.1
+================
+
+Bugs fixed:
+- 1420399 Changed getSchema.sh to be more easily customizable for
+	  different CIM Schema versions.
+
 Changes in 1.1.0
 ================
 

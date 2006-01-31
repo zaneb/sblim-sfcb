@@ -190,7 +190,7 @@ extern "C" {
    typedef unsigned short             CMPIChar16;
    typedef unsigned char              CMPIUint8;
    typedef unsigned short             CMPIUint16;
-   typedef unsigned long              CMPIUint32;
+   typedef unsigned int               CMPIUint32;
 #ifndef CMPI_PLATFORM_WIN32_IX86_MSVC
    typedef unsigned long long         CMPIUint64;
 #else
@@ -198,7 +198,7 @@ extern "C" {
 #endif
    typedef signed char                CMPISint8;
    typedef short                      CMPISint16;
-   typedef long                       CMPISint32;
+   typedef int                        CMPISint32;
 #ifndef CMPI_PLATFORM_WIN32_IX86_MSVC
    typedef long long                  CMPISint64;
 #else

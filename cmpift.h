@@ -514,7 +514,7 @@ extern "C" {
      CMPIStatus (*setProperty)
                 (const CMPIBroker* mb, const CMPIContext* ctx,
                  const CMPIObjectPath* op, const char *name , const CMPIValue* value,
-                 const CMPIType type);
+                 CMPIType type);
 
        /** Get the named property value of an Instance defined by the &lt;op&gt; parameter.
 	 @param mb Broker this pointer.
@@ -723,7 +723,7 @@ extern "C" {
 	 @return Service return status.
       */
      CMPIStatus (*addEntry)
-              (CMPIContext* ctx, const char *name, const CMPIValue* value, const CMPIType type);
+              (CMPIContext* ctx, const char *name, const CMPIValue* value, CMPIType type);
   };
 
 
@@ -813,7 +813,7 @@ extern "C" {
 	 @return Service return status.
       */
      CMPIStatus (*returnData)
-              (const CMPIResult* rslt,const CMPIValue* value,const CMPIType type);
+              (const CMPIResult* rslt,const CMPIValue* value, CMPIType type);
 
        /** Return a Instance object.
 	 @param rslt Result this pointer.
@@ -1078,7 +1078,7 @@ extern "C" {
       */
      CMPIStatus (*addKey)
               (CMPIObjectPath* op, const char *name,
-               const CMPIValue* value, const CMPIType type);
+               const CMPIValue* value, CMPIType type);
 
        /** Gets a named key property value.
 	 @param op ObjectPath this pointer.
@@ -1621,7 +1621,7 @@ extern "C" {
       */
      CMPIStatus (*addArg)
               (const CMPIArgs* as, const char *name ,const CMPIValue* value,
-               const CMPIType type);
+               CMPIType type);
 
        /** Gets a named argument value.
 	 @param as Args this pointer.
@@ -2485,7 +2485,7 @@ extern "C" {
 	 @return Function return status.
       */
      CMPIStatus (*cleanup)
-             (CMPIPropertyMI* mi, const CMPIContext* ctx, CMPIBoolean *term);
+             (CMPIPropertyMI* mi, const CMPIContext* ctx, CMPIBoolean term);
 
       /** Set the named property value of an Instance defined by the &lt;op&gt; parameter.
 	 @param mi Provider this pointer.

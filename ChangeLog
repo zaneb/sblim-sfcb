@@ -1,5 +1,8 @@
 2006-01-31    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
+	* cmpidt.h, cmpift.h:
+	Fixed 1420604: CMPI header files were not CMPI 1.0 compliant.
+
 	* getSchema.sh.pre.in: 
 	Fixed 1420399: getSchema.sh can be customized to deal with
 	different CIM Schema versions now. Default is still 2.9.0.

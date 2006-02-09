@@ -49,6 +49,8 @@ AC_ARG_ENABLE(indications,
 	[enable_indications="yes"]
 	)
 
+AC_DISABLE_STATIC
+
 if test "$enable_debug" == "yes"; then
    SFCB_CPPFLAGS="-D SFCB_DEBUG $SFCB_CPPFLAGS"
 fi
@@ -103,7 +105,6 @@ if test -z "${YACC}"
 then
 	AC_MSG_ERROR([GNU bison is required to build the sfcb package.])
 fi
-
 AC_PROG_LIBTOOL
 
 # Checks for libraries.

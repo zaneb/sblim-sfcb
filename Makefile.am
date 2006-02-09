@@ -170,7 +170,7 @@ libsfcBrokerCore_la_SOURCES = \
     mlog.c 
 endif
 
-libsfcBrokerCore_la_CFLAGS = @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
+libsfcBrokerCore_la_CFLAGS = $(AM_CFLAGS) @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
 
 if JDBC
 sqlLexer.c: $(srcdir)/sqlLexer.l

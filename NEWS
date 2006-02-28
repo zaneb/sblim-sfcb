@@ -5,6 +5,8 @@ Bugs fixed:
 - 1420399 Changed getSchema.sh to be more easily customizable for
 	  different CIM Schema versions.
 - 1420604 Fixed CMPI header files for CMPI 1.0 compliance.
+- 1440179 Fixed compile problem with debug disabled.
+- 1440183 Fixed chunking related HTTP problems.
 
 Changes in 1.1.0
 ================

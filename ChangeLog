@@ -1,3 +1,11 @@
+2006-02-28  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* cimXmlRequest.c, httpAdapter.c: 
+	Fixed 1440183: Fixed errors in chunked response generation.
+
+	* trace.h: 
+	Fixed 1440179: Corrected definition of SFCB_TRACE_START macro.
+
 2006-01-31    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* cmpidt.h, cmpift.h:

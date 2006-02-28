@@ -87,7 +87,7 @@ extern void _sfcb_trap(int n);
      printf("--- %s(%d) Abrted\n",__FILE__,__LINE__); \
      abort(); }
 #define _SFCB_TRACE_INIT()
-#define _SFCB_TRACE_START(n)
+#define _SFCB_TRACE_START(m,n)
 #define _SFCB_TRACE_STOP()
 #define TRAP(n)
 #endif

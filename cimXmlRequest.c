@@ -237,10 +237,10 @@ char *getErrTrailer(int id, int rc, char *m)
 {
    char msg[1024];
    
-   if (m && *m) snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: %s\n",m);
+   if (m && *m) snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: %s\r\n",m);
    else if (rc > 0 && rc < 18)
-      snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: %s\n",cimMsg[rc]);
-   else snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: *Unknown*\n");
+      snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: %s\r\n",cimMsg[rc]);
+   else snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: *Unknown*\r\n");
    return strdup(msg);
 }
 

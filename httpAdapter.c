@@ -412,7 +412,6 @@ static void writeChunkHeaders(BinRequestContext *ctx)
    static char tenc[] = {"Transfer-encoding: chunked\r\n"};
    static char trls[] = {"Trailer: CIMError, CIMStatusCode, CIMStatusCodeDescription\r\n"};
    static char cclose[] = "Connection: close\r\n";
-   static char end[] = "\r\n";
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "writeChunkHeaders");
    
@@ -425,7 +424,6 @@ static void writeChunkHeaders(BinRequestContext *ctx)
    if (keepaliveTimeout == 0 || numRequest >= keepaliveMaxRequest) {
      commWrite(*(ctx->commHndl), cclose, strlen(cclose));
    }
-   commWrite(*(ctx->commHndl), end, strlen(end));
    commFlush(*(ctx->commHndl));
    
    _SFCB_EXIT();

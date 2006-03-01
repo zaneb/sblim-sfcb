@@ -6,7 +6,7 @@ usage()
 }
 
 
-args=`getopt hr:s: $*`
+args=`getopt hr:s:n: $*`
 rc=$?
 
 if [ $rc = 127 ]
@@ -27,7 +27,7 @@ do
       -h) help=1; 
 	  shift;;
       -n) namespace=$2 
-	  shift;;
+	  shift 2;;
       -s) stagingdir=$2
 	  shift 2;;
       -r) regfile=$2

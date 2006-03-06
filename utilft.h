@@ -23,7 +23,7 @@
 #ifndef _UTILFT_H_
 #define _UTILFT_H_
 
-#include "providerRegister.h"
+//#include "providerRegister.h"
 #include "hashtable.h"
 
 #ifdef __cplusplus
@@ -144,67 +144,6 @@ extern "C" {
    };
 
 
-
-   struct _Provider_Register_FT;
-   typedef struct _Provider_Register_FT Provider_Register_FT;
-
-   struct _ProviderRegister {
-      void *hdl;
-      Provider_Register_FT *ft;
-   };
-   typedef struct _ProviderRegister ProviderRegister;
-
-   typedef struct _ProviderBase {
-      char *fn;
-      UtilHashTable *ht;
-   } ProviderBase;
-
-   struct _Provider_Register_FT {
-      int version;
-      void (*release) (ProviderRegister * br);
-      ProviderRegister *(*clone) (ProviderRegister * br);
-      ProviderInfo *(*getProvider) (ProviderRegister * br,
-                                    const char *clsName, unsigned long type);
-      int (*putProvider) (ProviderRegister * br, const char *clsName,
-                          ProviderInfo * info);
-      void (*removeProvider) (ProviderRegister * br, const char *clsName);
-      ProviderInfo *(*locateProvider) (ProviderRegister * br,
-                                       const char *provName);
-      int (*resetProvider) (ProviderRegister * br,
-                                       int pid);
-   };
-
-   extern Provider_Register_FT *ProviderRegisterFT;
-   struct _Provider_Register_FT;
-
-
-/*
-   typedef struct _Class_Register_FT Class_Register_FT;
-   struct _ClassRegister {
-      void *hdl;
-      Class_Register_FT *ft;
-   };
-   typedef struct _ClassRegister ClassRegister;
-
-   typedef struct _ClassBase {
-      char *fn;
-      UtilHashTable *ht;
-      UtilHashTable *it;
-   } ClassBase;
-
-   struct _Class_Register_FT {
-      int version;
-      void (*release) (ClassRegister * br);
-      ClassRegister *(*clone) (ClassRegister * br);
-      CMPIConstClass *(*getClass) (ClassRegister * br, const char *clsName);
-      int (*putClass) (ClassRegister * br, CMPIConstClass * cls);
-      UtilList *(*getChildren) (ClassRegister * br, const char *className);
-   };
-
-   extern Class_Register_FT *ClassRegisterFT;
-
-*/
-
    typedef struct _Util_StringBuffer_FT Util_StringBuffer_FT;
    struct _UtilStringBuffer {
       void *hdl;
@@ -220,7 +159,7 @@ extern "C" {
       const char *(*getCharPtr) (UtilStringBuffer * sb);
       unsigned int (*getSize) (UtilStringBuffer * sb);
       void (*appendChars) (UtilStringBuffer * sb, const char *chars);
-      void (*appendString) (UtilStringBuffer * sb, CMPIString * string);
+  //    void (*appendString) (UtilStringBuffer * sb, CMPIString * string);
       void (*reset) (UtilStringBuffer * sb);
    };
 
@@ -234,7 +173,7 @@ extern "C" {
       UtilHashTable *(*newHashTableDefault) (long buckets);
       UtilHashTable *(*newHashTable) (long buckets, long opt);
       UtilList *(*newList) ();
-      ProviderRegister *(*newProviderRegister) (char *fn);
+//      ProviderRegister *(*newProviderRegister) (char *fn);
       UtilStringBuffer *(*newStrinBuffer) (int s);
    };
 

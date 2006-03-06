@@ -57,7 +57,8 @@ lib_LTLIBRARIES = \
    libsfcBasicAuthentication.la \
    libsfcCertificateAuthentication.la \
    libsfcIndCIMXMLHandler.la \
-   libsfcObjectImplSwapI32toP32.la
+   libsfcObjectImplSwapI32toP32.la \
+   libcimcClientSfcbLocal.la 
 else
 lib_LTLIBRARIES = \
    libsfcBrokerCore.la \
@@ -70,7 +71,8 @@ lib_LTLIBRARIES = \
    libsfcHttpAdapter.la \
    libsfcBasicAuthentication.la \
    libsfcCertificateAuthentication.la \
-   libsfcObjectImplSwapI32toP32.la
+   libsfcObjectImplSwapI32toP32.la \
+   libcimcClientSfcbLocal.la 
 endif
 
 sbin_PROGRAMS = \
@@ -186,6 +188,10 @@ queryLexer.c: $(srcdir)/queryLexer.l
 queryParser.c: $(srcdir)/queryParser.y
 	$(YACC) $(AM_YFLAGS) -p sfcQuery -o $@ $< 
 
+libcimcClientSfcbLocal_la_SOURCES = \
+   cimcClientSfcbLocal.c
+libcimcClientSfcbLocal_la_LIBADD=-lsfcBrokerCore
+   
 libsfcHttpAdapter_la_SOURCES = \
    httpAdapter.c \
    httpComm.c
@@ -249,7 +255,9 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	cmpidt.h cmpift.h cmpiftx.h cmpimacs.h cmpimacsx.h cmpios.h \
 	fileRepository.h internalProvider.h \
 	selectexp.h queryOperation.h \
-	sfcVersion.h mrwlock.h sqlStatement.h avltree.h
+	sfcVersion.h mrwlock.h sqlStatement.h avltree.h \
+        cimcClientSfcbLocal.h
+
 
 man_MANS=$(MANFILES)
 

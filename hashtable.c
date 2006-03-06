@@ -755,6 +755,7 @@ static UtilHashTable *NotSupported(UtilHashTable * ht)
 static void hashTableDestroy(UtilHashTable * ht)
 {
    HashTableDestroy((HashTable *) ht->hdl);
+   free(ht);
 }
 
 static void hashTableRemoveAll(UtilHashTable * ht)

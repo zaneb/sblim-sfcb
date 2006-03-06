@@ -60,6 +60,5 @@ typedef struct cimXmlRequestContext {
 extern RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx);
 extern int cleanupCimXmlRequest(RespSegments * rs);
 
-extern ExpSegments exportIndicationReq(CMPIInstance *ci, char *id);
 
 #endif

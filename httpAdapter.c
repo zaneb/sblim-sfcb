@@ -18,7 +18,7 @@
  * httpAdapter implementation.
  *
 */
-
+ 
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -31,11 +31,13 @@
 #include <signal.h>
 #include <ctype.h>
 #include <time.h>
+#include <dlfcn.h>
 
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netdb.h>
 
+#include "cmpidt.h"
 #include "msgqueue.h"
 #include "utilft.h"
 #include "trace.h"
@@ -156,6 +158,7 @@ int remProcCtl()
    semctl(httpWorkSem,0,IPC_RMID,0);
    return 0;
 }
+
 
 int baValidate(char *cred, char **principal)
 {
@@ -835,7 +838,7 @@ static void handleHttpRequest(int connFd)
    fd_set httpfds;
    struct sembuf procReleaseUnDo = {0,1,SEM_UNDO};
    struct timeval httpTimeout;
-   
+ 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "handleHttpRequest");
 
    _SFCB_TRACE(1, ("--- Forking xml handler"));
@@ -846,7 +849,7 @@ static void handleHttpRequest(int connFd)
       for (httpProcIdX=0; httpProcIdX<hMax; httpProcIdX++)
          if (semGetValue(httpProcSem,httpProcIdX+1)==0) break;
       procReleaseUnDo.sem_num=httpProcIdX+1; 
-         
+
       r = fork();
 
       if (r==0) {
@@ -872,13 +875,10 @@ static void handleHttpRequest(int connFd)
    }
 
    if (r == 0) {
+      localMode=0;
       if (doFork) {
          _SFCB_TRACE(1,("--- Forked xml handler %d", currentProc))
-         resultSockets=sPairs[hBase+httpProcIdX];
       }
-
-      _SFCB_TRACE(1,("--- Started xml handler %d %d", currentProc,
-                   resultSockets.receive));
 
       if (getenv("SFCB_PAUSE_HTTP")) for (;;) {
          fprintf(stderr,"-#- Pausing - pid: %d\n",currentProc);

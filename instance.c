@@ -576,7 +576,7 @@ UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props)
 
    for (i = 0, m = CMGetPropertyCount(ci, NULL); i < m; i++) {
       data = CMGetPropertyAt(ci, i, &name, NULL);
-      sb->ft->appendString(sb, name);
+      sb->ft->appendChars(sb, (char*)name->hdl);
       sb->ft->appendChars(sb, "=");
       dataToString(data, sb);
       sb->ft->appendChars(sb, "\n");

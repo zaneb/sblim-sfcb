@@ -21,6 +21,7 @@
 
 
 #include "utilft.h"
+#include "support.h"
 #include "mlog.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +49,7 @@ typedef struct control {
    char *id;
    int type;
    char *strValue;
+   int dupped;
 } Control;
 
 static UtilHashTable *ct = NULL;
@@ -91,9 +93,19 @@ Control init[] = {
    {"enableInterOp", 2, "true"},
    {"sslClientTrustStore", 0, SFCB_CONFDIR "/client.pem"},
    {"sslClientCertificate", 0, "ignore" },
-   {"certificateAuthLib",   0, "sfcCertificateAuthentication"}
+   {"certificateAuthLib",   0, "sfcCertificateAuthentication"},
+   {"localSocketPath",   0, "/tmp/sfcbLocalSocket"}
    
 };
+
+void sunsetControl()
+{
+   int i,m;
+   for (i = 0, m = sizeof(init) / sizeof(Control); i < m; i++) {
+      if(init[i].dupped) free(init[i].strValue);
+   }
+   ct->ft->release(ct);
+}
 
 int setupControl(char *fn)
 {
@@ -146,8 +158,11 @@ int setupControl(char *fn)
 		init[i].strValue=strdup(rv.val);
 		if (strchr(init[i].strValue,'\n'))
 		  *(strchr(init[i].strValue,'\n')) = 0;
-	      } else {
+                init[i].dupped=1; 
+	      } 
+              else {
 		init[i].strValue=strdup(cntlGetVal(&rv));
+                init[i].dupped=1; 
 	      }
 	      goto ok;
             }

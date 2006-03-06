@@ -27,6 +27,7 @@
 #include "native.h"
 #include "utilft.h"
 #include "providerMgr.h"
+#include "providerRegister.h"
 #include "objectImpl.h"
 #include "msgqueue.h"
 #include "utilft.h"

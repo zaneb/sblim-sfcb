@@ -75,12 +75,24 @@ static const char *getCharClassName(CMPIConstClass * cc)
    return NULL;
 }
 
+static CMPIString *getClassName(CMPIConstClass * cc, CMPIStatus * rc)
+{
+   const char *cn=getCharClassName(cc);
+   return native_new_CMPIString(cn, rc); 
+}
+
 static const char *getCharSuperClassName(CMPIConstClass * cc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
    if (cls->parent.id)
       return ClObjectGetClString(&cls->hdr, &cls->parent);
    return NULL;
+}
+
+static CMPIString *getSuperClassName(CMPIConstClass * cc, CMPIStatus * rc)
+{
+   const char *cn=getCharSuperClassName(cc);
+   return native_new_CMPIString(cn, rc); 
 }
 
 CMPIBoolean isAbstract(CMPIConstClass * cc)
@@ -115,7 +127,7 @@ static CMPICount getPropertyCount(CMPIConstClass * cc, CMPIStatus * rc)
    return (CMPICount) ClClassGetPropertyCount(cls);
 }
 
-static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
+CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
                        unsigned long *quals, CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
@@ -130,7 +142,7 @@ static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** na
       rv.value.string = native_new_CMPIString(rv.value.chars, NULL);
       rv.type = CMPI_string;
    }
-   else if (rv.type == CMPI_ref) {
+   else if (rv.type == CMPI_ref) { 
       char *msg;
       if ((rv.state & CMPI_nullValue)==0) 
          rv.value.ref = getObjectPath(
@@ -147,6 +159,12 @@ static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** na
    if (rc)
       CMSetStatus(rc, CMPI_RC_OK);
    return rv;
+}
+
+static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
+                       CMPIStatus * rc)
+{
+   return getPropertyQualsAt(cc,i,name,NULL,rc);
 }
 
 static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
@@ -204,7 +222,7 @@ static CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i
    return rv;
 }
 
-static CMPIData getProperty(CMPIConstClass * cc, const char *id, unsigned long *quals,
+CMPIData getPropertyQuals(CMPIConstClass * cc, const char *id, unsigned long *quals,
                      CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
@@ -213,12 +231,17 @@ static CMPIData getProperty(CMPIConstClass * cc, const char *id, unsigned long *
    int i;
 
    if ((i = ClObjectLocateProperty(&cls->hdr, prps, id)) != 0) {
-      return getPropertyAt(cc, i - 1, NULL, quals, rc);
+      return getPropertyQualsAt(cc, i - 1, NULL, quals, rc);
    }
 
    if (rc)
       CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
    return rv;
+}
+
+static CMPIData getProperty(CMPIConstClass * cc, const char *id, CMPIStatus * rc)
+{
+   return getPropertyQuals(cc,id,NULL,rc);
 }
 
 static CMPIArray *getKeyList(CMPIConstClass * cc)
@@ -230,7 +253,7 @@ static CMPIArray *getKeyList(CMPIConstClass * cc)
    int idx[32];
 
    for (i = c = 0, m = getPropertyCount(cc, NULL); i < m; i++) {
-      getPropertyAt(cc, i, NULL, &quals, NULL);
+      getPropertyQualsAt(cc, i, NULL, &quals, NULL);
       if (quals & ClProperty_Q_Key) {
          idx[c] = i;
          c++;
@@ -239,8 +262,8 @@ static CMPIArray *getKeyList(CMPIConstClass * cc)
    kar = NewCMPIArray(c, CMPI_string, NULL);
 
    for (i = 0; i < c; i++) {
-      getPropertyAt(cc, idx[i], &name, &quals, NULL);
-      CMSetArrayElementAt(kar, i, &name, CMPI_string);
+      getPropertyQualsAt(cc, idx[i], &name, &quals, NULL);
+      CMSetArrayElementAt(kar, i, &name, CMPI_string); 
    }
    return kar;
 }
@@ -249,19 +272,25 @@ struct _CMPIConstClass_FT ift = {
    1,
    release,
    clone,
+   getClassName,
+   getSuperClassName,
+   getProperty,
+   getPropertyAt,
+   getPropertyCount,
+   NULL, // getQualifier,
+   getQualifierAt,
+   NULL, //getPropertyCount,
+   NULL, //getPropQualifier,
+   getPropQualifierAt,
+   NULL, //getPropQualifierCount,
+   getKeyList,
+   toString,
    relocate,
    getCharClassName,
    getCharSuperClassName,
    isAssociation,
    isAbstract,
-   isIndication,
-   getPropertyCount,
-   getProperty,
-   getPropertyAt,
-   getQualifierAt,
-   getPropQualifierAt,
-   getKeyList,
-   toString
+   isIndication
 };
 
 CMPIConstClass_FT *CMPIConstClassFT = &ift;
@@ -314,7 +343,7 @@ int verifyPropertyList(CMPIConstClass *cl, char **list)
    CMPIStatus rc;
    int count=0;
    for (; *list; list++) {
-      getProperty(cl, *list, NULL, &rc);
+      getProperty(cl, *list, &rc);
       if (rc.rc==0) count++;
    }
    return count;

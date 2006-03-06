@@ -42,15 +42,33 @@ ProviderInfo *defaultProvInfoPtr = NULL;
 ProviderInfo *interOpProvInfoPtr = NULL;
 ProviderInfo *forceNoProvInfoPtr = &forceNotFound;
 
-static void release(ProviderRegister * br)
+static void pRelease(ProviderRegister * br)
 {
    ProviderBase *bb = (ProviderBase *) br->hdl;
+   char *key = NULL;
+   ProviderInfo *info = NULL;
+   HashTableIterator *it;
+   int n=0;
+   
+   for (it = bb->ht->ft->getFirst(bb->ht, (void **) &key, (void **) &info);
+        key && it && info;
+        it = bb->ht->ft->getNext(bb->ht, it, (void **) &key, (void **) &info)) {
+      free(info->className); 
+      free(info->providerName); 
+      free(info->location);
+      free(info->group);
+      n=0;
+      if (info->ns) while (info->ns[n]) free(info->ns[n++]); 
+      free(info->ns);
+      free(info);
+   }
+   
    free(bb->fn);
    bb->ht->ft->release(bb->ht);
    free(br);
 }
 
-static ProviderRegister *clone(ProviderRegister * br)
+static ProviderRegister *pClone(ProviderRegister * br)
 {
    return NULL;
 }
@@ -186,6 +204,8 @@ ProviderRegister *newProviderRegister(char *fn)
       }
    }   
 
+   fclose(in);
+   
    if (classProvInfoPtr==NULL) {
       mlogf(M_ERROR,M_SHOW,"--- Class provider definition not found - sfcbd will terminate\n");
       err=1;
@@ -265,8 +285,8 @@ static void removeProvider(ProviderRegister * br, const char *clsName)
 
 static Provider_Register_FT ift = {
    1,
-   release,
-   clone,
+   pRelease,
+   pClone,
    getProvider,
    putProvider,
    removeProvider,

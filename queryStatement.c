@@ -223,7 +223,7 @@ static QLStatementFt stmtFt={
 };   
    
 
-QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc)
+QLStatement *parseQuery(int mode, const char *query, const char *lang, const char *sns, int *rc)
 {
    QLStatement *qs=NULL;
    QLCollector ctlFt={

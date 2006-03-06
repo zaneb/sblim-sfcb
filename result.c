@@ -82,7 +82,7 @@ static void prepResultBuffer(NativeResult *nr)
 static int xferResultBuffer(NativeResult *nr, int to, int more, int rc)
 {
    int l=sizeof(BinResponseHdr)+((nr->sNext-1)*sizeof(MsgSegment));
-   int i,dmy,s1=l;
+   int i,dmy=-1,s1=l;
  
    _SFCB_ENTER(TRACE_PROVIDERDRV, "xferResultBuffer");
    

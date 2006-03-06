@@ -19,14 +19,15 @@
  *
 */
 
-
 #include <signal.h>
 #include <pthread.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "cmpidt.h"
 #include "providerMgr.h"
+#include "providerRegister.h"
 #include "utilft.h"
 #include "cimXmlParser.h"
 #include "support.h"
@@ -68,7 +69,6 @@ extern void dump(char *msg, void *a, int l);
 extern void showClHdr(void *ihdr);
 extern ProvIds getProvIds(ProviderInfo *info);
 extern int xferLastResultBuffer(CMPIResult *result, int to, int rc);
-extern QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
 extern void setResultQueryFilter(CMPIResult * result, QLStatement *qs);
 extern CMPIArray *getKeyListAndVerifyPropertyList(CMPIObjectPath*, 
                 char **props, int *ok,CMPIStatus * rc);
@@ -92,7 +92,10 @@ unsigned long provSampleInterval=10;
 unsigned long provTimeoutInterval=25;
 static int stopping=0;
 
-typedef struct parms {
+void uninitProvProcCtl();
+
+
+typedef struct parms { 
    int requestor;
    BinRequestHdr *req;
    ProviderInfo *pInfo;
@@ -192,16 +195,26 @@ static void stopProc(void *p)
 {
    ProviderInfo *pInfo;
    CMPIContext *ctx = NULL;
-   
-   ctx = native_new_CMPIContext(MEM_TRACKED,NULL);
-   for (pInfo=curProvProc->firstProv; pInfo; pInfo=pInfo->next) {
+
+   ctx = native_new_CMPIContext(MEM_NOT_TRACKED,NULL);
+//   for (pInfo=curProvProc->firstProv; pInfo; pInfo=pInfo->next) {
+   for (pInfo=activProvs; pInfo; pInfo=pInfo->next) {
       if (pInfo->classMI) pInfo->classMI->ft->cleanup(pInfo->classMI, ctx);
       if (pInfo->instanceMI) pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx, 1);
       if (pInfo->associationMI) pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx, 1);
       if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx, 1);
       if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx, 1);
+      dlclose(pInfo->library);
    }
    mlogf(M_INFO,M_SHOW,"---  stopped %s %d\n",processName,getpid());
+   ctx->ft->release(ctx);
+   
+   uninit_sfcBroker();
+   uninitProvProcCtl();
+   uninitSocketPairs();
+   sunsetControl();
+   uninitGarbageCollector();
+   
    exit(0);
 } 
   
@@ -228,7 +241,7 @@ static void handleSigUsr1(int sig)
 {
    pthread_t t;
    pthread_attr_t tattr;
- 
+
    stopping=1;  
    pthread_attr_init(&tattr);
    pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
@@ -252,6 +265,11 @@ void initProvProcCtl(int p)
    provProcMax=p;
    provProc=(ProviderProcess*)calloc(p,sizeof(*provProc));
    for (i=0; i<p; i++) provProc[i].id=i;
+}
+
+void uninitProvProcCtl()
+{
+   free(provProc);
 }
 
 static pthread_mutex_t idleMtx=PTHREAD_MUTEX_INITIALIZER;
@@ -394,6 +412,7 @@ static int getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
           loadClassMI(info->providerName, info->library, Broker, ctx);
    *mi = info->classMI;
    rc = info->classMI ? 1 : 0;
+   fprintf(stderr,"classMI: %p\n",info);
    _SFCB_RETURN(rc);
 }
 
@@ -430,7 +449,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
       if (provProc[i].pid == 0) {
          *proc = provProc + i;
          providerSockets=sPairs[(*proc)->id];
-
+  
          (*proc)->providerSockets = info->providerSockets = providerSockets;
          (*proc)->group = info->group;
          (*proc)->unload=info->unload;
@@ -494,7 +513,7 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
    _SFCB_ENTER(TRACE_PROVIDERDRV, "forkProvider");
    ProviderProcess *proc;
    ProviderInfo * pInfo;
-   int val;
+   int val,rc;
 
    if (info->pid ) {
       proc=info->proc;
@@ -551,8 +570,11 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
       }
       else *msg = NULL;
 
+      rc=resp->rc;
       _SFCB_TRACE(1, ("--- rc: %d", resp->rc));
-      _SFCB_RETURN(resp->rc);
+      
+      free(resp);
+      _SFCB_RETURN(rc);
    }
    _SFCB_RETURN(0);
 }
@@ -576,7 +598,7 @@ typedef struct provHandler {
 static int sendResponse(int requestor, BinResponseHdr * hdr)
 {
    _SFCB_ENTER(TRACE_PROVIDERDRV, "sendResponse");
-   int i, l, rvl=0, ol, size, dmy;
+   int i, l, rvl=0, ol, size, dmy=-1;
    char str_time[26];
    BinResponseHdr *buf;
    
@@ -1717,6 +1739,7 @@ static int doLoadProvider(ProviderInfo *info, char *dlName)
    while (dir) {
      libraryName(dir, (char *) info->location, fullname);
      if (stat(fullname,&stbuf) == 0) {
+        fprintf(stderr,"doLoadProvider: %s\n",fullname);
        info->library = dlopen(fullname, RTLD_NOW);
        if (info->library == NULL) {
 	 mlogf(M_ERROR,M_SHOW,"*** dlopen error: %s\n",dlerror());
@@ -1950,7 +1973,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
    }
    
    if (resp) {
-      if (req->options & 1) {
+      if (req->options & BRH_NoResp) {
         _SFCB_TRACE(1, ("--- response suppressed"));
       }
       else sendResponse(parms->requestor, resp);
@@ -1976,6 +1999,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
       curProvProc->lastActivity=pInfo->lastActivity;
    }   
 
+   if ((req->options & BRH_Internal) ==0) close(abs(parms->requestor));
    free(parms);
    free(req);
   

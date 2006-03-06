@@ -37,6 +37,8 @@
 #include <stdlib.h>
 #include "genericlist.h"
 #include "mlog.h"
+#include "support.h"
+
 
 #ifdef THINK_C
 #define malloc NewPtr

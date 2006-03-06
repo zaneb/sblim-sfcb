@@ -22,6 +22,7 @@
 
 
 
+#include "cmpidt.h"
 #include "cimXmlGen.h"
 #include "cimXmlRequest.h"
 #include "cimXmlParser.h"
@@ -69,9 +70,7 @@ extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
 extern void closeProviderContext(BinRequestContext * ctx);
 extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
              CMPICount index, CMPIValue * val, CMPIType type);
-extern QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
 extern CMPIConstClass initConstClass(ClClass *cl);
-const char *opGetClassNameChars(CMPIObjectPath * cop);
 
 static char *cimMsg[] = {
    "ok",

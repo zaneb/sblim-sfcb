@@ -26,7 +26,6 @@
 
 #include "msgqueue.h"
 #include "httpComm.h"
-#include "providerRegister.h"
 
 #define OPS_GetClass 1
 #define OPS_GetInstance 2
@@ -65,7 +64,9 @@
 #define BINREQ(oper,count) {{oper,0,NULL,0,count}}
 
 typedef struct operationHdr {
-   unsigned long type;
+   unsigned short type;
+   unsigned short options;
+   #define OH_Internal 2
    unsigned long count;         // maps to MsgList
    MsgSegment nameSpace;
    MsgSegment className;
@@ -84,6 +85,8 @@ typedef struct operationHdr {
 typedef struct binRequestHdr {
    unsigned short operation;
    unsigned short options;
+   #define BRH_NoResp 1
+   #define BRH_Internal 2
    void *provId;
    unsigned int flags;
    unsigned long count;         // maps to MsgList
@@ -102,6 +105,14 @@ typedef struct binResponseHdr {
 struct chunkFunctions;
 struct commHndl;
 struct requestHdr;
+
+typedef union provIds {
+   void *ids;
+   struct { 
+      short procId;
+      short provId;
+   } ;  
+} ProvIds; 
 
 typedef struct provAddr {
    int socket;
@@ -267,7 +278,7 @@ typedef union associatorNamesReq {
       MsgSegment resultRole;
    };
 } AssociatorNamesReq;
-
+  
 typedef union referenceNamesReq {
    BinRequestHdr hdr;
    struct {
@@ -430,16 +441,5 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
 BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
                                  int *count);
 BinResponseHdr *invokeProvider(BinRequestContext * ctx);
-CMPIConstClass *getConstClass(const char *ns, const char *cn);
-
-typedef struct providerProcess {
-   char *group;
-   int pid;
-   int id;
-   int unload;
-   ProviderInfo *firstProv;
-   ComSockets providerSockets;
-   time_t lastActivity;
-} ProviderProcess;
 
 #endif

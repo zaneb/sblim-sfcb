@@ -26,8 +26,11 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include "native.h"
+#include "cmpift.h"
+#include "cmpiftx.h"
 #include "msgqueue.h"
+#include "utilft.h"
+#include "providerMgr.h"
 #include <time.h>
 
 #ifdef __cplusplus
@@ -35,14 +38,6 @@ extern "C" {
 #endif
 
 struct providerProcess;
-
-typedef union provIds {
-   void *ids;
-   struct { 
-      short procId;
-      short provId;
-   } ;  
-} ProvIds; 
 
 typedef struct _ProviderInfo {
    char *className;
@@ -71,6 +66,16 @@ typedef struct _ProviderInfo {
    CMPIClassMI *classMI;
 } ProviderInfo;
 
+typedef struct providerProcess {
+   char *group;
+   int pid;
+   int id;
+   int unload;
+   ProviderInfo *firstProv;
+   ComSockets providerSockets;
+   time_t lastActivity;
+} ProviderProcess;
+
 #define INSTANCE_PROVIDER       1
 #define ASSOCIATION_PROVIDER    2
 #define INDICATION_PROVIDER     4
@@ -79,6 +84,38 @@ typedef struct _ProviderInfo {
 #define CLASS_PROVIDER          32
 #define FORCE_PROVIDER_NOTFOUND 128
 
+struct _Provider_Register_FT;
+typedef struct _Provider_Register_FT Provider_Register_FT;
+
+struct _ProviderRegister {
+   void *hdl;
+   Provider_Register_FT *ft;
+};
+typedef struct _ProviderRegister ProviderRegister;
+
+typedef struct _ProviderBase {
+   char *fn;
+   UtilHashTable *ht;
+} ProviderBase;
+
+struct _Provider_Register_FT {
+   int version;
+   void (*release) (ProviderRegister * br);
+   ProviderRegister *(*clone) (ProviderRegister * br);
+   ProviderInfo *(*getProvider) (ProviderRegister * br,
+                       const char *clsName, unsigned long type);
+   int (*putProvider) (ProviderRegister * br, const char *clsName,
+                       ProviderInfo * info);
+   void (*removeProvider) (ProviderRegister * br, const char *clsName);
+   ProviderInfo *(*locateProvider) (ProviderRegister * br,
+                       const char *provName);
+   int (*resetProvider) (ProviderRegister * br, int pid);
+};
+
+extern Provider_Register_FT *ProviderRegisterFT;
+struct _Provider_Register_FT;
+
+ProviderRegister *newProviderRegister(char *fn);
 
 #ifdef __cplusplus
 }

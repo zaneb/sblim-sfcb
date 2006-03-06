@@ -24,6 +24,7 @@
 #include <curl/curl.h>
 #include "utilft.h"
 #include "trace.h"
+#include <string.h>
 
 extern UtilStringBuffer *newStringBuffer(int);
 

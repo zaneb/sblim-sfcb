@@ -142,6 +142,8 @@ static void stopBroker(void *p)
    
    stopping=1;
    
+   stopLocalConnectServer();
+   
    for(;;) {
       waitTime.tv_sec=time(NULL)+5;
       waitTime.tv_nsec=0;
@@ -171,6 +173,12 @@ static void stopBroker(void *p)
    }
    remSem();
    
+   uninit_sfcBroker();
+   uninitProvProcCtl();
+   uninitSocketPairs();
+   sunsetControl();
+//   uninitGarbageCollector();
+   
    if (restartBroker) {
       char *emsg=strerror(errno);
       mlogf(M_INFO,M_SHOW,"---\n");   
@@ -188,7 +196,22 @@ static void signalBroker(void *p)
      pthread_cond_signal(&sdCnd);
      pthread_mutex_unlock(&sdMtx);
 } 
-  
+
+#define LOCAL_SFCB
+
+static void startLocalConnectServer()
+{
+#ifdef LOCAL_SFCB
+   void localConnectServer();
+   pthread_t t;
+   pthread_attr_t tattr;
+   
+   pthread_attr_init(&tattr);
+   pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+   pthread_create(&t, &tattr, (void *(*)(void *))localConnectServer,NULL);
+#endif
+}
+
 static void handleSigquit(int sig)
 {
    pthread_t t;
@@ -199,6 +222,7 @@ static void handleSigquit(int sig)
       pthread_attr_init(&tattr);
       pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
       pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
+      uninitGarbageCollector();
    } 
 }
 
@@ -213,6 +237,7 @@ static void handleSigHup(int sig)
       pthread_attr_init(&tattr);
       pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
       pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
+//      uninit_sfcBroker();
    } 
 }
 
@@ -539,6 +564,8 @@ int main(int argc, char *argv[])
    
    setSignal(SIGTERM, handleSigterm,0); /* kill cannot be intercepted */
    setSignal(SIGHUP,  handleSigHup,0);
+   
+   startLocalConnectServer();
    
    if (startHttp) {
       if (sslMode)

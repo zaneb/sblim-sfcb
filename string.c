@@ -97,6 +97,11 @@ CMPIString *native_new_CMPIString(const char *ptr, CMPIStatus * rc)
    return (CMPIString *) __new_string(MEM_TRACKED, ptr, rc);
 }
 
+CMPIString *NewCMPIString(const char *ptr, CMPIStatus * rc)
+{
+   return (CMPIString *) __new_string(MEM_NOT_TRACKED, ptr, rc);
+}
+
 
 /****************************************************************************/
 

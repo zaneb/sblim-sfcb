@@ -23,6 +23,8 @@
 
 #include <string.h>
 #include <errno.h>
+#include "cmpidt.h"
+#include "providerMgr.h"
 #include "msgqueue.h"
 #include "trace.h"
 #include <sys/types.h>
@@ -35,6 +37,7 @@ extern unsigned long exFlags;
 ComSockets resultSockets;
 ComSockets sfcbSockets;
 ComSockets providerSockets;
+int localMode=1;
 
 ComSockets *sPairs;
 int ptBase,htBase,stBase,htMax,stMax;
@@ -177,18 +180,35 @@ static int spHandleError(int *s, char *m)
  *              spGetMsg
  */
 
-static int spGetMsg(int *s, void *data, unsigned length, MqgStat* mqg)
+static int spGetMsg(int *s, int *from, void *data, unsigned length, MqgStat* mqg)
 {
    static char *em = "spGetMsg receiving from";
    ssize_t n,ol,r=0;
+   int fromfd=-1;
+   char ccmsg[CMSG_SPACE(sizeof(fromfd))];
+   struct cmsghdr *cmsg;
+   struct iovec iov;
+   struct msghdr msg;
 
    _SFCB_ENTER(TRACE_MSGQUEUE, "spGetMsg");
    _SFCB_TRACE(1, ("--- Receiving from %d length %d", *s, length));
 
+  msg.msg_name = 0;
+  msg.msg_namelen = 0;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+  
+  msg.msg_control = ccmsg;
+  msg.msg_controllen = sizeof(ccmsg); 
+  
    ol = length;
    for (;;) {
       if (mqg) mqg->teintr=0;
-      if ((n = recv(*s, data+r, length-r, MSG_WAITALL)) < 0) {
+      
+      iov.iov_base = data+r;
+      iov.iov_len = length-r;
+
+      if ((n = recvmsg(*s, &msg, 0)) < 0) {
          if (errno == EINTR) {
             _SFCB_TRACE(1, (" Receive interrupted %d",currentProc));
             if (mqg) {
@@ -206,10 +226,26 @@ static int spGetMsg(int *s, void *data, unsigned length, MqgStat* mqg)
          break;
       }
 
+      if (r==0) {
+         cmsg = CMSG_FIRSTHDR(&msg);
+         if (cmsg) {
+            if (!cmsg->cmsg_type == SCM_RIGHTS) {
+               mlogf(M_ERROR,M_SHOW,"--- got control message of unknown type %d\n", cmsg->cmsg_type);
+               return -1;
+            }   
+            fromfd = *(int*)CMSG_DATA(cmsg);
+         }  
+         msg.msg_control = 0;
+         msg.msg_controllen = 0; 
+      }
+      
       r+=n;      
       if (r < ol) continue;
       break;
    }
+   
+   if (from) *from = fromfd;
+   
    return 0;
 }
 
@@ -223,18 +259,21 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    SpMessageHdr spMsg;
    static char *em = "rcvMsg receiving from";
    MqgStat imqg;
+   int fromfd;
 
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRcvMsg");
    _SFCB_TRACE(1, ("--- Receiving from %d", *s));
 
-   if ((spGetMsg(s, &spMsg, sizeof(spMsg), mqg)) == -1)
+   if ((spGetMsg(s, &fromfd, &spMsg, sizeof(spMsg), mqg)) == -1)
       return spHandleError(s, em);
       
    if (mqg && mqg->teintr) {
       mqg->eintr=1;    
       mqg->rdone=0;
       return 0;  
-   }   
+   }
+   
+   if (fromfd>0) spMsg.returnS=fromfd;   
    *from=spMsg.returnS;   
 
    _SFCB_TRACE(1, ("--- Received info segment %d bytes", sizeof(spMsg)));
@@ -248,7 +287,7 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    if (*length) {
       *data = malloc(spMsg.totalSize + 8);
       do {
-         if ((spGetMsg(s, *data, *length, mqg)) == -1)
+         if ((spGetMsg(s, NULL, *data, *length, mqg)) == -1)
             return spHandleError(s, em);
          if (mqg->teintr) mqg->eintr=1;    
       } while (mqg->teintr) ;       
@@ -264,7 +303,7 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
       *data = malloc(256);
       *length = 256;
       do {
-         if ((spGetMsg(s, *data, *length, mqg)) == -1)
+         if ((spGetMsg(s, NULL, *data, *length, mqg)) == -1)
             return spHandleError(s, em);
          if (mqg->teintr) mqg->eintr=1;    
       } while (mqg->teintr) ;       
@@ -277,6 +316,10 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    case MSG_X_INVALID_NAMESPACE:
    case MSG_X_PROVIDER_NOT_FOUND:
    case MSG_X_INVALID_CLASS:
+      _SFCB_RETURN(spMsg.xtra);
+   case MSG_X_LOCAL:
+      *length = 0;
+      *data = NULL;
       _SFCB_RETURN(spMsg.xtra);
    default:
       *data = NULL;
@@ -309,6 +352,7 @@ int spRecvCtlResult(int *s, int *from, void **data, unsigned long *length)
    int rc;
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRecvCtlResult");
    rc = spRcvMsg(s, from, data, length, NULL);
+
    _SFCB_RETURN(rc);
 }
 
@@ -318,40 +362,55 @@ int spRecvCtlResult(int *s, int *from, void **data, unsigned long *length)
 
 static int spSendMsg(int *to, int *from, int n, struct iovec *iov, int size)
 {
-   SpMessageHdr spMsg = { 0, 0, *from, size };
+   SpMessageHdr spMsg = { 0, 0, abs(*from), size };
    spMsg.type = MSG_DATA;
    static char *em = "spSendMsg sending to";
    struct msghdr msg;
+   char ccmsg[CMSG_SPACE(sizeof(*from))];
+   struct cmsghdr *cmsg;
    ssize_t rc;
 
    _SFCB_ENTER(TRACE_MSGQUEUE, "spSendMsg");
    _SFCB_TRACE(1, ("--- Sending %d bytes to %d", size, *to));
 
-   spMsg.returnS=*from;
-   msg.msg_control = 0;
-   msg.msg_controllen = 0;
-
+   spMsg.returnS=abs(*from);
+   
+   if (*from>0) {
+      msg.msg_control = ccmsg;
+      msg.msg_controllen = sizeof(ccmsg);   
+   
+      cmsg = CMSG_FIRSTHDR(&msg);
+      cmsg->cmsg_level = SOL_SOCKET;
+      cmsg->cmsg_type = SCM_RIGHTS;
+      cmsg->cmsg_len = CMSG_LEN(sizeof(*from));
+      *(int*)CMSG_DATA(cmsg) = *from;
+   }
+   else { 
+      msg.msg_control = 0;
+      msg.msg_controllen = 0;
+   }
+   
    msg.msg_name = NULL;
    msg.msg_namelen = 0;
-
    msg.msg_iov = iov;
-   msg.msg_iovlen = n;
+   msg.msg_iovlen = n;   
 
    iov[0].iov_base = &spMsg;
    iov[0].iov_len = sizeof(spMsg);
 
    if ((rc=sendmsg(*to, &msg, 0)) < 0) {
-      if (errno==EBADF) _SFCB_RETURN(-2)
       return spHandleError(to, em);
    }
-   _SFCB_TRACE(1, ("--- Sendt %d bytes to %d", rc, *to));
+   
+   _SFCB_TRACE(1, ("--- Sent %d bytes to %d", rc, *to));
 
    _SFCB_RETURN(0);
 }
 
-int spSendReq(int *to, int *from, void *data, unsigned long size)
+
+int spSendReq(int *to, int *from, void *data, unsigned long size, int internal)
 {
-   int rc,n;
+   int rc,n,f=*from;
    struct iovec iov[2];
    _SFCB_ENTER(TRACE_MSGQUEUE, "spSendReq");
    
@@ -362,7 +421,8 @@ int spSendReq(int *to, int *from, void *data, unsigned long size)
    }
    else n=1;
    
-   rc = spSendMsg(to, from, n, iov, size);
+   if (internal) f=-(*from);
+   rc = spSendMsg(to, &f, n, iov, size);
    _SFCB_RETURN(rc);
 }
 
@@ -428,32 +488,33 @@ int spRcvAck(int from)
 static int spSendCtl(int *to, int *from, short code, unsigned long count,
                      void *data)
 {
-   SpMessageHdr spMsg = { 0, 0, *from, 0 };
+   SpMessageHdr spMsg = { 0, 0, abs(*from), 0 };
    static char *em = "spSendCtl sending to";
    struct msghdr msg;
-   struct iovec iov[2];
-
-   union {
-      struct cmsghdr cm;
-      char control[CMSG_SPACE(sizeof(int))];
-   } control_un;
-   struct cmsghdr *cmptr;
-
+   struct iovec iov[2];   
+   char ccmsg[CMSG_SPACE(sizeof(*from))];
+   struct cmsghdr *cmsg;
+   
    _SFCB_ENTER(TRACE_MSGQUEUE, "spSendCtl");
    _SFCB_TRACE(1, ("--- Sending %d bytes to %d", sizeof(SpMessageHdr), *to));
-
-   msg.msg_control = control_un.control;
-   msg.msg_controllen = sizeof(control_un.control);
-
-   cmptr = CMSG_FIRSTHDR(&msg);
-   cmptr->cmsg_len = CMSG_LEN(sizeof(int));
-   cmptr->cmsg_level = SOL_SOCKET;
-   cmptr->cmsg_type = SCM_RIGHTS;
-   *((int *) CMSG_DATA(cmptr)) = *from;
-
+        
+   if (*from>0) {
+      msg.msg_control = ccmsg;
+      msg.msg_controllen = sizeof(ccmsg);
+   
+      cmsg = CMSG_FIRSTHDR(&msg);
+      cmsg->cmsg_level = SOL_SOCKET;
+      cmsg->cmsg_type = SCM_RIGHTS;
+      cmsg->cmsg_len = CMSG_LEN(sizeof(*from));
+      *(int*)CMSG_DATA(cmsg) = *from;
+   }   
+   else {
+      msg.msg_control = 0;
+      msg.msg_controllen = 0;
+   }
+   
    msg.msg_name = NULL;
    msg.msg_namelen = 0;
-
    msg.msg_iov = iov;
    msg.msg_iovlen = 1;
 
@@ -472,18 +533,22 @@ static int spSendCtl(int *to, int *from, short code, unsigned long count,
 }
 
 int spSendCtlResult(int *to, int *from, short code, unsigned long count,
-                    void *data)
+                    void *data, int options)
 {
    int rc;
+   int f=*from;
+   
    _SFCB_ENTER(TRACE_MSGQUEUE, "spSendCtlResult");
-   rc = spSendCtl(to, from, code, count, data);
+
+   if (options & OH_Internal) f=-(*from);
+   rc = spSendCtl(to, &f, code, count, data);
    _SFCB_RETURN(rc);
 }
 
 
 void initSocketPairs(int provs, int https, int shttps)
 {
-   int i,t=(provs*2)+https+shttps;
+   int i,t=(provs*2); //+https+shttps;
    
    sPairs=(ComSockets*)malloc(sizeof(ComSockets)*t);
    mlogf(M_INFO,M_SHOW,"--- initSocketPairs: %d\n",t);
@@ -496,6 +561,12 @@ void initSocketPairs(int provs, int https, int shttps)
    htMax=https;
    stMax=shttps;
 }
+
+void uninitSocketPairs()
+{
+   free(sPairs);
+}
+
 
 unsigned long getInode(int fd)
 {
@@ -532,3 +603,98 @@ void closeSocket(ComSockets *sp, ComCloseOpt o,char *by)
    }   
    _SFCB_EXIT();
 }
+
+#define LOCAL_SFCB 
+
+#ifdef LOCAL_SFCB
+
+int getControlChars(char *id, char **val);
+
+void stopLocalConnectServer()
+{
+   static struct sockaddr_un serverAddr;
+   int sock,size=0;
+   unsigned long int l;
+   char *path;
+   
+   if (getControlChars("localSocketPath", &path)!=0) {
+      mlogf(M_INFO,M_SHOW,"--- localConnectServer failed to start\n");
+   }
+      
+   if ((sock=socket(PF_UNIX, SOCK_STREAM, 0))<0) {
+      perror("socket creation error");
+      return;
+   }
+   
+   serverAddr.sun_family=AF_UNIX;
+   strcpy(serverAddr.sun_path,path);
+   
+   if (connect(sock,(struct sockAddr*)&serverAddr,
+      sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
+      perror("connect error");
+      return;
+   }
+   
+   l=write(sock, &size, sizeof(size)); 
+   close(sock);
+}
+
+void localConnectServer()
+{
+   static struct sockaddr_un clientAddr,serverAddr;
+   int nsocket,ssocket;
+   unsigned int cl, notDone=1;
+   char *path;
+   
+   struct _msg {
+      unsigned int size;
+      char oper;
+      char data[59];
+   } msg;
+   
+   mlogf(M_INFO,M_SHOW,"--- localConnectServer started\n");
+   
+   if (getControlChars("localSocketPath", &path)!=0) {
+      mlogf(M_INFO,M_SHOW,"--- localConnectServer failed to start\n");
+   }
+      
+   if ((ssocket=socket(PF_UNIX, SOCK_STREAM, 0))<0) {
+      perror("socket creation error");
+      return;
+   }
+   
+   serverAddr.sun_family=AF_UNIX;
+   strcpy(serverAddr.sun_path,path);
+   unlink(path);
+   
+   if (bind(ssocket,(struct sockAddr*)&serverAddr,
+      sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
+      perror("bind error");
+      return;
+   }
+   
+   listen(ssocket,1);
+   
+   do {
+      sfcbSockets.send;
+      cl=sizeof(clientAddr);
+      if ((nsocket=accept(ssocket,(struct sockAddr*)&serverAddr,&cl))<0) {
+         perror("accept error");
+         return;
+      }
+      printf("somebody called us ...\n");
+      
+      read(nsocket, &msg.size, sizeof(msg.size));
+      read(nsocket, &msg.oper, msg.size);
+      
+      if (msg.size!=0) 
+         spSendCtlResult(&nsocket, &sfcbSockets.send, MSG_X_LOCAL, 0, 0, 0);
+      else notDone=0;   
+      
+      close (nsocket);
+   } while (notDone);
+
+   mlogf(M_INFO,M_SHOW,"--- localConnectServer ended\n");
+}
+
+#endif

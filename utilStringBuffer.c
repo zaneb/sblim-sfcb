@@ -98,7 +98,7 @@ UtilStringBuffer *newStringBuffer(int s)
       sbft_getCharPtr,
       sbft_getSize,
       sbft_appendChars,
-      sbft_appendString,
+//      sbft_appendString,
       sbft_reset
    };
 

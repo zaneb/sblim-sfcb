@@ -362,6 +362,21 @@ static void __cleanup_mt(void *ptr)
  * Initializes the current thread by adding it to the memory management sytem.
  */
 
+#include <pthread.h>;
+
+void uninitGarbageCollector()
+{
+   managed_thread *mt=NULL;   
+   mt = (managed_thread *)
+       CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
+   if (mt==NULL) return;
+   free(mt->hc.objs);
+   free(mt->hc.encObjs);
+   free(mt->hc.memObjs);
+   free(mt->hc.memEncObjs);
+   free(mt);
+}
+
 static managed_thread *__init_mt()
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "managed_thread");
@@ -781,15 +796,22 @@ void releaseHeap(void *hc)
 
 
 #include "utilft.h"
+#include "providerRegister.h"
 
 ProviderRegister *pReg = NULL;
 
 int init_sfcBroker(char *home)
 {
-   pReg = UtilFactory->newProviderRegister(home);
+   pReg = newProviderRegister(home);
    return 0;
 }
 
+
+int uninit_sfcBroker()
+{
+   if (pReg) pReg->ft->release(pReg);
+   return 0;
+}
 
 //*********************************************************************
 //*

@@ -22,6 +22,7 @@
 
 
 
+#include "cmpidt.h"
 #include "cimXmlRequest.h"
 #include "cimXmlParser.h"
 #include "msgqueue.h"
@@ -697,7 +698,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
    unsigned long quals;
    UtilStringBuffer *qsb = UtilFactory->newStrinBuffer(1024);
 
-   _SFCB_ENTER(TRACE_CIMXMLPROC, "cls2xml");
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "cls2xml"); 
    
    sb->ft->appendChars(sb, "<CLASS NAME=\"");
    sb->ft->appendChars(sb, cls->ft->getCharClassName(cls));
@@ -717,7 +718,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
 
    for (i = 0, m = ClClassGetPropertyCount(cl); i < m; i++) {
       qsb->ft->reset(qsb);
-      data = cls->ft->getPropertyAt(cls, i, &name, &quals, NULL);
+      data = getPropertyQualsAt(cls, i, &name, &quals, NULL);
       if (flags & FL_includeQualifiers) quals2xml(quals << 8, qsb);
       if (flags & FL_includeQualifiers)
          for (q = 0, qm = ClClassGetPropQualifierCount(cl, i); q < qm; q++) {

@@ -20,6 +20,7 @@
 */
 
 
+#include "cmpidt.h"
 #include "httpComm.h"
 
 #if defined USE_SSL 

@@ -146,6 +146,7 @@ void getSerializedInstance(const CMPIInstance * ci, void *area);
 unsigned long getInstanceSerializedSize(const CMPIInstance * ci);
 void getSerializedObjectPath(const CMPIObjectPath * op, void *area);
 unsigned long getObjectPathSerializedSize(const CMPIObjectPath * op);
+CMPIConstClass *getConstClass(const char *ns, const char *cn);
 
 CMPIObjectPath *relocateSerializedObjectPath(void *area);
 void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time);

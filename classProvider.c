@@ -265,8 +265,8 @@ static ClassRegister *newClassRegister(char *fname)
          cc->ft = CMPIConstClassFT;
          cc->ft->relocate(cc);
          cn=(char*)cc->ft->getCharClassName(cc);
+         
          if (strncmp(cn,"DMY_",4)!=0) {    
-
             total+=s;
             cb->ht->ft->put(cb->ht, cn, cc);
             if (cc->ft->isAssociation(cc)) {
@@ -274,6 +274,10 @@ static ClassRegister *newClassRegister(char *fname)
                if (cc->ft->getCharSuperClassName(cc) == NULL) cr->topAssocs++;
             }   
          } 
+         else {
+            free(cc->hdl);
+            free(cc);
+         }
       }
       else {
          mlogf(M_ERROR,M_SHOW,"--- %s contains invalid record(s) - directory skipped\n",fin);
@@ -577,6 +581,34 @@ Class_Register_FT *ClassRegisterFT = &ift;
 
 static CMPIStatus ClassProviderCleanup(CMPIClassMI * mi, CMPIContext * ctx)
 {
+   HashTableIterator *i,*ii;
+   ClassRegister *cReg;
+   ClassBase *cb;
+   UtilHashTable *ct,*it;
+   CMPIConstClass *cc;
+   UtilList *ul;
+   char *cn;
+   
+   fprintf(stderr," ClassProviderCleanup\n");  
+   for (i = nsHt->ft->getFirst(nsHt, (void **) &cn, (void **) &cReg); i;
+        i = nsHt->ft->getNext(nsHt, i, (void **) &cn, (void **) &cReg)) {
+      cb = (ClassBase *) (cReg + 1);
+      ct = cb->ht;
+      for (ii = ct->ft->getFirst(ct, (void **) &cn, (void **) &cc); ii;
+           ii = ct->ft->getNext(ct, ii, (void **) &cn, (void **) &cc)) {
+         free(cc->hdl);
+         free(cc);
+      }  
+      ct->ft->release(ct);   
+      it = cb->it;
+      for (ii = it->ft->getFirst(it, (void **) &cn, (void **) &ul); ii;
+           ii = it->ft->getNext(it, ii, (void **) &cn, (void **) &ul)) {
+           ul->ft->release(ul);
+      }     
+      it->ft->release(it);   
+      fprintf(stderr," removing: %s\n",cn);  
+   }
+   nsHt->ft->release(nsHt);   
 /* 
    ClassBase *cb;
    UtilHashTable *ct;

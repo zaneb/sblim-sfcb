@@ -33,6 +33,7 @@
 #include "queryOperation.h"
 #include "providerMgr.h"
 #include "internalProvider.h"
+#include "native.h"
 #include <time.h>
 
 #define LOCALCLASSNAME "InteropProvider"
@@ -49,8 +50,6 @@ extern CMPIString *native_new_CMPIString(const char *ptr, CMPIStatus * rc);
 extern void closeProviderContext(BinRequestContext* ctx);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 extern int testNameSpace(char *ns, CMPIStatus *st);
-
-extern QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
 
 /* ------------------------------------------------------------------------- */
 

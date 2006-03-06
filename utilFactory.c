@@ -30,7 +30,6 @@
 extern UtilHashTable *newHashTable(long buckets, long opt);
 extern UtilHashTable *newHashTableDefault(long buckets);
 extern UtilList *newList();
-extern ProviderRegister *newProviderRegister(char *fn);
 extern UtilStringBuffer *newStringBuffer(int s);
 
 static Util_Factory_FT ift = {
@@ -38,7 +37,6 @@ static Util_Factory_FT ift = {
    newHashTableDefault,
    newHashTable,
    newList,
-   newProviderRegister,
    newStringBuffer
 };
 

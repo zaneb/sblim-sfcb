@@ -42,6 +42,8 @@ extern UtilStringBuffer *segments2stringBuffer(RespSegment *rs);
 extern UtilStringBuffer *newStringBuffer(int);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
+extern ExpSegments exportIndicationReq(CMPIInstance *ci, char *id);
+
 
 static const CMPIBroker *_broker;
  

@@ -38,11 +38,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include "msgqueue.h"
-#include "utilft.h"
 #include "trace.h"
-
-#include "cimXmlRequest.h"
 
 #include <pthread.h>
 #include <semaphore.h>

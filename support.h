@@ -165,4 +165,6 @@ void cntlSkipws(char **p);
 int cntlParseStmt(char *in, CntlVals * rv);
 char *cntlGetVal(CntlVals * rv);
 
+int uninit_sfcBroker();
+
 #endif

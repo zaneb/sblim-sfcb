@@ -29,7 +29,6 @@
 #include "queryOperation.h"
 #include "selectexp.h"
 
-QLStatement *parseQuery(int mode, char *query, char *lang, char *sns, int *rc);
 static NativeSelectExp *__new_exp(int node,
          const char *queryString, const char *language, const char *sns, 
          CMPIArray ** projection, CMPIStatus * rc);

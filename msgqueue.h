@@ -43,6 +43,7 @@
 #define MSG_X_PROVIDER_NOT_FOUND 6
 #define MSG_X_EXTENDED_CTL_MSG   7
 #define MSG_X_FAILED             8
+#define MSG_X_LOCAL              9
 
 #if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
 #else
@@ -116,9 +117,10 @@ typedef struct mqgStat {
 
 extern MsgSegment setCharsMsgSegment(const char *);
 
-extern ComSockets sfcbSockets;
+extern ComSockets sfcbSockets; 
 extern ComSockets providerSockets;
 extern ComSockets resultSockets;
+extern int localMode;
 
 extern ComSockets getSocketPair(char* by);
 extern void closeSocket(ComSockets *sp, ComCloseOpt o, char* by);
@@ -126,8 +128,8 @@ extern void closeSocket(ComSockets *sp, ComCloseOpt o, char* by);
 extern int spRecvCtlResult(int *s, int *from, void **data,
                            unsigned long *length);
 extern int spSendCtlResult(int *to, int *from, short code, unsigned long count,
-                           void *data);
-extern int spSendReq(int *to, int *from, void *data, unsigned long size);
+                           void *data, int options);
+extern int spSendReq(int *to, int *from, void *data, unsigned long size, int internal);
 extern int spRecvResult(int *q, int *from, void **data, unsigned long *length);
 extern int spRecvReq(int *q, int *from, void **data, unsigned long *length, MqgStat *mqg);
 extern int spSendResult(int *to, int *from, void *data, unsigned long size);
@@ -166,5 +168,8 @@ extern char *httpPauseStr;
 extern ComSockets *sPairs;
 extern int ptBase,htBase,stBase,htMax,stMax;
 extern int httpProcId;
+
+extern void stopLocalConnectServer();
+extern void localConnectServer();
 
 #endif

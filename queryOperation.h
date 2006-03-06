@@ -261,4 +261,6 @@ struct qlControl {
    QLCollector *collector;
 };
 
+extern QLStatement *parseQuery(int mode, const char *query, const char *lang, const char *sns, int *rc);
+
 #endif

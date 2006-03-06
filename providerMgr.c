@@ -24,6 +24,8 @@
 #include <signal.h>
 #include <time.h>
 
+#include "cmpidt.h"
+#include "providerRegister.h"
 #include "providerMgr.h"
 #include "utilft.h"
 #include "msgqueue.h"
@@ -35,6 +37,7 @@
 #include "queryOperation.h"
 #include "selectexp.h"
 #include "config.h"
+
 
 #ifdef HAVE_INDICATIONS
 #define SFCB_INCL_INDICATION_SUPPORT 1
@@ -96,7 +99,8 @@ static UtilList *_getAssocClassNames(const char *ns);
 static void notSupported(int *requestor, OperationHdr * req)
 {
    mlogf(M_ERROR,M_SHOW,"--- MSG_X_NOT_SUPPORTED\n");
-   spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_NOT_SUPPORTED, 0, NULL);
+   spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_NOT_SUPPORTED, 0, 
+      NULL, req->options);
    free(req);
 }
 
@@ -323,7 +327,7 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
              (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
             _SFCB_TRACE(1,("--- responding with  %s %p %d",info->providerName,info,count));
             spSendCtlResult(requestor, &info->providerSockets.send,
-                            MSG_X_PROVIDER, count--, getProvIds(info).ids);
+                MSG_X_PROVIDER, count--, getProvIds(info).ids, req->options);
             if (type==INDICATION_PROVIDER) indFound++;
          }                   
          else {
@@ -331,7 +335,7 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
                if (n>1 || indFound) continue;
             };
             spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, count--,
-                            NULL);
+               NULL, req->options);
             if (msg) free(msg);
          }
       }
@@ -339,7 +343,7 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
    else {
       if (st.rc==CMPI_RC_ERR_INVALID_NAMESPACE) rc=MSG_X_INVALID_NAMESPACE;
       else rc=MSG_X_INVALID_CLASS;
-      spSendCtlResult(requestor, &dmy, rc, 0, NULL);
+      spSendCtlResult(requestor, &dmy, rc, 0, NULL, req->options);
    }   
    
    _SFCB_EXIT();
@@ -360,17 +364,18 @@ static void findProvider(long type, int *requestor, OperationHdr * req)
       if (info->type!=FORCE_PROVIDER_NOTFOUND &&
           (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
          spSendCtlResult(requestor, &info->providerSockets.send, MSG_X_PROVIDER,
-                         0, getProvIds(info).ids);
+            0, getProvIds(info).ids, req->options);
       }                   
       else {
-         spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND, 0, NULL);
+         spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND, 0, 
+            NULL, req->options);
          if (msg) free(msg);
       }
    }
    else {
       if (st.rc==CMPI_RC_ERR_INVALID_NAMESPACE) rc=MSG_X_INVALID_NAMESPACE;
       else rc=MSG_X_INVALID_CLASS;
-      spSendCtlResult(requestor, &sfcbSockets.send, rc, 0, NULL);
+      spSendCtlResult(requestor, &sfcbSockets.send, rc, 0, NULL, req->options);
    }   
    _SFCB_EXIT();
 }
@@ -527,11 +532,11 @@ static void assocProviderList(int *requestor, OperationHdr * req)
                 (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
                _SFCB_TRACE(1,("--- responding with  %s %p %d",info->providerName,info,count));
                spSendCtlResult(requestor, &info->providerSockets.send,
-                               MSG_X_PROVIDER, count--, getProvIds(info).ids);
+                  MSG_X_PROVIDER, count--, getProvIds(info).ids, req->options);
             }                   
             else {
                spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND,
-                               count--, NULL);
+                  count--, NULL, req->options);
                if (msg) free(msg);
             }
 
@@ -539,12 +544,12 @@ static void assocProviderList(int *requestor, OperationHdr * req)
       }
       else {
          spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND,
-                         count--, NULL);
+            count--, NULL, req->options);
       }
    }
    else {
       spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_INVALID_CLASS, 0,
-                      NULL);
+         NULL, req->options);
    }
    _SFCB_EXIT();
 }
@@ -611,7 +616,7 @@ static void classProvider(int *requestor, OperationHdr * req)
       getInode(classProvInfoPtr->providerSockets.send)));
    
    spSendCtlResult(requestor, &classProvInfoPtr->providerSockets.send, MSG_X_PROVIDER,
-                   0, getProvIds(classProvInfoPtr).ids);
+      0, getProvIds(classProvInfoPtr).ids, req->options);
                                    
    _SFCB_EXIT();
 }
@@ -632,17 +637,17 @@ static void methProvider(int *requestor, OperationHdr * req)
           (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
          _SFCB_TRACE(1,("--- responding with  %s %p",info->providerName,info));
          spSendCtlResult(requestor, &info->providerSockets.send, MSG_X_PROVIDER,
-                         0, getProvIds(info).ids);
+            0, getProvIds(info).ids, req->options);
       }                   
       else {
          spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND,
-                         0, NULL);
+            0, NULL, req->options);
          if (msg) free(msg);
       }
    }
    else
       spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_INVALID_CLASS, 0,
-                      NULL);
+         NULL, req->options);
    _SFCB_EXIT();
 }
 
@@ -730,7 +735,7 @@ void processProviderMgrRequests()
    int requestor;
    OperationHdr *req;
    unsigned long rl;
-   int rc;
+   int rc,options=0;
    char *cn, *ns;
    MqgStat mqg;
  
@@ -756,18 +761,22 @@ void processProviderMgrRequests()
             else req->className.data=NULL;
             cn = (char *) req->className.data;
             ns = (char *) req->nameSpace.data;
+            options=req->options;
 
            _SFCB_TRACE(1,("--- Mgr request for %s-%s (%d) from %d", req->nameSpace.data,
                 req->className.data,req->type,requestor));
-                
+
            hdlr = mHandlers[req->type];
            hdlr.handler(&requestor, req);
+           
            _SFCB_TRACE(1,("--- Mgr request for %s-%s DONE", req->nameSpace.data,
               req->className.data));
             free(req);
          }
          else {
          }
+         if ((options & OH_Internal) == 0) close(requestor);
+
       }
       else {
          _SFCB_ABORT();
@@ -801,13 +810,17 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
    int rc, i, x;
    char *buf;
    ProvAddr *as;
+   ComSockets sockets;
 
-   _SFCB_ENTER(TRACE_PROVIDERMGR, "getProviderContext");
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "internalGetProviderContext");
 
    l = sizeof(*ohdr) + ohdr->nameSpace.length + ohdr->className.length;
    buf = (char *) malloc(l + 8);
 
    memcpy(buf, ohdr, sizeof(*ohdr));
+   if (localMode) ((OperationHdr*)buf)->options=OH_Internal;
+   else ((OperationHdr*)buf)->options=0;
+   
    l = sizeof(*ohdr);
    memcpy(buf + l, ohdr->nameSpace.data, ohdr->nameSpace.length);
    ((OperationHdr *) buf)->nameSpace.data = (void *) l;
@@ -817,15 +830,17 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
    ((OperationHdr *) buf)->className.data = (void *) l;
    l += ohdr->className.length;
    
+   if (localMode) sockets=resultSockets;
+   else sockets=getSocketPair("getProviderContext");   
+   
    _SFCB_TRACE(1,("--- Sending mgr request - to %d from %d", sfcbSockets.send,
-                resultSockets.send));
-   spSendReq(&sfcbSockets.send, &resultSockets.send, buf, l);
+                sockets.send)); 
+   spSendReq(&sfcbSockets.send, &sockets.send, buf, l, localMode);   
    free(buf);
 
    _SFCB_TRACE(1, ("--- Sending mgr request done"));
    
-   ctx->rc =
-      spRecvCtlResult(&resultSockets.receive, &ctx->provA.socket, &ctx->provA.ids.ids, &l);
+   ctx->rc = spRecvCtlResult(&sockets.receive, &ctx->provA.socket, &ctx->provA.ids.ids, &l);
    _SFCB_TRACE(1,("--- Provider socket: %d - %lu %d",ctx->provA.socket,getInode(ctx->provA.socket),currentProc));
 
    if (ctx->rc == MSG_X_PROVIDER) {
@@ -839,7 +854,7 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
          ctx->provA.socket,l,currentProc,getInode(ctx->provA.socket),ohdr->className));
   
       for (i = 1; l; i++) {
-         rc = spRecvCtlResult(&resultSockets.receive, &as[i].socket,&as[i].ids.ids, &l);
+         rc = spRecvCtlResult(&sockets.receive, &as[i].socket,&as[i].ids.ids, &l);
          setInuseSem(as[i].ids.ids);
          _SFCB_TRACE(1,("--- getting provider socket: %lu %d",as[i].socket,getInode(as[i].socket),currentProc));
       }
@@ -849,12 +864,18 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
       ctx->rc = ctx->ctlXdata->code;
    }
 
+   if (!localMode) {
+      close (sockets.send);
+      close (sockets.receive);
+   }
    _SFCB_RETURN(ctx->rc);
 }
 
-BinResponseHdr *invokeProvider(BinRequestContext * ctx)
+
+static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sockets)
 {
-   _SFCB_ENTER(TRACE_PROVIDERMGR | TRACE_CIMXMLPROC, "invokeProvider");
+   _SFCB_ENTER(TRACE_PROVIDERMGR | TRACE_CIMXMLPROC, "intInvokeProvider");
+   _SFCB_TRACE(1, ("--- localMode: %d",localMode)); 
    int i, l, ol,rc;
    unsigned long size = ctx->bHdrSize;
    char *buf;
@@ -862,7 +883,6 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    BinResponseHdr *resp=NULL;
    int fromS;
    void *heapCtl=markHeap();
-
    hdr->provId = ctx->provA.ids.ids;
       
    for (l = size, i = 0; i < hdr->count; i++)
@@ -871,9 +891,10 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    buf = (char *) malloc(l + 8);
    
    if (ctx->noResp & 1) {
-      hdr->options |= 1;
+      hdr->options |= BRH_NoResp;
       _SFCB_TRACE(1, ("--- noResp set"));
    }
+   if (localMode) hdr->options |= BRH_Internal;
    
    memcpy(buf, hdr, size);
    for (l = size, i = 0; i < hdr->count; i++) {
@@ -907,7 +928,7 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
          l += ol;
          break;
       default:
-         mlogf(M_ERROR,M_SHOW,"--- bad invokeProvider request %d-%d\n", i,hdr->object[i].type);
+         mlogf(M_ERROR,M_SHOW,"--- bad intInvokeProvider request %d-%d\n", i,hdr->object[i].type);
          abort();
       }
    }
@@ -919,7 +940,8 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
           getInode(resultSockets.send)));
           
    for (;;) {
-      rc=spSendReq(&ctx->provA.socket, &resultSockets.send, buf, l);
+//      rc=spSendReq(&ctx->provA.socket, &sesultSockets.send, buf, l);
+      rc=spSendReq(&ctx->provA.socket, &sockets.send, buf, l, localMode);
       if (rc==-2) {
          mlogf(M_ERROR,M_SHOW,"--- need to reload provider ??\n");
          SFCB_ASM("int $3");
@@ -941,7 +963,8 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
          
          if (resp) free(resp);
          resp=NULL;
-         spRecvResult(&resultSockets.receive, &fromS, (void**) &resp, &size);
+//         spRecvResult(&resultSockets.receive, &fromS, (void**) &resp, &size);
+         spRecvResult(&sockets.receive, &fromS, (void**) &resp, &size);
          for (i = 0; i < resp->count; i++) {
             resp->object[i].data=(void*)((int)resp->object[i].data+(char*)resp);
          }
@@ -960,7 +983,8 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    }
 
    else if ((ctx->noResp & 1)==0) {
-      spRecvResult(&resultSockets.receive, &fromS, (void **) &resp, &size);
+//      spRecvResult(&resultSockets.receive, &fromS, (void **) &resp, &size);
+      spRecvResult(&sockets.receive, &fromS, (void **) &resp, &size);
 
      ctx->rCount=ctx->pCount;
      if (resp->rvValue) {
@@ -976,6 +1000,7 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    }
    else {
       _SFCB_TRACE(1,("--- waiting for response skipped")); 
+      free(resp);
       resp=NULL;
    }   
    
@@ -983,13 +1008,35 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    _SFCB_RETURN(resp);
 }
 
+BinResponseHdr *invokeProvider(BinRequestContext * ctx)
+{
+   ComSockets sockets;
+   _SFCB_ENTER(TRACE_PROVIDERMGR | TRACE_CIMXMLPROC, "invokeProviders");
+
+   if (localMode) sockets=resultSockets;
+   else sockets=getSocketPair("invokeProvider");
+   
+   BinResponseHdr *resp=intInvokeProvider(ctx, sockets);
+    
+   if (!localMode) {
+      close(sockets.receive);
+      close(sockets.send);
+   }
+   
+   return resp;
+}
+
 BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
                                  int *count)
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR | TRACE_CIMXMLPROC, "invokeProviders");
    BinResponseHdr **resp;
+   ComSockets sockets;
    int i;
 
+   if (localMode) sockets=resultSockets;
+   else sockets=getSocketPair("invokeProvider");
+   
    resp = malloc(sizeof(BinResponseHdr *) * (binCtx->pCount));
    *err = 0;
    *count = 0;
@@ -999,17 +1046,27 @@ BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
    for (i = 0; i < binCtx->pCount; i++,binCtx->pDone++) {
       _SFCB_TRACE(1, ("--- Calling provider ..."));
       binCtx->provA = binCtx->pAs[i];
-      resp[i] = invokeProvider(binCtx);
+      resp[i] = intInvokeProvider(binCtx, sockets);
       _SFCB_TRACE(1, ("--- back from calling provider"));
       *count += resp[i]->count;
       resp[i]->rc--;
       if (*err == 0 && resp[i]->rc != 0) *err = i+1;
    }
+   
+   if (!localMode) {
+      close(sockets.receive);
+      close(sockets.send);
+   }
+   
    _SFCB_RETURN(resp);
 }
 
+
 extern void lockUpCall(CMPIBroker* mb);
 extern void unlockUpCall(CMPIBroker* mb);
+       #include <sys/types.h>
+       #include <sys/stat.h>
+       #include <unistd.h>
 
 CMPIConstClass *getConstClass(const char *ns, const char *cn)
 {
@@ -1017,13 +1074,13 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    CMPIConstClass *ccl;
    CMPIStatus rc;
    GetClassReq sreq = BINREQ(OPS_GetClass,2);
-   BinResponseHdr *resp;
+   BinResponseHdr *resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = { OPS_GetClass, 2 };
    int irc;
    
    _SFCB_ENTER(TRACE_PROVIDERMGR, "getConstClass");
-   
+  
    path = TrackedCMPIObjectPath(ns, cn, &rc);
    sreq.principal = setCharsMsgSegment("$$");
    sreq.objectPath = setObjectPathMsgSegment(path);
@@ -1040,7 +1097,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    lockUpCall(Broker);
    
    irc = getProviderContext(&binCtx, &req);
-
+   
    if (irc) {
       _SFCB_TRACE(1, ("--- Invoking Provider"));
       resp = invokeProvider(&binCtx);

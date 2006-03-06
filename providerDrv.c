@@ -412,7 +412,6 @@ static int getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
           loadClassMI(info->providerName, info->library, Broker, ctx);
    *mi = info->classMI;
    rc = info->classMI ? 1 : 0;
-   fprintf(stderr,"classMI: %p\n",info);
    _SFCB_RETURN(rc);
 }
 
@@ -1739,7 +1738,6 @@ static int doLoadProvider(ProviderInfo *info, char *dlName)
    while (dir) {
      libraryName(dir, (char *) info->location, fullname);
      if (stat(fullname,&stbuf) == 0) {
-        fprintf(stderr,"doLoadProvider: %s\n",fullname);
        info->library = dlopen(fullname, RTLD_NOW);
        if (info->library == NULL) {
 	 mlogf(M_ERROR,M_SHOW,"*** dlopen error: %s\n",dlerror());

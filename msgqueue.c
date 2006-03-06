@@ -644,12 +644,13 @@ void localConnectServer()
    static struct sockaddr_un clientAddr,serverAddr;
    int nsocket,ssocket;
    unsigned int cl, notDone=1;
-   char *path;
+   char *path,cMsg[264];
    
    struct _msg {
       unsigned int size;
       char oper;
-      char data[59];
+      pid_t pid;
+      char id[64];
    } msg;
    
    mlogf(M_INFO,M_SHOW,"--- localConnectServer started\n");
@@ -682,10 +683,12 @@ void localConnectServer()
          perror("accept error");
          return;
       }
-      printf("somebody called us ...\n");
       
       read(nsocket, &msg.size, sizeof(msg.size));
       read(nsocket, &msg.oper, msg.size);
+      
+      sprintf(cMsg,"--- Local Client connect - pid: %d user: %s\n",msg.pid,msg.id); 
+      mlogf(M_INFO,M_SHOW,cMsg);
       
       if (msg.size!=0) 
          spSendCtlResult(&nsocket, &sfcbSockets.send, MSG_X_LOCAL, 0, 0, 0);

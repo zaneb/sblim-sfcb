@@ -1728,8 +1728,16 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
    int sock,rc,sfcbSocket;
    void *idData;
    unsigned long int l;
-   char *socketName;
+   char *socketName,*user;
 
+   
+   struct _msg {
+      unsigned int size;
+      char oper;
+      pid_t pid;
+      char id[64];
+   } msg;
+   
    if ((sock=socket(PF_UNIX, SOCK_STREAM, 0))<0) {
       return -1;
       if (st) {
@@ -1757,6 +1765,15 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
       }
       return -1;
    }
+   
+   msg.size=sizeof(msg)-sizeof(msg.size);
+   msg.oper=1;
+   msg.pid=getpid();
+   user=getenv("USER");
+   strncpy(msg.id, (user) ? user : "", sizeof(msg.id)-1);
+   msg.id[sizeof(msg.id)-1]=0;
+   
+   l=write(sock, &msg, sizeof(msg)); 
    
    rc = spRecvCtlResult(&sock, &sfcbSocket,&idData, &l);
   

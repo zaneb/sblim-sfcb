@@ -588,8 +588,7 @@ static CMPIStatus ClassProviderCleanup(CMPIClassMI * mi, CMPIContext * ctx)
    CMPIConstClass *cc;
    UtilList *ul;
    char *cn;
-   
-   fprintf(stderr," ClassProviderCleanup\n");  
+
    for (i = nsHt->ft->getFirst(nsHt, (void **) &cn, (void **) &cReg); i;
         i = nsHt->ft->getNext(nsHt, i, (void **) &cn, (void **) &cReg)) {
       cb = (ClassBase *) (cReg + 1);
@@ -606,27 +605,9 @@ static CMPIStatus ClassProviderCleanup(CMPIClassMI * mi, CMPIContext * ctx)
            ul->ft->release(ul);
       }     
       it->ft->release(it);   
-      fprintf(stderr," removing: %s\n",cn);  
    }
    nsHt->ft->release(nsHt);   
-/* 
-   ClassBase *cb;
-   UtilHashTable *ct;
-   HashTableIterator *i;
-   CMPIConstClass *cc;
-   char *cn;
-
-      
-   if (cReg==NULL) CMReturn(CMPI_RC_OK);
-   cb = (ClassBase *) (cReg + 1);
-   ct = cb->ht;
-
-   for (i = ct->ft->getFirst(ct, (void **) &cn, (void **) &cc); i;
-        i = ct->ft->getNext(ct, i, (void **) &cn, (void **) &cc)) {
-       free(cc->hdl);
-       free(cc);
-   }
-*/
+   
    CMReturn(CMPI_RC_OK);
 }
 

@@ -454,11 +454,14 @@ static CMPIInstance * getInstance(
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          inst = relocateSerializedInstance(resp->object[0].data);
+         inst=inst->ft->clone(inst,NULL);
          free(sreq);
+         free(resp);
          _SFCB_RETURN(inst);
       }
       free(sreq);
       if (rc) CMCISetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -520,9 +523,12 @@ static CMPIObjectPath * createInstance(
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          path = relocateSerializedObjectPath(resp->object[0].data);
+         path=path->ft->clone(path,NULL);
+         free(resp);
          _SFCB_RETURN(path);
       }
       if (rc) CMCISetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -596,10 +602,12 @@ static CMPIStatus modifyInstance(
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          free(sreq);
+         free(resp);
          _SFCB_RETURN(rc);
       }
       free(sreq);
       CMCISetStatusWithChars(&rc, resp->rc, (char*)resp->object[0].data);
+      free(resp);
       _SFCB_RETURN(rc);
    }
    else ctxErrResponse(&binCtx,&rc);
@@ -652,9 +660,11 @@ static CMPIStatus deleteInstance(
       closeProviderContext(&binCtx);
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
+         free(resp);
          _SFCB_RETURN(rc);
       }
       CMCISetStatusWithChars(&rc, resp->rc, (char*)resp->object[0].data);
+      free(resp);
       _SFCB_RETURN(rc);
    }
    else ctxErrResponse(&binCtx,&rc);
@@ -730,7 +740,7 @@ static CMPIEnumeration * execQuery(
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -914,7 +924,7 @@ static CMPIEnumeration * references(
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       if (resp) free(resp);
-	      free(sreq);
+	   free(sreq);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -978,7 +988,7 @@ static CMPIEnumeration * associatorNames(
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1038,7 +1048,7 @@ static CMPIEnumeration * referenceNames(
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1511,9 +1521,11 @@ static CMPIConstClass * getClass(
       if (resp->rc == CMPI_RC_OK) { 
          cls = relocateSerializedConstClass(resp->object[0].data);
          cls = cls->ft->clone(cls,NULL);
+         free(resp);
          free(sreq);
          _SFCB_RETURN(cls);
       }
+      free(sreq);
       free(sreq);
       if (rc) CMCISetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
       _SFCB_RETURN(NULL);
@@ -1582,7 +1594,7 @@ static CMPIEnumeration* enumClassNames(
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1647,7 +1659,7 @@ static CMPIEnumeration * enumClasses(
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);

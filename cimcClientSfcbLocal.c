@@ -1510,6 +1510,7 @@ static CMPIConstClass * getClass(
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) { 
          cls = relocateSerializedConstClass(resp->object[0].data);
+         cls = cls->ft->clone(cls,NULL);
          free(sreq);
          _SFCB_RETURN(cls);
       }

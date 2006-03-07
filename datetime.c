@@ -290,7 +290,7 @@ static struct native_datetime *__new_datetime(int mm_add,
 
   \return a pointer to a native CMPIDateTime.
  */
-CMPIDateTime *native_new_CMPIDateTime(CMPIStatus * rc)
+static CMPIDateTime *_new_CMPIDateTime(CMPIStatus * rc, int mm_add)
 {
    struct timeval tv;
    struct timezone tz;
@@ -304,7 +304,17 @@ CMPIDateTime *native_new_CMPIDateTime(CMPIStatus * rc)
    
    bin2chars(msecs, 0, rc, cimDt);
 
-   return (CMPIDateTime *) __new_datetime(MEM_TRACKED, cimDt, rc);
+   return (CMPIDateTime *) __new_datetime(mm_add, cimDt, rc);
+}
+
+CMPIDateTime *native_new_CMPIDateTime(CMPIStatus * rc)
+{
+   return _new_CMPIDateTime(rc, MEM_TRACKED);;
+}
+
+CMPIDateTime *NewCMPIDateTime(CMPIStatus * rc)
+{
+   return _new_CMPIDateTime(rc, MEM_NOT_TRACKED);;
 }
 
 
@@ -320,13 +330,27 @@ CMPIDateTime *native_new_CMPIDateTime(CMPIStatus * rc)
   
   \sa __dtft_getBinaryFormat()
  */
+static CMPIDateTime *_new_CMPIDateTime_fromBinary(CMPIUint64 msecs,
+                                                 CMPIBoolean interval,
+                                                 CMPIStatus * rc, int mm_add)
+{
+   char cimDt[26];
+   bin2chars(msecs, interval, rc, cimDt);
+   return (CMPIDateTime*) __new_datetime(mm_add, cimDt, rc);
+}
+
 CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64 msecs,
                                                  CMPIBoolean interval,
                                                  CMPIStatus * rc)
 {
-   char cimDt[26];
-   bin2chars(msecs, interval, rc, cimDt);
-   return (CMPIDateTime *) __new_datetime(MEM_TRACKED, cimDt, rc);
+   return _new_CMPIDateTime_fromBinary(msecs,interval,rc,MEM_TRACKED);
+}
+
+CMPIDateTime *NewCMPIDateTimeFromBinary(CMPIUint64 msecs,
+                                                 CMPIBoolean interval,
+                                                 CMPIStatus * rc)
+{
+   return _new_CMPIDateTime_fromBinary(msecs,interval,rc,MEM_NOT_TRACKED);
 }
 
 
@@ -345,8 +369,8 @@ CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64 msecs,
 
   \sa __dtft_getStringFormat()
  */
-CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *string,
-                                                CMPIStatus * rc)
+static CMPIDateTime *_new_CMPIDateTime_fromChars(const char *string,
+                                                CMPIStatus * rc, int mm_add)
 {
    if (string == NULL || strlen(string)!=25 ||
        (string[21]!='-' && string[21]!='+' && string[21]!=':')) {
@@ -354,10 +378,18 @@ CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *string,
       return NULL;
    }
 
-   return (CMPIDateTime *)
-       __new_datetime(MEM_TRACKED, string, rc);
-   
-   
+   return (CMPIDateTime *) __new_datetime(mm_add, string, rc);
+}
+
+CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *string,
+                                                CMPIStatus * rc)
+{
+   return  _new_CMPIDateTime_fromChars(string,rc,MEM_TRACKED);
+}
+
+CMPIDateTime *NewCMPIDateTimeFromChars(const char *string, CMPIStatus * rc)
+{
+   return  _new_CMPIDateTime_fromChars(string,rc,MEM_NOT_TRACKED);
 }
 
 /****************************************************************************/

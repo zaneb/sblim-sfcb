@@ -163,8 +163,6 @@ struct _ClientEnv {
                (const char *ns, const char *cn, CMPIStatus* rc);
    CMPIArgs* (*newArgs)
                (CMPIStatus* rc);
-   CMPIString* (*newString)
-               (const char *data, CMPIStatus* rc);
    CMPIArray* (*newArray)
                (CMPICount max, CMPIType type, CMPIStatus* rc);
    CMPIDateTime* (*newDateTime)
@@ -173,6 +171,8 @@ struct _ClientEnv {
                (CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus* rc);
    CMPIDateTime* (*newDateTimeFromChars)
                (const char *utcTime, CMPIStatus* rc);
+   CMPIString* (*newString)
+               (const char *data, CMPIStatus* rc);
 };
 
 int sameCMPIObjectPath ( const CMPIObjectPath *cop1, const CMPIObjectPath *cop2);

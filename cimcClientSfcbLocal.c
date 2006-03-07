@@ -38,6 +38,7 @@
    
 extern unsigned long _sfcb_trace_mask; 
 
+extern void closeProviderContext(BinRequestContext* binCtx);
 extern MsgSegment setObjectPathMsgSegment(const CMPIObjectPath * op);
 extern MsgSegment setInstanceMsgSegment(const CMPIInstance * inst);
 extern CMPIConstClass *relocateSerializedConstClass(void *area);
@@ -51,7 +52,12 @@ extern CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
 extern CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc);
 extern CMPIString *NewCMPIString(const char *ptr, CMPIStatus * rc);
 
-#include <stdlib.h>
+extern CMPIArgs* NewCMPIArgs(CMPIStatus* rc);
+extern CMPIDateTime *NewCMPIDateTime(CMPIStatus *rc);
+extern CMPIDateTime *NewCMPIDateTimeFromBinary(CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus *rc);
+extern CMPIDateTime *NewCMPIDateTimeFromChars(const char *utcTime, CMPIStatus *rc);
+
+ #include <stdlib.h>
 #include <string.h>
 
 #ifdef DEBUG
@@ -678,7 +684,6 @@ static CMPIEnumeration * execQuery(
    _SFCB_ENTER(TRACE_CIMXMLPROC, "execQuery");
 
    CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
-   CMPIString *cn=cop->ft->getClassName(cop,NULL);
    
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    qs=parseQuery(MEM_TRACKED,query,lang,NULL,&irc);
@@ -1525,8 +1530,64 @@ static CMPIEnumeration* enumClassNames(
 	CMPIFlags flags,
 	CMPIStatus * rc)
 {
-   if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_SUPPORTED);
-   return NULL;
+   EnumClassNamesReq sreq = BINREQ(OPS_EnumerateClassNames, 2);
+   int irc, l = 0, err = 0;
+   BinResponseHdr **resp;
+   BinRequestContext binCtx;
+   OperationHdr oHdr={OPS_EnumerateClassNames,0,2};
+   CMPIEnumeration *enm = NULL;
+   
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "enumClassNames");
+   
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+   CMPIString *cn=cop->ft->getClassName(cop,NULL);
+   
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
+   oHdr.className=setCharsMsgSegment((char*)cn->hdl);
+
+   CMRelease(ns);
+   CMRelease(cn);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   
+   sreq.objectPath = setObjectPathMsgSegment(cop);
+   sreq.principal = setCharsMsgSegment("principal");
+   sreq.flags = flags;
+
+   binCtx.oHdr = (OperationHdr*) &oHdr;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.bHdr->flags = flags;
+   binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.type=CMPI_ref;
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+  _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx,(OperationHdr*)&oHdr);
+
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Calling Providers"));
+      resp = invokeProviders(&binCtx, &err, &l);
+      _SFCB_TRACE(1, ("--- Back from Provider"));
+
+      closeProviderContext(&binCtx);
+      if (err == 0) {
+         enm=cpyEnumResponses(&binCtx,resp,l);
+         free(resp);
+         _SFCB_RETURN(enm);
+      }
+      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+                  (char*)resp[err-1]->object[0].data);
+      if (resp) free(resp);
+      _SFCB_RETURN(NULL);
+   }
+   else ctxErrResponse(&binCtx,rc);
+   closeProviderContext(&binCtx);
+   
+   _SFCB_RETURN(NULL);
 }
 
 static CMPIEnumeration * enumClasses(
@@ -1535,8 +1596,64 @@ static CMPIEnumeration * enumClasses(
 	CMPIFlags flags,
 	CMPIStatus * rc)
 {
-   if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_SUPPORTED);
-   return NULL;
+   EnumClassesReq sreq = BINREQ(OPS_EnumerateClasses, 2);
+   int irc, l = 0, err = 0;
+   BinResponseHdr **resp;
+   BinRequestContext binCtx;
+   OperationHdr oHdr={OPS_EnumerateClasses,0,2};
+   CMPIEnumeration *enm = NULL;
+   
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "enumClasses");
+   
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+   CMPIString *cn=cop->ft->getClassName(cop,NULL);
+   
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
+   oHdr.className=setCharsMsgSegment((char*)cn->hdl);
+
+   CMRelease(ns);
+   CMRelease(cn);
+   
+   memset(&binCtx,0,sizeof(BinRequestContext));
+
+   sreq.objectPath = setObjectPathMsgSegment(cop);
+   sreq.principal = setCharsMsgSegment("principal");
+   sreq.flags = flags;
+
+   binCtx.oHdr = (OperationHdr*)&oHdr;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.bHdr->flags = flags;
+   binCtx.type=CMPI_class;
+   binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr*)&oHdr);
+   
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Calling Providers"));
+      resp = invokeProviders(&binCtx, &err, &l);
+      closeProviderContext(&binCtx);
+
+      if (err == 0) {
+         enm=cpyEnumResponses(&binCtx,resp,l);
+         free(resp);
+         _SFCB_RETURN(enm);
+      }
+      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+                  (char*)resp[err-1]->object[0].data);
+      if (resp) free(resp);
+      _SFCB_RETURN(NULL);
+   }
+   else ctxErrResponse(&binCtx,rc);
+   closeProviderContext(&binCtx);
+
+   _SFCB_RETURN(NULL);
+
 }
 
 
@@ -1844,29 +1961,47 @@ static CMPIObjectPath* newObjectPath(const char *ns, const char *cn, CMPIStatus*
 {
    return NewCMPIObjectPath(ns,cn,rc);
 }
-                  
+
+static CMPIArgs* newArgs(CMPIStatus* rc)
+{
+   return NewCMPIArgs(rc);
+}
+
+static CMPIArray* newArray(CMPICount max, CMPIType type, CMPIStatus* rc)
+{
+   return NewCMPIArray(max, type, rc);
+}
+
+static CMPIDateTime *newDateTime(CMPIStatus *rc) 
+{
+   return NewCMPIDateTime(rc); 
+}
+
+static CMPIDateTime *newDateTimeFromBinary(CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus *rc) 
+{
+   return NewCMPIDateTimeFromBinary(binTime,interval,rc); 
+}
+
+static CMPIDateTime *newDateTimeFromChars(const char *utcTime, CMPIStatus *rc) 
+{
+   return NewCMPIDateTimeFromChars(utcTime,rc); 
+}
+
 ClientEnv* _Create_SfcbLocal_Env(char *id)
 {
  
    static ClientEnv localFT = {
-      "local",
+      "SfcbLocal",
       CMPIConnect,
       CMPIConnect2,     
       newInstance,      
       newObjectPath,
-
-      NULL, //cimcArgs* (*newArgs)
-            //      (cimcStatus* rc);
+      newArgs,
+      newArray,
+      newDateTime,
+      newDateTimeFromBinary,
+      newDateTimeFromChars,
       newString,
-      
-      NULL, //cimcArray* (*newArray)
-            //      (cimcCount max, cimcType type, cimcStatus* rc);
-      NULL, //cimcDateTime* (*newDateTime)
-            //      (cimcStatus* rc);
-      NULL, //cimcDateTime* (*newDateTimeFromBinary)
-            //      (cimcUint64 binTime, cimcBoolean interval, cimcStatus* rc);
-      NULL, //cimcDateTime* (*newDateTimeFromChars)
-            //      (const char *utcTime, cimcStatus* rc);
     };
    
     return &localFT;

@@ -57,7 +57,9 @@ static CMPIConstClass *clone(CMPIConstClass * cc, CMPIStatus * rc);
 static CMPIStatus release(CMPIConstClass * cc)
 {
    CMPIStatus rc = { 0, NULL };
-   if (cc->hdl) free(cc->hdl);
+   if (cc->hdl)  {
+      if (cc->hdl != (void*)(cc+1)) free(cc->hdl);
+   }   
    free(cc);
    return rc;
 }

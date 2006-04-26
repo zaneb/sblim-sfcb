@@ -33,7 +33,6 @@
       { if (st) { (st)->rc=(rcp); \
         (st)->msg=NewCMPIString((chars),NULL); }}
         
-#define NewCMPIEnumeration  native_new_CMPIEnumeration
 #define NewCMPIString native_new_CMPIString
    
 extern unsigned long _sfcb_trace_mask; 
@@ -51,13 +50,16 @@ extern CMPIInstance *NewCMPIInstance(CMPIObjectPath * cop, CMPIStatus * rc);
 extern CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
 extern CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc);
 extern CMPIString *NewCMPIString(const char *ptr, CMPIStatus * rc);
+extern CMPIEnumeration *NewCMPIEnumeration(CMPIArray * array, CMPIStatus * rc);
 
 extern CMPIArgs* NewCMPIArgs(CMPIStatus* rc);
 extern CMPIDateTime *NewCMPIDateTime(CMPIStatus *rc);
 extern CMPIDateTime *NewCMPIDateTimeFromBinary(CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus *rc);
 extern CMPIDateTime *NewCMPIDateTimeFromChars(const char *utcTime, CMPIStatus *rc);
 
- #include <stdlib.h>
+extern int localClientMode;
+
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef DEBUG
@@ -175,6 +177,15 @@ static CMPIStatus releaseClient(Client * mb)
   return rc;
 }
 
+void freeResps(BinResponseHdr **resp, int count)
+{
+   if (resp && count) while (count)
+      free(resp[(count--)-1]);
+   if (resp) free(resp);
+}
+
+extern void setEnumArray(CMPIEnumeration * enumeration,CMPIArray * array);
+
 static CMPIEnumeration *cpyEnumResponses(BinRequestContext * binCtx,
                                  BinResponseHdr ** resp,
                                  int arrLen)
@@ -185,13 +196,14 @@ static CMPIEnumeration *cpyEnumResponses(BinRequestContext * binCtx,
      CMPIObjectPath *path;
      CMPIConstClass *cls;
    } object;
-   CMPIArray *ar;
+   CMPIArray *ar,*art;
    CMPIEnumeration *enm;
    CMPIStatus rc;
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "genEnumResponses");
 
    ar = NewCMPIArray(arrLen, binCtx->type, NULL);
+   art = NewCMPIArray(0, binCtx->type, NULL);
 
    for (c = 0, i = 0; i < binCtx->rCount; i++) {
       for (j = 0; j < resp[i]->count; c++, j++) {
@@ -202,12 +214,14 @@ static CMPIEnumeration *cpyEnumResponses(BinRequestContext * binCtx,
          else if (binCtx->type == CMPI_class) {
             object.cls = relocateSerializedConstClass(resp[i]->object[j].data);
          }
-         object.inst=CMClone(object.inst,NULL);
+    //     object.inst=CMClone(object.inst,NULL);
          rc=CMSetArrayElementAt(ar,c, (CMPIValue*)&object.inst, binCtx->type);
       }
    }
 
-   enm = NewCMPIEnumeration(ar, NULL);
+   enm = NewCMPIEnumeration(art, NULL);
+   setEnumArray(enm,ar);
+   art->ft->release(art);
 
    _SFCB_RETURN(enm);
 }
@@ -266,9 +280,6 @@ static CMPIEnumeration * enumInstanceNames(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
@@ -286,6 +297,9 @@ static CMPIEnumeration * enumInstanceNames(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
@@ -294,12 +308,12 @@ static CMPIEnumeration * enumInstanceNames(
       closeProviderContext(&binCtx);
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      if (resp) freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -333,9 +347,6 @@ static CMPIEnumeration * enumInstances(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    if (properties) {
@@ -362,6 +373,9 @@ static CMPIEnumeration * enumInstances(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
    
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
@@ -369,13 +383,13 @@ static CMPIEnumeration * enumInstances(
 
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
          free(sreq);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      if (resp) freeResps(resp,binCtx.pCount);
          free(sreq);
       _SFCB_RETURN(NULL);
    }
@@ -415,9 +429,6 @@ static CMPIInstance * getInstance(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    if (properties) {
@@ -447,6 +458,9 @@ static CMPIInstance * getInstance(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
@@ -497,9 +511,6 @@ static CMPIObjectPath * createInstance(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
                   
    sreq.principal = setCharsMsgSegment("principal");
@@ -516,6 +527,9 @@ static CMPIObjectPath * createInstance(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
@@ -562,9 +576,6 @@ static CMPIStatus modifyInstance(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    if (properties) {
@@ -595,6 +606,9 @@ static CMPIStatus modifyInstance(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
@@ -636,9 +650,6 @@ static CMPIStatus deleteInstance(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
@@ -654,6 +665,9 @@ static CMPIStatus deleteInstance(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
@@ -735,12 +749,12 @@ static CMPIEnumeration * execQuery(
 
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      free(resp);
+      freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -777,9 +791,6 @@ static CMPIEnumeration * associators(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    if (properties) {
       char **p;
       for (p=properties; *p; p++) pCount++;
@@ -820,6 +831,9 @@ static CMPIEnumeration * associators(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProviders(&binCtx, &err, &l);
@@ -827,14 +841,14 @@ static CMPIEnumeration * associators(
       
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
 	      free(sreq);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
-	      free(sreq);
+      if (resp) freeResps(resp,binCtx.pCount);
+	   free(sreq);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -873,9 +887,6 @@ static CMPIEnumeration * references(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    if (properties) {
       char **p;
       for (p=properties; *p; p++) pCount++;
@@ -910,6 +921,9 @@ static CMPIEnumeration * references(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+   
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProviders(&binCtx, &err, &l);
@@ -917,13 +931,13 @@ static CMPIEnumeration * references(
       
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
 	      free(sreq);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      if (resp) free(resp);
+      if (resp) freeResps(resp,binCtx.pCount);
 	   free(sreq);
       _SFCB_RETURN(NULL);
    }
@@ -983,12 +997,12 @@ static CMPIEnumeration * associatorNames(
       
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      free(resp);
+      freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1043,12 +1057,12 @@ static CMPIEnumeration * referenceNames(
       
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      free(resp);
+      freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1526,7 +1540,6 @@ static CMPIConstClass * getClass(
          _SFCB_RETURN(cls);
       }
       free(sreq);
-      free(sreq);
       if (rc) CMCISetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
       _SFCB_RETURN(NULL);
    }
@@ -1560,9 +1573,6 @@ static CMPIEnumeration* enumClassNames(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-
    memset(&binCtx,0,sizeof(BinRequestContext));
    
    sreq.objectPath = setObjectPathMsgSegment(cop);
@@ -1581,6 +1591,9 @@ static CMPIEnumeration* enumClassNames(
   _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx,(OperationHdr*)&oHdr);
 
+   CMRelease(ns);
+   CMRelease(cn);
+
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
@@ -1589,12 +1602,12 @@ static CMPIEnumeration* enumClassNames(
       closeProviderContext(&binCtx);
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      free(resp);
+      freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1626,9 +1639,6 @@ static CMPIEnumeration * enumClasses(
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className=setCharsMsgSegment((char*)cn->hdl);
 
-   CMRelease(ns);
-   CMRelease(cn);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
@@ -1646,7 +1656,10 @@ static CMPIEnumeration * enumClasses(
 
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr*)&oHdr);
-   
+
+   CMRelease(ns);
+   CMRelease(cn);
+
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
@@ -1654,12 +1667,12 @@ static CMPIEnumeration * enumClasses(
 
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
-         free(resp);
+         freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
       if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
-      free(resp);
+      freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1858,7 +1871,8 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
    int sock,rc,sfcbSocket;
    void *idData;
    unsigned long int l;
-   char *socketName,*user;
+   char *user;
+   static char *socketName=NULL;
 
    
    struct _msg {
@@ -1872,17 +1886,20 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
       return -1;
       if (st) {
          st->rc=CMPI_RC_ERR_FAILED;
-         st->msg=ce->newString(strerror(errno),NULL);
+         st->msg=ce->ft->newString(ce,strerror(errno),NULL);
       }
       return -1;
    }
    
-   setupControl(NULL);
-   rc=getControlChars("localSocketPath", &socketName);
-   if (rc) {
-      fprintf(stderr,"--- Failed to open sfcb local socket (%d)\n",rc);
-      return -2;
-   }
+   if (socketName==NULL) {
+      setupControl(NULL);
+      rc=getControlChars("localSocketPath", &socketName);    
+      sunsetControl();
+      if (rc) {
+         fprintf(stderr,"--- Failed to open sfcb local socket (%d)\n",rc);
+         return -2;
+      }
+   }   
 
    serverAddr.sun_family=AF_UNIX;
    strcpy(serverAddr.sun_path,socketName);
@@ -1891,7 +1908,7 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
       sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
       if (st) {
          st->rc=CMPI_RC_ERR_FAILED;
-         st->msg=ce->newString(strerror(errno),NULL);
+         st->msg=ce->ft->newString(ce,strerror(errno),NULL);
       }
       return -1;
    }
@@ -1913,20 +1930,27 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
    return sfcbSocket;
 }
 
-Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, const char *port,
+static void* release(ClientEnv* ce)
+{
+   void *lib=ce->hdl;
+   free(ce);
+   return lib;
+}
+
+static Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, const char *port,
 			 const char *user, const char *pwd, 
 			 int verifyMode, const char * trustStore,
 			 const char * certFile, const char * keyFile,
 			 CMPIStatus *rc);
                          
-Client *CMPIConnect(ClientEnv* ce, const char *hn, const char *scheme, const char *port,
+static Client *CMPIConnect(ClientEnv* ce, const char *hn, const char *scheme, const char *port,
                         const char *user, const char *pwd, CMPIStatus *rc)
 {
   return CMPIConnect2(ce, hn, scheme, port, user, pwd, Client_VERIFY_PEER, NULL,
 		      NULL, NULL, rc);
 }
 
-Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, const char *port,
+static Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, const char *port,
 			 const char *user, const char *pwd, 
 			 int verifyMode, const char * trustStore,
 			 const char * certFile, const char * keyFile,
@@ -1945,7 +1969,7 @@ Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, const ch
    cc->data.scheme	= scheme ? strdup(scheme) : strdup("http");
 
    if (port != NULL)
-      cc->data.port = strdup(port);
+      cc->data.port = strdup(port); 
    else
       cc->data.port = strcmp(cc->data.scheme, "https") == 0 ? 
 	strdup("5989") : strdup("5988");
@@ -1960,42 +1984,43 @@ Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, const ch
    return (Client*)cc;
 }
 
-static CMPIInstance* newInstance(const CMPIObjectPath* op, CMPIStatus* rc)
+static CMPIInstance* newInstance(ClientEnv* ce, const CMPIObjectPath* op, CMPIStatus* rc)
 {
    return NewCMPIInstance((CMPIObjectPath*)op,rc);
 }
 
-static CMPIString* newString(const char *ptr, CMPIStatus * rc)
+static CMPIString* newString(ClientEnv* ce, const char *ptr, CMPIStatus * rc)
 {
    return NewCMPIString(ptr, rc);
 }
 
-static CMPIObjectPath* newObjectPath(const char *ns, const char *cn, CMPIStatus* rc)
+static CMPIObjectPath* newObjectPath(ClientEnv* ce, const char *ns, const char *cn, CMPIStatus* rc)
 {
    return NewCMPIObjectPath(ns,cn,rc);
 }
 
-static CMPIArgs* newArgs(CMPIStatus* rc)
+static CMPIArgs* newArgs(ClientEnv* ce, CMPIStatus* rc)
 {
    return NewCMPIArgs(rc);
 }
 
-static CMPIArray* newArray(CMPICount max, CMPIType type, CMPIStatus* rc)
+static CMPIArray* newArray(ClientEnv* ce, CMPICount max, CMPIType type, CMPIStatus* rc)
 {
    return NewCMPIArray(max, type, rc);
 }
 
-static CMPIDateTime *newDateTime(CMPIStatus *rc) 
+static CMPIDateTime *newDateTime(ClientEnv* ce, CMPIStatus *rc) 
 {
    return NewCMPIDateTime(rc); 
 }
 
-static CMPIDateTime *newDateTimeFromBinary(CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus *rc) 
+static CMPIDateTime *newDateTimeFromBinary(ClientEnv* ce, CMPIUint64 binTime, CMPIBoolean interval, 
+      CMPIStatus *rc) 
 {
    return NewCMPIDateTimeFromBinary(binTime,interval,rc); 
 }
 
-static CMPIDateTime *newDateTimeFromChars(const char *utcTime, CMPIStatus *rc) 
+static CMPIDateTime *newDateTimeFromChars(ClientEnv* ce, const char *utcTime, CMPIStatus *rc) 
 {
    return NewCMPIDateTimeFromChars(utcTime,rc); 
 }
@@ -2003,8 +2028,9 @@ static CMPIDateTime *newDateTimeFromChars(const char *utcTime, CMPIStatus *rc)
 ClientEnv* _Create_SfcbLocal_Env(char *id)
 {
  
-   static ClientEnv localFT = {
+   static ClientEnvFT localFT = {
       "SfcbLocal",
+      release,
       CMPIConnect,
       CMPIConnect2,     
       newInstance,      
@@ -2017,6 +2043,12 @@ ClientEnv* _Create_SfcbLocal_Env(char *id)
       newString,
     };
    
-    return &localFT;
+    localClientMode=1;
+    
+    ClientEnv *env = (ClientEnv*)malloc(sizeof(ClientEnv));
+    env->hdl=NULL;
+    env->ft=&localFT;
+    
+    return env;
  }
  

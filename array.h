@@ -32,6 +32,7 @@ struct native_array_item {
 
 struct native_array {
    CMPIArray array;
+   int refCount;
    int mem_state;
 
    CMPICount size,max,dynamic;

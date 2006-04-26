@@ -112,13 +112,6 @@ typedef struct _managed_thread managed_thread;
  */
 
 typedef struct heapControl {
-   unsigned size;               /*!< current maximum number of tracked pointers */
-   unsigned used;               /*!< currently tracked pointers */
-   void **objs;
-   unsigned encUsed;
-   unsigned encSize;
-   Object **encObjs;
-   
    unsigned memSize;               /*!< current maximum number of tracked pointers */
    unsigned memUsed;               /*!< currently tracked pointers */
    void **memObjs;
@@ -146,8 +139,8 @@ int tool_mm_add(void *);
 void tool_mm_set_broker(void *, void *);
 int tool_mm_remove(void *);
 void *tool_mm_get_broker(void **);
-void *tool_mm_add_obj(int mode, void *ptr, size_t size);
 
+int memAdd(void *ptr, int *memId);
 void *memAlloc(int add, size_t size, int *memId);
 void *memAddEncObj(int mode, void *ptr, size_t size, int *memId);
 void memUnlinkEncObj(int memId);

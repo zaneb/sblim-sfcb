@@ -1077,7 +1077,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    BinResponseHdr *resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = { OPS_GetClass, 2 };
-   int irc;
+   int irc,x;
    
    _SFCB_ENTER(TRACE_PROVIDERMGR, "getConstClass");
   
@@ -1105,7 +1105,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
       if (resp->rc == CMPI_RC_OK) {
          ccl = relocateSerializedConstClass(resp->object[0].data);
          ccl = ccl->ft->clone(ccl, NULL);
-         tool_mm_add(ccl);
+         memAdd(ccl,&x);
       }
       else ccl=NULL;
    }
@@ -1129,7 +1129,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    BinResponseHdr *resp;
    BinRequestContext binCtx;
    OperationHdr req = { OPS_GetClass, 2 };
-   int irc;
+   int irc,x;
    char *msg;
    
    path = NewCMPIObjectPath(ns, cn, st);
@@ -1159,7 +1159,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
       if (resp->rc == CMPI_RC_OK) {
          ccl = relocateSerializedConstClass(resp->object[0].data);
          ccl = ccl->ft->clone(ccl, NULL);
-         tool_mm_add(ccl);
+         memAdd(ccl,&x);
       }
    }
    _SFCB_TRACE(1, ("--- Invoking ClassProvider for %s %s rc: %d",ns,cn,resp->rc));

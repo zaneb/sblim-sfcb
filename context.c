@@ -27,6 +27,46 @@
 
 #include "native.h"
 
+
+//! Forward declaration for anonymous struct.
+struct native_property;
+
+
+//! Function table for native_property handling functions.
+/*!
+  This structure holds all the function pointers necessary to handle
+  linked lists of native_property structs.
+
+  \sa propertyFT in native.h
+*/
+struct native_propertyFT {
+
+   //! Adds a new native_property to a list.
+   int (*addProperty) (struct native_property **,
+                       int,
+                       const char *, CMPIType, CMPIValueState, const CMPIValue *);
+
+   //! Resets the values of an existing native_property, if existant.
+   int (*setProperty) (struct native_property *,
+                       int, const char *, CMPIType, CMPIValue *);
+
+   //! Looks up a specifix native_property in CMPIData format.
+    CMPIData(*getDataProperty) (struct native_property *,
+                                const char *, CMPIStatus *);
+
+   //! Extract an indexed native_property in CMPIData format.
+    CMPIData(*getDataPropertyAt) (struct native_property *,
+                                  unsigned int, CMPIString **, CMPIStatus *);
+
+   //! Yields the number of native_property items in a list.
+    CMPICount(*getPropertyCount) (struct native_property *, CMPIStatus *);
+
+   //! Releases a complete list of native_property items.
+   void (*release) (struct native_property *);
+};
+
+
+
 static struct native_propertyFT propertyFT;
 
 //! Native extension of the CMPIContext data type.
@@ -52,7 +92,16 @@ static struct native_context *__new_empty_context(int);
 
 static CMPIStatus __cft_release(CMPIContext * ctx)
 {
-   CMReturn(CMPI_RC_ERR_NOT_SUPPORTED);
+   struct native_context *c = (struct native_context *) ctx;
+
+   if (c->mem_state && c->mem_state != MEM_RELEASED) {
+      propertyFT.release(c->entries);
+      memUnlinkEncObj(c->mem_state);
+      c->mem_state = MEM_RELEASED;
+      free(ctx);
+      CMReturn(CMPI_RC_OK);
+   }
+   CMReturn(CMPI_RC_ERR_FAILED);
 }
 
 
@@ -107,29 +156,34 @@ static CMPIStatus __cft_addEntry(CMPIContext * ctx,
 }
 
 
+static CMPIContextFT cft = {
+   NATIVE_FT_VERSION,
+   __cft_release,
+   __cft_clone,
+   __cft_getEntry,
+   __cft_getEntryAt,
+   __cft_getEntryCount,
+   __cft_addEntry
+};
+
+
 static struct native_context *__new_empty_context(int mm_add)
 {
-   static CMPIContextFT cft = {
-      NATIVE_FT_VERSION,
-      __cft_release,
-      __cft_clone,
-      __cft_getEntry,
-      __cft_getEntryAt,
-      __cft_getEntryCount,
-      __cft_addEntry
-   };
    static CMPIContext c = {
       "CMPIContext",
       &cft
    };
-
-   struct native_context *ctx = (struct native_context *)
-       tool_mm_alloc(mm_add, sizeof(struct native_context));
-
-   ctx->ctx = c;
-   ctx->mem_state = mm_add;
-
-   return ctx;
+   struct native_context ctx,*tCtx;
+   int state;
+   
+   ctx.ctx = c;
+   tCtx=memAddEncObj(mm_add, &ctx, sizeof(ctx), &state);
+   tCtx->mem_state = state;   
+   
+   tCtx->entries=NULL;    
+   tCtx->data=NULL;
+   
+   return (struct native_context*)tCtx;
 }
 
 
@@ -142,19 +196,6 @@ CMPIContext *native_new_CMPIContext(int mem_state, void *data)
    return (CMPIContext*)ctx; 
 }
 
-
-void native_release_CMPIContext(CMPIContext * ctx)
-{
-   struct native_context *c = (struct native_context *) ctx;
-
-   if (c->mem_state == MEM_NOT_TRACKED) {
-
-      c->mem_state = MEM_TRACKED;
-      tool_mm_add(c);
-
-      propertyFT.release(c->entries);
-   }
-}
 
 CMPIContext *native_clone_CMPIContext(const CMPIContext* ctx) 
 {
@@ -225,12 +266,9 @@ static int __addProperty ( struct native_property ** prop,
 	if ( *prop == NULL ) {
 		struct native_property * tmp = *prop =
 			(struct native_property *)
-			tool_mm_alloc ( mm_add,
-					sizeof ( struct native_property ) );
+			calloc ( 1, sizeof ( struct native_property ) );
   
 		tmp->name = strdup ( name );
-
-		if ( mm_add == MEM_TRACKED ) tool_mm_add ( tmp->name );
 
 		if ( type == CMPI_chars ) {
 
@@ -390,45 +428,12 @@ static CMPICount __getPropertyCount ( struct native_property * prop,
 static void __release ( struct native_property * prop )
 {
 	for ( ; prop; prop = prop->next ) {
-		tool_mm_add ( prop );
-		tool_mm_add ( prop->name );
 		native_release_CMPIValue ( prop->type, &prop->value );
+		free ( prop->name );
+		free ( prop );
 	}
 }
 
-
-static struct native_property * __clone ( struct native_property * prop,
-					  CMPIStatus * rc )
-{
-	struct native_property * result;
-	CMPIStatus tmp;
-
-	if ( prop == NULL ) {
-
-		if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
-		return NULL;
-	}
-
-	result = 
-		(struct native_property * )
-		tool_mm_alloc ( MEM_NOT_TRACKED,
-				sizeof ( struct native_property ) );
-
-	result->name  = strdup ( prop->name );
-	result->type  = prop->type;
-	result->state = prop->state;
-	result->value = native_clone_CMPIValue ( prop->type,
-						 &prop->value,
-						 &tmp );
-
-	if ( tmp.rc != CMPI_RC_OK ) {
-
-		result->state = CMPI_nullValue;
-	}
-  
-	result->next  = __clone ( prop->next, rc );
-	return result;
-}
 
 
 /**
@@ -440,6 +445,5 @@ static struct native_propertyFT propertyFT = {
 	__getDataProperty,
 	__getDataPropertyAt,
 	__getPropertyCount,
-	__release,
-	__clone
+	__release
 };

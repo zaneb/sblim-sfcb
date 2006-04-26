@@ -84,11 +84,12 @@ static char** ensureCharsListSpace(QLStatement *qs, char ***in, int *max, int nx
 QLStatement* newQLStatement(int fcm, int mode)
 {
    QLStatement *qs;
+   int x;
    
    qs=(QLStatement*)calloc(1,sizeof(QLStatement));
    if (mode==MEM_TRACKED) {
       qs->allocList=NULL;
-      tool_mm_add(qs);
+      memAdd(qs,&x);
    }
    else {
       qs->allocList=(void**)malloc(16*sizeof(void*));
@@ -208,7 +209,9 @@ void *qsAlloc(QLStatement *qs, unsigned int size)
          return ptr;
       } 
    }
-   return tool_mm_alloc(MEM_TRACKED,size);
+//   return tool_mm_alloc(MEM_TRACKED,size);
+   int x;
+   return memAlloc(MEM_TRACKED, size, &x);
 }
 
 static QLStatementFt stmtFt={

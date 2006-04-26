@@ -35,6 +35,7 @@
  */
 struct native_datetime {
    CMPIDateTime dt;             /*!< the inheriting data structure  */
+   int refCount;
    int mem_state;               /*!< states, whether this object is
                                    registered within the memory mangagement or
                                    represents a cloned object */
@@ -59,14 +60,13 @@ static CMPIStatus __dtft_release(CMPIDateTime * dt)
 {
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
-   if (ndt->mem_state == MEM_NOT_TRACKED) {
-
-      ndt->mem_state = MEM_TRACKED;
-      tool_mm_add(ndt);
-
+   if (ndt->mem_state && ndt->mem_state != MEM_RELEASED) {
+      memUnlinkEncObj(ndt->mem_state);
+      ndt->mem_state = MEM_RELEASED;
+      free(ndt);
       CMReturn(CMPI_RC_OK);
    }
-
+    
    CMReturn(CMPI_RC_ERR_FAILED);
 }
 
@@ -237,6 +237,15 @@ static CMPIBoolean __dtft_isInterval(const CMPIDateTime * dt, CMPIStatus * rc)
    return ndt->cimDt[21]==':' ? 1 : 0;
 }
 
+static CMPIDateTimeFT dtft = {
+   NATIVE_FT_VERSION,
+   __dtft_release,
+   __dtft_clone,
+   __dtft_getBinaryFormat,
+   __dtft_getStringFormat,
+   __dtft_isInterval
+};
+
 
 //! Creates a new native_datetime object.
 /*!
@@ -255,29 +264,22 @@ static struct native_datetime *__new_datetime(int mm_add,
                                               const char *cimDt,
                                               CMPIStatus * rc)
 {
-   static CMPIDateTimeFT dtft = {
-      NATIVE_FT_VERSION,
-      __dtft_release,
-      __dtft_clone,
-      __dtft_getBinaryFormat,
-      __dtft_getStringFormat,
-      __dtft_isInterval
-   };
-
    static CMPIDateTime dt = {
       "CMPIDateTime",
       &dtft
    };
-
-   struct native_datetime *ndt = (struct native_datetime *)
-       tool_mm_alloc(mm_add, sizeof(struct native_datetime));
-
-   ndt->dt = dt;
-   ndt->mem_state = mm_add;
-   strcpy(ndt->cimDt,cimDt);
-
+   struct native_datetime ndt,*tNdt;
+   int state;
+   
+   ndt.dt = dt;
+   tNdt=memAddEncObj(mm_add, &ndt, sizeof(ndt), &state);
+   tNdt->mem_state = state;   
+   tNdt->refCount=0;   
+   strcpy(tNdt->cimDt,cimDt);
+   
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
-   return ndt;
+   return (struct native_datetime*)tNdt;
+
 }
 
 

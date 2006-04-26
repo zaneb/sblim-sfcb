@@ -35,6 +35,7 @@ typedef struct _CMPIConstClass_FT CMPIConstClass_FT;
 struct _CMPIConstClass {
    void *hdl;
    CMPIConstClass_FT *ft;
+   int refCount;
 };
 typedef struct _CMPIConstClass CMPIConstClass;
 

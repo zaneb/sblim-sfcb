@@ -40,6 +40,7 @@
 
 int collectStat=0;
 unsigned long exFlags = 0;
+int localClientMode=0;
 
 void *loadLibib(const char *libname)
 {
@@ -294,7 +295,7 @@ static CMPI_THREAD_KEY_TYPE __mm_key;
 void tool_mm_set_broker(void *broker, void *ctx);
 void *tool_mm_get_broker(void **ctx);
 void *memAddEncObj(int mode, void *ptr, size_t size, int *memId);
-static int memAdd(void *ptr, int *memId);
+int memAdd(void *ptr, int *memId);
 
 
 
@@ -308,18 +309,6 @@ void *tool_mm_load_lib(const char *libname)
 static void __flush_mt(managed_thread * mt)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "__flush_mt");
-
-   while (mt->hc.used) {
-      --mt->hc.used;
-      free(mt->hc.objs[mt->hc.used]);
-      mt->hc.objs[mt->hc.used] = NULL;
-   };
-
-   while (mt->hc.encUsed) {
-      --mt->hc.encUsed;
-      mt->hc.encObjs[mt->hc.encUsed]->ft->release(mt->hc.encObjs[mt->hc.encUsed]);
-      mt->hc.encObjs[mt->hc.encUsed] = NULL;
-   };
 
    while (mt->hc.memUsed) {
       --mt->hc.memUsed;
@@ -349,8 +338,6 @@ static void __cleanup_mt(void *ptr)
 
    __flush_mt(mt);
 
-   free(mt->hc.objs);
-   free(mt->hc.encObjs);
    free(mt->hc.memObjs);
    free(mt->hc.memEncObjs);
    free(mt);
@@ -362,7 +349,7 @@ static void __cleanup_mt(void *ptr)
  * Initializes the current thread by adding it to the memory management sytem.
  */
 
-#include <pthread.h>;
+#include <pthread.h>
 
 void uninitGarbageCollector()
 {
@@ -370,8 +357,7 @@ void uninitGarbageCollector()
    mt = (managed_thread *)
        CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
    if (mt==NULL) return;
-   free(mt->hc.objs);
-   free(mt->hc.encObjs);
+
    free(mt->hc.memObjs);
    free(mt->hc.memEncObjs);
    free(mt);
@@ -384,10 +370,6 @@ static managed_thread *__init_mt()
 
    __ALLOC_ERROR(!mt);
 
-   mt->hc.encSize = mt->hc.size = MT_SIZE_STEP;
-   mt->hc.objs = (void **) malloc(MT_SIZE_STEP * sizeof(void *));
-   mt->hc.encObjs = (Object **) malloc(MT_SIZE_STEP * sizeof(void *));
-   
    mt->hc.memEncSize = mt->hc.memSize = MT_SIZE_STEP;
    mt->hc.memObjs = (void **) malloc(MT_SIZE_STEP * sizeof(void *));
    mt->hc.memEncObjs = (Object **) malloc(MT_SIZE_STEP * sizeof(void *));
@@ -422,12 +404,6 @@ static managed_thread *__memInit()
    if (mt==NULL) mt=__init_mt();
    return mt;
 }
-/*
-static void memInit(int newProc)
-{
-   __memInit();
-}
-*/
 
 
 /**
@@ -439,23 +415,6 @@ static void memInit(int newProc)
  *   the control system depending on add, defined as MEM_TRACKED and
  *   MEM_NOT_TRACKED.
  */
-void *tool_mm_alloc(int add, size_t size)
-{
-   _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_alloc");
-   void *result = calloc(1, size);
-   if (!result) {
-      _SFCB_TRACE(1,("--- tool_mm_alloc error %u %d\n", size, currentProc))
-      SFCB_ASM("int $3");
-      abort();
-   }
-   __ALLOC_ERROR(!result);
-
-   if (add != MEM_NOT_TRACKED) {
-      tool_mm_add(result);
-   }
-   _SFCB_TRACE(1, ("--- Area: %p size: %d", result, size));
-   _SFCB_RETURN(result);
-}
 
 void *memAlloc(int add, size_t size, int *memId)
 {
@@ -463,7 +422,6 @@ void *memAlloc(int add, size_t size, int *memId)
    void *result = calloc(1, size);
    if (!result) {
       _SFCB_TRACE(1,("--- memAlloc %u %d\n", size, currentProc))
-      SFCB_ASM("int $3");
       abort();
    }
    __ALLOC_ERROR(!result);
@@ -476,33 +434,6 @@ void *memAlloc(int add, size_t size, int *memId)
 }
 
 
-/**
- * Reallocates memory.
- *
- * Description:
- *
- *   Reallocates oldptr to the new size, then checks if the new and old
- *   pointer are equal. If not and the old one is successfully removed from
- *   the managed_thread, this means that the new one has to be added as well,
- *   before returning it as result.
- *
- *   The newly allocated memory is being returned as from the realloc()
- *   sys-call, no zeroing is performed as compared to tool_mm_alloc().
- */
-void *tool_mm_realloc(void *oldptr, size_t size)
-{
-   _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_realloc");
-   void *new = realloc(oldptr, size);
-
-   __ALLOC_ERROR(!new);
-
-   if (oldptr != NULL && tool_mm_remove(oldptr)) {
-      tool_mm_add(new);
-   }
-
-   _SFCB_RETURN(new);
-}
-
 
 /**
  * Adds ptr to the list of managed objects for the current thread.
@@ -514,69 +445,11 @@ void *tool_mm_realloc(void *oldptr, size_t size)
  *   not finally adds it. Additionally the array size for stored void
  *   pointers may have to be enlarged by MT_SIZE_STEP.
  */
-int tool_mm_add(void *ptr)
-{
-   _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_add");
-   managed_thread *mt;
 
-   CMPI_BrokerExt_Ftab->threadOnce(&__once, __init_mm);
-
-   mt = (managed_thread *)
-       CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
-
-   if (mt == NULL) {
-      mt = __init_mt();
-   }
-
-   mt->hc.objs[mt->hc.used++] = ptr;
-
-   if (mt->hc.used == mt->hc.size) {
-      mt->hc.size += MT_SIZE_STEP;
-      mt->hc.objs = (void **) realloc(mt->hc.objs, mt->hc.size * sizeof(void *));
-
-      __ALLOC_ERROR(!mt->hc.objs);
-   }
-
-   _SFCB_RETURN(1);
-}
-
-
-void *tool_mm_add_obj(int mode, void *ptr, size_t size)
-{
-   _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_add_obj");
-   managed_thread *mt;
-   void *object;
-
-   CMPI_BrokerExt_Ftab->threadOnce(&__once, __init_mm);
-
-   mt = (managed_thread *)
-       CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
-
-   if (mt == NULL) {
-      mt = __init_mt();
-   }
-
-   object = malloc(size);
-   memcpy(object, ptr, size);
-
-   if (mode == MEM_NOT_TRACKED)
-      _SFCB_RETURN(object);
-
-   mt->hc.encObjs[mt->hc.encUsed++] = (Object *) object;
-
-   if (mt->hc.encUsed == mt->hc.encSize) {
-      mt->hc.encSize += MT_SIZE_STEP;
-      mt->hc.encObjs =
-          (Object **) realloc(mt->hc.encObjs, mt->hc.encSize * sizeof(void *));
-      __ALLOC_ERROR(!mt->hc.encObjs);
-   }
-
-   _SFCB_RETURN(object);
-}
-
-static int memAdd(void *ptr, int *memId)
+int memAdd(void *ptr, int *memId)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "memAdd");
+   if (localClientMode) return(1);
    managed_thread *mt=__memInit();
 
    mt->hc.memObjs[mt->hc.memUsed++] = ptr;
@@ -585,7 +458,6 @@ static int memAdd(void *ptr, int *memId)
    if (mt->hc.memUsed == mt->hc.memSize) {
       mt->hc.memSize += MT_SIZE_STEP;
       mt->hc.memObjs = (void **) realloc(mt->hc.memObjs, mt->hc.memSize * sizeof(void *));
-
       __ALLOC_ERROR(!mt->hc.memObjs);
    }
 
@@ -595,15 +467,16 @@ static int memAdd(void *ptr, int *memId)
 void *memAddEncObj(int mode, void *ptr, size_t size, int *memId)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "memAddEncObj");
-   managed_thread *mt=__memInit();
 
    void *object = malloc(size);
    memcpy(object, ptr, size);
 
-   if (mode != MEM_TRACKED) {
+   if (localClientMode || mode != MEM_TRACKED) {
       *memId=MEM_NOT_TRACKED;
       _SFCB_RETURN(object);
    }   
+   
+   managed_thread *mt=__memInit();
 
    mt->hc.memEncObjs[mt->hc.memEncUsed++] = (Object *) object;
    *memId=mt->hc.memEncUsed;
@@ -621,6 +494,7 @@ void *memAddEncObj(int mode, void *ptr, size_t size, int *memId)
 void memLinkEncObj(void *object, int *memId)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "memLinkEncObj");
+   if (localClientMode) return;
    managed_thread *mt=__memInit();
 
    mt->hc.memEncObjs[mt->hc.memEncUsed++] = (Object *) object;
@@ -638,6 +512,7 @@ void memLinkEncObj(void *object, int *memId)
 
 void memUnlinkEncObj(int memId)
 {
+   if (localClientMode) return;
    managed_thread *mt=__memInit();
    
    if (memId!=MEM_RELEASED && memId!=MEM_NOT_TRACKED)
@@ -645,61 +520,6 @@ void memUnlinkEncObj(int memId)
 }
 
 
-
-/**
- * Removes ptr from the list of managed objects for the current thread.
- *
- * Description:
- *
- *   The removal is achieved by replacing the stored pointer with NULL, once
- *   found, as this does not disturb a later free() call.
- */
-
-int tool_mm_remove(void *ptr)
-{
-   _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_get_broker");
-   managed_thread *mt;
-
-   CMPI_BrokerExt_Ftab->threadOnce(&__once, __init_mm);
-
-   mt = (managed_thread *)
-       CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
-
-   if (mt != NULL) {
-      int i = mt->hc.used;
-
-      while (i--) {
-         if (mt->hc.objs[i] == ptr) {
-            mt->hc.objs[i] = NULL;
-            return 1;
-         }
-      }
-   }
-   _SFCB_RETURN(0);
-}
-
-int tool_mm_remove_obj(void *ptr)
-{
-   _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_remove_obj");
-   managed_thread *mt;
-
-   CMPI_BrokerExt_Ftab->threadOnce(&__once, __init_mm);
-
-   mt = (managed_thread *)
-       CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
-
-   if (mt != NULL) {
-      int i = mt->hc.encUsed;
-
-      while (i--) {
-         if (mt->hc.encObjs[i] == ptr) {
-            mt->hc.encObjs[i] = NULL;
-            return 1;
-         }
-      }
-   }
-   _SFCB_RETURN(0);
-}
 
 
 void tool_mm_flush()
@@ -751,18 +571,14 @@ void *getThreadDataSlot()
 void *markHeap()
 {
    managed_thread *mt;
+   if (localClientMode) return NULL;
+   
    HeapControl *hc=(HeapControl*)calloc(1,sizeof(HeapControl)+8);
    _SFCB_ENTER(TRACE_MEMORYMGR, "markHeap");
    
    mt=__memInit();
    
-   //*hc=mt->hc;
    memcpy(hc,&mt->hc,sizeof(HeapControl));
-   
-   mt->hc.encUsed = mt->hc.used = 0;
-   mt->hc.encSize = mt->hc.size = MT_SIZE_STEP;
-   mt->hc.objs = (void **) malloc(MT_SIZE_STEP * sizeof(void *));
-   mt->hc.encObjs = (Object **) malloc(MT_SIZE_STEP * sizeof(void *));
    
    mt->hc.memEncUsed = mt->hc.memUsed = 0;
    mt->hc.memEncSize = mt->hc.memSize = MT_SIZE_STEP;
@@ -775,6 +591,8 @@ void *markHeap()
 void releaseHeap(void *hc)
 {
    managed_thread *mt;
+   if (localClientMode) return;
+   
    mt = (managed_thread *) CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
    _SFCB_ENTER(TRACE_MEMORYMGR, "releaseHeap");
    
@@ -782,8 +600,6 @@ void releaseHeap(void *hc)
    
    __flush_mt(mt);
    
-   if (mt->hc.objs) free(mt->hc.objs);
-   if (mt->hc.encObjs) free(mt->hc.encObjs);
    if (mt->hc.memObjs) free(mt->hc.memObjs);
    if (mt->hc.memEncObjs) free(mt->hc.memEncObjs);
    

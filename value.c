@@ -36,6 +36,10 @@ void native_release_CMPIValue(CMPIType type, CMPIValue * val)
       CMRelease(val->inst);
       break;
 
+   case CMPI_class:
+      CMRelease(val->inst);
+      break;
+
    case CMPI_ref:
       CMRelease(val->ref);
       break;
@@ -57,7 +61,7 @@ void native_release_CMPIValue(CMPIType type, CMPIValue * val)
       break;
 
    case CMPI_chars:
-      tool_mm_add(val->chars);
+      free(val->chars);
       break;
 
    case CMPI_dateTime:

@@ -15,7 +15,7 @@
  *
  * Description:
  *
- * CMPI Client function tables.
+ * CMPI Local Client function tables.
  *
 */
 
@@ -146,11 +146,13 @@ typedef struct _ClientFT {
                  CMPIObjectPath *op, const char *name, CMPIStatus *rc);
 } ClientFT;
 
-struct _ClientEnv {
+
+typedef struct _ClientEnvFT {
    char *env;
+   void* (*release)(ClientEnv *ce);
    Client* (*connect)
                (ClientEnv *ce, const char *hn, const char *scheme, const char *port, 
-                const char *user, const char *pwd,CMPIStatus *rc);
+                const char *user, const char *pwd, CMPIStatus *rc);
    Client* (*connect2)
                (ClientEnv *ce, const char *hn, const char *scheme, const char *port, 
                 const char *user, const char *pwd, 
@@ -158,21 +160,26 @@ struct _ClientEnv {
                 const char * certFile, const char * keyFile,
                 CMPIStatus *rc);
    CMPIInstance* (*newInstance)
-               (const CMPIObjectPath* op, CMPIStatus* rc);
+               (ClientEnv *ce, const CMPIObjectPath* op, CMPIStatus* rc);
    CMPIObjectPath* (*newObjectPath)
-               (const char *ns, const char *cn, CMPIStatus* rc);
+               (ClientEnv *ce, const char *ns, const char *cn, CMPIStatus* rc);
    CMPIArgs* (*newArgs)
-               (CMPIStatus* rc);
+               (ClientEnv *ce, CMPIStatus* rc);
    CMPIArray* (*newArray)
-               (CMPICount max, CMPIType type, CMPIStatus* rc);
+               (ClientEnv *ce, CMPICount max, CMPIType type, CMPIStatus* rc);
    CMPIDateTime* (*newDateTime)
-               (CMPIStatus* rc);
+               (ClientEnv *ce, CMPIStatus* rc);
    CMPIDateTime* (*newDateTimeFromBinary)
-               (CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus* rc);
+               (ClientEnv *ce, CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus* rc);
    CMPIDateTime* (*newDateTimeFromChars)
-               (const char *utcTime, CMPIStatus* rc);
+               (ClientEnv *ce, const char *utcTime, CMPIStatus* rc);
    CMPIString* (*newString)
-               (const char *data, CMPIStatus* rc);
+               (ClientEnv *ce, const char *data, CMPIStatus* rc);
+} ClientEnvFT;
+
+struct _ClientEnv {
+   void *hdl;
+   ClientEnvFT *ft;
 };
 
 int sameCMPIObjectPath ( const CMPIObjectPath *cop1, const CMPIObjectPath *cop2);

@@ -39,46 +39,12 @@
 
 #include "support.h"
 
-//! Forward declaration for anonymous struct.
-struct native_property;
 
-
-//! Function table for native_property handling functions.
-/*!
-  This structure holds all the function pointers necessary to handle
-  linked lists of native_property structs.
-
-  \sa propertyFT in native.h
-*/
-struct native_propertyFT {
-
-   //! Adds a new native_property to a list.
-   int (*addProperty) (struct native_property **,
-                       int,
-                       const char *, CMPIType, CMPIValueState, const CMPIValue *);
-
-   //! Resets the values of an existing native_property, if existant.
-   int (*setProperty) (struct native_property *,
-                       int, const char *, CMPIType, CMPIValue *);
-
-   //! Looks up a specifix native_property in CMPIData format.
-    CMPIData(*getDataProperty) (struct native_property *,
-                                const char *, CMPIStatus *);
-
-   //! Extract an indexed native_property in CMPIData format.
-    CMPIData(*getDataPropertyAt) (struct native_property *,
-                                  unsigned int, CMPIString **, CMPIStatus *);
-
-   //! Yields the number of native_property items in a list.
-    CMPICount(*getPropertyCount) (struct native_property *, CMPIStatus *);
-
-   //! Releases a complete list of native_property items.
-   void (*release) (struct native_property *);
-
-   //! Clones a complete list of native_property items.
-   struct native_property *(*clone) (struct native_property *, CMPIStatus *);
-};
-
+typedef struct _nativeEncObject {
+   void *hdl;
+   void *ft;
+   int refCount;
+} nativeEncObject;
 
 struct _NativeCMPIBrokerFT {
    CMPIBrokerFT brokerFt;

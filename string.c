@@ -27,6 +27,7 @@
 
 struct native_string {
    CMPIString string;
+   int refCount;
    int mem_state;
 };
 
@@ -40,15 +41,15 @@ static CMPIStatus __sft_release(CMPIString * string)
 {
    struct native_string *s = (struct native_string *) string;
 
-   if (s->mem_state == MEM_NOT_TRACKED) {
-
-      tool_mm_add(s);
-      tool_mm_add(s->string.hdl);
-
+   if (s->mem_state && s->mem_state != MEM_RELEASED) {
+      if (s->string.hdl) free(s->string.hdl);
+      memUnlinkEncObj(s->mem_state);
+      s->mem_state = MEM_RELEASED;
+      free(string);
       CMReturn(CMPI_RC_OK);
    }
 
-   CMReturn(CMPI_RC_ERR_FAILED);
+   CMReturn(CMPI_RC_ERR_FAILED); 
 }
 
 
@@ -64,31 +65,31 @@ static char *__sft_getCharPtr(const CMPIString * string, CMPIStatus * rc)
    return (char *) string->hdl;
 }
 
+static CMPIStringFT sft = {
+   NATIVE_FT_VERSION,
+   __sft_release,
+   __sft_clone,
+   __sft_getCharPtr
+};
 
 static struct native_string *__new_string(int mm_add,
                                           const char *ptr, CMPIStatus * rc)
 {
-   static CMPIStringFT sft = {
-      NATIVE_FT_VERSION,
-      __sft_release,
-      __sft_clone,
-      __sft_getCharPtr
+   static CMPIString s = {
+      NULL,
+      &sft
    };
-
-   struct native_string *string = (struct native_string *)
-       tool_mm_alloc(mm_add, sizeof(struct native_string));
-
-   string->string.hdl = (ptr) ? strdup(ptr) : NULL;
-   string->string.ft = &sft;
-   string->mem_state = mm_add;
-
-   if (mm_add == MEM_TRACKED) {
-      tool_mm_add(string->string.hdl);
-   }
-
-   if (rc)
-      CMSetStatus(rc, CMPI_RC_OK);
-   return string;
+   struct native_string str,*tStr;
+   int state;
+   
+   str.string = s;
+   tStr=memAddEncObj(mm_add, &str, sizeof(str), &state);
+   tStr->mem_state = state;   
+   tStr->refCount=0;   
+   tStr->string.hdl = (ptr) ? strdup(ptr) : NULL;
+   
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+   return (struct native_string*)tStr;
 }
 
 

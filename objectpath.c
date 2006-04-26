@@ -40,6 +40,7 @@ CMPIObjectPath *getObjectPath(char *path, char **msg);
 
 struct native_cop {
    CMPIObjectPath cop;
+   int refCount;
    int mem_state;
 };
 
@@ -394,6 +395,7 @@ static struct native_cop *__new_empty_cop(int mm_add, CMPIStatus * rc)
    cop.cop = o;
    tCop=memAddEncObj(mm_add, &cop, sizeof(cop),&state);
    tCop->mem_state = state;
+   tCop->refCount=0;
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
 
    return (struct native_cop*)tCop;

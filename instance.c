@@ -64,6 +64,7 @@ extern CMPIBroker *Broker;
 
 struct native_instance {
    CMPIInstance instance;
+   int refCount;
    int mem_state;
    int filtered;
    char **property_list;
@@ -501,6 +502,7 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
 
    tInst=memAddEncObj(mode, &instance, sizeof(instance),&state);
    tInst->mem_state=state;
+   tInst->refCount=0;
    
    return (CMPIInstance*)tInst;
 }

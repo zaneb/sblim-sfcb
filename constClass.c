@@ -57,9 +57,10 @@ static CMPIConstClass *clone(CMPIConstClass * cc, CMPIStatus * rc);
 static CMPIStatus release(CMPIConstClass * cc)
 {
    CMPIStatus rc = { 0, NULL };
+
    if (cc->hdl)  {
       if (cc->hdl != (void*)(cc+1)) free(cc->hdl);
-   }   
+   }
    free(cc);
    return rc;
 }
@@ -303,6 +304,7 @@ static CMPIConstClass *clone(CMPIConstClass * cc, CMPIStatus * rc)
        (CMPIConstClass *) malloc(getConstClassSerializedSize(cc));
    cl->hdl = cl + 1;
    cl->ft = &ift;
+   cl->refCount=0;
    ClClassRebuildClass((ClClass *) cc->hdl, cl->hdl);
    if (rc)
       rc->rc = 0;
@@ -327,6 +329,7 @@ CMPIConstClass *relocateSerializedConstClass(void *area)
    CMPIConstClass *cl = (CMPIConstClass *) area;
    cl->hdl = cl + 1;
    cl->ft = &ift;
+   cl->refCount=0;
    ClClassRelocateClass((ClClass *) cl->hdl);
    return (CMPIConstClass *) cl;
 }
@@ -356,5 +359,6 @@ CMPIConstClass initConstClass(ClClass *cl)
    CMPIConstClass c;
    c.hdl=cl;
    c.ft=&ift;
+   c.refCount=0;
    return c;
 }

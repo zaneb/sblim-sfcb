@@ -26,6 +26,7 @@
 
 struct native_enum {
    CMPIEnumeration enumeration;
+   int refCount;
    int mem_state;
 
    CMPICount current;
@@ -33,6 +34,7 @@ struct native_enum {
 };
 
 
+extern void adjustArrayElementRefCount(CMPIArray * array, int n);
 static struct native_enum *__new_enumeration(int, CMPIArray *, CMPIStatus *);
 
 
@@ -42,12 +44,14 @@ static CMPIStatus __eft_release(CMPIEnumeration * enumeration)
 {
    struct native_enum *e = (struct native_enum *) enumeration;
 
-   if (e->mem_state == MEM_NOT_TRACKED) {
-
-      tool_mm_add(enumeration);
-      return e->data->ft->release(e->data);
+   if (e->mem_state && e->mem_state != MEM_RELEASED) {
+      e->data->ft->release(e->data);
+      memUnlinkEncObj(e->mem_state);
+      e->mem_state = MEM_RELEASED;
+      free(enumeration);
+      CMReturn(CMPI_RC_OK);
    }
-
+   
    CMReturn(CMPI_RC_ERR_FAILED);
 }
 
@@ -60,9 +64,7 @@ static CMPIEnumeration *__eft_clone(const CMPIEnumeration * enumeration,
    CMPIArray *data = CMClone(e->data, &tmp);
 
    if (tmp.rc != CMPI_RC_OK) {
-
-      if (rc)
-         CMSetStatus(rc, CMPI_RC_ERR_FAILED);
+      if (rc) CMSetStatus(rc, CMPI_RC_ERR_FAILED);
       return NULL;
    }
 
@@ -91,34 +93,46 @@ static CMPIArray *__eft_toArray(const CMPIEnumeration * enumeration, CMPIStatus 
    return e->data;
 }
 
+static CMPIEnumerationFT eft = {
+   NATIVE_FT_VERSION,
+   __eft_release,
+   __eft_clone,
+   __eft_getNext,
+   __eft_hasNext,
+   __eft_toArray
+};
 
 static struct native_enum *__new_enumeration(int mm_add,
                                              CMPIArray * array, CMPIStatus * rc)
 {
-   static CMPIEnumerationFT eft = {
-      NATIVE_FT_VERSION,
-      __eft_release,
-      __eft_clone,
-      __eft_getNext,
-      __eft_hasNext,
-      __eft_toArray
-   };
    static CMPIEnumeration e = {
       "CMPIEnumeration",
       &eft
    };
 
-   struct native_enum *enumeration = (struct native_enum *)
-       tool_mm_alloc(mm_add, sizeof(struct native_enum));
+   struct native_enum enm,*tEnm;
+   int state;
+   
+   enm.enumeration = e;
+   enm.current=0;
+   enm.data=NULL;
+   
+   tEnm=memAddEncObj(mm_add, &enm, sizeof(enm), &state);
+   tEnm->mem_state = state;
+   tEnm->refCount=0;
+   tEnm->data = //(mm_add == MEM_NOT_TRACKED) ? CMClone(array, rc) : 
+      array;
+   
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+   return (struct native_enum*)tEnm;
 
-   enumeration->enumeration = e;
-   enumeration->mem_state = mm_add;
-   enumeration->data = (mm_add == MEM_NOT_TRACKED) ? CMClone(array, rc) : array;
-
-   if (rc)
-      CMSetStatus(rc, CMPI_RC_OK);
-   return enumeration;
 }
+
+void setEnumArray(CMPIEnumeration * enumeration,CMPIArray * array)
+{
+   struct native_enum *e = (struct native_enum *) enumeration;
+   e->data=array; 
+}     
 
 
 CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc)
@@ -126,6 +140,10 @@ CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc)
    return (CMPIEnumeration *) __new_enumeration(MEM_TRACKED, array, rc);
 }
 
+CMPIEnumeration *NewCMPIEnumeration(CMPIArray * array, CMPIStatus * rc)
+{
+   return (CMPIEnumeration *) __new_enumeration(MEM_NOT_TRACKED, array, rc);
+}
 
 /****************************************************************************/
 

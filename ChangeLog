@@ -1,3 +1,11 @@
+2006-05-03  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* providerDrv.c:
+	Fixed 1481081: corrected invocation of addEntry calls for principal.
+
+	* httpAdapter.c:
+	Made the debug loop conditional on a variable "breakloop".
+
 2006-03-01  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* sfcbunstage.sh.in: 

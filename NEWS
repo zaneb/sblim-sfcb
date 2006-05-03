@@ -7,6 +7,7 @@ Bugs fixed:
 - 1420604 Fixed CMPI header files for CMPI 1.0 compliance.
 - 1440179 Fixed compile problem with debug disabled.
 - 1440183 Fixed chunking related HTTP problems.
+- 1481081 Fixed garbage CMPIPrincipal in providers
 
 Changes in 1.1.0
 ================

@@ -838,7 +838,8 @@ static void handleHttpRequest(int connFd)
    fd_set httpfds;
    struct sembuf procReleaseUnDo = {0,1,SEM_UNDO};
    struct timeval httpTimeout;
- 
+   int breakloop;
+
    _SFCB_ENTER(TRACE_HTTPDAEMON, "handleHttpRequest");
 
    _SFCB_TRACE(1, ("--- Forking xml handler"));
@@ -880,7 +881,10 @@ static void handleHttpRequest(int connFd)
          _SFCB_TRACE(1,("--- Forked xml handler %d", currentProc))
       }
 
-      if (getenv("SFCB_PAUSE_HTTP")) for (;;) {
+      _SFCB_TRACE(1,("--- Started xml handler %d %d", currentProc,
+                   resultSockets.receive));
+
+      if (getenv("SFCB_PAUSE_HTTP")) for (breakloop=0;breakloop==0;) {
          fprintf(stderr,"-#- Pausing - pid: %d\n",currentProc);
          sleep(5);
       }   

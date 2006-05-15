@@ -145,9 +145,9 @@ static CMPIStatus __cft_addEntry(CMPIContext * ctx,
                                  const CMPIValue * value, CMPIType type)
 {
    struct native_context *c = (struct native_context *) ctx;
-
+   
    CMReturn((propertyFT.addProperty(&c->entries,
-                                    c->mem_state,
+                                    MEM_NOT_TRACKED,
                                     name,
                                     type,
                                     0,
@@ -427,7 +427,9 @@ static CMPICount __getPropertyCount ( struct native_property * prop,
 
 static void __release ( struct native_property * prop )
 {
-	for ( ; prop; prop = prop->next ) {
+	struct native_property *np;
+	for ( ; prop; prop = np ) {
+	  np=prop->next;
 		native_release_CMPIValue ( prop->type, &prop->value );
 		free ( prop->name );
 		free ( prop );

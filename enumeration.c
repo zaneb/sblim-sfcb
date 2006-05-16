@@ -89,7 +89,7 @@ static CMPIBoolean __eft_hasNext(const CMPIEnumeration * enumeration, CMPIStatus
 static CMPIArray *__eft_toArray(const CMPIEnumeration * enumeration, CMPIStatus * rc)
 {
    struct native_enum *e = (struct native_enum *) enumeration;
-   rc->rc = CMPI_RC_OK;
+	if ( rc ) CMSetStatus ( rc, CMPI_RC_OK );
    return e->data;
 }
 

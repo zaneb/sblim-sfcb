@@ -30,6 +30,8 @@
 #include "cmpift.h"
 #include "cmpiftx.h"
 #include "cmpimacs.h"
+#include <time.h>
+#include <sys/time.h>
 
 #define ENQ_BOT_LIST(i,f,l,n,p) { if (l) l->n=i; else f=i; \
                                   i->p=l; i->n=NULL; l=i;}
@@ -159,5 +161,7 @@ int cntlParseStmt(char *in, CntlVals * rv);
 char *cntlGetVal(CntlVals * rv);
 
 int uninit_sfcBroker();
+
+extern double timevalDiff(struct timeval *sv, struct timeval *ev);
 
 #endif

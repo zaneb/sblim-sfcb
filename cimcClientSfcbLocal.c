@@ -356,8 +356,8 @@ static CMPIEnumeration * enumInstances(
    
    sreqSize+=pCount*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_EnumerateInstances;
-   sreq->count=pCount+2;
+   sreq->hdr.operation=OPS_EnumerateInstances;
+   sreq->hdr.count=pCount+2;
 
    sreq->objectPath = setObjectPathMsgSegment(cop);
    sreq->principal = setCharsMsgSegment("principal");
@@ -438,8 +438,8 @@ static CMPIInstance * getInstance(
    
    sreqSize+=pCount*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_GetInstance;
-   sreq->count=pCount+2;
+   sreq->hdr.operation=OPS_GetInstance;
+   sreq->hdr.count=pCount+2;
 
    sreq->objectPath = setObjectPathMsgSegment(cop);
    sreq->principal = setCharsMsgSegment("principal");
@@ -589,8 +589,8 @@ static CMPIStatus modifyInstance(
    for (i=0; i<pCount; i++)
       sreq->properties[i]=setCharsMsgSegment(properties[i]);
 
-   sreq->operation=OPS_ModifyInstance;
-   sreq->count=pCount+3;
+   sreq->hdr.operation=OPS_ModifyInstance;
+   sreq->hdr.count=pCount+3;
 
    sreq->instance = setInstanceMsgSegment(inst);
    sreq->path = setObjectPathMsgSegment(cop);
@@ -803,15 +803,15 @@ static CMPIEnumeration * associators(
 
    if (pCount) sreqSize+=pCount*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_Associators;
-   sreq->count=pCount+6;
+   sreq->hdr.operation=OPS_Associators;
+   sreq->hdr.count=pCount+6;
    
    sreq->objectPath = setObjectPathMsgSegment(cop);
    sreq->resultClass = setCharsMsgSegment(resultClass);
    sreq->role = setCharsMsgSegment(role);
    sreq->assocClass = setCharsMsgSegment(assocClass);
    sreq->resultRole = setCharsMsgSegment(resultRole);
-   sreq->flags = flags;
+   sreq->hdr.flags = flags;
    sreq->principal = setCharsMsgSegment("principal");
 
    for (i=0; i<pCount; i++)
@@ -894,14 +894,14 @@ static CMPIEnumeration * references(
    
    sreqSize+=pCount*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_References;
-   sreq->count=pCount+4;
+   sreq->hdr.operation=OPS_References;
+   sreq->hdr.count=pCount+4;
 
    
    sreq->objectPath = setObjectPathMsgSegment(cop);
    sreq->resultClass = setCharsMsgSegment(resultClass);
    sreq->role = setCharsMsgSegment(role);
-   sreq->flags = flags;
+   sreq->hdr.flags = flags;
    sreq->principal = setCharsMsgSegment("principal");
 
    for (i=0; i<pCount; i++)
@@ -1507,8 +1507,8 @@ static CMPIConstClass * getClass(
    
    sreqSize+=pCount*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_GetClass;
-   sreq->count=pCount+2;
+   sreq->hdr.operation=OPS_GetClass;
+   sreq->hdr.count=pCount+2;
 
    sreq->objectPath = setObjectPathMsgSegment(cop);
    sreq->principal = setCharsMsgSegment("principal");
@@ -1577,7 +1577,7 @@ static CMPIEnumeration* enumClassNames(
    
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.principal = setCharsMsgSegment("principal");
-   sreq.flags = flags;
+   sreq.hdr.flags = flags;
 
    binCtx.oHdr = (OperationHdr*) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -1643,7 +1643,7 @@ static CMPIEnumeration * enumClasses(
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.principal = setCharsMsgSegment("principal");
-   sreq.flags = flags;
+   sreq.hdr.flags = flags;
 
    binCtx.oHdr = (OperationHdr*)&oHdr;
    binCtx.bHdr = &sreq.hdr;

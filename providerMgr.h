@@ -61,7 +61,8 @@
 #define OPS_DisableIndications 30
 #define OPS_EnableIndications  31
 
-#define BINREQ(oper,count) {{oper,0,NULL,0,count}}
+// this macro must be adjusted when when BinRequestHdr is changed
+#define BINREQ(oper,count) {{oper,0,NULL,0,0,count}}
 
 typedef struct operationHdr {
    unsigned short type;
@@ -82,15 +83,17 @@ typedef struct operationHdr {
    MsgSegment resultRole;
 } OperationHdr;
 
+//  macro BINREQ must be adjusted when when BinRequestHdr is changed
 typedef struct binRequestHdr {
    unsigned short operation;
    unsigned short options;
    #define BRH_NoResp 1
    #define BRH_Internal 2
    void *provId;
+   unsigned int sessionId;
    unsigned int flags;
    unsigned long count;         // maps to MsgList
-   MsgSegment object[1];
+   MsgSegment object[0];
 } BinRequestHdr;
 
 typedef struct binResponseHdr {
@@ -146,295 +149,151 @@ typedef struct chunkFunctions {
 } ChunkFunctions;
 
 
-typedef union getClassReq {
+typedef struct getClassReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment properties[1];
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment properties[1];
 } GetClassReq;
 
-typedef union enumClassNamesReq {
+typedef struct enumClassNamesReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
 } EnumClassNamesReq;
 
-typedef union enumClassesReq {
+typedef struct enumClassesReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
 } EnumClassesReq;
 
-typedef union enumInstanceNamesReq {
+typedef struct enumInstanceNamesReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
 } EnumInstanceNamesReq;
 
-typedef union enumInstancesReq {
+typedef struct enumInstancesReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment properties[1];
-  };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment properties[1];
 } EnumInstancesReq;
 
-typedef union execQueryReq {
+typedef struct execQueryReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment query;
-      MsgSegment queryLang;
-  };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment query;
+   MsgSegment queryLang;
 } ExecQueryReq;
 
-typedef union associatorsReq {
+typedef struct associatorsReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment resultClass;
-      MsgSegment role;
-      MsgSegment assocClass;
-      MsgSegment resultRole;
-      MsgSegment properties[1];
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment resultClass;
+   MsgSegment role;
+   MsgSegment assocClass;
+   MsgSegment resultRole;
+   MsgSegment properties[1];
 } AssociatorsReq;
 
-typedef union referencesReq {
+typedef struct referencesReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment resultClass;
-      MsgSegment role;
-      MsgSegment properties[1];
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment resultClass;
+   MsgSegment role;
+   MsgSegment properties[1];
 } ReferencesReq;
 
-typedef union associatorNamesReq {
+typedef struct associatorNamesReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment resultClass;
-      MsgSegment role;
-      MsgSegment assocClass;
-      MsgSegment resultRole;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment resultClass;
+   MsgSegment role;
+   MsgSegment assocClass;
+   MsgSegment resultRole;
 } AssociatorNamesReq;
-  
-typedef union referenceNamesReq {
+
+typedef struct referenceNamesReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment resultClass;
-      MsgSegment role;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment resultClass;
+   MsgSegment role;
 } ReferenceNamesReq;
 
-typedef union getInstanceReq {
+typedef struct getInstanceReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment properties[1];
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment properties[1];
 } GetInstanceReq;
 
-typedef union createClassReq {
+typedef struct createClassReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment path;
-      MsgSegment cls;
-   };
+   MsgSegment principal;
+   MsgSegment path;
+   MsgSegment cls;
 } CreateClassReq;
 
-typedef union createInstanceReq {
+typedef struct createInstanceReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment path;
-      MsgSegment instance;
-   };
+   MsgSegment principal;
+   MsgSegment path;
+   MsgSegment instance;
 } CreateInstanceReq;
 
-typedef union modifyInstanceReq {
+typedef struct modifyInstanceReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment path;
-      MsgSegment instance;
-      MsgSegment properties[1];
-   };
+   MsgSegment principal;
+   MsgSegment path;
+   MsgSegment instance;
+   MsgSegment properties[1];
 } ModifyInstanceReq;
 
-typedef union deleteInstanceReq {
+typedef struct deleteInstanceReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
 } DeleteInstanceReq;
 
-typedef union deleteClassReq {
+typedef struct deleteClassReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
 } DeleteClassReq;
 
-typedef union invokeMethodReq {
+typedef struct invokeMethodReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment method;
-      MsgSegment in;
-      MsgSegment out;
-   };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment method;
+   MsgSegment in;
+   MsgSegment out;
 } InvokeMethodReq;
 
-typedef union loadProviderReq {
+typedef struct loadProviderReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment className;
-      MsgSegment libName;
-      MsgSegment provName;
-      unsigned int unload;
-   };
+   MsgSegment className;
+   MsgSegment libName;
+   MsgSegment provName;
+   unsigned int unload;
 } LoadProviderReq;
 
-typedef union pingProviderReq {
+typedef struct indicationReq {
    BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-   };
-} PingProviderReq;
-
-typedef union indicationReq {
-   BinRequestHdr hdr;
-   struct {
-      unsigned short operation;
-      unsigned short options;
-      void *provId;
-      unsigned int flags;
-      unsigned long count;      // maps to MsgList
-      MsgSegment principal;
-      MsgSegment objectPath;
-      MsgSegment query;
-      MsgSegment language;
-      MsgSegment type;
-      MsgSegment sns;
-      void* filterId;
-    };
+   MsgSegment principal;
+   MsgSegment objectPath;
+   MsgSegment query;
+   MsgSegment language;
+   MsgSegment type;
+   MsgSegment sns;
+   void* filterId;
 } IndicationReq;
 
 int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);

@@ -52,9 +52,12 @@ typedef struct cimXmlRequestContext {
    char *principal;
    char *host;
    int  teTrailers;
+   unsigned int sessionId;
    unsigned long cimXmlDocLength;
    struct commHndl *commHndl;
    struct chunkFunctions *chunkFncs;
+   char *className;
+   int operation;
 } CimXmlRequestContext;
 
 extern RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx);

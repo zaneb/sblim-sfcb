@@ -31,6 +31,9 @@
 #include <signal.h>
 #include <ctype.h>
 #include <time.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <unistd.h>
 #include <dlfcn.h>
 
 #include <sys/wait.h>
@@ -42,6 +45,7 @@
 #include "utilft.h"
 #include "trace.h"
 #include "cimXmlRequest.h"
+#include "support.h"
 
 #include <pthread.h>
 #include <semaphore.h>
@@ -101,6 +105,8 @@ extern void dumpTiming(int pid);
 extern char * configfile;
 
 int sfcBrokerPid=0;
+static unsigned int sessionId;
+extern char *opsName[];
 
 typedef int (*Authenticate)(char* principal, char* pwd);
 
@@ -618,10 +624,11 @@ static int doHttpRequest(CommHndl conn_fd)
    Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
    RespSegments response;
    static RespSegments nullResponse = { NULL, 0, 0, NULL, { {0, NULL} } };
-   int len, hl, rc;
+   int len, hl, rc,uset=0;
    char *hdr, *path;
    int discardInput=0;
    MsgSegment msgs[2];
+   struct rusage us,ue;
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "doHttpRequest");
 
@@ -800,10 +807,17 @@ static int doHttpRequest(CommHndl conn_fd)
    msgs[1].data = inBuf.content;
    msgs[1].length = len - hl;
 
-   if (msgs[1].length > 0) {
      CimXmlRequestContext ctx =
-        { inBuf.content, inBuf.principal, inBuf.host, inBuf.trailers, len - hl, &conn_fd };
+        { inBuf.content, inBuf.principal, inBuf.host, inBuf.trailers, 0, len - hl, &conn_fd };
+   
+   if (msgs[1].length > 0) {
       ctx.chunkFncs=&httpChunkFunctions;
+      ctx.sessionId=sessionId;
+      
+      if ((_sfcb_trace_mask & TRACE_RESPONSETIMING) ) {
+         getrusage(RUSAGE_SELF,&us);
+         uset=1;
+      }
       
 #ifdef SFCB_DEBUG
       if ((_sfcb_trace_mask & TRACE_XMLIN) ) {
@@ -815,7 +829,8 @@ static int doHttpRequest(CommHndl conn_fd)
 #endif 
       
       response = handleCimXmlRequest(&ctx);
-   } else {
+   } 
+   else {
      response = nullResponse;
    }
    free(hdr);
@@ -823,8 +838,11 @@ static int doHttpRequest(CommHndl conn_fd)
    _SFCB_TRACE(1, ("--- Generate http response"));
    if (response.chunkedMode==0) writeResponse(conn_fd, response);
 
-   //commClose(conn_fd);
-
+   if (uset && (_sfcb_trace_mask & TRACE_RESPONSETIMING) ) {
+      getrusage(RUSAGE_SELF,&ue);
+      fprintf(stderr,"-#- Operation %.5u %s-%s user: %f sys: %f \n",sessionId, opsName[ctx.operation], ctx.className,
+         timevalDiff(&us.ru_utime,&ue.ru_utime),timevalDiff(&us.ru_stime,&ue.ru_stime));
+   }
 
    freeBuffer(&inBuf);
    _SFCB_RETURN(0);
@@ -851,6 +869,7 @@ static void handleHttpRequest(int connFd)
          if (semGetValue(httpProcSem,httpProcIdX+1)==0) break;
       procReleaseUnDo.sem_num=httpProcIdX+1; 
 
+      sessionId++;
       r = fork();
 
       if (r==0) {

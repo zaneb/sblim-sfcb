@@ -848,3 +848,16 @@ void showStatus(CMPIStatus *st, char *msg)
    mlogf(M_INFO,M_SHOW,"--- showStatus (%s): %d %s\n",msg,st->rc,m);
 }   
 
+double timevalDiff(struct timeval *sv, struct timeval *ev)
+{
+   double s,e;
+
+   s=sv->tv_usec;
+   s/=1000000;
+   s+=sv->tv_sec;
+   e=ev->tv_usec;
+   e/=1000000;
+   e+=ev->tv_sec;
+   return e-s;
+}
+   

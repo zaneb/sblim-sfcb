@@ -202,8 +202,9 @@ static CMPIStatus setErrorStatus(int code)
 }
 
 static void setContext(BinRequestContext * binCtx, OperationHdr * oHdr,
-                       BinRequestHdr * bHdr, int size, const CMPIObjectPath * cop)
+                       BinRequestHdr * bHdr, int size, const CMPIObjectPath * cop, const CMPIContext *ctx)
 {
+   unsigned int sessionId=0;
    memset(binCtx,0,sizeof(BinRequestContext));
    oHdr->nameSpace = setCharsMsgSegment((char *)
                           ClObjectPathGetNameSpace((ClObjectPath *) cop->hdl));
@@ -212,6 +213,7 @@ static void setContext(BinRequestContext * binCtx, OperationHdr * oHdr,
    bHdr->object[0] = setCharsMsgSegment("$$");
    bHdr->object[1] = setObjectPathMsgSegment(cop);
    bHdr->flags=0;
+   sessionId=ctx->ft->getEntry(ctx,"CMPISessionId",NULL).value.uint32;
 
    binCtx->oHdr = oHdr;
    binCtx->bHdr = bHdr;
@@ -282,7 +284,7 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
    
       lockUpCall(broker);
    
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop);
+      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop, context);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data)); 
 
       irc = getProviderContext(&binCtx, &oHdr);
@@ -346,7 +348,7 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
    
       lockUpCall(broker);
    
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop);
+      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop, context);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data)); 
 
       sreq.instance = setInstanceMsgSegment(inst);
@@ -403,7 +405,7 @@ static CMPIStatus modifyInstance(const CMPIBroker * broker,
    ModifyInstanceReq *sreq=NULL;
    OperationHdr oHdr = { OPS_ModifyInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   int ps,irc,sreqSize=sizeof(ModifyInstanceReq)-sizeof(MsgSegment);
+   int ps,irc,sreqSize=sizeof(ModifyInstanceReq); //-sizeof(MsgSegment);
    ProviderInfo *pInfo;
 
    _SFCB_ENTER(TRACE_UPCALLS, "modifyInstance");
@@ -415,10 +417,10 @@ static CMPIStatus modifyInstance(const CMPIBroker * broker,
       for (ps=0,p=props; p && *p; p++,ps++) 
          sreqSize+=sizeof(MsgSegment);      
       sreq=(ModifyInstanceReq*)calloc(1,sreqSize);
-      sreq->count=ps+3;
-      sreq->operation=OPS_ModifyInstance;
+      sreq->hdr.count=ps+3;
+      sreq->hdr.operation=OPS_ModifyInstance;
       
-      setContext(&binCtx, &oHdr, &sreq->hdr, sreqSize, cop);
+      setContext(&binCtx, &oHdr, &sreq->hdr, sreqSize, cop, context);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data)); 
       
       sreq->instance = setInstanceMsgSegment(inst);
@@ -474,7 +476,7 @@ static CMPIStatus deleteInstance(const CMPIBroker * broker,
    
       lockUpCall(broker);
    
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop);
+      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop, context);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data)); 
       
       irc = getProviderContext(&binCtx, &oHdr);
@@ -527,7 +529,7 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
    
       lockUpCall(broker);
    
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop);
+      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop, context);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data)); 
       
       sreq.query = setCharsMsgSegment(query);
@@ -600,7 +602,7 @@ static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
    
       lockUpCall(broker);
       
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop);
+      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop, context);
 
       irc = getProviderContext(&binCtx, &oHdr);
 
@@ -668,7 +670,7 @@ static CMPIEnumeration *enumInstanceNames(const CMPIBroker * broker,
    
       lockUpCall(broker);
       
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop);
+      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), cop, context);
 
       irc = getProviderContext(&binCtx, &oHdr);
 
@@ -816,12 +818,12 @@ static CMPIData invokeMethod(const CMPIBroker * broker, const CMPIContext * cont
    
       size=sizeof(InvokeMethodReq)+(x*sizeof(MsgSegment));
       sreq=(InvokeMethodReq*)calloc(1,size);
-      sreq->count=5+x;
-      sreq->operation=OPS_InvokeMethod;
+      sreq->hdr.count=5+x;
+      sreq->hdr.operation=OPS_InvokeMethod;
       
       lockUpCall(broker);
       
-      setContext(&binCtx, &oHdr, &sreq->hdr, size, cop);
+      setContext(&binCtx, &oHdr, &sreq->hdr, size, cop, context);
       
       sreq->in = setArgsMsgSegment(in);
       sreq->out = setArgsMsgSegment(NULL);

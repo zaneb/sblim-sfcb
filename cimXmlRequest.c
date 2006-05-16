@@ -496,7 +496,7 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    CMPIObjectPath *path;
    CMPIConstClass *cls;
    UtilStringBuffer *sb;
-   int irc,i,sreqSize=sizeof(GetClassReq)-sizeof(MsgSegment);
+   int irc,i,sreqSize=sizeof(GetClassReq); //-sizeof(MsgSegment);
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    GetClassReq *sreq;
@@ -505,15 +505,17 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokGetClass *req = (XtokGetClass *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_GetClass;
-   sreq->count=req->properties+2;
+   sreq->hdr.operation=OPS_GetClass;
+   sreq->hdr.count=req->properties+2;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq->objectPath = setObjectPathMsgSegment(path);
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -563,14 +565,16 @@ static RespSegments deleteClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokDeleteClass *req = (XtokDeleteClass *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    memset(&sreq,0,sizeof(sreq));
-   sreq.operation=OPS_DeleteClass;
-   sreq.count=2;
+   sreq.hdr.operation=OPS_DeleteClass;
+   sreq.hdr.count=2;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -623,6 +627,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokCreateClass *req = (XtokCreateClass *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    
@@ -722,6 +727,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq.principal = setCharsMsgSegment(ctx->principal);
    sreq.path = setObjectPathMsgSegment(path);
    sreq.cls = setConstClassMsgSegment(&cls);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -761,11 +767,13 @@ static RespSegments enumClassNames(CimXmlRequestContext * ctx,
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokEnumClassNames *req = (XtokEnumClassNames *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
    
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
-   sreq.flags = req->flags;
+   sreq.hdr.flags = req->flags;
+   sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -810,11 +818,13 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokEnumClasses *req = (XtokEnumClasses *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
    
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
-   sreq.flags = req->flags;
+   sreq.hdr.flags = req->flags;
+   sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -829,7 +839,7 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
    if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
-      sreq.flags|=FL_chunked;
+      sreq.hdr.flags|=FL_chunked;
       hdr->chunkedMode=binCtx.chunkedMode=1;
    }
    binCtx.pAs=NULL;
@@ -869,7 +879,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    CMPIType type;
    CMPIValue val, *valp;
    UtilStringBuffer *sb;
-   int irc, i, m,sreqSize=sizeof(GetInstanceReq)-sizeof(MsgSegment);
+   int irc, i, m,sreqSize=sizeof(GetInstanceReq); //-sizeof(MsgSegment);
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    RespSegments rsegs;
@@ -877,11 +887,12 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokGetInstance *req = (XtokGetInstance *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_GetInstance;
-   sreq->count=req->properties+2;
+   sreq->hdr.operation=OPS_GetInstance;
+   sreq->hdr.count=req->properties+2; 
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->instanceName.bindings.next; i < m; i++) {
@@ -893,6 +904,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    sreq->objectPath = setObjectPathMsgSegment(path);
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -944,6 +956,7 @@ static RespSegments deleteInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokDeleteInstance *req = (XtokDeleteInstance *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->instanceName.bindings.next; i < m; i++) {
@@ -956,6 +969,7 @@ static RespSegments deleteInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -997,6 +1011,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokCreateInstance *req = (XtokCreateInstance *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    inst = NewCMPIInstance(path, NULL);
@@ -1010,6 +1025,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
                   
    sreq.instance = setInstanceMsgSegment(inst);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    path = inst->ft->getObjectPath(inst,NULL);
    sreq.path = setObjectPathMsgSegment(path);
@@ -1049,7 +1065,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    CMPIInstance *inst;
    CMPIType type;
    CMPIValue val, *valp;
-   int irc, i, m, sreqSize=sizeof(ModifyInstanceReq)-sizeof(MsgSegment);
+   int irc, i, m, sreqSize=sizeof(ModifyInstanceReq); //-sizeof(MsgSegment);
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    ModifyInstanceReq *sreq;
@@ -1059,11 +1075,12 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokModifyInstance *req = (XtokModifyInstance *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_ModifyInstance;
-   sreq->count=req->properties+3;
+   sreq->hdr.operation=OPS_ModifyInstance;
+   sreq->hdr.count=req->properties+3;
 
    for (i=0; i<req->properties; i++){
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -1091,6 +1108,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->instance = setInstanceMsgSegment(inst);
    sreq->path = setObjectPathMsgSegment(path);
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq->hdr;
@@ -1134,9 +1152,12 @@ static RespSegments enumInstanceNames(CimXmlRequestContext * ctx,
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    XtokEnumInstanceNames *req = (XtokEnumInstanceNames *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
+   
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -1175,22 +1196,24 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    CMPIObjectPath *path;
    EnumInstancesReq *sreq;
-   int irc, l = 0, err = 0,i,sreqSize=sizeof(EnumInstancesReq)-sizeof(MsgSegment);
+   int irc, l = 0, err = 0,i,sreqSize=sizeof(EnumInstancesReq); //-sizeof(MsgSegment);
    BinResponseHdr **resp;
    BinRequestContext binCtx;
 
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    XtokEnumInstances *req = (XtokEnumInstances *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_EnumerateInstances;
-   sreq->count=req->properties+2;
+   sreq->hdr.operation=OPS_EnumerateInstances;
+   sreq->hdr.count=req->properties+2;  
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq->principal = setCharsMsgSegment(ctx->principal);
    sreq->objectPath = setObjectPathMsgSegment(path);
+   sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++) {
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -1210,7 +1233,7 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
-      sreq->flags|=FL_chunked;
+      sreq->hdr.flags|=FL_chunked;
       hdr->chunkedMode=binCtx.chunkedMode=1;
    }
    binCtx.pAs=NULL;
@@ -1262,6 +1285,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokExecQuery *req = (XtokExecQuery*)hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    qs=parseQuery(MEM_TRACKED,(char*)req->op.query.data,
       (char*)req->op.queryLang.data,NULL,&irc);   
@@ -1279,6 +1303,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq.principal = setCharsMsgSegment(ctx->principal);
    sreq.query = setCharsMsgSegment((char*)req->op.query.data);
    sreq.queryLang = setCharsMsgSegment((char*)req->op.queryLang.data);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
@@ -1293,7 +1318,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
-      sreq.flags|=FL_chunked;
+      sreq.hdr.flags|=FL_chunked;
       hdr->chunkedMode=binCtx.chunkedMode=1;
    }
    binCtx.pAs=NULL;
@@ -1342,6 +1367,7 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokAssociatorNames *req = (XtokAssociatorNames *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->objectName.bindings.next; i < m; i++) {
@@ -1364,6 +1390,7 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
    sreq.assocClass = req->op.assocClass;
    sreq.resultRole = req->op.resultRole;
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    req->op.className = req->op.assocClass;
 
@@ -1404,7 +1431,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    CMPIObjectPath *path;
    AssociatorsReq *sreq; 
-   int irc, i, m, l = 0, err = 0, sreqSize=sizeof(AssociatorsReq)-sizeof(MsgSegment);
+   int irc, i, m, l = 0, err = 0, sreqSize=sizeof(AssociatorsReq); //-sizeof(MsgSegment);
    BinResponseHdr **resp;
    BinRequestContext binCtx;
    CMPIType type;
@@ -1412,11 +1439,12 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokAssociators *req = (XtokAssociators *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_Associators;
-   sreq->count=req->properties+6;
+   sreq->hdr.operation=OPS_Associators;
+   sreq->hdr.count=req->properties+6;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->objectName.bindings.next; i < m; i++) {
@@ -1438,8 +1466,9 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->role = req->op.role;
    sreq->assocClass = req->op.assocClass;
    sreq->resultRole = req->op.resultRole;
-   sreq->flags = req->flags;
+   sreq->hdr.flags = req->flags;
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -1460,7 +1489,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
-      sreq->flags|=FL_chunked;
+      sreq->hdr.flags|=FL_chunked;
       hdr->chunkedMode=binCtx.chunkedMode=1;
    }
 
@@ -1512,6 +1541,7 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokReferenceNames *req = (XtokReferenceNames *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->objectName.bindings.next; i < m; i++) {
@@ -1532,6 +1562,7 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq.resultClass = req->op.resultClass;
    sreq.role = req->op.role;
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    req->op.className = req->op.resultClass;
 
@@ -1573,7 +1604,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    CMPIObjectPath *path;
    AssociatorsReq *sreq; 
-   int irc, i, m, l = 0, err = 0, sreqSize=sizeof(AssociatorsReq)-sizeof(MsgSegment);
+   int irc, i, m, l = 0, err = 0, sreqSize=sizeof(AssociatorsReq); //-sizeof(MsgSegment);
    BinResponseHdr **resp;
    BinRequestContext binCtx;
    CMPIType type;
@@ -1581,11 +1612,12 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokReferences *req = (XtokReferences *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
-   sreq->operation=OPS_References;
-   sreq->count=req->properties+4;
+   sreq->hdr.operation=OPS_References;
+   sreq->hdr.count=req->properties+4;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->objectName.bindings.next; i < m; i++) {
@@ -1605,8 +1637,9 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    sreq->resultClass = req->op.resultClass;
    sreq->role = req->op.role;
-   sreq->flags = req->flags;
+   sreq->hdr.flags = req->flags;
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
       sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
@@ -1627,7 +1660,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (noChunking || ctx->teTrailers==0)
       hdr->chunkedMode=binCtx.chunkedMode=0;
    else {
-      sreq->flags|=FL_chunked;
+      sreq->hdr.flags|=FL_chunked;
       hdr->chunkedMode=binCtx.chunkedMode=1;
    }
 
@@ -1683,6 +1716,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokMethodCall *req = (XtokMethodCall *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
 
    path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    if (req->instName) for (i = 0, m = req->instanceName.bindings.next; i < m; i++) {
@@ -1694,6 +1728,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
 
    for (p = req->paramValues.first; p; p = p->next) {
       // this is a problem: - paramvalue without type
@@ -1784,6 +1819,8 @@ RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx)
 
    Handler hdlr = handlers[hdr.opType];
    rs = hdlr.handler(ctx, &hdr);
+   ctx->className=hdr.className;
+   ctx->operation=hdr.opType;
    rs.buffer = hdr.xmlBuffer;
 
    return rs;

@@ -83,6 +83,7 @@ typedef struct requestHdr {
    void *cimRequest;
    unsigned long cimRequestLength;
    char *errMsg;
+   char *className;
 } RequestHdr;
 
 

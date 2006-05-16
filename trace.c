@@ -68,6 +68,7 @@ TraceId traceIds[]={
   {"memoryMgr",         TRACE_MEMORYMGR},
   {"msgQueue",          TRACE_MSGQUEUE},
   {"xmlParsing",        TRACE_XMLPARSING},
+  {"responseTiming",    TRACE_RESPONSETIMING},
   {NULL,0}
 };   
 

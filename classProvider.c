@@ -1059,12 +1059,13 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       CMPIConstClass *cc;
       int n;
 
-      cReg->ft->rUnLock(cReg);
+      cReg->ft->rLock(cReg);
    
        for (n = 0, i = ct->ft->getFirst(ct, (void **) &cn, (void **) &cc); i;
            i = ct->ft->getNext(ct, i, (void **) &cn, (void **) &cc)) {
-         if (cc->ft->getCharSuperClassName(cc) == NULL) {
-            CMSetArrayElementAt(ar, n++, cn, CMPI_chars);
+         if (cc->ft->isAssociation(cc) && cc->ft->getCharSuperClassName(cc) == NULL) {
+	   /* add top-level association class */
+	   CMSetArrayElementAt(ar, n++, cn, CMPI_chars);
          }
       }
       CMAddArg(out, "assocs", &ar, CMPI_stringA);

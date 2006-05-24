@@ -8,6 +8,7 @@ Bugs fixed:
 - 1440179 Fixed compile problem with debug disabled.
 - 1440183 Fixed chunking related HTTP problems.
 - 1481081 Fixed garbage CMPIPrincipal in providers
+- 1201656 Fixed missing association problem.
 
 Changes in 1.1.0
 ================

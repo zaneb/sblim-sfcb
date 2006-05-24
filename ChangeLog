@@ -1,3 +1,10 @@
+2006-05-24  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
+
+	* classProvider.c, classProviderGz.c: 
+	Fixed 1201656: Missing associations in sblim-cmpi-base.
+	The class provider's getassoc method was incorrectly returning 
+	non-association classes. This is fixed now.
+
 2006-05-03  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* providerDrv.c:

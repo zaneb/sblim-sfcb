@@ -212,6 +212,7 @@ static char *keyType(CMPIType type)
    switch (type) {
    case CMPI_chars:
    case CMPI_string:
+   case CMPI_dateTime:
       return "string";
    case CMPI_sint64:
    case CMPI_uint64:

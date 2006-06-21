@@ -1909,6 +1909,11 @@ int ClObjectPathGetKeyAt(ClObjectPath * op, int id, CMPIData * data,
       data->value.string = native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
    }
+   else if (data->type == CMPI_dateTime) {
+      const char *str =
+         ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
+      data->value.dateTime = native_new_CMPIDateTime_fromChars(str, NULL); 
+   }
    return 0;
 }
 

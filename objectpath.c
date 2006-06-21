@@ -221,6 +221,13 @@ static CMPIStatus __oft_addKey(CMPIObjectPath * op,
          data.value.chars = (char *) value->string->hdl;
       else data.value.chars=NULL;
       data.type=CMPI_chars;
+   } else if (type == CMPI_dateTime) {
+      if (value && value->dateTime) { 
+	data.value.dateTime = value->dateTime;
+      }   else {
+	data.value.dateTime=NULL;
+	data.state=CMPI_nullValue;
+      }
    }
    else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64)
       data.value = *value;

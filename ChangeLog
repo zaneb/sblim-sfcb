@@ -1,3 +1,9 @@
+2006-06-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* brokerUpc.c: 
+	Fixed 1511261: sfcb doesn't pass credentials in up-calls.
+	Now copying the CMPIPrincipal to the BINREQ structure for upcalls.
+
 2006-06-21  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* cimXmlGen.c, objectpath.c, objectImpl.c: 

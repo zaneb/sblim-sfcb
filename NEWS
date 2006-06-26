@@ -10,6 +10,7 @@ Bugs fixed:
 - 1481081 Fixed garbage CMPIPrincipal in providers
 - 1201656 Fixed missing association problem.
 - 1439399 Fixed datetime key handling
+- 1511261 Fixed credential passing in upcalls
 
 Changes in 1.1.0
 ================

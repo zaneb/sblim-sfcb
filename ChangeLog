@@ -1,3 +1,10 @@
+2006-06-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* value.c: 
+	Additional fix for 1439399. The value2chars function was not embedding
+	the datetime string in quotes, which lead to a failure in the CIMXML
+	generation.
+
 2006-06-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* brokerUpc.c: 

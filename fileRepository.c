@@ -147,6 +147,8 @@ static int getIndexRecord(BlobIndex * bi, char *key, size_t keyl, char **keyb, s
     return -1;
   }
   /* set up blob info and advance to next record */
+  bi->pos = bi->next;
+  bi->len = elen;
   bi->blen = blen;
   bi->bofs = bofs;
   bi->next += elen;
@@ -249,9 +251,11 @@ static void copy(FILE *o, FILE *i, int len, unsigned long ofs)
 
 static int adjust(BlobIndex *bi, int pos, int adj)
 {
-   int dp=pos+bi->len,l,o,sl;
-   char *p,*r,str[32]="                               ";
+   int dp=pos,l,o,sl;
+   char *p,*r,str[32];
    while (dp<bi->dSize) {
+      memset(str,' ',sizeof(str)-1);
+      str[sizeof(str)-1]=0;
       l=atoi(bi->index+dp);
       for (p=bi->index+dp+l-2; *p!=' '; p--) if (*p=='\r') r=p;
       o=atoi(++p);

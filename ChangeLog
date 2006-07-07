@@ -1,3 +1,9 @@
+2006-07-07  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* fileRepository.c, fileRepository.h, internalProvider.c: 
+	Fixed 1518696: rewrote the blob index processing for lookup of
+	instances in the repository.
+
 2006-06-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* value.c: 

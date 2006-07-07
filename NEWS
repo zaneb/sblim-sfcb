@@ -11,6 +11,7 @@ Bugs fixed:
 - 1201656 Fixed missing association problem.
 - 1439399 Fixed datetime key handling
 - 1511261 Fixed credential passing in upcalls
+- 1518696 Fixed segfault in internal provider
 
 Changes in 1.1.0
 ================

@@ -45,7 +45,7 @@ extern int deleteBlob(char *ns, char * cls, char *id);
 extern void *getBlob(char *ns, char *cls, char *id, int *len);
 extern int existingBlob(char *ns, char * cls, char *id);
 extern int existingNameSpace(char *ns);
-extern void* getFirst(BlobIndex *bi, int *len);
-extern void* getNext(BlobIndex *bi, int *len);
+extern void* getFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
+extern void* getNext(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
 
 #endif

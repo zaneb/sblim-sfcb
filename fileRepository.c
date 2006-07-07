@@ -63,6 +63,108 @@ static char *getRepDir()
    return repfn;      
 }
 
+static int getIndexRecord(BlobIndex * bi, char *key, size_t keyl, char **keyb, size_t *keybl)
+/* returns -1 failure, 0 OK, 1 not found (only with key)
+ */
+{
+  static const char *delims = " \t";
+  static const char *num = "0123456789";
+  char *tokenptr; 
+  char *kbptr; 
+  int elen, ekl;
+  int blen, bofs;
+  int slen;
+  
+  /* check index range */
+  if (bi->next > bi->dSize) {
+    return -1;
+  }
+  tokenptr = bi->index + bi->next;
+  /* get record length */
+  /* trim white space first */
+  slen = strspn(tokenptr,delims);
+  tokenptr += slen;
+  slen = strspn(tokenptr,num);
+  /* get digits */
+  if (slen == 0) {
+    /* no more token found */
+    return -1;
+  }
+  elen = atoi(tokenptr);
+  if (elen <= 0) {
+    /* record length not valid */
+    return -1;
+  }
+  tokenptr += slen;
+  /* get keybinding length */
+  /* trim white space first */
+  slen = strspn(tokenptr,delims);
+  tokenptr += slen;
+  slen = strspn(tokenptr,num);
+  /* get digits */
+  if (slen == 0) {
+    /* no more token found */
+    return -1;
+  }
+  ekl = atoi(tokenptr);
+  if (ekl <= 0) {
+    /* keybinding length not valid */
+    return -1;
+  }
+  tokenptr += slen;
+  /* skip keybindings and get blob length */
+  /* trim white space first */
+  slen = strspn(tokenptr,delims);
+  kbptr = tokenptr + slen;
+  tokenptr = kbptr + ekl;
+  slen = strspn(tokenptr,delims);
+  tokenptr += slen;
+  slen = strspn(tokenptr,num);
+  /* get digits */
+  if (slen == 0) {
+    /* no more token found */
+    return -1;
+  }
+  blen = atoi(tokenptr);
+  if (blen <= 0) {
+    /* blob length not valid */
+    return -1;
+  }
+  tokenptr += slen;
+  /* get blob offset */
+  /* trim white space first */
+  slen = strspn(tokenptr,delims);
+  tokenptr += slen;
+  slen = strspn(tokenptr,num);
+  /* get digits */
+  if (slen == 0) {
+    /* no more token found */
+    return -1;
+  }
+  bofs = atoi(tokenptr);
+  if (bofs < 0) {
+    /* offset not valid */
+    return -1;
+  }
+  /* set up blob info and advance to next record */
+  bi->blen = blen;
+  bi->bofs = bofs;
+  bi->next += elen;
+  /* check if key was specified and matches */
+  if (keyl > 0) {
+    if (keyl != ekl || strncmp(kbptr,key,keyl)) {
+      /* mismatch */
+      return 1;
+    }
+  }
+  /* set found keybindings if possible */
+  if (keyb && keybl) {
+    *keyb = kbptr;
+    *keybl = ekl;
+  }
+  return 0;  
+}
+
 void freeBlobIndex(BlobIndex **bip, int all)
 {
    BlobIndex *bi;
@@ -83,66 +185,56 @@ void freeBlobIndex(BlobIndex **bip, int all)
 
 static int indxLocate(BlobIndex *bi,char *key)
 {
-   int n,dp,elen,kl=strlen(key),ekl;
-   char *kp,ch,c;
-   for (dp=0; dp<bi->dSize; ) {
-      c=sscanf(bi->index+dp,"%d %d %1s%n",&elen,&ekl,&ch,&n);
-      kp=bi->index+dp+n-1;
-      if (kl==ekl) {
-         if (strncmp(key,kp,kl)==0) {
-            c=sscanf(bi->index+dp+n-1+ekl,"%d %d",&bi->blen,&bi->bofs);
-            bi->pos=dp;
-            bi->len=elen;
-            return 1;
-         }
-      }
-      dp+=elen;
+   int loc;
+   int kl=strlen(key);
+   bi->next = 0;
+   while (bi->next < bi->dSize) {
+     loc = getIndexRecord(bi,key,kl,NULL,0);
+     if (loc < 0) {
+       return 0;
+     } else if (loc == 0) {
+       /* found */
+       return 1;
+     }
    }
    return 0;
 }
 
-void* getFirst(BlobIndex *bi, int *len)
+void* getFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl)
 {
-   int n,dp,elen,ekl,c;
-   char ch,*buf;
-   dp=bi->next=0;
+   char *buf = NULL;
+   bi->next=0;
 
-   c=sscanf(bi->index+dp,"%d %d %1s%n",&elen,&ekl,&ch,&n);
-   c=sscanf(bi->index+dp+n-1+ekl,"%d %d",&bi->blen,&bi->bofs);
+   if (getIndexRecord(bi,NULL,0,keyb,keybl) == 0) {
+     bi->fd=fopen(bi->fnd,"rb");
+     fseek(bi->fd,bi->bofs,SEEK_SET);
+     buf=(char*)malloc(bi->blen+8);
+     fread(buf,bi->blen,1,bi->fd);
+     buf[bi->blen]=0;
+     if (len) *len=bi->blen;
+   } else if (len) {
+     *len = 0;
+   }
 
-   bi->fd=fopen(bi->fnd,"rb");
-   fseek(bi->fd,bi->bofs,SEEK_SET);
-   buf=(char*)malloc(bi->blen+8);
-   fread(buf,bi->blen,1,bi->fd);
-   if (len) *len=bi->blen;
-   buf[bi->blen]=0;
-
-   bi->next+=elen;
    return (void*)buf;
 }
 
-void* getNext(BlobIndex *bi, int *len)
+void* getNext(BlobIndex *bi, int *len, char** keyb, size_t *keybl)
 {
-   int n,dp=bi->next,elen,ekl,c;
-   char ch,*buf;
+   char *buf = NULL;
 
-   if (dp>=bi->dSize) {
-      *len=0;
-      fclose(bi->fd);
-      bi->fd=NULL;
-      return NULL;
+   if (getIndexRecord(bi,NULL,0,keyb,keybl) == 0) {
+     fseek(bi->fd,bi->bofs,SEEK_SET);
+     buf=(char*)malloc(bi->blen+8);
+     fread(buf,bi->blen,1,bi->fd);
+     buf[bi->blen]=0;    
+     if (len) *len=bi->blen;
+   } else {
+     fclose(bi->fd);
+     bi->fd=NULL;
+     if (len) *len=0;
    }
 
-   c=sscanf(bi->index+dp,"%d %d %1s%n",&elen,&ekl,&ch,&n);
-   c=sscanf(bi->index+dp+n-1+ekl,"%d %d",&bi->blen,&bi->bofs);
-
-   fseek(bi->fd,bi->bofs,SEEK_SET);
-   buf=(char*)malloc(bi->blen+8);
-   fread(buf,bi->blen,1,bi->fd);
-   if (len) *len=bi->blen;
-   buf[bi->blen]=0;
-
-   bi->next+=elen;
    return (void*)buf;
 }
 

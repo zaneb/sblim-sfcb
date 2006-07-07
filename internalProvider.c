@@ -267,9 +267,10 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
    char *bnss=repositoryNs(nss);
-   int n,dp,elen,ekl,i,ac=0;
+   size_t ekl;
+   int i,ac=0;
    char copKey[8192]="";
-   char *kp,ch;
+   char *kp;
    char *msg;
    CMPIArgs *in,*out;
    CMPIObjectPath *op;
@@ -289,25 +290,27 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    
    for (i=0; cns; i++) {
       if ((bi=_getIndex(bnss,cns))!=NULL) {
-         for (dp=0; dp<bi->dSize; ) {
-            sscanf(bi->index+dp,"%d %d %1s%n",&elen,&ekl,&ch,&n);
-            kp=bi->index+dp+n-1;
-
+	if (getFirst(bi,NULL,&kp,&ekl)) {
+	  while(1) {
             strcpy(copKey,nss);
             strcat(copKey,":");
             strcat(copKey,cns);
             strcat(copKey,".");
             strncat(copKey,kp,ekl);
-
+	    
             cop=getObjectPath(copKey,&msg);
             if (cop) CMReturnObjectPath(rslt, cop);
             else {
-               CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
-               return st;
+	      CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
+	      return st;
             }
-            dp+=elen;
-         }
-         freeBlobIndex(&bi,1);
+	    if (bi->next < bi->dSize && getNext(bi,NULL,&kp,&ekl)) {
+	      continue;
+	    }
+	    break;
+	  }
+	}
+	freeBlobIndex(&bi,1);
       }
       if (i<ac) cns=(char*)CMGetArrayElementAt(ar,i,NULL).value.string->hdl;
       else cns=NULL;  
@@ -360,7 +363,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
    for (i=0; cns; i++) {
        _SFCB_TRACE(1,("--- looking for %s",cns));
       if ((bi=_getIndex(bnss,cns))!=NULL) {
-         for (blob=getFirst(bi,&len); blob; blob=getNext(bi,&len)) {
+	for (blob=getFirst(bi,&len,NULL,0); blob; blob=getNext(bi,&len,NULL,0)) {
             ci=relocateSerializedInstance(blob);
             _SFCB_TRACE(1,("--- returning instance %p",ci));
             retFnc(rslt,ci);

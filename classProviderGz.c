@@ -327,9 +327,11 @@ static ClassRegister *newClassRegister(char *fname)
       const char *cn,*pn;
       
       if (first) {
-         if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version &&
-            strcmp(vrp->id,"sfcd-rep")==0) vRec=1;
-         first=0;
+         if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version) vRec=1;
+         else if (vrp->size==sizeof(ClVersionRecord)<<24 && vrp->type==HDR_Version) {
+            mlogf(M_ERROR,M_SHOW,"--- %s is in wrong endian format - directory skipped\n",fin);
+            return NULL;
+         }
       }
       
       if (vRec==0 && hdr.type!=HDR_Class) {

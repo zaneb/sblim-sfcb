@@ -21,9 +21,9 @@
 
 #include <cmci.h>
 
-//#define freeArr(arr) \
-//	{int freeStrArrN=0;if (arr) {while (arr[freeStrArrN]) free(arr[freeStrArrN++]);free(arr);}}
-      
+/*#define freeArr(arr) \
+	{int freeStrArrN=0;if (arr) {while (arr[freeStrArrN]) free(arr[freeStrArrN++]);free(arr);}}
+*/      
 #define freeStr(str) \
 	{if (str) free(str);}
 

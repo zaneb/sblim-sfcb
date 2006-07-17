@@ -13,6 +13,7 @@
 # 
 #  Author:        Viktor Mihajlovski <mihajlov@de.ibm.com>
 #  Contributions: Adrian Schuur <schuur@de.ibm.com>
+#                 Sven Schuetz <sven@de.ibm.com>
 # 
 #  Description:
 # 
@@ -30,7 +31,7 @@ MANFILES=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
 	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 man/sfcbuuid.1 \
 	man/wbemcat.1 man/xmltest.1
 
-BUILT_SOURCES=queryParser.c queryLexer.c sqlParser.c sqlLexer.c $(MANFILES)
+BUILT_SOURCES=queryParser.c queryLexer.c sqlParser.c sqlLexer.c cimXmlOps.c cimXmlParserProcessed.c $(MANFILES)
 
 AM_YFLAGS=-d
 
@@ -38,6 +39,7 @@ AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfdir)\" \
 	-DSFCB_STATEDIR=\"$(sfcbstatedir)\" \
 	-DSFCB_LIBDIR=\"$(libdir)\" \
 	-DSFCB_BINARY=\"$(sbindir)/sfcbd\" \
+	-I$(srcdir)/sfcUtil \
 	@SFCB_CPPFLAGS@
 AM_CFLAGS=@SFCB_CFLAGS@
 AM_LDFLAGS=@SFCB_LDFLAGS@
@@ -45,22 +47,21 @@ AM_LDFLAGS=@SFCB_LDFLAGS@
 SUBDIRS=. $(MOFC_DIR)
 
 if INDICATIONS
-lib_LTLIBRARIES = \
-   libsfcBrokerCore.la \
-   libsfcInternalProvider.la \
-   libsfcInteropProvider.la \
-   libsfcInteropServerProvider.la \
-   libsfcClassProvider.la \
-   libsfcClassProviderGz.la \
-   libsfcCimXmlCodec.la \
-   libsfcHttpAdapter.la \
-   libsfcBasicAuthentication.la \
-   libsfcCertificateAuthentication.la \
-   libsfcIndCIMXMLHandler.la \
-   libsfcObjectImplSwapI32toP32.la \
-   libcimcClientSfcbLocal.la 
+INDICATION_LIBS = libsfcIndCIMXMLHandler.la
 else
+INDICATION_LIBS =
+endif
+
+if SLP
+SLP_LIBS = libslpAgent.la
+SLP_LIB = -lslpAgent
+else
+SLP_LIBS =
+SLP_LIB =
+endif
+
 lib_LTLIBRARIES = \
+   libsfcUtil.la \
    libsfcBrokerCore.la \
    libsfcInternalProvider.la \
    libsfcInteropProvider.la \
@@ -72,17 +73,37 @@ lib_LTLIBRARIES = \
    libsfcBasicAuthentication.la \
    libsfcCertificateAuthentication.la \
    libsfcObjectImplSwapI32toP32.la \
-   libcimcClientSfcbLocal.la 
+   libcimcClientSfcbLocal.la \
+   $(SLP_LIBS) \
+   $(INDICATION_LIBS)
+
+if SLP_ALONE
+SLP_PROGRAMFILES = cimslp
+cimslp_SOURCES = \
+	cimslp.c \
+	cimslpCMPI.c \
+	cimslpSLP.c \
+	cimslpUtil.c 
+
+cimslp_LDADD=-lslp -lcmpisfcc
+else
+SLP_PROGRAMFILES = 
 endif
 
 sbin_PROGRAMS = \
    sfcbd 
 
 bin_PROGRAMS = \
-   sfcbmofpp sfcbdump
+   sfcbmofpp sfcbdump $(SLP_PROGRAMFILES)
 
 noinst_PROGRAMS = \
    sfcbdumpP32onI32	
+
+libsfcUtil_la_SOURCES = \
+	sfcUtil/hashtable.c \
+	sfcUtil/utilFactory.c \
+	sfcUtil/utilHashtable.c \
+	sfcUtil/utilStringBuffer.c
 
 if JDBC
 libsfcBrokerCore_la_SOURCES = \
@@ -107,11 +128,7 @@ libsfcBrokerCore_la_SOURCES = \
     providerRegister.c \
     objectImpl.c \
     constClass.c \
-    hashtable.c \
     genericlist.c \
-    utilHashtable.c \
-    utilStringBuffer.c \
-    utilFactory.c \
     msgqueue.c \
     providerMgr.c \
     providerDrv.c \
@@ -153,11 +170,7 @@ libsfcBrokerCore_la_SOURCES = \
     providerRegister.c \
     objectImpl.c \
     constClass.c \
-    hashtable.c \
     genericlist.c \
-    utilHashtable.c \
-    utilStringBuffer.c \
-    utilFactory.c \
     msgqueue.c \
     providerMgr.c \
     providerDrv.c \
@@ -173,6 +186,7 @@ libsfcBrokerCore_la_SOURCES = \
 endif
 
 libsfcBrokerCore_la_CFLAGS = $(AM_CFLAGS) @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
+libsfcBrokerCore_la_LIBADD=-lsfcUtil
 
 if JDBC
 sqlLexer.c: $(srcdir)/sqlLexer.l
@@ -187,6 +201,12 @@ queryLexer.c: $(srcdir)/queryLexer.l
 
 queryParser.c: $(srcdir)/queryParser.y
 	$(YACC) $(AM_YFLAGS) -p sfcQuery -o $@ $< 
+
+cimXmlOps.c: $(srcdir)/cimXmlOps.y
+	$(YACC) $(AM_YFLAGS) -p sfcXml -o $@ $< 
+
+cimXmlParserProcessed.c: $(srcdir)/cimXmlParser.c
+	sed -e "s/yy/sfcXml/g" $< > $@
 
 libcimcClientSfcbLocal_la_SOURCES = \
    cimcClientSfcbLocal.c
@@ -235,13 +255,22 @@ libsfcClassProvider_la_LIBADD=-lsfcBrokerCore
 
 libsfcCimXmlCodec_la_SOURCES = \
    cimXmlOps.y \
-   cimXmlParser.c \
+   cimXmlParserProcessed.c \
    cimXmlRequest.c 
 libsfcCimXmlCodec_la_LIBADD=-lsfcBrokerCore 
 
+if SLP
+libslpAgent_la_CFLAGS = $(AM_CFLAGS)
+libslpAgent_la_SOURCES = \
+    cimslp.c \
+    cimslpCMPI.c \
+    cimslpSLP.c \
+    cimslpUtil.c
+libslpAgent_la_LIBADD=-lslp -lcmpisfcc
+endif
 
 sfcbd_SOURCES=sfcBroker.c
-sfcbd_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter
+sfcbd_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter $(SLP_LIB)
 
 sfcbmofpp_SOURCES=mofpp.c
 
@@ -251,7 +280,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \
 	cimXmlParser.h    native.h       support.h cimXmlGen.h \
 	cimXmlRequest.h  genericlist.h  objectImpl.h   trace.h \
-	hashtable.h      utilft.h mlog.h \
+	sfcUtil/hashtable.h      sfcUtil/utilft.h mlog.h \
 	cmpidt.h cmpift.h cmpiftx.h cmpimacs.h cmpimacsx.h cmpios.h \
 	fileRepository.h internalProvider.h \
 	selectexp.h queryOperation.h \

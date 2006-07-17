@@ -21,6 +21,8 @@
 
 #include "cimslpUtil.h"
 
+#include <stdlib.h>
+
 /*void freeStrArr(char ** arr) {
 	int n=0;
 	if (arr) {while (arr[n]) free(arr[n++]);free(arr);}

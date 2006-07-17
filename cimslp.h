@@ -1,5 +1,5 @@
 /*
- * cimslpSLP.h
+ * cimslp.h
  *
  * (C) Copyright IBM Corp. 2006
  *
@@ -15,10 +15,9 @@
  *
  * Description:
  *
- * Functions for slp regs/deregs
+ * Control functions, main if running standlone, or slpAgent
+ * function if running in sfcb
  *
 */
 
-char* buildAttrString(char * name, char * value, char * attrstring);
-char* buildAttrStringFromArray(char * name, char ** value, char * attrstring);
-int registerCIMService(cimSLPService css, int slpLifeTime);
+void slpAgent();

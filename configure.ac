@@ -42,6 +42,10 @@ AC_ARG_ENABLE(jdbc,
 	[AC_HELP_STRING([--enable-jdbc],
 		[include server-side JDBC support for SFCB - EXPERIMENTAL.])])
 
+AC_ARG_ENABLE(slp,
+	[AC_HELP_STRING([--enable-slp],
+		[include slp agent for SFCB - EXPERIMENTAL.])])
+
 AC_ARG_ENABLE(indications,
 	[AC_HELP_STRING([--disable-indications],
 		[disable indication support for SFCB - currently not working.])],
@@ -57,6 +61,14 @@ fi
 
 if test "$enable_jdbc" == "yes"; then
    AC_DEFINE(HAVE_JDBC,,[JDBC support enabled.])
+fi
+
+if test "$enable_slp" == "standalone"; then
+   AC_DEFINE(HAVE_SLP_ALONE,,[SLP standalone support enabled.])
+fi
+
+if test "$enable_slp" == "yes"; then
+   AC_DEFINE(HAVE_SLP,,[SLP support enabled.])
 fi
 
 AC_CANONICAL_HOST
@@ -120,6 +132,21 @@ if test "$enable_ssl" = "yes"; then
    AC_CHECK_LIB(ssl,main)
 fi
 
+if test "$enable_slp" = "yes"; then
+   CPPFLAGS="-I /usr/local/include/CimClientLib $CPPFLAGS"
+   AC_CHECK_HEADER([cmci.h])
+   AC_CHECK_LIB(slp,SLPReg)
+   AC_CHECK_LIB(cmpisfcc,cmciConnect)
+
+fi
+
+if test "$enable_slp" = "standalone"; then
+   CPPFLAGS="-I /usr/local/include/CimClientLib $CPPFLAGS"
+   AC_CHECK_HEADER([cmci.h])
+   AC_CHECK_LIB(slp,SLPReg)
+   AC_CHECK_LIB(cmpisfcc,cmciConnect)
+fi
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
@@ -172,6 +199,8 @@ fi
 
 AM_CONDITIONAL(INDICATIONS,[test "$enable_indications" == "yes"]) 
 AM_CONDITIONAL(JDBC,[test "$enable_jdbc" == "yes"]) 
+AM_CONDITIONAL(SLP,[test "$enable_slp" == "yes"]) 
+AM_CONDITIONAL(SLP_ALONE,[test "$enable_slp" == "standalone"]) 
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
@@ -189,4 +218,5 @@ echo -e "debug"\\t"${enable_debug:-no}"
 echo -e "indications"\\t"${enable_indications}"
 echo -e "ssl"\\t"${enable_ssl:-no}"
 echo -e "jdbc"\\t"${enable_jdbc:-no}"
+echo -e "slp"\\t"${enable_slp:-no}"
 echo ======================================================

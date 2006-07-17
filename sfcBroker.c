@@ -12,6 +12,7 @@
  * http://www.opensource.org/licenses/eclipse-1.0.php
  *
  * Author:        Adrian Schuur <schuur@de.ibm.com>
+ * Contributions: Sven Schuetz <sven@de.ibm.com>
  *
  * Description:
  *
@@ -44,6 +45,11 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#ifdef HAVE_SLP
+#include "cimslp.h"
+static int startSLP = 1;
 #endif
 
 extern void setExFlag(unsigned long f);
@@ -362,6 +368,34 @@ static int startDbpd(int argc, char *argv[], int sslMode)
 
 #endif
 
+#ifdef HAVE_SLP
+
+static int startSLPAgent()
+{
+	int pid;//,sfcPid=currentProc;
+	//sleep(2);
+    pid= fork();
+    if (pid < 0) {
+       perror("slpAgent fork");
+       exit(2);
+    }
+    if (pid == 0) {
+    	printf("pid vom slpprozess: %d\n", getpid());
+    	//currentProc=getpid();
+    	//dbpDaemon(argc, argv, sslMode, sfcPid);
+    	//closeSocket(&sfcbSockets,cRcv,"startHttpd");
+      	//closeSocket(&resultSockets,cAll,"startHttpd");
+      	slpAgent();
+    }
+    else {
+    	//addStartedAdapter(pid);
+       	return 0;
+    }
+    return 0;
+}
+
+#endif
+
 static void usage(int status)
 {
     if (status != 0)
@@ -496,7 +530,7 @@ int main(int argc, char *argv[])
    
    _SFCB_TRACE_START(1,tmask);
 
-   setupControl(configfile);
+   setupControl(configfile);      
 //        SFCB_DEBUG
 #ifndef SFCB_DEBUG
    if (tmask)
@@ -509,9 +543,11 @@ int main(int argc, char *argv[])
       
    if (getControlBool("enableHttp", &enableHttp))
       enableHttp=1;
+      
 #if defined USE_SSL
    if (getControlBool("enableHttps", &enableHttps))
       enableHttps=0;
+
    sslMode=enableHttps;
    sslOMode=sslMode & !enableHttp;
 #else
@@ -583,6 +619,14 @@ int main(int argc, char *argv[])
          startDbpd(argc, argv,0);
    }
 #endif	
+
+
+#ifdef HAVE_SLP
+   //Start SLP Agent
+   if (startSLP) {
+		startSLPAgent();
+   }
+#endif
    
    setSignal(SIGSEGV, handleSigSegv,SA_ONESHOT);
    setSignal(SIGCHLD, handleSigChld,0);

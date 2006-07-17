@@ -27,6 +27,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
+#include "trace.h"
 #include "cmpidt.h"
 #include "providerMgr.h"
 #include "providerRegister.h"
@@ -36,7 +37,6 @@
 #include "msgqueue.h"
 #include "constClass.h"
 #include "native.h"
-#include "trace.h"
 #include "queryOperation.h"
 #include "selectexp.h"
 #include "control.h"

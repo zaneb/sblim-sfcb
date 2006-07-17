@@ -30,3 +30,23 @@ class DMY_ListenerDestinationCIMXML : CIM_ListenerDestinationCIMXML
 class DMY_IndicationHandlerCIMXML : CIM_IndicationHandlerCIMXML
 {
 };
+
+class DMY_ObjectManager : CIM_ObjectManager
+{
+};
+
+class DMY_ObjectManagerCommunicationMechanism : CIM_ObjectManagerCommunicationMechanism
+{
+};
+
+class DMY_RegisteredSubProfile : CIM_RegisteredSubProfile
+{
+};
+
+class DMY_Namespace : CIM_Namespace
+{
+};
+
+class DMY_SubProfileRequiresProfile : CIM_SubProfileRequiresProfile
+{
+};

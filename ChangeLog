@@ -1,3 +1,12 @@
+2006-07-17	Sven Schuetz
+
+	* cimslp.c, cimslpCMPI.c, cimslpSLP.c:
+	Added SLP Support
+	* hashtable.c, utilFactory.c, utilHashtable.c, utilStringbuffer.c:
+	Moved to sfcUtil, build as shared library now
+	* Makefile.am, configure.am
+	Included slp stuff into build process
+
 2006-07-07  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* fileRepository.c, fileRepository.h, internalProvider.c: 

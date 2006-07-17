@@ -1,6 +1,9 @@
 Changes in 1.1.1
 ================
 
+New features
+- 1296278 Added early slp support
+- moved some util functions to sfcUtil, build as share library
 Bugs fixed:
 - 1420399 Changed getSchema.sh to be more easily customizable for
 	  different CIM Schema versions.

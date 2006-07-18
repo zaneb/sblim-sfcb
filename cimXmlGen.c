@@ -132,6 +132,10 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
             hn=ref->instancePath.path.host.host;
             ns=ref->instancePath.path.nameSpacePath;
             break;   
+         case typeValRef_LocalInstancePath: 
+            in=&ref->localInstancePath.instanceName;
+            ns=ref->localInstancePath.path;
+            break;   
          case typeValRef_InstanceName: 
             in=&ref->instanceName;
             break;   
@@ -300,10 +304,10 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       sscanf(val, "%llu", &value.uint64);
       break;
    case CMPI_sint32:
-      sscanf(val, "%ld", &value.sint32);
+      sscanf(val, "%d", &value.sint32);
       break;
    case CMPI_uint32:
-      sscanf(val, "%lu", &value.uint32);
+      sscanf(val, "%u", &value.uint32);
       break;
    case CMPI_sint16:
       sscanf(val, "%hd", &value.sint16);
@@ -312,11 +316,11 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       sscanf(val, "%hu", &value.uint16);
       break;
    case CMPI_uint8:
-      sscanf(val, "%lu", &value.uint32);
+      sscanf(val, "%u", &value.uint32);
       value.uint8 = value.uint32;
       break;
    case CMPI_sint8:
-      sscanf(val, "%ld", &value.sint32);
+      sscanf(val, "%d", &value.sint32);
       value.sint8 = value.sint32;
       break;
    case CMPI_boolean:

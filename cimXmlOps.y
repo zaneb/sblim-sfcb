@@ -2100,6 +2100,11 @@ valueReference
        $$.instancePath=$2;
        $$.type=typeValRef_InstancePath;
     }
+    | XTOK_VALUEREFERENCE localInstancePath ZTOK_VALUEREFERENCE
+    {
+       $$.localInstancePath=$2;
+       $$.type=typeValRef_LocalInstancePath;
+    }
     | XTOK_VALUEREFERENCE instanceName ZTOK_VALUEREFERENCE
     {
        $$.instanceName=$2;

@@ -125,8 +125,10 @@ static UtilStringBuffer *normalize_ObjectPath(const CMPIObjectPath * cop)
 	 } else {
 	   nss = CMGetCharPtr(ns);
 	 }
-         sb->ft->appendChars(sb,nss);
-         sb->ft->appendChars(sb,":");
+	 if (nss) {
+	   sb->ft->appendChars(sb,nss);
+	   sb->ft->appendChars(sb,":");
+	 }
          sb->ft->appendChars(sb,(char*)cn->hdl);
          sb->ft->appendChars(sb,".");
          sb->ft->appendChars(sb,sbt->ft->getCharPtr(sbt));

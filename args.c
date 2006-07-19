@@ -125,7 +125,7 @@ static CMPIData __aft_getArgAt(const CMPIArgs * args,
       return rv;
    }
    if (rv.type == CMPI_chars) {
-      rv.value.string = native_new_CMPIString(rv.value.chars, NULL);
+      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL);
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) {
@@ -138,7 +138,7 @@ static CMPIData __aft_getArgAt(const CMPIArgs * args,
           native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &ca->hdr);
    }
    if (name) {
-      *name = native_new_CMPIString(n, NULL);
+      *name = sfcb_native_new_CMPIString(n, NULL);
       free(n);
    }
    if (rc)

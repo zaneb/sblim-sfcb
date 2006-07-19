@@ -41,10 +41,9 @@
 /* ------------------------------------------------------------------------- */
 
 extern CMPIInstance *relocateSerializedInstance(void *area);
-extern char *value2Chars(CMPIType type, CMPIValue * value);
-extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
+extern char *sfcb_value2Chars(CMPIType type, CMPIValue * value);
 extern CMPIObjectPath *getObjectPath(char *path, char **msg);
-extern CMPIString *native_new_CMPIString(const char *ptr, CMPIStatus * rc);
+extern CMPIString *sfcb_native_new_CMPIString(const char *ptr, CMPIStatus * rc);
 
 
 extern void closeProviderContext(BinRequestContext* ctx);

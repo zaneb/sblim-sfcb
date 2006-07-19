@@ -135,7 +135,7 @@ void setEnumArray(CMPIEnumeration * enumeration,CMPIArray * array)
 }     
 
 
-CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc)
+CMPIEnumeration *sfcb_native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc)
 {
    return (CMPIEnumeration *) __new_enumeration(MEM_TRACKED, array, rc);
 }

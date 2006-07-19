@@ -63,21 +63,21 @@ typedef struct _NativeCMPIBrokerFT NativeCMPIBrokerFT;
 
 /****************************************************************************/
 
-void native_release_CMPIValue(CMPIType, CMPIValue * val);
-CMPIValue native_clone_CMPIValue(CMPIType, const CMPIValue * val, CMPIStatus *);
+void sfcb_native_release_CMPIValue(CMPIType, CMPIValue * val);
+CMPIValue sfcb_native_clone_CMPIValue(CMPIType, const CMPIValue * val, CMPIStatus *);
 
-CMPIString *native_new_CMPIString(const char *, CMPIStatus *);
+CMPIString *sfcb_native_new_CMPIString(const char *, CMPIStatus *);
 
 CMPIArray *internal_new_CMPIArray(int mode, CMPICount size, CMPIType type,
                                   CMPIStatus *);
 CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus *);
 CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus *);
 
-void native_array_increase_size(const CMPIArray *, CMPICount);
+void sfcb_native_array_increase_size(const CMPIArray *, CMPICount);
 CMPIResult *native_new_CMPIResult(int, int, CMPIStatus *);
 CMPIArray *native_result2array(CMPIResult *);
 
-CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray *, CMPIStatus *);
+CMPIEnumeration *sfcb_native_new_CMPIEnumeration(CMPIArray *, CMPIStatus *);
 
 CMPIInstance *NewCMPIInstance(CMPIObjectPath *, CMPIStatus *);
 CMPIInstance *TrackedCMPIInstance(const CMPIObjectPath *, CMPIStatus *);
@@ -92,10 +92,10 @@ CMPIObjectPath *interal_new_CMPIObjectPath(int mode, const char *, const char *,
 CMPIArgs *NewCMPIArgs(CMPIStatus *);
 CMPIArgs *TrackedCMPIArgs(CMPIStatus *);
 
-CMPIDateTime *native_new_CMPIDateTime(CMPIStatus *);
-CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64,
+CMPIDateTime *sfcb_native_new_CMPIDateTime(CMPIStatus *);
+CMPIDateTime *sfcb_native_new_CMPIDateTime_fromBinary(CMPIUint64,
                                                  CMPIBoolean, CMPIStatus *);
-CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *, CMPIStatus *);
+CMPIDateTime *sfcb_native_new_CMPIDateTime_fromChars(const char *, CMPIStatus *);
 CMPISelectExp *native_new_CMPISelectExp(const char *,
                                         const char *,
                                         CMPIArray **, CMPIStatus *);

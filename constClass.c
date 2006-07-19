@@ -42,7 +42,7 @@ extern int ClClassGetQualifierAt(ClClass * cls, int id, CMPIData * data,
                                  char **name);
 extern int ClClassGetPropQualifierAt(ClClass * cls, int id, int qid,
                                      CMPIData * data, char **name);
-extern CMPIString *native_new_CMPIString(const char *ptr, CMPIStatus * rc);
+extern CMPIString *sfcb_native_new_CMPIString(const char *ptr, CMPIStatus * rc);
 extern int ClObjectLocateProperty(ClObjectHdr * hdr, ClSection * prps,
                                   const char *id);
 extern unsigned long ClSizeClass(ClClass * cls);
@@ -81,7 +81,7 @@ static const char *getCharClassName(CMPIConstClass * cc)
 static CMPIString *getClassName(CMPIConstClass * cc, CMPIStatus * rc)
 {
    const char *cn=getCharClassName(cc);
-   return native_new_CMPIString(cn, rc); 
+   return sfcb_native_new_CMPIString(cn, rc); 
 }
 
 static const char *getCharSuperClassName(CMPIConstClass * cc)
@@ -95,7 +95,7 @@ static const char *getCharSuperClassName(CMPIConstClass * cc)
 static CMPIString *getSuperClassName(CMPIConstClass * cc, CMPIStatus * rc)
 {
    const char *cn=getCharSuperClassName(cc);
-   return native_new_CMPIString(cn, rc); 
+   return sfcb_native_new_CMPIString(cn, rc); 
 }
 
 CMPIBoolean isAbstract(CMPIConstClass * cc)
@@ -142,7 +142,7 @@ CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name
       return rv;
    }
    if (rv.type == CMPI_chars) {
-      rv.value.string = native_new_CMPIString(rv.value.chars, NULL);
+      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL);
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) { 
@@ -156,7 +156,7 @@ CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name
           native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &cls->hdr);
    }
    if (name) {
-      *name = native_new_CMPIString(n, NULL);
+      *name = sfcb_native_new_CMPIString(n, NULL);
       free(n);
    }
    if (rc)
@@ -181,7 +181,7 @@ static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** n
       return rv;
    }
    if (rv.type == CMPI_chars) {
-      rv.value.string = native_new_CMPIString(ClObjectGetClString
+      rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
          (&cls->hdr, (ClString *) & rv.value.chars), NULL);
       rv.type = CMPI_string;
    }
@@ -190,7 +190,7 @@ static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** n
          NULL, &cls->hdr);
    }
    if (name) {
-      *name = native_new_CMPIString(n, NULL);
+      *name = sfcb_native_new_CMPIString(n, NULL);
       free(n);
    }
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
@@ -209,7 +209,7 @@ static CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i
       return rv;
    }
    if (rv.type == CMPI_chars) {
-      rv.value.string = native_new_CMPIString(ClObjectGetClString
+      rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
          (&cls->hdr, (ClString *) & rv.value.chars), NULL);
       rv.type = CMPI_string;
    }
@@ -218,7 +218,7 @@ static CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i
          NULL, &cls->hdr);
    }
    if (name) {
-      *name = native_new_CMPIString(n, NULL);
+      *name = sfcb_native_new_CMPIString(n, NULL);
       free(n);
    }
    if (rc) CMSetStatus(rc, CMPI_RC_OK);

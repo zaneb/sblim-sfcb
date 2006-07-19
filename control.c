@@ -71,6 +71,9 @@ Control init[] = {
    {"enableDbps",         2, "true"},
    {"dbpsProcs",        1, "8"},
 #endif
+#ifdef HAVE_SLP
+   {"slpRefreshInterval",         1, "600"},
+#endif
    {"provProcs",        1, "32"},
    {"basicAuthLib",     0, "sfcBasicAuthentication"},
    {"doBasicAuth",      2, "false"},

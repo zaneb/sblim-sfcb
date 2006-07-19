@@ -93,7 +93,7 @@ static struct native_string *__new_string(int mm_add,
 }
 
 
-CMPIString *native_new_CMPIString(const char *ptr, CMPIStatus * rc)
+CMPIString *sfcb_native_new_CMPIString(const char *ptr, CMPIStatus * rc)
 {
    return (CMPIString *) __new_string(MEM_TRACKED, ptr, rc);
 }

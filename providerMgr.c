@@ -992,7 +992,7 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
            resp->rv.value.chars=(int)resp->rvEnc.data+(char*)resp;
         else if (resp->rv.type==CMPI_dateTime) 
            resp->rv.value.dateTime=
-              native_new_CMPIDateTime_fromChars((int)resp->rvEnc.data+(char*)resp,NULL);
+              sfcb_native_new_CMPIDateTime_fromChars((int)resp->rvEnc.data+(char*)resp,NULL);
      }
      for (i = 0; i < resp->count; i++) {
          resp->object[i].data=(void*)((int)resp->object[i].data+(char*)resp);   

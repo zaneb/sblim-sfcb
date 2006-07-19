@@ -13,6 +13,7 @@
 #
 # Author:        Viktor Mihajlovski <mihajlov@de.ibm.com>
 # Contributions: Adrian Schuur <schuur@de.ibm.com>
+#                Sven Schuetz <sven@de.ibm.com>
 #
 # Description:
 #
@@ -132,19 +133,12 @@ if test "$enable_ssl" = "yes"; then
    AC_CHECK_LIB(ssl,main)
 fi
 
-if test "$enable_slp" = "yes"; then
-   CPPFLAGS="-I /usr/local/include/CimClientLib $CPPFLAGS"
-   AC_CHECK_HEADER([cmci.h])
-   AC_CHECK_LIB(slp,SLPReg)
-   AC_CHECK_LIB(cmpisfcc,cmciConnect)
-
-fi
-
-if test "$enable_slp" = "standalone"; then
-   CPPFLAGS="-I /usr/local/include/CimClientLib $CPPFLAGS"
-   AC_CHECK_HEADER([cmci.h])
-   AC_CHECK_LIB(slp,SLPReg)
-   AC_CHECK_LIB(cmpisfcc,cmciConnect)
+if test "$enable_slp"; then
+	#defined in acinclude.m4
+	CHECK_SFCC  
+	
+	AC_CHECK_LIB(cmpisfcc,cmciConnect,[],[AC_MSG_ERROR(no. Sorry cannot find libcmpisfcc.)])
+	AC_CHECK_LIB(slp,SLPReg,[],[AC_MSG_ERROR(no. Sorry cannot find libslp.)])
 fi
 
 # Checks for header files.

@@ -405,7 +405,7 @@ static UtilStringBuffer *genEnumResponses(BinRequestContext * binCtx,
       }
    }
 
-   enm = native_new_CMPIEnumeration(ar, NULL);
+   enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
    sb = UtilFactory->newStrinBuffer(1024);
    
    if (binCtx->oHdr->type==OPS_EnumerateClassNames)

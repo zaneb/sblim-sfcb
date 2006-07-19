@@ -29,7 +29,7 @@
 #include "mlog.h"
 
 extern CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
-extern void native_array_increase_size(CMPIArray * array, CMPICount increment);
+extern void sfcb_native_array_increase_size(CMPIArray * array, CMPICount increment);
 
 static char *types[]={
   "-inv-",
@@ -541,7 +541,7 @@ static CMPIArray *appendArray(CMPIArray *t, CMPIArray *f)
    
    for (fn=0; fn<fm; tn++,fn++) {
       CMPIData d=CMGetArrayElementAt(f,fn,NULL);
-      native_array_increase_size(t,1);
+      sfcb_native_array_increase_size(t,1);
       CMSetArrayElementAt(t,tn,&d.value,d.type); 
    }   
    return t;   

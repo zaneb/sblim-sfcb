@@ -239,7 +239,7 @@ static CMPIData __convert2CMPIData ( struct native_property * prop,
 		result.value = prop->value;
 
 		if ( propname ) {
-			*propname  = native_new_CMPIString ( prop->name,
+			*propname  = sfcb_native_new_CMPIString ( prop->name,
 							     NULL );
 		}
 
@@ -273,7 +273,7 @@ static int __addProperty ( struct native_property ** prop,
 		if ( type == CMPI_chars ) {
 
 			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value,
+			v.string = sfcb_native_new_CMPIString ( (char *) value,
 							   NULL );
 			value = &v;
 		}
@@ -289,7 +289,7 @@ static int __addProperty ( struct native_property ** prop,
 			} else {
 			
 				CMPIStatus rc;
-				tmp->value = native_clone_CMPIValue ( type,
+				tmp->value = sfcb_native_clone_CMPIValue ( type,
 								      value,
 								      &rc );
 				// what if clone() fails???
@@ -327,12 +327,12 @@ static int __setProperty ( struct native_property * prop,
 		CMPIStatus rc;
 
 		if ( ! ( prop->state & CMPI_nullValue ) )
-			native_release_CMPIValue ( prop->type, &prop->value );
+			sfcb_native_release_CMPIValue ( prop->type, &prop->value );
 
 		if ( type == CMPI_chars ) {
 
 			type = CMPI_string;
-			v.string = native_new_CMPIString ( (char *) value,
+			v.string = sfcb_native_new_CMPIString ( (char *) value,
 							   NULL );
 			value = &v;
 		}
@@ -343,7 +343,7 @@ static int __setProperty ( struct native_property * prop,
 			prop->value =
 				( mm_add == MEM_TRACKED )?
 				*value:
-				native_clone_CMPIValue ( type, value, &rc );
+				sfcb_native_clone_CMPIValue ( type, value, &rc );
 
 			// what if clone() fails ???
 
@@ -430,7 +430,7 @@ static void __release ( struct native_property * prop )
 	struct native_property *np;
 	for ( ; prop; prop = np ) {
 	  np=prop->next;
-		native_release_CMPIValue ( prop->type, &prop->value );
+		sfcb_native_release_CMPIValue ( prop->type, &prop->value );
 		free ( prop->name );
 		free ( prop );
 	}

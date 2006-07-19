@@ -37,52 +37,80 @@
 #endif
 
 
-void freeCFG(cimomConfig cfg) {
+void freeCFG(cimomConfig *cfg) {
 	
-	free(cfg.cimhost);
-	free(cfg.cimpassword);
-	free(cfg.cimuser);
-	free(cfg.commScheme);
-	free(cfg.port);
+	free(cfg->cimhost);
+	free(cfg->cimpassword);
+	free(cfg->cimuser);
+	free(cfg->commScheme);
+	free(cfg->port);
 }
 
 void setUpDefaults(cimomConfig *cfg) {
 	cfg->commScheme = strdup("http");
 	cfg->cimhost = strdup("localhost");
 	cfg->port = strdup("5988");
-	cfg->cimuser = strdup("pegasus");
-	cfg->cimpassword = strdup("nonon");	
+	cfg->cimuser = strdup("");
+	cfg->cimpassword = strdup("");	
 }
 
+void setUpTimes(int * slpLifeTime, int * sleepTime) {
+	if (*slpLifeTime < 16) {
+		*slpLifeTime = 16;
+	}
+	if (*slpLifeTime > SLP_LIFETIME_MAXIMUM) {
+		*slpLifeTime = SLP_LIFETIME_DEFAULT;
+	}
+		
+	*sleepTime = *slpLifeTime -15;		
+}
 #ifdef HAVE_SLP
 
 void slpAgent()
 {
-	cimomConfig cfg;
-	cimSLPService as; //Service which is going to be advertised
-	int enableHttp=0;
+	int slpLifeTime = SLP_LIFETIME_DEFAULT;
+	int sleepTime;
+	cimomConfig cfgHttp, cfgHttps;
+	cimSLPService asHttp, asHttps; //Service which is going to be advertised
+	int enableHttp,enableHttps=0;
 
 	extern char * configfile;
+	setupControl(configfile);
+	
+	setUpDefaults(&cfgHttp);	
+	setUpDefaults(&cfgHttps);
 
-	setUpDefaults(&cfg);	
-	
-	setupControl(configfile);	
+	sleep(1);
 
-	sleep(15);
+	long i;
 	
-	printf("vorher\n");
-	as = getSLPData(cfg);
-	registerCIMService(as, 600);
-	printf("nachher\n");
-		
-	/*getControlNum("httpProcs"
+	if (!getControlBool("enableHttp", &enableHttp)) {
+		cfgHttp.commScheme = strdup("http");
+		getControlNum("httpPort", &i);
+		sprintf(cfgHttp.port, "%d", (int)i);
+	}
+	if (!getControlBool("enableHttps", &enableHttps)) {
+		cfgHttps.commScheme = strdup("https");
+		getControlNum("httpsPort", &i);
+		sprintf(cfgHttps.port, "%d", (int)i);
+	}
 	
-	if (getControlBool("enableHttp", &enableHttp))
-		cfg.commScheme = strdup("http");
-*/
-	exit(0);
-	//get the control stuff and call getSLPData with the filled cfg;	
+	getControlNum("slpRefreshInterval", &i);
+	slpLifeTime = (int)i;	
+	setUpTimes(&slpLifeTime, &sleepTime);
+
 	
+	while(1) {		
+		if(enableHttp) {
+			asHttp = getSLPData(cfgHttp);
+			registerCIMService(asHttp, slpLifeTime);
+		}
+		if(enableHttps) {
+			asHttps = getSLPData(cfgHttps);
+			registerCIMService(asHttps, slpLifeTime);
+		}
+		sleep(sleepTime);
+	}
 }
 
 #endif
@@ -170,22 +198,17 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
-
 	
-	if (slpLifeTime < 1 || slpLifeTime > SLP_LIFETIME_MAXIMUM) {
-		slpLifeTime = SLP_LIFETIME_DEFAULT;
-	}
-	sleepTime = slpLifeTime -1;	
-	slpLifeTime += 15; //due to the strange slpd backward counting
-	
+	setUpTimes(&slpLifeTime, &sleepTime);
+		
 	int i;
 	for(i = 0; i < 1; i++) {
 		as = getSLPData(cfg);
 		registerCIMService(as, slpLifeTime);
-		//sleep(sleepTime);
+		sleep(sleepTime);
 	}
 	
-	freeCFG(cfg);
+	freeCFG(&cfg);
 	return 0;
 }
 #endif

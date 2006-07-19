@@ -200,7 +200,7 @@ static CMPIStatus returnData(const CMPIResult * result,
       r->current = 0;
       if (rc.rc != CMPI_RC_OK) return rc;
    }
-   else native_array_increase_size(r->array, 1);
+   else sfcb_native_array_increase_size(r->array, 1);
 
    return CMSetArrayElementAt(r->array, r->current++, val, type); 
 }

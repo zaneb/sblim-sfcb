@@ -33,7 +33,7 @@
       { if (st) { (st)->rc=(rcp); \
         (st)->msg=NewCMPIString((chars),NULL); }}
         
-#define NewCMPIString native_new_CMPIString
+#define NewCMPIString sfcb_native_new_CMPIString
    
 extern unsigned long _sfcb_trace_mask; 
 
@@ -48,7 +48,7 @@ extern CMPIString *NewCMPIString(const char*, CMPIStatus*);
 extern CMPIObjectPath *NewCMPIObjectPath(const char*ns, const char* cn, CMPIStatus*);
 extern CMPIInstance *NewCMPIInstance(CMPIObjectPath * cop, CMPIStatus * rc);
 extern CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
-extern CMPIEnumeration *native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc);
+extern CMPIEnumeration *sfcb_native_new_CMPIEnumeration(CMPIArray * array, CMPIStatus * rc);
 extern CMPIString *NewCMPIString(const char *ptr, CMPIStatus * rc);
 extern CMPIEnumeration *NewCMPIEnumeration(CMPIArray * array, CMPIStatus * rc);
 
@@ -1194,7 +1194,7 @@ static CMPIData invokeMethod(
       CMPIString * argname;
       CMPIData argdata = in->ft->getArgAt(in, i, &argname, NULL);
       sb->ft->append3Chars(sb,"<PARAMVALUE NAME=\"", argname->hdl, "\">\n");
-      sb->ft->append3Chars(sb,"<VALUE>", cv=value2Chars(argdata.type,&(argdata.value)), "</VALUE>\n");
+      sb->ft->append3Chars(sb,"<VALUE>", cv=sfcb_value2Chars(argdata.type,&(argdata.value)), "</VALUE>\n");
       sb->ft->appendChars(sb,"</PARAMVALUE>\n");
       if(cv) free(cv);
       if(argname) CMRelease(argname);
@@ -1240,7 +1240,7 @@ static CMPIData invokeMethod(
 
    CMSetStatus(rc, CMPI_RC_OK);
    retval=rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
-   retval.value=native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
+   retval.value=sfcb_native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
    CMRelease(rh.rvArray);
    return retval;
 }
@@ -1320,7 +1320,7 @@ static CMPIStatus setProperty(
    /* Add the new value */
    sb->ft->append3Chars(sb,
         "<IPARAMVALUE NAME=\"NewValue\">\n<VALUE>",
-        cv=value2Chars(type,value), "</VALUE>\n</IPARAMVALUE>");
+        cv=sfcb_value2Chars(type,value), "</VALUE>\n</IPARAMVALUE>");
    if(cv) free(cv);
 
    /* Add the objectpath */
@@ -1465,7 +1465,7 @@ static CMPIData getProperty(
 
    CMSetStatus(rc, CMPI_RC_OK);
    retval=rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
-   retval.value=native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
+   retval.value=sfcb_native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
    CMRelease(rh.rvArray);
    return retval;
 }

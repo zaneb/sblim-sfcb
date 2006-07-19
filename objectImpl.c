@@ -60,7 +60,7 @@ static void clearClSection(ClSection * s);
 static void *ensureClSpace(ClObjectHdr * hdr, ClSection * sct, int size,
                            int iSize);
 extern void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time);
-extern char *pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str);
+extern char *sfcb_pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str);
 
 static ClString nls = { 0 };
 
@@ -751,7 +751,7 @@ static int ClGetQualifierAt(ClClass * cls, ClQualifier *q, int id, CMPIData * da
    if (data->type== CMPI_chars) {
       const char *str =
           ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
-      data->value.string = native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
    }
    else if (data->type & CMPI_ARRAY) {
@@ -1190,7 +1190,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       }
       else if (d.type == CMPI_ref && (d.state & CMPI_nullValue) == 0) {
          char str[4096] = { 0 };
-         pathToChars(d.value.ref, &st, str);
+         sfcb_pathToChars(d.value.ref, &st, str);
          p->data = d;
          p->data.value.chars = (char *) addClString(hdr, str);
       }
@@ -1245,7 +1245,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
 
       else if (d.type == CMPI_ref && (d.state & CMPI_nullValue) == 0) {
          char chars[4096] = { 0 };
-         pathToChars(d.value.ref, &st, chars);
+         sfcb_pathToChars(d.value.ref, &st, chars);
          replaceClString(hdr, (int) od.value.chars, chars);
          (p + i - 1)->data.value.chars=od.value.chars;
       }
@@ -1493,13 +1493,13 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    else if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
-      data->value.string = native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
    }
    else if (data->type == CMPI_dateTime) {
       const char *str =
          ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = native_new_CMPIDateTime_fromChars(str, NULL); 
+      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL); 
    }
    else if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&cls->hdr,
@@ -1737,13 +1737,13 @@ int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
    if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&inst->hdr, (ClString *) & data->value.chars);
-      data->value.string = native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
    }
    if (data->type == CMPI_dateTime) {
       const char *str =
           ClObjectGetClString(&inst->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = native_new_CMPIDateTime_fromChars(str, NULL);
+      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL);
    }
    if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&inst->hdr,
@@ -1906,13 +1906,13 @@ int ClObjectPathGetKeyAt(ClObjectPath * op, int id, CMPIData * data,
    if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
-      data->value.string = native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
    }
    else if (data->type == CMPI_dateTime) {
       const char *str =
          ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = native_new_CMPIDateTime_fromChars(str, NULL); 
+      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL); 
    }
    return 0;
 }
@@ -2070,13 +2070,13 @@ int ClArgsGetArgAt(ClArgs * arg, int id, CMPIData * data, char **name)
    if (name) *name = strdup(ClObjectGetClString(&arg->hdr, &(p + id)->id));
    if (data->type == CMPI_chars) {
       const char *str = ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
-      data->value.string = native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL);
       data->type = CMPI_string;
    }
    if (data->type == CMPI_dateTime) {
       const char *str =
           ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = native_new_CMPIDateTime_fromChars(str, NULL);
+      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL);
    }
    if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&arg->hdr,

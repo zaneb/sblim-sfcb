@@ -46,7 +46,7 @@ static void __make_NULL(struct native_array *a, int from, int to, int release)
       a->data[from].state = CMPI_nullValue;
 
       if (release) {
-         native_release_CMPIValue(a->type, &a->data[from].value);
+         sfcb_native_release_CMPIValue(a->type, &a->data[from].value);
       }
    }
 }
@@ -60,7 +60,7 @@ static CMPIStatus __aft_release(CMPIArray * array)
       int i = a->size;
       if (a->mem_state!=MEM_TRACKED) while (i--) {
          if (!(a->data[i].state & CMPI_nullValue) && a->refCount==0) {
-            native_release_CMPIValue(a->type, &a->data[i].value);
+            sfcb_native_release_CMPIValue(a->type, &a->data[i].value);
          }
       }
       memUnlinkEncObj(a->mem_state);
@@ -89,7 +89,7 @@ static CMPIArray *__aft_clone(const CMPIArray * array, CMPIStatus * rc)
       if (!(new->data[i].state & CMPI_nullValue)) {
 
          new->data[i].value =
-             native_clone_CMPIValue(a->type, &a->data[i].value, &tmp);
+             sfcb_native_clone_CMPIValue(a->type, &a->data[i].value, &tmp);
       }
    }
 
@@ -144,14 +144,14 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, const CMPIV
    struct native_array * a = (struct native_array *) array;
 
    if ( a->dynamic && index==a->size ) {
-      native_array_increase_size(array, 1); 
+      sfcb_native_array_increase_size(array, 1); 
    }
 
    if ( index < a->size ) {
       CMPIValue v;
 
       if ( type == CMPI_chars && a->type == CMPI_string ) {
-         v.string = native_new_CMPIString ( (char *) val, NULL );
+         v.string = sfcb_native_new_CMPIString ( (char *) val, NULL );
          type = CMPI_string;
          val  = &v;
       }
@@ -161,7 +161,7 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, const CMPIV
          a->data[index].state = 0;
          if (opt) a->data[index].value = *val;
          else a->data[index].value =  ( a->mem_state == MEM_TRACKED )?  *val:
-               native_clone_CMPIValue ( type, val, &rc );
+               sfcb_native_clone_CMPIValue ( type, val, &rc );
          if (localClientMode) switch (a->type) {
             case CMPI_instance:
             case CMPI_ref:
@@ -199,7 +199,7 @@ CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
       CMPIValue v;
 
       if (type == CMPI_chars && a->type == CMPI_string) {
-         v.string = native_new_CMPIString((char *) val, NULL);
+         v.string = sfcb_native_new_CMPIString((char *) val, NULL);
          type = CMPI_string;
          val = &v;
       }
@@ -234,7 +234,7 @@ CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
 
 
 
-void native_array_increase_size(const CMPIArray * array, CMPICount increment)
+void sfcb_native_array_increase_size(const CMPIArray * array, CMPICount increment)
 {
    struct native_array *a = (struct native_array *) array;
 
@@ -341,7 +341,7 @@ CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
    return (CMPIArray *) array;
 }
 
-CMPIStatus simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type)
+CMPIStatus sfcb_simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type)
 {
    struct native_array * a = (struct native_array *) array;
    if (a->dynamic) {

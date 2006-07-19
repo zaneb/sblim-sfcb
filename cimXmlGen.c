@@ -295,7 +295,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       value.char16 = *val;
       break;
    case CMPI_string:
-      value.string = native_new_CMPIString(val, NULL);
+      value.string = sfcb_native_new_CMPIString(val, NULL);
       break;
    case CMPI_sint64:
       sscanf(val, "%lld", &value.sint64);
@@ -334,7 +334,7 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
       sscanf(val, "%lf", &value.real64);
       break;
    case CMPI_dateTime:
-      value.dateTime = native_new_CMPIDateTime_fromChars(val, NULL);
+      value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(val, NULL);
       break;
    case CMPI_ref:
       valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t);

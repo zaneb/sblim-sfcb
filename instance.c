@@ -1,4 +1,3 @@
-
 /*
  * instance.c
  *
@@ -58,7 +57,7 @@ CMPIObjectPath *internal_new_CMPIObjectPath(int mode, const char *nameSpace,
                                             const char *className,
                                             CMPIStatus * rc);
 extern const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id);
-extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
+//extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
 
 extern CMPIBroker *Broker;
 
@@ -168,7 +167,7 @@ CMPIData __ift_getPropertyAt(const CMPIInstance * ci, CMPICount i, CMPIString **
       return rv;
    }
    if (rv.type == CMPI_chars) {
-      rv.value.string = native_new_CMPIString(rv.value.chars, NULL);
+      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL);
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) {
@@ -182,7 +181,7 @@ CMPIData __ift_getPropertyAt(const CMPIInstance * ci, CMPICount i, CMPIString **
    }
 
    if (name) {
-      *name = native_new_CMPIString(n, NULL);
+      *name = sfcb_native_new_CMPIString(n, NULL);
       free(n);
    }
    if (rc)
@@ -364,9 +363,7 @@ void add(char **buf, unsigned int *p, unsigned int *m, char *data)
    *p += ds - 1;
 }
 
-extern char *value2Chars(CMPIType type, CMPIValue * value);
-extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
-extern CMPIString *__oft_getClassName(CMPIObjectPath * cop, CMPIStatus * rc);
+extern char *sfcb_value2Chars(CMPIType type, CMPIValue * value);
 
 CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc)
 {
@@ -379,10 +376,10 @@ CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc)
 
    add(&buf, &bp, &bm, "Instance of ");
    path = __ift_getObjectPath(inst, NULL);
-   name = __oft_getClassName(path, rc);
+   name =  path->ft->toString(path, rc);
    add(&buf, &bp, &bm, (char *) name->hdl);
    add(&buf, &bp, &bm, " {\n");
-   ps = __oft_toString(path, rc);
+   ps = path->ft->toString(path, rc);
    add(&buf, &bp, &bm, " PATH: ");
    add(&buf, &bp, &bm, (char *) ps->hdl);
    add(&buf, &bp, &bm, "\n");
@@ -392,13 +389,13 @@ CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc)
       add(&buf, &bp, &bm, " ");
       add(&buf, &bp, &bm, (char *) name->hdl);
       add(&buf, &bp, &bm, " = ");
-      v = value2Chars(data.type, &data.value);
+      v = sfcb_value2Chars(data.type, &data.value);
       add(&buf, &bp, &bm, v);
       free(v);
       add(&buf, &bp, &bm, " ;\n");
    }
    add(&buf, &bp, &bm, "}\n");
-   rv = native_new_CMPIString(buf, rc);
+   rv = sfcb_native_new_CMPIString(buf, rc);
    free(buf);
    return rv;
 }

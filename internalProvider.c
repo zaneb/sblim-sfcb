@@ -46,8 +46,7 @@ extern ProviderInfo *interOpProvInfoPtr;
 extern ProviderInfo *forceNoProvInfoPtr;
 
 extern CMPIInstance *relocateSerializedInstance(void *area);
-extern char *value2Chars(CMPIType type, CMPIValue * value);
-extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
+extern char *sfcb_value2Chars(CMPIType type, CMPIValue * value);
 extern CMPIObjectPath *getObjectPath(char *path, char **msg);
 extern CMPIBroker *Broker;
 extern UtilStringBuffer *newStringBuffer(int s);
@@ -135,7 +134,7 @@ static UtilStringBuffer *normalize_ObjectPath(const CMPIObjectPath * cop)
          sbt->ft->release(sbt);
       }
       else {
-         char *v = value2Chars(ids[i].data.type, &ids[i].data.value);
+         char *v = sfcb_value2Chars(ids[i].data.type, &ids[i].data.value);
          sb->ft->appendChars(sb,v);
          free(v);
       }   
@@ -169,7 +168,7 @@ normalize_ObjectPath(cop);
       if (pc) copKey[p++] = pc;
       p += cpy2lower(ids[i].key->hdl,copKey+p);
       copKey[p++]='=';
-      char *v = value2Chars(ids[i].data.type, &ids[i].data.value);
+      char *v = sfcb_value2Chars(ids[i].data.type, &ids[i].data.value);
       p += cpy2lower(v,copKey + p);
       pc = ',';
       free(v);
@@ -207,7 +206,7 @@ static int testNameSpace(char *ns, CMPIStatus *st)
     
     if (interOpProvInfoPtr==forceNoProvInfoPtr) {
        if (strcasecmp(ns,interopNs)==0) {
-          st->msg=native_new_CMPIString("Interop namespace disabled",NULL);
+          st->msg=sfcb_native_new_CMPIString("Interop namespace disabled",NULL);
           st->rc=CMPI_RC_ERR_FAILED;
           return 0;
        }   
@@ -507,7 +506,7 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    
    if (addBlob(bnss,cns,key,blob,(int)len)) {
       CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
-      st.msg=native_new_CMPIString("Unable to write to repository",NULL);
+      st.msg=sfcb_native_new_CMPIString("Unable to write to repository",NULL);
       return st;
    }
 

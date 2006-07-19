@@ -1,3 +1,12 @@
+2006-07-19  Sven Schuetz
+
+	* args.c, array.c, brokerEnc.c, brokerUpc.c, cimXmlGen.c, cimXmlRequest.c, cimcClientSfcbLocal.c, constClass.c, context.c, control.c, datetime.c, enumeration.c, instance.c, internalProvider.c, interopProvider.c, native.h, objectImpl.c, objectpath.c, predicate.c, queryOperation.c, result.c, selectexp.c, sqlStatement.c, string.c, support.c, value.c:
+	Fixed 1525280: fixed segfault when linking with sfcc code by renaming function calls
+	* cimslp.c, cimslpCMPI.c, cimslpSLP.c:
+	Fixed 1296278: added slp support
+	* configure.ac, acinclude.m4, Makefile.am
+	Modified build process to include SLP stuff
+
 2006-07-18  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* internalProvider.c, cimXmlGen.c, cimXmlOps.y: 

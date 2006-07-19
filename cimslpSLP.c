@@ -60,7 +60,9 @@ void MySLPRegReport(SLPHandle hslp, SLPError errcode, void* cookie)
     /* return the error code in the cookie */
     *(SLPError*)cookie = errcode;
 
-	printf("Callback Code %i\n",errcode);
+	if(errcode) {
+		printf("Callback Code %i\n",errcode);
+	}
     /* You could do something else here like print out  */
     /* the errcode, etc.  Remember, as a general rule,  */
     /* do not try to do too much in a callback because  */
@@ -210,8 +212,7 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
 		*/
 		if(strcmp(gAttrstring, "NULL")) {
 			err = SLPDereg( hslp, css.url_syntax, MySLPRegReport, &callbackerr);
-			free(gAttrstring);			
-			printf("deregistered!\n");			
+			free(gAttrstring);
 		}
 	}	
     err = SLPReg( hslp,
@@ -222,9 +223,9 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
               SLP_TRUE,
               MySLPRegReport,
               &callbackerr );			
-	printf("registered!\n");
-	printf("url_syntax: %s\n", css.url_syntax);
-	printf("attrsting: %s\n", attrstring);
+
+	//printf("url_syntax: %s\n", css.url_syntax);
+	//printf("attrsting: %s\n", attrstring);
 	
     if(( err != SLP_OK) || (callbackerr != SLP_OK)) {
         printf("Error registering service with slp %i\n",err);
@@ -236,8 +237,6 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
         retCode = callbackerr;
     }
 	
-
-    
     //only save the last state when something changed to not waste mallocs
     if (strcmp(attrstring, gAttrstring)) {
     	gAttrstring = strdup(attrstring);
@@ -249,5 +248,4 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
     SLPClose(hslp);
     
     return retCode;
-
 }

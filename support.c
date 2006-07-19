@@ -837,7 +837,7 @@ void dumpTiming(int pid)
 void setStatus(CMPIStatus *st, CMPIrc rc, char *msg)
 {
    st->rc=rc;
-   if (rc!=0 && msg) st->msg=native_new_CMPIString(msg,NULL);
+   if (rc!=0 && msg) st->msg=sfcb_native_new_CMPIString(msg,NULL);
    else st->msg=NULL;
 }   
 

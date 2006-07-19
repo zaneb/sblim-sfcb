@@ -151,7 +151,7 @@ static void buildStatus(BinResponseHdr *resp, CMPIStatus *st)
    if (st==NULL) return;
    st->rc=resp->rc;
    if (resp->rc && resp->count==1 &&  resp->object[0].type==MSG_SEG_CHARS && resp->object[0].length) {
-      st->msg=native_new_CMPIString((char*)resp->object[0].data,NULL);
+      st->msg=sfcb_native_new_CMPIString((char*)resp->object[0].data,NULL);
    }
    else st->msg=NULL;   
 }
@@ -197,7 +197,7 @@ static CMPIStatus setErrorStatus(int code)
       msg = m;
    }
    st.rc = code;
-   st.msg = native_new_CMPIString(msg, NULL);
+   st.msg = sfcb_native_new_CMPIString(msg, NULL);
    return st;
 }
 
@@ -238,7 +238,7 @@ static void cpyResult(CMPIResult *result, CMPIArray *ar, int *c)
    r = native_result2array(result);
    for (j=0,m=CMGetArrayCount(r,NULL); j<m; j++, *c=(*c)+1) {
       CMPIData data=CMGetArrayElementAt(r,j,NULL);
-      if (*c) native_array_increase_size(ar, 1);
+      if (*c) sfcb_native_array_increase_size(ar, 1);
       CMSetArrayElementAt(ar, *c, &data.value, data.type);
    }
 }      
@@ -249,7 +249,7 @@ static void cpyResponse(BinResponseHdr *resp, CMPIArray *ar, int *c, CMPIType ty
    void *tObj;
    
    for (j = 0; j < resp->count; *c=(*c)+1, j++) {
-      if (*c) native_array_increase_size(ar, 1);
+      if (*c) sfcb_native_array_increase_size(ar, 1);
       if (type==CMPI_ref) {
          CMPIObjectPath *obj = relocateSerializedObjectPath(resp->object[j].data);
          tObj=obj->ft->clone(obj,NULL);
@@ -578,7 +578,7 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
             free (resp);
          }
          closeProviderContext(&binCtx);
-         enm = native_new_CMPIEnumeration(ar, NULL);
+         enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
       }  
       else st = setErrorStatus(irc);
       
@@ -647,7 +647,7 @@ static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
             free (resp);
          }
          closeProviderContext(&binCtx);
-         enm = native_new_CMPIEnumeration(ar, NULL);
+         enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
       }  
       else st = setErrorStatus(irc);
       
@@ -715,7 +715,7 @@ static CMPIEnumeration *enumInstanceNames(const CMPIBroker * broker,
             free (resp);
          }
          closeProviderContext(&binCtx);
-         enm = native_new_CMPIEnumeration(ar, NULL);
+         enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
       }   
       else st = setErrorStatus(irc);
       unlockUpCall(broker);

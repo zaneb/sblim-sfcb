@@ -76,7 +76,6 @@ CMPIInstance ** myGetInstances(CMCIClient *cc, char * path, char * objectname)
 	CMPIObjectPath * objectpath;
 	CMPIEnumeration * enumeration;
 	CMPIInstance ** retArr = NULL;
-	int debug_break = 1;
 
 	objectpath = newCMPIObjectPath(path, objectname, NULL);
 
@@ -146,9 +145,6 @@ cimSLPService getSLPData(cimomConfig cfg)
 	CMPIConstClass *ccls;
 
 	cimSLPService rs; //service which is going to be returned to the calling function
-	
-	printf("in getSLPDATA\n");
-	
 	initializeService(&rs);
 
 	cc = cmciConnect(cfg.cimhost,

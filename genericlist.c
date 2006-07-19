@@ -36,8 +36,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "genericlist.h"
-#include "../mlog.h"
-#include "../support.h"
+#include "mlog.h"
+#include "support.h"
 
 
 #ifdef THINK_C

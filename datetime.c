@@ -226,7 +226,7 @@ static CMPIString *__dtft_getStringFormat(const CMPIDateTime * dt, CMPIStatus * 
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
-   return native_new_CMPIString(ndt->cimDt, rc);
+   return sfcb_native_new_CMPIString(ndt->cimDt, rc);
 }
 
 static CMPIBoolean __dtft_isInterval(const CMPIDateTime * dt, CMPIStatus * rc)
@@ -309,7 +309,7 @@ static CMPIDateTime *_new_CMPIDateTime(CMPIStatus * rc, int mm_add)
    return (CMPIDateTime *) __new_datetime(mm_add, cimDt, rc);
 }
 
-CMPIDateTime *native_new_CMPIDateTime(CMPIStatus * rc)
+CMPIDateTime *sfcb_native_new_CMPIDateTime(CMPIStatus * rc)
 {
    return _new_CMPIDateTime(rc, MEM_TRACKED);;
 }
@@ -341,7 +341,7 @@ static CMPIDateTime *_new_CMPIDateTime_fromBinary(CMPIUint64 msecs,
    return (CMPIDateTime*) __new_datetime(mm_add, cimDt, rc);
 }
 
-CMPIDateTime *native_new_CMPIDateTime_fromBinary(CMPIUint64 msecs,
+CMPIDateTime *sfcb_native_new_CMPIDateTime_fromBinary(CMPIUint64 msecs,
                                                  CMPIBoolean interval,
                                                  CMPIStatus * rc)
 {
@@ -383,7 +383,7 @@ static CMPIDateTime *_new_CMPIDateTime_fromChars(const char *string,
    return (CMPIDateTime *) __new_datetime(mm_add, string, rc);
 }
 
-CMPIDateTime *native_new_CMPIDateTime_fromChars(const char *string,
+CMPIDateTime *sfcb_native_new_CMPIDateTime_fromChars(const char *string,
                                                 CMPIStatus * rc)
 {
    return  _new_CMPIDateTime_fromChars(string,rc,MEM_TRACKED);

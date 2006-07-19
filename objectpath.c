@@ -94,7 +94,7 @@ static CMPIStatus __oft_setNameSpace(CMPIObjectPath * op, const char *nameSpace)
 CMPIString *__oft_getNameSpace(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
-   return native_new_CMPIString(ClObjectPathGetNameSpace(cop), rc);
+   return sfcb_native_new_CMPIString(ClObjectPathGetNameSpace(cop), rc);
 }
 
 
@@ -105,10 +105,10 @@ static CMPIStatus __oft_setHostName(CMPIObjectPath * op, const char *hostName)
    CMReturn(CMPI_RC_OK);
 }
 
-CMPIString *__oft_getHostName(const CMPIObjectPath * op, CMPIStatus * rc)
+static CMPIString *__oft_getHostName(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
-   return native_new_CMPIString(ClObjectPathGetHostName(cop), rc);
+   return sfcb_native_new_CMPIString(ClObjectPathGetHostName(cop), rc);
 }
 
 
@@ -120,10 +120,10 @@ static CMPIStatus __oft_setClassName(CMPIObjectPath * op, const char *className)
    CMReturn(CMPI_RC_OK);
 }
 
-CMPIString *__oft_getClassName(const CMPIObjectPath * op, CMPIStatus * rc)
+static CMPIString *__oft_getClassName(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
-   return native_new_CMPIString(ClObjectPathGetClassName(cop), rc);
+   return sfcb_native_new_CMPIString(ClObjectPathGetClassName(cop), rc);
 }
 
 const char *opGetClassNameChars(const CMPIObjectPath * op)
@@ -152,7 +152,7 @@ CMPIData opGetKeyCharsAt(const CMPIObjectPath * op,
    }
  
    if (rv.type == CMPI_chars) {
-      rv.value.string = native_new_CMPIString(rv.value.chars, NULL);
+      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL);
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) {
@@ -171,19 +171,19 @@ CMPIData opGetKeyCharsAt(const CMPIObjectPath * op,
 }
 
 
-CMPIData __oft_getKeyAt(const CMPIObjectPath * op, CMPICount i, CMPIString ** name,
+static CMPIData __oft_getKeyAt(const CMPIObjectPath * op, CMPICount i, CMPIString ** name,
                         CMPIStatus * rc)
 {
    char *n;
    CMPIData rv = opGetKeyCharsAt(op, i, &n, rc);
 
    if (name)
-      *name = native_new_CMPIString(n, NULL);
+      *name = sfcb_native_new_CMPIString(n, NULL);
 
    return rv; 
 }
 
-CMPIData __oft_getKey(const CMPIObjectPath * op, const char *id, CMPIStatus * rc)
+static CMPIData __oft_getKey(const CMPIObjectPath * op, const char *id, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
    ClSection *prps = &cop->properties;
@@ -248,9 +248,9 @@ static CMPIStatus __oft_setNameSpaceFromObjectPath(CMPIObjectPath * op,
    return __oft_setNameSpace(op, ClObjectPathGetNameSpace(s));
 }
 
-extern char *value2Chars(CMPIType type, CMPIValue * value);
+extern char *sfcb_value2Chars(CMPIType type, CMPIValue * value);
 
-char *pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
+char *sfcb_pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
 {
 //            "//atp:9999/root/cimv25:TennisPlayer.first="Patrick",last="Rafter";
 
@@ -279,7 +279,7 @@ char *pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
          strcat(str, ".");
       strcat(str, (char *) name->hdl);
       strcat(str, "=");
-      v = value2Chars(data.type, &data.value);
+      v = sfcb_value2Chars(data.type, &data.value);
       strcat(str, v);
       free(v);
    };
@@ -287,11 +287,11 @@ char *pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
    return str;
 }
 
-CMPIString *__oft_toString(const CMPIObjectPath * cop, CMPIStatus * rc)
+static CMPIString *__oft_toString(const CMPIObjectPath * cop, CMPIStatus * rc)
 {
    char str[4096] = { 0 };
-   pathToChars(cop, rc, str);
-   return native_new_CMPIString(str, rc);
+   sfcb_pathToChars(cop, rc, str);
+   return sfcb_native_new_CMPIString(str, rc);
 }
 
 char *oft_toCharsNormalized(const CMPIObjectPath * cop, CMPIConstClass * cls,
@@ -324,7 +324,7 @@ char *oft_toCharsNormalized(const CMPIObjectPath * cop, CMPIConstClass * cls,
             else strcat(str, ".");
             strcat(str, (char *) name->hdl);
             strcat(str, "=");
-            v = value2Chars(data.type, &data.value);
+            v = sfcb_value2Chars(data.type, &data.value);
             strcat(str, v);
             free(v);
          }

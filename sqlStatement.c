@@ -2445,7 +2445,7 @@ CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp,
       	}
    	}
 
-    enm = native_new_CMPIEnumeration(ar, NULL);
+    enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
 	
    	ar->ft->release(ar);
 	return enm;
@@ -2777,7 +2777,7 @@ CMPIValue * string2cmpival(char * value, int type){
    			val->chars = value;
    			break; 
    		case CMPI_string:
-      		val->string = native_new_CMPIString(value, NULL);
+      		val->string = sfcb_native_new_CMPIString(value, NULL);
    			//val->chars = value;
    			break; 
    		case CMPI_sint64:
@@ -3064,7 +3064,7 @@ UtilList * getClassNames(char * ns, char *filter) {
          			arraySetElementNotTrackedAt(ar,c, (CMPIValue*)&object, binCtx.type);
       			}
    			}
-      		CMPIEnumeration *enm = native_new_CMPIEnumeration(ar, NULL);
+      		CMPIEnumeration *enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
    			while (CMHasNext(enm, NULL)) {
    				CMPIObjectPath *cop = CMGetNext(enm, NULL).value.ref;
          		char *kk = opGetClassNameChars(cop);

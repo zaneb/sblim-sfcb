@@ -380,7 +380,6 @@ static int startSLPAgent()
        exit(2);
     }
     if (pid == 0) {
-    	printf("pid vom slpprozess: %d\n", getpid());
     	//currentProc=getpid();
     	//dbpDaemon(argc, argv, sslMode, sfcPid);
     	//closeSocket(&sfcbSockets,cRcv,"startHttpd");

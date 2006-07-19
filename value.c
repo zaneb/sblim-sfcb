@@ -28,7 +28,7 @@
 #include "native.h"
 #include "constClass.h"
 
-void native_release_CMPIValue(CMPIType type, CMPIValue * val)
+void sfcb_native_release_CMPIValue(CMPIType type, CMPIValue * val)
 {
    switch (type) {
 
@@ -76,7 +76,7 @@ void native_release_CMPIValue(CMPIType type, CMPIValue * val)
 }
 
 
-CMPIValue native_clone_CMPIValue(const CMPIType type,
+CMPIValue sfcb_native_clone_CMPIValue(const CMPIType type,
                                  const CMPIValue * val, CMPIStatus * rc)
 {
    CMPIValue v;
@@ -139,9 +139,9 @@ CMPIValue native_clone_CMPIValue(const CMPIType type,
    return v;
 }
 
-extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
+//extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
 
-char *value2Chars(CMPIType type, CMPIValue * value)
+char *sfcb_value2Chars(CMPIType type, CMPIValue * value)
 {
    char str[256], *p;
    unsigned int size;
@@ -157,7 +157,7 @@ char *value2Chars(CMPIType type, CMPIValue * value)
          break;
 
       case CMPI_ref:
-         cStr = __oft_toString(value->ref, NULL);
+         cStr = value->ref->ft->toString(value->ref, NULL); //  __oft_toString(value->ref, NULL);
          return strdup((char *) cStr->hdl);
          break;
 

@@ -31,7 +31,6 @@ extern const char *opGetNameSpaceChars(const CMPIObjectPath * cop);
 extern CMPIConstClass *getConstClass(const char *ns, const char *cn);
 extern CMPIObjectPathFT *CMPI_ObjectPath_FT;
 extern CMPIInstanceFT *CMPI_Instance_FT;
-extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
 extern CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc);
 extern int verifyPropertyList(CMPIConstClass * cls, char **list);
 extern CMPISelectExp *TrackedCMPISelectExp(const char *queryString,
@@ -71,7 +70,7 @@ static CMPIString *__beft_newString(const CMPIBroker * broker,
                                     const char *str, CMPIStatus * rc)
 {
    _SFCB_ENTER(TRACE_ENCCALLS,"newString");
-   CMPIString *s=native_new_CMPIString(str, rc);
+   CMPIString *s=sfcb_native_new_CMPIString(str, rc);
    _SFCB_RETURN(s);
 }
 
@@ -89,7 +88,7 @@ static CMPIArray *__beft_newArray(const CMPIBroker * broker,
 static CMPIDateTime *__beft_newDateTime(const CMPIBroker * broker, CMPIStatus * rc)
 {
    _SFCB_ENTER(TRACE_ENCCALLS,"newDateTime");
-   CMPIDateTime *dt=native_new_CMPIDateTime(rc);
+   CMPIDateTime *dt=sfcb_native_new_CMPIDateTime(rc);
    _SFCB_RETURN(dt);
 }
 
@@ -100,7 +99,7 @@ static CMPIDateTime *__beft_newDateTimeFromBinary(const CMPIBroker * broker,
                                                   CMPIStatus * rc)
 {
    _SFCB_ENTER(TRACE_ENCCALLS,"newDateTimeFromBinary");
-   CMPIDateTime *dt=native_new_CMPIDateTime_fromBinary(time, interval, rc);
+   CMPIDateTime *dt=sfcb_native_new_CMPIDateTime_fromBinary(time, interval, rc);
    _SFCB_RETURN(dt);
 }
 
@@ -109,7 +108,7 @@ static CMPIDateTime *__beft_newDateTimeFromChars(const CMPIBroker * broker,
                                                  const char *string, CMPIStatus * rc)
 {
    _SFCB_ENTER(TRACE_ENCCALLS,"newDateTimeFromChars");
-    CMPIDateTime *dt=native_new_CMPIDateTime_fromChars(string, rc);
+    CMPIDateTime *dt=sfcb_native_new_CMPIDateTime_fromChars(string, rc);
    _SFCB_RETURN(dt);
 }
 
@@ -163,7 +162,8 @@ static CMPIString *__beft_toString(const CMPIBroker * broker,
    if (object) {
       if (((CMPIInstance *) object)->ft) {
          if (((CMPIObjectPath *) object)->ft == CMPI_ObjectPath_FT) {
-            str=__oft_toString((CMPIObjectPath *) object, rc);
+            //str=__oft_toString((CMPIObjectPath *) object, rc);
+            str = ((CMPIObjectPath *)object)->ft->toString((CMPIObjectPath *) object, rc);
             _SFCB_RETURN(str);
          }   
          if (((CMPIInstance *) object)->ft == CMPI_Instance_FT) {

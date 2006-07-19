@@ -1,3 +1,9 @@
+2006-07-18  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* internalProvider.c, cimXmlGen.c, cimXmlOps.y: 
+	Fixed 1524781: fixed handling of local instance path values for
+	association class reference properties.
+
 2006-07-17	Sven Schuetz
 
 	* cimslp.c, cimslpCMPI.c, cimslpSLP.c:

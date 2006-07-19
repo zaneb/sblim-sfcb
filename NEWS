@@ -1,9 +1,13 @@
-Changes in 1.1.1
+Changes in 1.2.0
 ================
 
 New features
 - 1296278 Added early slp support
 - moved some util functions to sfcUtil, build as share library
+
+Changes in 1.1.1
+================
+
 Bugs fixed:
 - 1420399 Changed getSchema.sh to be more easily customizable for
 	  different CIM Schema versions.
@@ -15,6 +19,7 @@ Bugs fixed:
 - 1439399 Fixed datetime key handling
 - 1511261 Fixed credential passing in upcalls
 - 1518696 Fixed segfault in internal provider
+- 1524781 Fixed localinstancepath ref property handling
 
 Changes in 1.1.0
 ================

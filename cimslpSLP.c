@@ -224,8 +224,10 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
               MySLPRegReport,
               &callbackerr );			
 
-	//printf("url_syntax: %s\n", css.url_syntax);
-	//printf("attrsting: %s\n", attrstring);
+	#ifdef HAVE_SLP_ALONE
+	printf("url_syntax: %s\n", css.url_syntax);
+	printf("attrsting: %s\n", attrstring);
+	#endif
 	
     if(( err != SLP_OK) || (callbackerr != SLP_OK)) {
         printf("Error registering service with slp %i\n",err);

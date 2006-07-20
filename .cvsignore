@@ -23,3 +23,5 @@ ylwrap
 cimXmlOps.c
 cimXmlOps.h
 cimXmlParserProcessed.c
+autom4te.cache
+libtool

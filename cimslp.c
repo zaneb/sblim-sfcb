@@ -138,8 +138,9 @@ int main(int argc, char *argv[])
 	" -u, --cimuser      cimserver username",
 	" -p, --cimpassword  cimserver password ",
 	" -s, --commscheme   http or https",
-	" -l, --lifetime     SLP liftime in seconds",	
-	" -h, --help         display this text\n"
+	" -l, --lifetime     SLP liftime and cimslp process refresh/sleep time in seconds",	
+	" -h, --help         display this text\n",
+	NULL
 	};
 	
 	
@@ -201,14 +202,21 @@ int main(int argc, char *argv[])
 	
 	setUpTimes(&slpLifeTime, &sleepTime);
 		
-	int i;
-	for(i = 0; i < 1; i++) {
+	int rt;
+	while(1) {
 		as = getSLPData(cfg);
-		registerCIMService(as, slpLifeTime);
+		rt = registerCIMService(as, slpLifeTime);
+		if(rt == 1) {
+			printf("No url-string could be constructed. This is usually due to a lacking CIM_ObjectManager instance.\n");
+					exit(0);
+		}
+		if(rt < 0) {
+			printf("Error registering with slpd ... I will try again next interval.\n");
+		}		
 		sleep(sleepTime);
 	}
 	
 	freeCFG(&cfg);
-	return 0;
+	//return 0;
 }
 #endif

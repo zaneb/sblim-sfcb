@@ -136,8 +136,9 @@ fi
 if test "$enable_slp"; then
 	#defined in acinclude.m4
 	CHECK_SFCC  
-	
 	AC_CHECK_LIB(cmpisfcc,cmciConnect,[],[AC_MSG_ERROR(no. Sorry cannot find libcmpisfcc.)])
+	
+	AC_CHECK_HEADERS([slp.h],[],[AC_MSG_ERROR(no. Sorry cannot find slp.h.)])
 	AC_CHECK_LIB(slp,SLPReg,[],[AC_MSG_ERROR(no. Sorry cannot find libslp.)])
 fi
 

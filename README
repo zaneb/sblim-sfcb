@@ -9,34 +9,7 @@ requests for system management data and/or performs system management
 tasks. sfcb supports most of the standard CIM XML over http/https protocol.
 It is highly modular, allowing functionality to be easily added, removed
 or customized for different management applications. sfcb is specifically
-targetted for small embedded system that do not have the available CPU,
-memory or disk resources to support a full-blown enterprise-level CIMOM.
-That said, sfcb runs very well on a regular Linux/Unix system and supports
-most of the functions required by CIM clients to manage such the system. 
-Supported CIM operations include:
-
-	GetClass
-	EnumerateClasses
-	EnumerateClassNames
-	GetInstance
-	DeleteInstance
-	CreateInstance
-	ModifyInstance
-	EnumerateInstances
-	EnumerateInstanceNames
-	InvokeMethod (MethodCall)
-	ExecQuery
-	Associators
-	AssociatorNames
-	References
-	ReferenceNames
-
-CIM process and lifecycle indications (aka 'events') are also supported.sfcb is a lightweight CIM daemon (aka CIMOM) that responds to CIM client
-requests for system management data and/or perform system management 
-tasks. sfcb supports most of the standard CIM XML over http/https protocol.
-It is highly modular, allowing functionality to be easily added, removed
-or customized for different management applications. sfcb is specifically
-targetted for small embedded system that do not have the available CPU,
+targeted for small embedded system that do not have the available CPU,
 memory or disk resources to support a full-blown enterprise-level CIMOM.
 That said, sfcb runs very well on a regular Linux/Unix system and supports
 most of the functions required by CIM clients to manage such the system. 
@@ -148,6 +121,10 @@ If you want to enable SSL support, the following packages are needed as well:
 To check if a package is installed and to determine its version type
 
 	rpm -q <packagename>
+		
+If you want to enable SLP support, the following packages are needed as well:
+	openslp (available from http://www.openslp.org)
+	sfcc (available from our sblim cvs)
 
 Make sure all the required packages are installed prior to attempting to
 build sfcb or any of the supporting packages. In particular, libtool-1.5.8
@@ -167,7 +144,7 @@ The sfcb package includes an install script to download (via CVS), build and
 install sfcb and all its supporting packages. To download the sfcb package
 and run the install script type
 
-	cvs -z3 -d:pserver:anonymous:@cvs.sourceforge.net:/cvsroot/sblim co -P sfcb
+	cvs -z3 -d:pserver:anonymous:@sblim.cvs.sourceforge.net:/cvsroot/sblim co -P sfcb
 	cd sfcb
 	./installsfcb.sh
 
@@ -191,8 +168,8 @@ Option 1:
 You can download and extract the tarball containing both sfcb
 and mofc ready to build
 
-	wget http://kent.dl.sourceforge.net/sourceforge/sblim/sblim-sfcb-0.9.0.tar.bz2
-	bzip2 -dc sblim-sfcb-0.9.0.tar.bz2 | tar -xv
+	wget http://kent.dl.sourceforge.net/sourceforge/sblim/sblim-sfcb-1.1.0.tar.bz2
+	bzip2 -dc sblim-sfcb-1.1.0.tar.bz2 | tar -xv
 
 For alternative SourceForge mirrors of this tarball see
 
@@ -206,13 +183,13 @@ Option 2:
 --------
 To download the latest (unsupported) version of sfcb from CVS source type
 
-	cvs -z3 -d:pserver:anonymous:@cvs.sourceforge.net:/cvsroot/sblim co -P sfcb
+	cvs -z3 -d:pserver:anonymous:@sblim.cvs.sourceforge.net:/cvsroot/sblim co -P sfcb
 
 You must also download the required mofc (MOF compiler) package into the
 sfcb source directory
 
 	cd sfcb
-	cvs -z3 -d:pserver:anonymous:@cvs.sourceforge.net:/cvsroot/sblim co -P mofc
+	cvs -z3 -d:pserver:anonymous:@sblim.cvs.sourceforge.net:/cvsroot/sblim co -P mofc
 
 Then run autoconfiscate to setup the autoconf files
 
@@ -233,7 +210,7 @@ your system.
 After downloading the sfcb and mofc, either from CVS or tarball, built the
 packages by
 
-	cd sfcb (or cd sblim-sfcb-0.9.0)
+	cd sfcb (or cd sblim-sfcb-1.1.0)
         ./configure
         make
         su -c 'make install'
@@ -285,6 +262,9 @@ Options:
 
 	--disable-indications=[yes|no]
 		Disable indication support. Default=no (ie enable indications)
+	
+	--enable-slp=[yes|no|standalone]
+		Enable slp support. Default=no
 
 
 9. Downloading the CIM Schema
@@ -487,6 +467,9 @@ useChunking
 	Tell sfcbd to use HTTP/HTTPS 'chunking' to return large volumes of
 	response data to the client in 'chunks', rather than buffering the 
 	data and sending it back all at once.
+	
+slpRefreshInterval
+	timeinterval in seconds in which the slp process refreshes information
 
 
 After making any changes to sfcb.cfg you must restart sfcb or get it to reload
@@ -1177,7 +1160,41 @@ approriate home page for these clients for more information. In general,
 with sfcbd (except for the unsupported CIM operations mentioned in Section 2). 
 
 
-23. Files
+23. SLP Support
+===============
+Prerequisites for slp support are the openslp library available from
+http://www.openslp.org and the sfcc library available from our
+SBLIM project at http://sblim.sourceforge.net.
+
+It is possible to build sfcb with support for slp advertisements.
+There are two possibilities:
+a) as a standalone executable, if compiled with --enable-slp=standalone
+b) as a process forked from sfcbd, if compiled with --enable-slp[=yes]
+
+When using option a) the binary cimslp will be installed in /usr/local/bin
+It takes several arguments, such as the host where the cimserver is running.
+For a complete list, invoke "cimslp --help". The options should be self-explanatory.
+
+One note on the lifetime parameter: An slp registration lasts only a certain amount
+of time. This can be configured with the "-l" option (a postive int value, seconds).
+How cimslp works is that it registers the CIM service with the specified amount of
+time, sleeps for a little less, checks if anything changed and reregisters the
+service. If the option is not specified, SLP_LIFETIME_DEFAULT will be used
+(see <slp.h>).
+
+When using option b) a library called libslpAgent will be built which gets forked
+as a new process once sfcbd is started. It uses the same procedures as sfcbd for
+getting configuration parameters, so the parameters specified in the config file
+apply to the slp process as well, namely enableHttp, enableHttps, httpPort and
+httpsPort. The lifetime is configured via the config file as well, see parameter
+slpRefreshInterval in section 12. The behaviour is the same as described for the
+standalone process above.
+
+For the syntax of the advertised attributes see the WBEM SLP Template available
+from the dmtf website at: http://www.dmtf.org/standards/wbem/wbem.1.0.en
+
+
+24. Files
 =========
 /usr/local/sbin/sfcbd
 	Small-footprint CIM broker daemon.
@@ -1196,6 +1213,10 @@ with sfcbd (except for the unsupported CIM operations mentioned in Section 2).
 
 /usr/local/bin/sfcbrepos
 	Rebuild sfcb class repository from staging files.
+
+/usr/local/bin/cimslp
+	Registers a cimom with slp
+	 (only available if configured and build with --enable-slp=standalone)
 
 /usr/local/var/lib/sfcb/registration/providerRegister
 	Contains registration data for all installed providers.
@@ -1266,7 +1287,7 @@ with sfcbd (except for the unsupported CIM operations mentioned in Section 2).
 	CMPI API headers (used to build providers)
 
 
-24. Support and Reporting Bugs
+25. Support and Reporting Bugs
 ==============================
 The SBLIM project maintains a mailing list to which you should direct all
 questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
@@ -1279,9 +1300,8 @@ The SBLIM Project Bug tracking page can be found at
 	http://sourceforge.net/tracker/?group_id=128809&atid=712784
 
 
-25. Known Bugs
+26. Known Bugs
 ==============
 - The HTTP xml codec does not correctly handle arrays and reference arrays.
 - Namespace enforcement is not correct when provider registration has no namespace definition.
 - (others?)
-

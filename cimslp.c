@@ -87,11 +87,15 @@ void slpAgent()
 	if (!getControlBool("enableHttp", &enableHttp)) {
 		cfgHttp.commScheme = strdup("http");
 		getControlNum("httpPort", &i);
+		free(cfgHttp.port);
+		cfgHttp.port = malloc(6 * sizeof(char)); //portnumber has max. 5 digits
 		sprintf(cfgHttp.port, "%d", (int)i);
 	}
 	if (!getControlBool("enableHttps", &enableHttps)) {
 		cfgHttps.commScheme = strdup("https");
 		getControlNum("httpsPort", &i);
+		free(cfgHttps.port);
+		cfgHttps.port = malloc(6 * sizeof(char)); //portnumber has max. 5 digits		
 		sprintf(cfgHttps.port, "%d", (int)i);
 	}
 	

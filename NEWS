@@ -23,6 +23,7 @@ Bugs fixed:
 - 1518696 Fixed segfault in internal provider
 - 1524781 Fixed localinstancepath ref property handling
 - 1528455 Added support for local CIM schema
+- 1528304 Fixed segfault in method invocations with ref parameters
 
 Changes in 1.1.0
 ================

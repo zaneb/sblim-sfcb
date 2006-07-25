@@ -1,4 +1,6 @@
 2006-07-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+	* cimXmlParser.c: 
+	Fixed 1528304: segfault on reference parameters.
 
 	* README, configure.ac, getSchema.sh.pre.in: 
 	Fixed 1528455: added support for local CIM schema files.

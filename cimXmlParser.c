@@ -348,6 +348,7 @@ static Types types[] = {
    {NULL}
 };
 
+static int num_types = sizeof(types)/sizeof(Types) - 1;
 
 
 //static XmlBuffer* xmb;
@@ -576,7 +577,7 @@ static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParamValue.name = attr[0].attr;
          lvalp->xtokParamValue.type = 0;
          if (attr[1].attr) {
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+            for (i = 0, m = num_types; i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
                   lvalp->xtokParamValue.type = types[i].type;
                   break;
@@ -904,7 +905,7 @@ static int procQualifier(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokQualifier.name = attr[0].attr;
          lvalp->xtokQualifier.type = (CMPIType) - 1;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+            for (i = 0, m = num_types; i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
                   lvalp->xtokQualifier.type = types[i].type;
                   break;
@@ -949,7 +950,7 @@ static int procProperty(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokProperty.name = attr[0].attr;
          lvalp->xtokProperty.valueType = (CMPIType) - 1;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+            for (i = 0, m = num_types; i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
                   lvalp->xtokProperty.valueType = types[i].type;
                   break;
@@ -1030,7 +1031,7 @@ static int procMethod(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokMethod.name = attr[0].attr;
          lvalp->xtokMethod.type = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+            for (i = 0, m = num_types; i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
                   lvalp->xtokMethod.type = types[i].type;
                   break;
@@ -1064,7 +1065,7 @@ static int procParam(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.type = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+            for (i = 0, m = num_types; i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
                   lvalp->xtokParam.type = types[i].type;
                   break;
@@ -1096,7 +1097,7 @@ static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.type = CMPI_null;
          if (attr[1].attr)
-            for (i = 0, m = sizeof(types) / sizeof(Types); i < m; i++) {
+            for (i = 0, m = num_types; i < m; i++) {
                if (strcasecmp(attr[1].attr, types[i].str) == 0) {
                   lvalp->xtokParam.type = types[i].type;
                   lvalp->xtokParam.type |=CMPI_ARRAY;

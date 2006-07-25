@@ -288,6 +288,16 @@ any reason please go to 'http://www.dmtf.org/standards/cim' and manually
 download the latest CIM Schema tarball and extract the schema fileset to
 /usr/local/share/sfcb/CIM/.
 
+Again, there are a few possibilities to influence the way the schema is
+installed. The following variables can be passed to the configure command:
+
+CIMSCHEMA_SOURCE	URL or path name of CIM Schema Zipfile
+CIMSCHEMA_MOF		File name of the top level MOF file
+CIMSCHEMA_SUBDIRS	If specified, the ZIP file subdirectory structure
+			is preserved.
+If CIMSCHEMA_SOURCE points to a local file, curl is not required.
+Alternatevily, these environment variables may be set before invoking
+getSchema.sh.
 
 10. Starting and Stopping sfcb
 ==============================

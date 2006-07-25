@@ -1,14 +1,24 @@
 #!/bin/sh
 #Script to fetch CIM schema for sfcb.
 
-# Depending on the schema version it's necessary to modify some of the lines
-# below, currently we use V2.9 in sfcb.
+# Evaluate the CIMSCHEMA_ env vars, if not set
+# use the configure values, if available
+# defaults otherwise
 
-TMPZIP=/tmp/cimv290.zip
-MOFZIPURL="http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip"
-SCHEMAMOF=CIM_Schema.mof
-HASSUBDIRS=no
+CIMSCHEMA_SOURCE=${CIMSCHEMA_SOURCE:-@CIMSCHEMA_SOURCE@}
+CIMSCHEMA_MOF=${CIMSCHEMA_MOF:-@CIMSCHEMA_MOF@}
+CIMSCHEMA_SUBDIRS=${CIMSCHEMA_SUBDIRS:-@CIMSCHEMA_SUBDIRS@}
 
+MOFZIPURL=${CIMSCHEMA_SOURCE:-"http://www.dmtf.org/standards/cim/cim_schema_v29/CIM_V2.9.0Final-MOFs.zip"}
+SCHEMAMOF=${CIMSCHEMA_MOF:-CIM_Schema.mof}
+if [ x$CIMSCHEMA_SUBDIRS = x ]
+then
+    HASSUBDIRS=no
+else
+    HASSUBDIRS=yes
+fi
+
+TMPZIP=/tmp/cimmof.zip
 trap "rm -f $TMPZIP" exit 
 
 usage()
@@ -60,7 +70,33 @@ else
     exit 1
 fi
 
-if [ -x /usr/bin/curl ] 
+
+curl_ok() 
+{
+    if echo $MOFZIPURL | grep http: > /dev/null 
+    then
+	if [ -x /usr/bin/curl ]
+	then
+	    return 0
+	else
+	    return 1
+	fi	
+    else
+	return 0
+    fi
+}
+
+fetch_mof()
+{
+    if echo $MOFZIPURL | grep http: > /dev/null
+    then
+	/usr/bin/curl -o $TMPZIP $MOFZIPURL
+    else
+	cp $MOFZIPURL $TMPZIP
+    fi
+}
+
+if [ curl_ok ] 
 then
    if [ ! -f $sfcbdir/CIM/CIM_Schema.mof ] || [ $force = 1 ]
    then
@@ -82,7 +118,7 @@ then
 	  ZIPFLAGS=-j
       fi
       if [ $? = 0 ]; then
-	  /usr/bin/curl -o $TMPZIP $MOFZIPURL &&
+	  fetch_mof &&
 	  unzip $ZIPFLAGS -d $sfcbdir/CIM $TMPZIP &&
           fixschema &&
 	  exit 0

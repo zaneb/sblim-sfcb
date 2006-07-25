@@ -54,6 +54,15 @@ AC_ARG_ENABLE(indications,
 	[enable_indications="yes"]
 	)
 
+# Configuration Arguments
+AC_ARG_VAR([CIMSCHEMA_SOURCE],[The URL or path name of the CIM Schema ZIP File.])
+AC_ARG_VAR([CIMSCHEMA_MOF],[The file name of the top level MOF (CIMSchema.mof)])
+AC_ARG_VAR([CIMSCHEMA_SUBDIRS],[Set this to any value if the unpacked CIM Schema directory has subdirectories])
+AC_SUBST(CIMSCHEMA_SOURCE)
+AC_SUBST(CIMSCHEMA_MOF)
+AC_SUBST(CIMSCHEMA_SUBDIRS)
+
+
 AC_DISABLE_STATIC
 
 if test "$enable_debug" == "yes"; then

@@ -1,3 +1,8 @@
+2006-07-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* README, configure.ac, getSchema.sh.pre.in: 
+	Fixed 1528455: added support for local CIM schema files.
+
 2006-07-25 Sven Schuetz
 
 	* cimslp.c:

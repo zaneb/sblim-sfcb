@@ -22,6 +22,7 @@ Bugs fixed:
 - 1511261 Fixed credential passing in upcalls
 - 1518696 Fixed segfault in internal provider
 - 1524781 Fixed localinstancepath ref property handling
+- 1528455 Added support for local CIM schema
 
 Changes in 1.1.0
 ================

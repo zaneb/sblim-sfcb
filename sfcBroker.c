@@ -440,12 +440,11 @@ static void version()
 int main(int argc, char *argv[])
 {
    int c, i;
-   unsigned long tmask = 0, sslMode=0,sslOMode=0;
+   long tmask = 0, sslMode=0,sslOMode=0, tracelevel=0;
+   char * tracefile = NULL;
    int enableHttp=0,enableHttps=0,useChunking=0,doBa=0,enableInterOp=0;
    long dSockets,sSockets,pSockets;
    char *pauseStr;
-
-   _SFCB_TRACE_INIT();
 
    name = strrchr(argv[0], '/');
    if (name != NULL) ++name;
@@ -526,10 +525,29 @@ int main(int argc, char *argv[])
        mlogf(M_INFO,M_SHOW,"--- Statistics collection enabled\n");
        remove("sfcbStat");
    }
-   
-   _SFCB_TRACE_START(1,tmask);
 
    setupControl(configfile);      
+   
+   _SFCB_TRACE_INIT();
+
+   if (tmask == 0) {
+     /* trace mask not specified, check in config file */
+     getControlNum("traceMask",&tmask);
+   }
+   
+   if (tmask) {
+     if (getControlNum("traceLevel",&tracelevel) || tracelevel == 0) {
+       /* no tracelevel found in config file, use default */
+       tracelevel = 1;
+     }
+     if (getenv("SFCB_TRACE_FILE") == NULL && 
+	 getControlChars("traceFile",&tracefile) == 0) {
+       /* only set tracefile from config file if not specified via env */
+       _SFCB_TRACE_SETFILE(tracefile);
+     }
+     _SFCB_TRACE_START(tracelevel,tmask);
+   }
+
 //        SFCB_DEBUG
 #ifndef SFCB_DEBUG
    if (tmask)

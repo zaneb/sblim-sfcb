@@ -50,6 +50,9 @@
    _sfcb_trace_start(n); \
    _sfcb_set_trace_mask(m); }
 
+#define _SFCB_TRACE_SETFILE(f) {\
+    _sfcb_set_trace_file(f); }
+
 #define _SFCB_TRACE_STOP() \
    _sfcb_trace_stop();
 
@@ -74,6 +77,7 @@ extern void _sfcb_trace_start(int l);
 extern void _sfcb_trace_init();
 extern void _sfcb_trace_stop();
 extern void _sfcb_set_trace_mask(int n);
+extern void _sfcb_set_trace_file(char * file);
 extern void _sfcb_trap(int n);
 
 #else
@@ -88,6 +92,7 @@ extern void _sfcb_trap(int n);
      abort(); }
 #define _SFCB_TRACE_INIT()
 #define _SFCB_TRACE_START(m,n)
+#define _SFCB_TRACE_SETFILE(f)
 #define _SFCB_TRACE_STOP()
 #define TRAP(n)
 #endif

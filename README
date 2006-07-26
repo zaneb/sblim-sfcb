@@ -388,6 +388,7 @@ where
 		memoryMgr		 32768 (0x08000)
 		msgQueue		 65536 (0x10000)
 		xmlParsing		131072 (0x20000)
+		responseTiming		262144 (0x40000)
 
 		A useful one to try that reveals the internal workings of
 		sfcbd when processing a CIM request (but also does not
@@ -481,6 +482,58 @@ useChunking
 slpRefreshInterval
 	timeinterval in seconds in which the slp process refreshes information
 
+keepaliveTimeout
+        Specify the maximum time in seconds an sfcb HTTP process will wait
+        between two requests on one connection before terminating. Setting 
+        it to 0 will disable HTTP keep-alive. Default=0
+	
+keepaliveMaxRequest
+	Specify the maximum number of consecutive request on one connection.
+	Setting it to 0 will effectively disable HTTP keep-alive. Default=10
+
+sslKeyFilePath
+	Specify the name of the file containing the private key for the
+	server's certificate. The file must be in PEM format and may not
+	be passphrase-protected. This file is only required if enableHttps is
+	set to true. Default=/usr/local/etc/sfcb/file.pem
+	
+sslCertificateFilePath
+	Specify the name of the file containing the server's certificate. 
+	The file must be in PEM format. This file is only required if 
+	enableHttps is set to true. Default=/usr/local/etc/sfcb/server.pem
+
+registrationDir
+	Specify the registration directory, which contains the provider
+	registration data, the staging area and the static repository.
+	Default=/usr/local/var/lib/sfcb/registration
+
+providerDirs
+	A space separated list of directories where sfcb is looking for provider
+	libraries. Default=/usr/local/lib /usr/local/lib/cmpi
+
+sslClientCertificate
+	Specify the way sfcb handles client certificate based authentication. If set to
+	ignore it will not request a certificate from the client. If set to
+	accept it will request a certificate from the client but not fail if
+	the client doesn't present one. If set to require it will refuse the
+	client connection if the client doesn't present a certificate. Default=ignore
+
+certificateAuthLib
+	Name of the local library to call for client-certificate based 
+	user authentication. Called only if sslClientCertificate is not set 
+	to ignore. Default=sfcCertificateAuthentication
+
+traceLevel
+	Specify the trace level for sfcb. Can be overriden by setting environment
+	variable SFCB_TRACE_LEVEL. Default: 0.
+
+traceMask
+	Specify the trace mask for sfcb. Can be overriden by the command line option
+	--trace-mask. Default: 0.
+
+traceFile
+	Specify the trace file for sfcb. Can be overriden by setting environment
+	variable SFCB_TRACE_FILE. Default: stderr.
 
 After making any changes to sfcb.cfg you must restart sfcb or get it to reload
 the config file by typing 

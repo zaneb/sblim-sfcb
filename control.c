@@ -97,8 +97,12 @@ Control init[] = {
    {"sslClientTrustStore", 0, SFCB_CONFDIR "/client.pem"},
    {"sslClientCertificate", 0, "ignore" },
    {"certificateAuthLib",   0, "sfcCertificateAuthentication"},
-   {"localSocketPath",   0, "/tmp/sfcbLocalSocket"}
+   {"localSocketPath",   0, "/tmp/sfcbLocalSocket"},
    
+   {"traceFile",   0, "stderr"},
+   {"traceLevel",   1, "0"},
+   {"traceMask",   1, "0"},
+
 };
 
 void sunsetControl()
@@ -215,7 +219,7 @@ int getControlNum(char *id, long *val)
    int rc = -1;
    if ((ctl = ct->ft->get(ct, id))) {
       if (ctl->type == 1) {
-         *val = atol(ctl->strValue);
+	*val = strtol(ctl->strValue,NULL,0);
          return 0;
       }
       rc = -2;

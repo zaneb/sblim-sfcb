@@ -177,6 +177,18 @@ client connection if the client doesn't present a certificate. Default=\fIignore
 Name of the local library to call for client-certificate based 
 user authentication. Called only if sslClientCertificate is not set 
 to \fIignore\fR. Default=\fIsfcCertificateAuthentication\fR
+.TP
+.B traceLevel
+Specify the trace level for sfcb. Can be overriden by setting environment
+variable SFCB_TRACE_LEVEL. Default:\fI0\fR.
+.TP 
+.B traceMask
+Specify the trace mask for sfcb. Can be overriden by the command line option
+\-\-trace-components. Default: \fI0\fR.
+.TP
+.B traceFile
+Specify the trace file for sfcb. Can be overriden by setting environment
+variable SFCB_TRACE_FILE. Default: \fIstderr\fR.
 .SH ENVIRONMENT
 .TP
 .B SFCB_PAUSE_PROVIDER

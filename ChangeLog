@@ -1,3 +1,7 @@
+2006-07-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+	* control.c, sfcbBroker.c, trace.c, trace.h: 
+	Fixed 1529021: Added trace options to config file.
+
 2006-07-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 	* cimXmlParser.c: 
 	Fixed 1528304: segfault on reference parameters.

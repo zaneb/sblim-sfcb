@@ -172,6 +172,18 @@ extern void _sfcb_set_trace_mask(int n)
    _sfcb_trace_mask = n;
 }
 
+extern void _sfcb_set_trace_file(char * file)
+{
+  if (_SFCB_TRACE_FILE) {
+    free (_SFCB_TRACE_FILE);
+  }
+  if (strcmp(file,"stderr") == 0) {
+    _SFCB_TRACE_FILE = NULL;
+  } else {
+    _SFCB_TRACE_FILE = strdup(file);
+  }
+}
+
 void _sfcb_trap(int tn)
 {
 #ifdef SFCB_IX86

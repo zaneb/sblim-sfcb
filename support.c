@@ -830,7 +830,7 @@ void dumpTiming(int pid)
    fclose(f);   
    buffer[l]=0;
    f=fopen("sfcbStat","a");
-   fprintf(f,"%s %s",processName,buffer);
+   fprintf(f,"%s %s\n",processName,buffer);
    fclose(f);
 }
 

@@ -629,6 +629,7 @@ static int doHttpRequest(CommHndl conn_fd)
    int discardInput=0;
    MsgSegment msgs[2];
    struct rusage us,ue;
+   struct timeval sv, ev;
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "doHttpRequest");
 
@@ -815,16 +816,18 @@ static int doHttpRequest(CommHndl conn_fd)
       ctx.sessionId=sessionId;
       
       if ((_sfcb_trace_mask & TRACE_RESPONSETIMING) ) {
-         getrusage(RUSAGE_SELF,&us);
-         uset=1;
+	gettimeofday(&sv,NULL);
+	getrusage(RUSAGE_SELF,&us);
+	uset=1;
       }
       
 #ifdef SFCB_DEBUG
       if ((_sfcb_trace_mask & TRACE_XMLIN) ) {
-         fprintf(stderr,"-#- xmlIn %d bytes:\n%*s",inBuf.content_length,
-            inBuf.content_length,(char*)inBuf.content);
-         if (*(((char*)inBuf.content)+inBuf.content_length-1)!='\n') fprintf(stderr,"\n");
-         fprintf(stderr,"-#- xmlIn end\n");
+	_sfcb_trace(1,__FILE__,__LINE__,
+		    _sfcb_format_trace("-#- xmlIn %d bytes:\n%*s",inBuf.content_length,
+				       inBuf.content_length,(char*)inBuf.content));
+	_sfcb_trace(1,__FILE__,__LINE__,
+		    _sfcb_format_trace("-#- xmlIn end\n"));
       }  
 #endif 
       
@@ -839,9 +842,14 @@ static int doHttpRequest(CommHndl conn_fd)
    if (response.chunkedMode==0) writeResponse(conn_fd, response);
 
    if (uset && (_sfcb_trace_mask & TRACE_RESPONSETIMING) ) {
+      gettimeofday(&ev,NULL);
       getrusage(RUSAGE_SELF,&ue);
-      fprintf(stderr,"-#- Operation %.5u %s-%s user: %f sys: %f \n",sessionId, opsName[ctx.operation], ctx.className,
-         timevalDiff(&us.ru_utime,&ue.ru_utime),timevalDiff(&us.ru_stime,&ue.ru_stime));
+      _sfcb_trace(1,__FILE__,__LINE__,
+		  _sfcb_format_trace("-#- Operation %.5u %s-%s real: %f user: %f sys: %f \n",
+				     sessionId, opsName[ctx.operation], ctx.className,
+				     timevalDiff(&sv,&ev),
+				     timevalDiff(&us.ru_utime,&ue.ru_utime),
+				     timevalDiff(&us.ru_stime,&ue.ru_stime)));
    }
 
    freeBuffer(&inBuf);

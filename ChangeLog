@@ -1,3 +1,9 @@
+2006-07-31  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* support.c, httpAdapter.c, providerDrv.c: 
+	Fixed 1529096: Useless provider execution timings, by bringing in line
+	with release 1.1.1 functionality.
+
 2006-07-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 	* control.c, sfcbBroker.c, trace.c, trace.h: 
 	Fixed 1529021: Added trace options to config file.

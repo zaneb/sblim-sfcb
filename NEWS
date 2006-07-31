@@ -4,8 +4,10 @@ Changes in 1.2.0
 New features:
 - 1296278 Added slp support, integrated slp stuff into build system
 - moved some util functions to sfcUtil, build as shared library
+
 Bugs fixed:
 - 1525280 Fixed segfaults when linking with sfcc
+- 1529096 Fixed unusable execution timing traces
 
 Changes in 1.1.1
 ================

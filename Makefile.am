@@ -97,7 +97,7 @@ bin_PROGRAMS = \
    sfcbmofpp sfcbdump $(SLP_PROGRAMFILES)
 
 noinst_PROGRAMS = \
-   sfcbdumpP32onI32	
+   sfcbdumpP32onI32 classSchema2c
 
 libsfcUtil_la_SOURCES = \
 	sfcUtil/hashtable.c \
@@ -211,7 +211,7 @@ cimXmlParserProcessed.c: $(srcdir)/cimXmlParser.c
 libcimcClientSfcbLocal_la_SOURCES = \
    cimcClientSfcbLocal.c
 libcimcClientSfcbLocal_la_LIBADD=-lsfcBrokerCore
-   
+
 libsfcHttpAdapter_la_SOURCES = \
    httpAdapter.c \
    httpComm.c
@@ -276,6 +276,9 @@ sfcbmofpp_SOURCES=mofpp.c
 
 sfcbdump_SOURCES=sfcbdump.c
 
+classSchema2c_SOURCES=classSchema2c.c
+classSchema2c_LDADD=-lsfcBrokerCore
+
 noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \
 	cimXmlParser.h    native.h       support.h cimXmlGen.h \
@@ -292,7 +295,7 @@ man_MANS=$(MANFILES)
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcbunstage.sh.in sfcbuuid.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
-	sfcb.init-none.in
+	sfcb.init-none.in cimXmlParser.c
 
 sfcbconf_DATA=sfcb.cfg
 

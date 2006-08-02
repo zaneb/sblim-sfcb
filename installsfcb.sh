@@ -47,7 +47,7 @@ if [[ -n $CVSROOT ]]; then
    echo -n "Change CVSROOT to SourceForge SBLIM project anonymous access? [Y]/n "; read _ANSWER
 fi
 if [[ -z $_ANSWER || $_ANSWER = "Y" || $_ANSWER = "y" ]]; then
-   export CVSROOT=":pserver:anonymous:@cvs.sourceforge.net:/cvsroot/sblim"
+   export CVSROOT=":pserver:anonymous:@sblim.cvs.sourceforge.net:/cvsroot/sblim"
 fi
 
 # If using CVS pserver method then CVS login now

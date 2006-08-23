@@ -71,64 +71,49 @@ else
 fi
 
 
-curl_ok() 
-{
-    if echo $MOFZIPURL | grep http: > /dev/null 
-    then
-	if [ -x /usr/bin/curl ]
-	then
-	    return 0
-	else
-	    return 1
-	fi	
-    else
-	return 0
-    fi
-}
-
 fetch_mof()
 {
     if echo $MOFZIPURL | grep http: > /dev/null
     then
-	/usr/bin/curl -o $TMPZIP $MOFZIPURL
+        if [ -x /usr/bin/curl ]
+        then 
+  	    /usr/bin/curl -o $TMPZIP $MOFZIPURL
+        else
+            echo "Need curl to get CIM schema files." 1>&2
+            return 1
+        fi
     else
 	cp $MOFZIPURL $TMPZIP
     fi
 }
 
-if [ curl_ok ] 
+if [ ! -f $sfcbdir/CIM/CIM_Schema.mof ] || [ $force = 1 ]
 then
-   if [ ! -f $sfcbdir/CIM/CIM_Schema.mof ] || [ $force = 1 ]
-   then
-      echo "Fetching CIM Schema from DMTF homepage ..."
-      if [ -d $sfcbdir/CIM ]
-      then
-	  rm -rf $sfcbdir/CIM
-	  if [ $? != 0 ]
-	  then
-	      echo "Failed to delete schema directory $sfcbdir/CIM" >&2
-	      exit 1
-	  fi
-      fi
-      mkdir -p $sfcbdir/CIM
-      if [ $HASSUBDIRS = yes ]
-      then
-	  ZIPFLAGS=
-      else
-	  ZIPFLAGS=-j
-      fi
-      if [ $? = 0 ]; then
-	  fetch_mof &&
-	  unzip $ZIPFLAGS -d $sfcbdir/CIM $TMPZIP &&
-          fixschema &&
-	  exit 0
-      fi
-      echo "Failed to fetch and install CIM schema" 1>&2 
-   else
-      echo "CIM Schema already present - nothing to do."
-      exit 0
-   fi   
+    echo "Fetching CIM Schema from $MOFZIPURL ..."
+    if [ -d $sfcbdir/CIM ]
+    then
+	rm -rf $sfcbdir/CIM
+	if [ $? != 0 ]
+	then
+	    echo "Failed to delete schema directory $sfcbdir/CIM" >&2
+	    exit 1
+	fi
+    fi
+    mkdir -p $sfcbdir/CIM
+    if [ $HASSUBDIRS = yes ]
+    then
+	ZIPFLAGS=
+    else
+	ZIPFLAGS=-j
+    fi
+    if [ $? = 0 ]; then
+	fetch_mof &&
+	unzip $ZIPFLAGS -d $sfcbdir/CIM $TMPZIP &&
+	fixschema &&
+	exit 0
+    fi
+    echo "Failed to fetch and install CIM schema" 1>&2 
 else
-    echo "Need curl to get CIM schema files." 1>&2
-    exit 1
-fi
+    echo "CIM Schema already present - nothing to do."
+    exit 0
+fi   

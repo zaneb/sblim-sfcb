@@ -164,4 +164,7 @@ int uninit_sfcBroker();
 
 extern double timevalDiff(struct timeval *sv, struct timeval *ev);
 
+#define PADDING_LEN(s) ( (s)%sizeof(int) ? sizeof(int) - (s)%sizeof(int) : 0)
+#define PADDED_LEN(s) ((s) + PADDING_LEN(s))
+
 #endif

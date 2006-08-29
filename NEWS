@@ -27,6 +27,7 @@ Bugs fixed:
 - 1528455 Added support for local CIM schema
 - 1528304 Fixed segfault in method invocations with ref parameters
 - 1529021 Added trace options to config file
+- 1548673 Fixed invalid memory access
 
 Changes in 1.1.0
 ================

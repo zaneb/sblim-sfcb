@@ -885,8 +885,10 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
    void *heapCtl=markHeap();
    hdr->provId = ctx->provA.ids.ids;
       
-   for (l = size, i = 0; i < hdr->count; i++)
-      l += hdr->object[i].length;
+   for (l = size, i = 0; i < hdr->count; i++) {
+     /* add padding length to calculation */
+     l += (hdr->object[i].type == MSG_SEG_CHARS ? PADDED_LEN(hdr->object[i].length) : hdr->object[i].length);
+   }
 
    buf = (char *) malloc(l + 8);
    
@@ -914,7 +916,8 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
       case MSG_SEG_CHARS:
          memcpy(buf + l, hdr->object[i].data, ol);
          ((BinRequestHdr *) buf)->object[i].data = (void *) l;
-         l += ol;
+         ((BinRequestHdr *) buf)->object[i].length = PADDED_LEN(ol);
+         l += ((BinRequestHdr *) buf)->object[i].length;
          break;
       case MSG_SEG_CONSTCLASS: 
          getSerializedConstClass((CMPIConstClass *) hdr->object[i].data,

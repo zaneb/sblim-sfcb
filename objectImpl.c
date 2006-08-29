@@ -194,13 +194,16 @@ static long addClString(ClObjectHdr * hdr, const char *str)
       nmax=GetMax(buf->iMax);
       if (buf->iUsed >= nmax) {
          if (buf->iMax > 0) {
-            buf->iMax = nmax * 2;
             if (!isMallocedStrIndex(buf)) {
                void *idx = buf->indexPtr;
+	       buf->iMax = nmax * 2;
                setStrIndexPtr(buf, malloc(buf->iMax * sizeof(long)));
-               memcpy(buf->indexPtr, idx, GetMax(buf->iMax) * sizeof(long));
+               memcpy(buf->indexPtr, idx, nmax * sizeof(long));
             }
-            else setStrIndexPtr(buf, realloc(buf->indexPtr, buf->iMax * sizeof(long)));
+            else {
+	      buf->iMax = nmax * 2;
+	      setStrIndexPtr(buf, realloc(buf->indexPtr, buf->iMax * sizeof(long)));
+	    }
          }
          else {
             buf->iMax = 16;
@@ -262,14 +265,15 @@ static long addClArray(ClObjectHdr * hdr, CMPIData d)
       nmax=GetMax(buf->iMax);
       if (buf->iUsed >= nmax) {
          if (buf->iMax > 0) {
-            buf->iMax = nmax * 2;
             if (!isMallocedArrayIndex(buf)) {
                void *idx = buf->indexPtr;
+	       buf->iMax = nmax * 2;
                setArrayIndexPtr(buf, malloc(buf->iMax * sizeof(long)));
-               memcpy(buf->indexPtr, idx, GetMax(buf->iMax) * sizeof(long));
+               memcpy(buf->indexPtr, idx, nmax * sizeof(long));
             }
             else {
-               setArrayIndexPtr(buf, realloc(buf->indexPtr, nmax * sizeof(long)));
+	      buf->iMax = nmax * 2;
+	      setArrayIndexPtr(buf, realloc(buf->indexPtr, buf->iMax * sizeof(long)));
             } 
          }
          else {

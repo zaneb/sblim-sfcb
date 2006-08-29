@@ -666,8 +666,10 @@ static int sendResponse(int requestor, BinResponseHdr * hdr)
       }
    }
    
-   for (l = size, i = 0; i < hdr->count; i++)
-      l += hdr->object[i].length;
+   for (l = size, i = 0; i < hdr->count; i++) {
+     /* add padding length to calculation */
+     l += (hdr->object[i].type == MSG_SEG_CHARS ? PADDED_LEN(hdr->object[i].length) : hdr->object[i].length);
+   }
 
    buf = (BinResponseHdr *) malloc(l +rvl + 8);
    memcpy(buf, hdr, size);
@@ -703,7 +705,8 @@ static int sendResponse(int requestor, BinResponseHdr * hdr)
       case MSG_SEG_CHARS:
          memcpy(((char *) buf) + l, hdr->object[i].data, ol);
          buf->object[i].data = (void *) l;
-         l += ol;
+         buf->object[i].length = PADDED_LEN(ol);
+         l += buf->object[i].length;
          break;
       case MSG_SEG_CONSTCLASS:
          getSerializedConstClass((CMPIConstClass *) hdr->object[i].data,

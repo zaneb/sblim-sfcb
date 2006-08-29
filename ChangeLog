@@ -1,5 +1,8 @@
 2006-08-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
+	* classProviderGz.c: 
+	Fixed 1519600: Removed invalid test. (By Adrian Schuur)
+
 	* support.h, providerDrv.c, providerMgr.c, msgqueue.c: 
 	Fixed 1548673: Reworked handling of MSG_SEG_CHAR segments. Now the
 	necessary padding will occur only when needed, i.e. when copied

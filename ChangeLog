@@ -1,3 +1,8 @@
+2006-08-30  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* providerDrv.c: 
+	Fixed 1549330: implicitly group all providers of a provider module.
+	
 2006-08-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* classProviderGz.c: 

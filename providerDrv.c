@@ -461,7 +461,12 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getProcess");
 
-   if (info->group) for (i = 0; i < provProcMax; i++) {
+   if (info->group == NULL) {
+     /* implicitly put all provides in a module in a virtual group */
+     info->group = strdup(info->location);
+   }
+   
+   for (i = 0; i < provProcMax; i++) {
       if ((provProc+i) && provProc[i].pid &&
            provProc[i].group && strcmp(provProc[i].group,info->group)==0) {
          semAcquire(sfcbSem,(provProc[i].id*3)+provProcGuardId+provProcBaseId);

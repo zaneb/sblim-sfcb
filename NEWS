@@ -29,6 +29,7 @@ Bugs fixed:
 - 1529021 Added trace options to config file
 - 1548673 Fixed invalid memory access
 - 1519600 Fixed caching/compressing class provider
+- 1549330 Group providers of a provider module in one process
 
 Changes in 1.1.0
 ================

@@ -611,7 +611,7 @@ int pauseCodec(char *name)
       if ((p=strstr(httpPauseStr,n))!=NULL) {
          if ((p==httpPauseStr || *(p-1)==',') && (p[l]==',' || p[l]==0)) rc=1;
       }
-      free(p);
+      free(n);
       return rc;
   }
    noHttpPause=1;
@@ -630,10 +630,12 @@ static int doHttpRequest(CommHndl conn_fd)
    MsgSegment msgs[2];
    struct rusage us,ue;
    struct timeval sv, ev;
+   CimXmlRequestContext ctx;
+   int breakloop;
 
    _SFCB_ENTER(TRACE_HTTPDAEMON, "doHttpRequest");
 
-   if (pauseCodec("http")) for (;;) {
+   if (pauseCodec("http")) for (breakloop=0;breakloop==0;) {
       fprintf(stdout,"-#- Pausing for codec http %d\n",currentProc);
       sleep(5);
    }
@@ -808,8 +810,12 @@ static int doHttpRequest(CommHndl conn_fd)
    msgs[1].data = inBuf.content;
    msgs[1].length = len - hl;
 
-     CimXmlRequestContext ctx =
-        { inBuf.content, inBuf.principal, inBuf.host, inBuf.trailers, 0, len - hl, &conn_fd };
+   ctx.cimXmlDoc = inBuf.content;
+   ctx.principal = inBuf.principal;
+   ctx.host = inBuf.host;
+   ctx.teTrailers = inBuf.trailers;
+   ctx.cimXmlDocLength = len - hl;
+   ctx.commHndl = &conn_fd;
    
    if (msgs[1].length > 0) {
       ctx.chunkFncs=&httpChunkFunctions;

@@ -245,7 +245,7 @@ static void ctxErrResponse( BinRequestContext * ctx, CMPIStatus *rc)
       r = CMPI_RC_ERR_INVALID_NAMESPACE;
       break;
    case MSG_X_PROVIDER_NOT_FOUND:
-      m = "Provider not found";
+      m = "Provider not found or not loadable";
       r = CMPI_RC_ERR_NOT_FOUND;
       break;
    case MSG_X_FAILED:

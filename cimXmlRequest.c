@@ -296,7 +296,7 @@ static RespSegments ctxErrResponse(RequestHdr * hdr,
       hdr->errMsg = strdup("Invalid namespace");
       break;
    case MSG_X_PROVIDER_NOT_FOUND:
-      hdr->errMsg = strdup("Provider not found");
+      hdr->errMsg = strdup("Provider not found or not loadable");
       break;
    case MSG_X_FAILED:
       hdr->errMsg = strdup(xd->data);

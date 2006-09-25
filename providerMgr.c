@@ -334,9 +334,10 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
             if (type==INDICATION_PROVIDER) {
                if (n>1 || indFound) continue;
             };
-            spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, count--,
+            spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
                NULL, req->options);
             if (msg) free(msg);
+	    break;
          }
       }
    }
@@ -536,8 +537,9 @@ static void assocProviderList(int *requestor, OperationHdr * req)
             }                   
             else {
                spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND,
-                  count--, NULL, req->options);
+                  0, NULL, req->options);
                if (msg) free(msg);
+	       break;
             }
 
          }
@@ -855,8 +857,13 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
   
       for (i = 1; l; i++) {
          rc = spRecvCtlResult(&sockets.receive, &as[i].socket,&as[i].ids.ids, &l);
-         setInuseSem(as[i].ids.ids);
-         _SFCB_TRACE(1,("--- getting provider socket: %lu %d",as[i].socket,getInode(as[i].socket),currentProc));
+	 if (rc != MSG_X_PROVIDER) {
+	   ctx->rc = rc;
+	   _SFCB_TRACE(1,("--- Provider at index %d not loadable (perhaps out of processes) ",i));
+	 } else {
+	   setInuseSem(as[i].ids.ids);
+	   _SFCB_TRACE(1,("--- getting provider socket: %lu %d",as[i].socket,getInode(as[i].socket),currentProc));
+	 }
       }
    }
 

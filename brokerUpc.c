@@ -184,7 +184,7 @@ static CMPIStatus setErrorStatus(int code)
       code = CMPI_RC_ERR_INVALID_NAMESPACE;
       break;
    case MSG_X_PROVIDER_NOT_FOUND:
-      msg = "Provider not found";
+      msg = "Provider not found or not loadable";
       code = CMPI_RC_ERR_FAILED;
       break;
    case MSG_X_FAILED:

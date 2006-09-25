@@ -1,3 +1,10 @@
+2006-09-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* brokerUpc.c, cimXmlRequest.c, providerDrv.c, providerMgr.c, 
+	cimcClientSfcbLocal.c:
+	Fixed 1562801: Segmentation fault after the provider process limit
+	has been exceeded. Now an error message will be produced.
+
 2006-08-30  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* providerDrv.c: 

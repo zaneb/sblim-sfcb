@@ -616,7 +616,7 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
       free(resp);
       _SFCB_RETURN(rc);
    }
-   _SFCB_RETURN(0);
+   _SFCB_RETURN(CMPI_RC_ERR_FAILED);
 }
 
 

@@ -32,6 +32,7 @@ Bugs fixed:
 - 1549330 Group providers of a provider module in one process
 - 1562801 Fixed segfault on provider process limit 
 - 1564999 Fixed incorrect CimXmlRequest format.
+- 1565105 Fixed compile error with disabled debug.
 
 Changes in 1.1.0
 ================

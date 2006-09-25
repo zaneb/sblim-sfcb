@@ -2,11 +2,13 @@
 
 	* httpAdapter.c: 
 	Fixed 1564999: Incorrect CimXmlRequest format.
+	Fixed 1565105: Compile error with disabled debug.
 
 	* brokerUpc.c, cimXmlRequest.c, providerDrv.c, providerMgr.c, 
 	cimcClientSfcbLocal.c:
 	Fixed 1562801: Segmentation fault after the provider process limit
 	has been exceeded. Now an error message will be produced.
+	Fixed 1565105: Compile error with disabled debug.
 
 2006-08-30  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 

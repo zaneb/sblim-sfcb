@@ -821,13 +821,13 @@ static int doHttpRequest(CommHndl conn_fd)
       ctx.chunkFncs=&httpChunkFunctions;
       ctx.sessionId=sessionId;
       
+#ifdef SFCB_DEBUG
       if ((_sfcb_trace_mask & TRACE_RESPONSETIMING) ) {
 	gettimeofday(&sv,NULL);
 	getrusage(RUSAGE_SELF,&us);
 	uset=1;
       }
       
-#ifdef SFCB_DEBUG
       if ((_sfcb_trace_mask & TRACE_XMLIN) ) {
 	_sfcb_trace(1,__FILE__,__LINE__,
 		    _sfcb_format_trace("-#- xmlIn %d bytes:\n%*s",inBuf.content_length,
@@ -847,6 +847,7 @@ static int doHttpRequest(CommHndl conn_fd)
    _SFCB_TRACE(1, ("--- Generate http response"));
    if (response.chunkedMode==0) writeResponse(conn_fd, response);
 
+#ifdef SFCB_DEBUG
    if (uset && (_sfcb_trace_mask & TRACE_RESPONSETIMING) ) {
       gettimeofday(&ev,NULL);
       getrusage(RUSAGE_SELF,&ue);
@@ -857,6 +858,7 @@ static int doHttpRequest(CommHndl conn_fd)
 				     timevalDiff(&us.ru_utime,&ue.ru_utime),
 				     timevalDiff(&us.ru_stime,&ue.ru_stime)));
    }
+#endif
 
    freeBuffer(&inBuf);
    _SFCB_RETURN(0);

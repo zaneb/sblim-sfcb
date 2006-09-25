@@ -51,6 +51,9 @@
 
 char * opsName[];
 
+
+#ifdef SFCB_DEBUG
+
 #define TIMING_PREP \
    int uset=0; \
    struct rusage us,ue,cs,ce; \
@@ -81,7 +84,13 @@ char * opsName[];
 				       timevalDiff(&cs.ru_stime,&ce.ru_stime) \
 				       )); \
       }
+#else
 
+#define TIMING_PREP 
+#define TIMING_START(req,pInfo)
+#define TIMING_STOP(req,pInfo)
+
+#endif
 
 extern CMPIBroker *Broker;
 

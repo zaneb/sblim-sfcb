@@ -1,3 +1,9 @@
+2006-09-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* instance.c, configure.ac: 
+	Fixed 1185824: Added default instance property generation. Can be
+	disable via configure option.
+
 2006-09-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* httpAdapter.c: 

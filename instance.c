@@ -70,6 +70,11 @@ struct native_instance {
    char **key_list;
 };
 
+#ifdef HAVE_DEFAULT_PROPERTIES 
+static void instFillDefaultProperties(struct native_instance *inst, 
+				      const char * ns, const char * cn);
+#endif
+
 /****************************************************************************/
 
 static void __release_list(char **list)
@@ -238,17 +243,26 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
 	 data.value.chars=NULL;
 	 data.state=CMPI_nullValue;
       }
-   } else if (type == CMPI_dateTime) {
-      if (value && value->dateTime) { 
-         data.value.dateTime = value->dateTime;
-   }   else {
-          data.value.dateTime=NULL;
-          data.state=CMPI_nullValue;
+   } else if (type == CMPI_dateTime ||type == CMPI_ref || 
+	      (type & CMPI_ARRAY)) {
+      if (value && value->chars) { 
+         data.value.chars = value->chars;
+      }   else {
+	 data.value.chars=NULL;
+	 data.state=CMPI_nullValue;
       }
-    } else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
-      data.value = *value;
+   } else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
+      if (value) {
+	 data.value = *value;
+      } else {
+	 data.state=CMPI_nullValue;
+      }
    }  else {
-      data.value.Int = value->Int;
+      if (value) {
+	 data.value.Int = value->Int;
+      } else {
+	 data.state=CMPI_nullValue;
+      }
    }
 
    if (i->filtered == 0 ||
@@ -266,6 +280,7 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
 static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
                                            CMPIStatus * rc)
 {
+   static CMPI_MUTEX_TYPE * mtx = NULL;
    static UtilHashTable *klt = NULL;
    int j, f = 0;
    CMPIStatus tmp;
@@ -288,7 +303,7 @@ static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
          CMAddKey(cop, CMGetCharsPtr(keyName, NULL), &d.value, d.type);
          f++;
       }
-      if (d.type & CMPI_ARRAY) {
+      if (d.type & CMPI_ARRAY && (d.state & CMPI_nullValue) == 0) {
          d.value.array->ft->release(d.value.array);
       }   
    }
@@ -298,14 +313,20 @@ static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
       CMPIData d;
       unsigned int e, m;
 
+      if (mtx == NULL) {
+	 mtx = malloc(sizeof(CMPI_MUTEX_TYPE));
+	 *mtx = Broker->xft->newMutex(0); 
+      }
+      Broker->xft->lockMutex(*mtx);
       if (klt == NULL) klt = UtilFactory->newHashTable(61,
                  UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
 
-      if ((kl = klt->ft->get(klt, cn)) == NULL) {
+      if ((kl = klt->ft->get(klt, cn)) == NULL) {	 
 	 CMPIConstClass * cc = getConstClass(ns,cn);
 	 kl = cc->ft->getKeyList(cc);
          klt->ft->put(klt, strdup(cn), kl);
       }
+      Broker->xft->unlockMutex(*mtx);
       m = kl->ft->getSize(kl, NULL);
 
       for (e = 0; e < m; e++) {
@@ -501,6 +522,10 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
    tInst->mem_state=state;
    tInst->refCount=0;
    
+#ifdef HAVE_DEFAULT_PROPERTIES 
+   instFillDefaultProperties(tInst,ns,cn);
+#endif
+
    return (CMPIInstance*)tInst;
 }
 
@@ -588,6 +613,57 @@ const char *instGetClassName(CMPIInstance * ci)
    ClInstance *inst = (ClInstance *) ci->hdl;
    return ClInstanceGetClassName(inst);
 }
+
+#ifdef HAVE_DEFAULT_PROPERTIES 
+static void instFillDefaultProperties(struct native_instance *inst, 
+				      const char * ns, const char * cn)
+{
+   static CMPI_MUTEX_TYPE * mtx = NULL;
+   static UtilHashTable *clt = NULL;
+   CMPIConstClass *cc;
+   CMPICount       pc;
+   CMPIData        pd;
+   CMPIStatus      ps;
+   CMPIString     *pn = NULL;
+   CMPIValue      *vp;
+   
+   if (mtx == NULL) {
+      mtx = malloc(sizeof(CMPI_MUTEX_TYPE));
+      *mtx = Broker->xft->newMutex(0); 
+   }
+   Broker->xft->lockMutex(*mtx);
+   if (clt == NULL) clt = 
+      UtilFactory->newHashTable(61,
+				UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
+   
+   if ((cc = clt->ft->get(clt, cn)) == NULL) {	 
+      cc = getConstClass(ns,cn);
+      clt->ft->put(clt, strdup(cn), cc->ft->clone(cc,NULL));
+   }
+   Broker->xft->unlockMutex(*mtx);
+   if (cc) {
+      pc = cc->ft->getPropertyCount(cc,NULL);
+      while (pc > 0) {
+	 pc -= 1;
+	 pd = cc->ft->getPropertyAt(cc,pc,&pn,&ps);
+	 if (ps.rc == CMPI_RC_OK && pn ) {
+	    vp = &pd.value;
+	    if (pd.state & CMPI_nullValue) {
+	       /* must set  null value indication: 
+		  CMPI doesn't allow to do that properly */
+	       pd.value.chars = NULL;
+	       if ((pd.type & (CMPI_SIMPLE|CMPI_REAL|CMPI_INTEGER)) && 
+		   (pd.type & CMPI_ARRAY) == 0 ) {
+		  vp = NULL;
+	       }
+	    }
+	    __ift_setProperty(&inst->instance,CMGetCharsPtr(pn,NULL),
+			      vp,pd.type);
+	 }
+      }
+   }
+}
+#endif
 
 /****************************************************************************/
 

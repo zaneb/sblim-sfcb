@@ -54,6 +54,13 @@ AC_ARG_ENABLE(indications,
 	[enable_indications="yes"]
 	)
 
+AC_ARG_ENABLE(default-properties,
+	[AC_HELP_STRING([--disable-default-properties],
+		[disable generation of default instance properties for SFCB.])],
+	[enable_default_properties=$enableval],
+	[enable_default_properties="yes"]
+	)
+
 # Configuration Arguments
 AC_ARG_VAR([CIMSCHEMA_SOURCE],[The URL or path name of the CIM Schema ZIP File.])
 AC_ARG_VAR([CIMSCHEMA_MOF],[The file name of the top level MOF (CIMSchema.mof)])
@@ -70,7 +77,11 @@ if test "$enable_debug" == "yes"; then
 fi
 
 if test "$enable_jdbc" == "yes"; then
-   AC_DEFINE(HAVE_JDBC,,[JDBC support enabled.])
+   AC_DEFINE(HAVE_JDBC,1,[JDBC support enabled.])
+fi
+
+if test "$enable_default_properties" == "yes"; then
+   AC_DEFINE(HAVE_DEFAULT_PROPERTIES,1,[Default instance property generation enabled.])
 fi
 
 if test "$enable_slp" == "standalone"; then
@@ -134,7 +145,7 @@ AC_CHECK_LIB(pthread,main)
 AC_CHECK_LIB(dl,main)
 AC_CHECK_LIB(z,main,[SFCB_LIBZ=-lz],[AC_MSG_ERROR([Could not find required libz])])
 if test "$enable_indications" == "yes"; then
-   AC_DEFINE(HAVE_INDICATIONS,,[Indication support enabled.])
+   AC_DEFINE(HAVE_INDICATIONS,1,[Indication support enabled.])
    AC_CHECK_LIB(curl,main)
 fi
 
@@ -223,4 +234,5 @@ echo -e "indications"\\t"${enable_indications}"
 echo -e "ssl"\\t"${enable_ssl:-no}"
 echo -e "jdbc"\\t"${enable_jdbc:-no}"
 echo -e "slp"\\t"${enable_slp:-no}"
+echo -e "default instance properties"\\t"${enable_default_properties}"
 echo ======================================================

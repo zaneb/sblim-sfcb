@@ -644,7 +644,7 @@ static ClQualifier makeClQualifier(ClObjectHdr * hdr, const char *id,
       d.value.chars = (char *) addClString(hdr, (char *) d.value.string->hdl);
    }
    else if ((d.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
-      d.value.chars = (char *) addClArray(hdr, d);
+      d.value.array = (CMPIArray *) addClArray(hdr, d);
    }
 
    q.data = d;
@@ -1200,7 +1200,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       }
       else if ((d.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
          p->data = d;
-         p->data.value.chars = (char *) addClArray(hdr, d);
+         p->data.value.array = (CMPIArray *) addClArray(hdr, d);
       }
       else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
          (d.state & CMPI_nullValue) == 0) {
@@ -1240,23 +1240,43 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          }
       }
       
-      else if (d.type == CMPI_dateTime && (d.state & CMPI_nullValue) == 0) {
+      else if (od.type == CMPI_dateTime && (d.state & CMPI_nullValue) == 0) {
          char chars[26];
          dateTime2chars(d.value.dateTime, NULL, chars);
-         replaceClString(hdr, (int) od.value.chars, chars);
-         (p + i - 1)->data.value.chars=od.value.chars;
+	 if (od.value.chars) {
+	   (p + i - 1)->data = d;
+	   replaceClString(hdr, (int) od.value.chars, chars);
+	   (p + i - 1)->data.value.chars=od.value.chars;
+	 } else {
+	   (p + i - 1)->data = d;
+	   (p + i - 1)->data.value.chars =
+	     (char *) addClString(hdr, chars);
+	 }
       }
 
-      else if (d.type == CMPI_ref && (d.state & CMPI_nullValue) == 0) {
+      else if (od.type == CMPI_ref && (d.state & CMPI_nullValue) == 0) {
          char chars[4096] = { 0 };
          sfcb_pathToChars(d.value.ref, &st, chars);
-         replaceClString(hdr, (int) od.value.chars, chars);
-         (p + i - 1)->data.value.chars=od.value.chars;
+	 if (od.value.chars) {   
+	   (p + i - 1)->data = d;
+	   replaceClString(hdr, (int) od.value.chars, chars);
+	   (p + i - 1)->data.value.chars=od.value.chars;
+	 } else {
+	   (p + i - 1)->data = d;
+	   (p + i - 1)->data.value.chars =
+	     (char *) addClString(hdr, chars);
+	 }
       }
       
       else if ((od.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
-         (p + i - 1)->data = d;
-         replaceClArray(hdr, (int) od.value.array, d);
+	if (od.value.array) {
+	  (p + i - 1)->data = d;
+	  replaceClArray(hdr, (int) od.value.array, d);
+	  (p + i - 1)->data.value.array=od.value.array;
+	} else {
+	  (p + i - 1)->data = d;
+	  (p + i - 1)->data.value.array = (CMPIArray *) addClArray(hdr, d);
+}
       }
       
       else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 

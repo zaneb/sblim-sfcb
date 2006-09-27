@@ -33,6 +33,7 @@ Bugs fixed:
 - 1562801 Fixed segfault on provider process limit 
 - 1564999 Fixed incorrect CimXmlRequest format.
 - 1565105 Fixed compile error with disabled debug.
+- 1185824 Added default instance properties
 
 Changes in 1.1.0
 ================

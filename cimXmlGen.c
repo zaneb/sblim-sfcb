@@ -547,7 +547,9 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");
          for (j = 0; j < ac; j++) {
             d = CMGetArrayElementAt(ar, j, NULL);
-            value2xml(d, sb, 1);
+	    if ((d.state & CMPI_nullValue)==0) {
+	      value2xml(d, sb, 1);
+	    }
          }
          sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");
       }

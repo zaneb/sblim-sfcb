@@ -86,6 +86,7 @@ Control init[] = {
 
    {"providerSampleInterval",  1, "30"},
    {"providerTimeoutInterval", 1, "60"},
+   {"providerAutoGroup", 2, "false"},
 
    {"sslKeyFilePath",   0, SFCB_CONFDIR "/file.pem"},
    {"sslCertificateFilePath", 0, SFCB_CONFDIR "/server.pem"},

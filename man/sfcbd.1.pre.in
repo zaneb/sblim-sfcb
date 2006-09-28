@@ -149,6 +149,19 @@ Default=\fI@localstatedir@/lib/sfcb/registration\fR
 A space separated list of directories where sfcb is looking for provider
 libraries. Default=\fI@libdir@\ @libdir@/cmpi\fR
 .TP
+.B providerSampleInterval
+The interval in seconds at which the provider manager is checking for
+idle providers. Default: \fI30\fR
+.TP
+.B providerTimeoutInterval
+The interval in seconds before an idle provider gets unloaded by the
+provider manager. Default: \fI60\fR
+.TP
+.B providerAutoGroup
+If set to true, all providers residing in the same shared library will
+be executed in the same process unless another group has been specified
+in the provider registration file. Default: \fIfalse\fR
+.TP
 .B sslCertificateFilePath
 Specify the name of the file containing the server's certificate. 
 The file must be in PEM format. This file is only required if 

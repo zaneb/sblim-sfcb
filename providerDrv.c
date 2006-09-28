@@ -135,6 +135,7 @@ int indicationEnabled=0;
 
 unsigned long provSampleInterval=10;
 unsigned long provTimeoutInterval=25;
+unsigned      provAutoGroup=0;
 static int stopping=0;
 
 void uninitProvProcCtl();
@@ -470,13 +471,14 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getProcess");
 
-   if (info->group == NULL) {
-     /* implicitly put all provides in a module in a virtual group */
+   if (provAutoGroup && info->group == NULL) {
+     /* implicitly put all providers in a module in a virtual group */
      info->group = strdup(info->location);
    }
    
-   for (i = 0; i < provProcMax; i++) {
-      if ((provProc+i) && provProc[i].pid &&
+   if (info->group) {
+     for (i = 0; i < provProcMax; i++) {
+       if ((provProc+i) && provProc[i].pid &&
            provProc[i].group && strcmp(provProc[i].group,info->group)==0) {
          semAcquire(sfcbSem,(provProc[i].id*3)+provProcGuardId+provProcBaseId);
          semRelease(sfcbSem,(provProc[i].id*3)+provProcInuseId+provProcBaseId);
@@ -484,13 +486,14 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
          info->pid=provProc[i].pid;
          info->providerSockets=provProc[i].providerSockets;
          _SFCB_TRACE(1,("--- Process %d shared by %s and %s",provProc[i].pid,info->providerName,
-                      provProc[i].firstProv->providerName));
+			provProc[i].firstProv->providerName));
          if (provProc[i].firstProv) info->next=provProc[i].firstProv;
          else info->next = NULL;
          provProc[i].firstProv=info;
          info->proc=provProc+i;
          if (info->unload<provProc[i].unload) provProc[i].unload=info->unload;
          _SFCB_RETURN(provProc[i].pid);
+       }
      }
    }
 

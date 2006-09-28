@@ -1,3 +1,9 @@
+2006-09-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* man/sfcbd.1.pre.in, control.c, providerDrv.c, README: 
+	Post-fix 1549330: The automatic provider grouping is a configuration
+	option now.
+
 2006-09-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* instance.c, configure.ac: 

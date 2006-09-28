@@ -80,6 +80,7 @@ extern int collectStat;
 
 extern unsigned long provSampleInterval;
 extern unsigned long provTimeoutInterval;
+extern unsigned      provAutoGroup;
 
 extern void dumpTiming(int pid);
 
@@ -595,9 +596,11 @@ int main(int argc, char *argv[])
       pSockets = 16;
 
    if (getControlNum("providerSampleInterval", &provSampleInterval))
-      provSampleInterval = 10;
+      provSampleInterval = 30;
    if (getControlNum("providerTimeoutInterval", &provTimeoutInterval))
-      provTimeoutInterval = 10;
+      provTimeoutInterval = 60;
+   if (getControlBool("providerAutoGroup", &provAutoGroup))
+      provAutoGroup=0;
 
    resultSockets=getSocketPair("sfcbd result");
    sfcbSockets=getSocketPair("sfcbd sfcb");

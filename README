@@ -511,6 +511,19 @@ providerDirs
 	A space separated list of directories where sfcb is looking for provider
 	libraries. Default=/usr/local/lib /usr/local/lib/cmpi
 
+providerSampleInterval
+	The interval in seconds at which the provider manager is checking for
+        idle providers. Default: 30
+
+providerTimeoutInterval
+	The interval in seconds before an idle provider gets unloaded by the
+	provider manager. Default: 60
+
+providerAutoGroup
+	If set to true, all providers residing in the same shared library will
+	be executed in the same process unless another group has been specified
+  	in the provider registration file. Default: false
+
 sslClientCertificate
 	Specify the way sfcb handles client certificate based authentication. If set to
 	ignore it will not request a certificate from the client. If set to

@@ -169,6 +169,8 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokMethod                    xtokMethod;
    XtokMethodData                xtokMethodData;
    XtokQualifier                 xtokQualifier;
+   XtokQualifierDeclaration      xtokQualifierDeclaration;
+   XtokQualifierDeclarationData  xtokQualifierDeclarationData;
    
    XtokParamValue                xtokParamValue;  
    XtokParam                     xtokParam;
@@ -229,6 +231,20 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokReferenceNames            xtokReferenceNames;
    XtokReferenceNamesParmsList   xtokReferenceNamesParmsList;
    XtokReferenceNamesParms       xtokReferenceNamesParms;
+
+   XtokSetQualifier              xtokSetQualifier;
+   XtokSetQualifierParm          xtokSetQualifierParm;
+   
+   XtokEnumQualifiers            xtokEnumQualifiers;
+   
+   XtokGetQualifier              xtokGetQualifier;
+   XtokGetQualifierParm          xtokGetQualifierParm;
+
+   XtokDeleteQualifier           xtokDeleteQualifier;
+   XtokDeleteQualifierParm       xtokDeleteQualifierParm;
+   
+   XtokScope                     xtokScope;
+   
 };
 
 %token <tokCim>                  XTOK_XML
@@ -316,6 +332,21 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %type  <xtokReferenceNamesParmsList> referenceNamesParmsList
 %type  <xtokReferenceNamesParms> referenceNamesParms
 
+%token <xtokSetQualifier>        XTOK_SETQUALIFIER
+%type  <xtokSetQualifier>        setQualifier
+%type  <xtokSetQualifierParm>    setQualifierParm
+
+%token <xtokEnumQualifiers>      XTOK_ENUMQUALIFIERS
+%type  <xtokEnumQualifiers>      enumQualifiers
+
+%token <xtokGetQualifier>        XTOK_GETQUALIFIER
+%type  <xtokGetQualifier>        getQualifier
+%type  <xtokGetQualifierParm>    getQualifierParm
+
+%token <xtokDeleteQualifier>     XTOK_DELETEQUALIFIER
+%type  <xtokDeleteQualifier>     deleteQualifier
+%type  <xtokDeleteQualifierParm> deleteQualifierParm
+
 %token <intValue>                ZTOK_IMETHODCALL
 
 %token <intValue>                XTOK_METHODCALL
@@ -391,6 +422,8 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <className>               XTOK_IP_QUERY
 %token <className>               XTOK_IP_QUERYLANG
 %token <class>                   XTOK_IP_CLASS
+%token <qualifierDeclaration>    XTOK_IP_QUALIFIERDECLARATION
+%token <qualifierName>           XTOK_IP_QUALIFIERNAME
 
 %token <xtokPropertyList>        XTOK_IP_PROPERTYLIST
 %type  <boolValue>               boolValue
@@ -403,6 +436,15 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <xtokQualifier>           XTOK_QUALIFIER
 %type  <xtokQualifier>           qualifier
 %token <intValue>                ZTOK_QUALIFIER
+
+%token <xtokQualifierDeclaration> XTOK_QUALIFIERDECLARATION
+%type  <xtokQualifierDeclaration> qualifierDeclaration
+%type  <xtokQualifierDeclarationData> qualifierDeclarationData
+%token <intValue>                ZTOK_QUALIFIERDECLARATION
+
+%token <xtokScope>               XTOK_SCOPE
+%type  <xtokScope>               scope
+%token <intValue>                ZTOK_SCOPE
 
 %token <xtokProperty>            XTOK_PROPERTY
 %token <intValue>                ZTOK_PROPERTY
@@ -543,6 +585,19 @@ iMethodCall
     | XTOK_CREATECLASS createClass ZTOK_IMETHODCALL
     {
     }
+    | XTOK_ENUMQUALIFIERS enumQualifiers ZTOK_IMETHODCALL
+    {
+    }
+    | XTOK_SETQUALIFIER setQualifier ZTOK_IMETHODCALL
+    {
+    }
+    | XTOK_GETQUALIFIER getQualifier ZTOK_IMETHODCALL
+    {
+    } 
+    | XTOK_DELETEQUALIFIER deleteQualifier ZTOK_IMETHODCALL
+    {
+    }       
+    
 ;
 
 /*
@@ -627,6 +682,89 @@ paramValue
        $1.type=CMPI_ARRAY | CMPI_ref;
        addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
+;
+
+/*
+ *    getQualifier
+*/
+getQualifier
+    : localNameSpacePath getQualifierParm
+    {
+       $$.op.count = 2;
+       $$.op.type = OPS_GetQualifier;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment(NULL);
+       $$.name = $2.name;
+       setRequest(parm,&$$,sizeof(XtokGetQualifier),OPS_GetQualifier);
+    }
+;
+
+getQualifierParm
+    : XTOK_IP_QUALIFIERNAME value ZTOK_IPARAMVALUE
+    {
+       $$.name = $2.value;
+    }
+;
+
+/*
+ *    deleteQualifier
+*/
+deleteQualifier
+    : localNameSpacePath deleteQualifierParm
+    {
+       $$.op.count = 2;
+       $$.op.type = OPS_DeleteQualifier;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment(NULL);
+       $$.name = $2.name;
+       setRequest(parm,&$$,sizeof(XtokDeleteQualifier),OPS_DeleteQualifier);
+    }
+;
+
+deleteQualifierParm
+    : XTOK_IP_QUALIFIERNAME value ZTOK_IPARAMVALUE
+    {
+       $$.name = $2.value;
+    }
+;
+
+/*
+ *    enumQualifiers
+*/
+enumQualifiers
+    : localNameSpacePath
+    {
+       $$.op.count = 2;
+       $$.op.type = OPS_EnumerateQualifiers;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment(NULL);
+       setRequest(parm,&$$,sizeof(XtokEnumQualifiers),OPS_EnumerateQualifiers);
+    }
+;
+/*
+ *    setQualifier
+*/
+
+
+setQualifier
+    : localNameSpacePath setQualifierParm
+    {
+       $$.op.count = 3;
+       $$.op.type = OPS_SetQualifier;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment(NULL);       
+       $$.qualifierdeclaration = $2.qualifierdeclaration;
+
+       setRequest(parm,&$$,sizeof(XtokSetQualifier),OPS_SetQualifier);
+    }
+;
+
+
+setQualifierParm
+    : XTOK_IP_QUALIFIERDECLARATION qualifierDeclaration ZTOK_IPARAMVALUE
+    {
+       $$.qualifierdeclaration = $2;
+    }
 ;
 
 /*
@@ -1905,6 +2043,45 @@ instanceData
     }
 ;
 
+/*
+ *    qualifierDeclaration
+*/
+
+qualifierDeclaration
+    : /* empty */ {;}
+    | XTOK_QUALIFIERDECLARATION scope qualifierDeclarationData ZTOK_QUALIFIERDECLARATION
+    {
+    	$$.scope = $2;
+    	$$.data = $3;
+    }     
+;
+
+qualifierDeclarationData
+    : /* empty */
+    {
+    	$$.value = NULL;
+    }
+    | value
+    {
+    	$$.value = $1.value;
+    	$$.type = 0;
+    }
+    | propertyList
+    {
+    	$$.valueArray=$1.list;
+    	$$.type=CMPI_ARRAY;
+    }    
+;   
+/*
+ *   scope
+*/
+
+scope
+    : /* empty */ {;}
+    | XTOK_SCOPE ZTOK_SCOPE
+	{
+	}
+;
 
 /*
  *    property

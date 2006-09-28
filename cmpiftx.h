@@ -12,6 +12,7 @@
  * http://www.opensource.org/licenses/eclipse-1.0.php
  *
  * Author:        Adrian Schuur <schuur@de.ibm.com>
+ * Contributions  Sven Schuetz <sven@de.ibm.com>
  *
  * Description:
  *
@@ -23,6 +24,7 @@
 #define _CMPIFTX_H_
 
 #include "constClass.h"
+#include "qualifier.h"
 #include "cmpidt.h"
 
 #ifdef __cplusplus
@@ -158,6 +160,110 @@ extern "C" {
   };
 
 
+   //---------------------------------------------------
+   //--
+   //	_CMPIQualifierMI Qualifier Provider object
+   //--
+   //---------------------------------------------------
+
+
+   /** This structure represents a Qualifier provider.
+   */
+   typedef struct _CMPIQualifierDeclMIFT CMPIQualifierDeclMIFT;
+   typedef struct _CMPIQualifierDeclMI {
+
+       /** Opaque pointer to Provider specific implementation data.
+       */
+      void *hdl;
+
+       /** Pointer to the Qualifier Provider Function Table.
+       */
+      CMPIQualifierDeclMIFT *ft;
+   } CMPIQualifierDeclMI;
+
+
+
+   //---------------------------------------------------
+   //--
+   //	_CMPIQualifierMIFT Function Table
+   //--
+   //---------------------------------------------------
+
+
+   /** This structure is a table of pointers providing access to Qualifier
+       provider functions. This table must be returend during initialization
+       by the provider.
+   */
+   struct _CMPIQualifierDeclMIFT {
+
+       /** Function table version
+       */
+     int ftVersion;
+
+       /** Provider version
+       */
+     int miVersion;
+
+       /** Provider name
+       */
+     char *miName;
+
+       /** Cleanup is called prior to unloading of the provider.
+	 @param mi Provider this pointer.
+	 @param ctx Invocation Context
+	 @return Function return status.
+      */
+     CMPIStatus (*cleanup)
+            (CMPIQualifierDeclMI* mi, CMPIContext* ctx);
+
+       /** Enumerate Qualifiers serviced by this provider.
+	 @param mi Provider this pointer.
+	 @param ctx Invocation Context.
+	 @param rslt Result data container.
+	 @param op ObjectPath containing namespace.
+	 @return Function return status.
+      */
+     CMPIStatus (*enumQualifiers)
+             (CMPIQualifierDeclMI* mi, CMPIContext* ctx, CMPIResult* rslt,
+              CMPIObjectPath* op);
+
+       /** Get a Qualifier defined in the specified namespace.
+	 @param mi Provider this pointer.
+	 @param ctx Invocation Context.
+	 @param rslt Result data container.
+	 @param op ObjectPath containing namespace.
+	 @param name Name of the qualifier to be returned
+	 @return Function return status.
+      */
+     CMPIStatus (*getQualifier)
+             (CMPIQualifierDeclMI* mi, CMPIContext* ctx, CMPIResult* rslt,
+              CMPIObjectPath* op);
+
+       /** Create or modify Qualifier
+	 @param mi Provider this pointer.
+	 @param ctx Invocation Context.
+	 @param rslt Result data container.
+	 @param op ObjectPath containing namespace.
+	 @param qualifier the qualifier
+	 @return Function return status.
+      */
+     CMPIStatus (*setQualifier)
+             (CMPIQualifierDeclMI* mi, CMPIContext* ctx, CMPIResult* rslt,
+              CMPIObjectPath* op, CMPIQualifierDecl* qualifier);
+
+
+       /** Delete an existing Qualifier
+	 @param mi Provider this pointer.
+	 @param ctx Invocation Context.
+	 @param rslt Result data container.
+	 @param op ObjectPath containing namespace.
+	 @param name Name of the qualifier to be deleted.
+	 @return Function return status.
+      */
+     CMPIStatus (*deleteQualifier)
+             (CMPIQualifierDeclMI* mi, CMPIContext* ctx, CMPIResult* rslt,
+              CMPIObjectPath* op);
+  };
 
 #ifdef __cplusplus
  };

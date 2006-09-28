@@ -74,6 +74,7 @@ lib_LTLIBRARIES = \
    libsfcCertificateAuthentication.la \
    libsfcObjectImplSwapI32toP32.la \
    libcimcClientSfcbLocal.la \
+   libsfcQualifierProvider.la \
    $(SLP_LIBS) \
    $(INDICATION_LIBS)
 
@@ -128,6 +129,7 @@ libsfcBrokerCore_la_SOURCES = \
     providerRegister.c \
     objectImpl.c \
     constClass.c \
+    qualifier.c \
     genericlist.c \
     msgqueue.c \
     providerMgr.c \
@@ -170,6 +172,7 @@ libsfcBrokerCore_la_SOURCES = \
     providerRegister.c \
     objectImpl.c \
     constClass.c \
+    qualifier.c \
     genericlist.c \
     msgqueue.c \
     providerMgr.c \
@@ -253,6 +256,11 @@ libsfcClassProvider_la_SOURCES = \
    classProvider.c
 libsfcClassProvider_la_LIBADD=-lsfcBrokerCore
 
+libsfcQualifierProvider_la_SOURCES = \
+   qualifierProvider.c \
+   fileRepository.c
+libsfcQualifierProvider_la_LIBADD=-lsfcBrokerCore
+
 libsfcCimXmlCodec_la_SOURCES = \
    cimXmlOps.y \
    cimXmlParserProcessed.c \
@@ -288,7 +296,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	fileRepository.h internalProvider.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h \
-        cimcClientSfcbLocal.h
+        cimcClientSfcbLocal.h qualifier.h cmpidtx.h
 
 
 man_MANS=$(MANFILES)

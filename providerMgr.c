@@ -30,6 +30,7 @@
 #include "utilft.h"
 #include "msgqueue.h"
 #include "constClass.h"
+#include "qualifier.h"
 #include "cimXmlParser.h"
 #include "support.h"
 #include "native.h"
@@ -52,6 +53,7 @@
 
 extern CMPIBroker *Broker;
 
+extern ProviderInfo *qualiProvInfoPtr;
 extern ProviderInfo *classProvInfoPtr;
 extern ProviderInfo *defaultProvInfoPtr;
 extern ProviderInfo *interOpProvInfoPtr;
@@ -623,6 +625,22 @@ static void classProvider(int *requestor, OperationHdr * req)
    _SFCB_EXIT();
 }
 
+static void qualiProvider(int *requestor, OperationHdr * req)
+{
+   char *msg;
+   
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "qualiProvider");
+   forkProvider(qualiProvInfoPtr, req, &msg);
+   _SFCB_TRACE(1,("--- result %d-%lu to with %d-%lu",   
+      *requestor,getInode(*requestor),
+      qualiProvInfoPtr->providerSockets.send,
+      getInode(qualiProvInfoPtr->providerSockets.send)));      
+   spSendCtlResult(requestor, &qualiProvInfoPtr->providerSockets.send, MSG_X_PROVIDER,
+      0, getProvIds(qualiProvInfoPtr).ids, req->options);
+      
+   _SFCB_EXIT();
+}
+
 static void methProvider(int *requestor, OperationHdr * req)
 {
    char *msg=NULL;
@@ -713,10 +731,10 @@ static MgrHandler mHandlers[] = {
    {assocProviderList},         //OPS_ReferenceNames 17
    {notSupported},              //OPS_GetProperty 18
    {notSupported},              //OPS_SetProperty 19
-   {notSupported},              //OPS_GetQualifier 20
-   {notSupported},              //OPS_SetQualifier 21
-   {notSupported},              //OPS_DeleteQualifier 22
-   {notSupported},              //OPS_EnumerateQualifiers 23
+   {qualiProvider},             //OPS_GetQualifier 20
+   {qualiProvider},             //OPS_SetQualifier 21
+   {qualiProvider},             //OPS_DeleteQualifier 22
+   {qualiProvider},             //OPS_EnumerateQualifiers 23
    {methProvider},              //OPS_InvokeMethod 24
    {NULL},
    {NULL},
@@ -937,6 +955,12 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
          ((BinRequestHdr *) buf)->object[i].data = (void *) l;
          l += ol;
          break;
+      case MSG_SEG_QUALIFIER:
+         getSerializedQualifier((CMPIQualifierDecl *) hdr->object[i].data,
+                                 buf + l);
+         ((BinRequestHdr *) buf)->object[i].data = (void *) l;
+         l += ol;
+         break;         
       default:
          mlogf(M_ERROR,M_SHOW,"--- bad intInvokeProvider request %d-%d\n", i,hdr->object[i].type);
          abort();

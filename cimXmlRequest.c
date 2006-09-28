@@ -23,12 +23,14 @@
 
 
 #include "cmpidt.h"
+#include "cmpidtx.h"
 #include "cimXmlGen.h"
 #include "cimXmlRequest.h"
 #include "cimXmlParser.h"
 #include "msgqueue.h"
 #include "cmpidt.h"
 #include "constClass.h"
+#include "qualifier.h"
 #include "objectImpl.h"
 
 #include "native.h"
@@ -71,6 +73,7 @@ extern void closeProviderContext(BinRequestContext * ctx);
 extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
              CMPICount index, CMPIValue * val, CMPIType type);
 extern CMPIConstClass initConstClass(ClClass *cl);
+extern CMPIQualifierDecl initQualifier(ClQualifierDeclaration *qual);
 
 static char *cimMsg[] = {
    "ok",
@@ -434,6 +437,35 @@ static RespSegments genResponses(BinRequestContext * binCtx,
    if (binCtx->pDone<binCtx->pCount) rs.segments[6].txt=NULL;
    _SFCB_RETURN(rs);
 //   _SFCB_RETURN(iMethodResponse(binCtx->rHdr, sb));
+}
+
+static RespSegments genQualifierResponses(BinRequestContext * binCtx,
+                                 BinResponseHdr * resp)
+{
+   RespSegments rs;
+   UtilStringBuffer *sb;
+   CMPIArray *ar;
+   int j;
+   CMPIEnumeration *enm;
+   void *object;
+   CMPIStatus rc;
+   
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "genQualifierResponses");
+
+   ar = NewCMPIArray(resp->count, binCtx->type, NULL);
+
+		for (j = 0; j < resp->count; j++) {
+			object = relocateSerializedQualifier(resp->object[j].data);			
+			rc=arraySetElementNotTrackedAt(ar, j, (CMPIValue*)&object, binCtx->type);
+		}
+
+   enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
+   sb = UtilFactory->newStrinBuffer(1024);
+   
+   qualiEnum2xml(enm, sb);
+   free(ar);
+   rs=iMethodResponse(binCtx->rHdr, sb);
+   _SFCB_RETURN(rs);
 }
 
 RespSegments genFirstChunkResponses(BinRequestContext * binCtx,
@@ -1776,6 +1808,239 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,1));
 }
 
+static RespSegments enumQualifiers(CimXmlRequestContext * ctx, RequestHdr * hdr)
+{
+	CMPIObjectPath *path;
+	EnumClassNamesReq sreq = BINREQ(OPS_EnumerateQualifiers, 2);
+	int irc;
+	BinResponseHdr *resp;
+	BinRequestContext binCtx;
+
+	_SFCB_ENTER(TRACE_CIMXMLPROC, "enumQualifiers");
+
+	memset(&binCtx,0,sizeof(BinRequestContext));
+	XtokEnumQualifiers *req = (XtokEnumQualifiers *) hdr->cimRequest;
+
+	path = NewCMPIObjectPath(req->op.nameSpace.data, NULL, NULL);
+	sreq.objectPath = setObjectPathMsgSegment(path);
+	sreq.principal = setCharsMsgSegment(ctx->principal);
+	sreq.hdr.sessionId=ctx->sessionId;
+
+	binCtx.oHdr = (OperationHdr *) req;
+	binCtx.bHdr = &sreq.hdr;
+	binCtx.rHdr = hdr;
+	binCtx.bHdrSize = sizeof(sreq);
+	binCtx.commHndl = ctx->commHndl;
+	binCtx.type=CMPI_qualifierDecl;
+	binCtx.xmlAs=binCtx.noResp=0;
+	binCtx.chunkedMode=0;
+	binCtx.pAs=NULL;
+
+	_SFCB_TRACE(1, ("--- Getting Provider context"));
+	irc = getProviderContext(&binCtx, (OperationHdr *) req);
+
+	_SFCB_TRACE(1, ("--- Provider context gotten"));
+	if (irc == MSG_X_PROVIDER) {
+		_SFCB_TRACE(1, ("--- Calling Providers"));
+		resp = invokeProvider(&binCtx);
+		_SFCB_TRACE(1, ("--- Back from Provider"));
+		closeProviderContext(&binCtx);
+		resp->rc--;
+		if (resp->rc == CMPI_RC_OK) {
+			_SFCB_RETURN(genQualifierResponses(&binCtx, resp));
+		}
+	_SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc,
+		(char*)resp->object[0].data)));
+	}
+	closeProviderContext(&binCtx);
+	_SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
+}
+
+static RespSegments getQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "getQualifier");
+   CMPIObjectPath *path;
+   CMPIQualifierDecl *qual;
+   CMPIStatus rc;
+   UtilStringBuffer *sb;
+   int irc;
+   BinRequestContext binCtx;
+   BinResponseHdr *resp;
+   RespSegments rsegs;
+   GetQualifierReq sreq = BINREQ(OPS_GetQualifier, 2);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   XtokGetQualifier *req = (XtokGetQualifier *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
+
+   path = NewCMPIObjectPath(req->op.nameSpace.data, req->name, &rc); //abuse classname for qualifier name
+
+   sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.path = setObjectPathMsgSegment(path);
+   sreq.hdr.sessionId=ctx->sessionId;
+
+   binCtx.oHdr = (OperationHdr *) req;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.rHdr = hdr;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) req);
+
+   _SFCB_TRACE(1, ("--- Provider context gotten"));
+   if (irc == MSG_X_PROVIDER) {
+      resp = invokeProvider(&binCtx);
+      closeProviderContext(&binCtx);
+      resp->rc--;
+      if (resp->rc == CMPI_RC_OK) {
+         qual = relocateSerializedQualifier(resp->object[0].data);
+         sb = UtilFactory->newStrinBuffer(1024);
+         qualifierDeclaration2xml(qual, sb);
+         rsegs=iMethodResponse(hdr, sb);
+         _SFCB_RETURN(rsegs);
+      }
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc, 
+        (char*)resp->object[0].data)));
+   }
+   closeProviderContext(&binCtx);
+
+   _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
+}
+
+static RespSegments deleteQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "deleteQualifier");
+   CMPIObjectPath *path;
+   CMPIStatus rc;
+   int irc;
+   BinRequestContext binCtx;
+   BinResponseHdr *resp;
+   DeleteQualifierReq sreq = BINREQ(OPS_DeleteQualifier, 2);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   XtokDeleteQualifier *req = (XtokDeleteQualifier *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
+
+   path = NewCMPIObjectPath(req->op.nameSpace.data, req->name, &rc); //abuse classname for qualifier name
+
+   sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.path = setObjectPathMsgSegment(path);
+   sreq.hdr.sessionId=ctx->sessionId;
+
+   binCtx.oHdr = (OperationHdr *) req;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.rHdr = hdr;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) req);
+
+   _SFCB_TRACE(1, ("--- Provider context gotten"));
+   if (irc == MSG_X_PROVIDER) {
+      resp = invokeProvider(&binCtx);
+      closeProviderContext(&binCtx);
+      resp->rc--;
+      if (resp->rc == CMPI_RC_OK) {
+		_SFCB_RETURN(iMethodResponse(hdr, NULL));
+      }
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc, 
+        (char*)resp->object[0].data)));
+   }
+   closeProviderContext(&binCtx);
+
+   _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
+}
+
+static RespSegments setQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "setQualifier");
+   CMPIObjectPath *path;
+   CMPIQualifierDecl qual;
+   CMPIData d;
+   ClQualifierDeclaration *q;
+   int irc;
+   BinRequestContext binCtx;
+   BinResponseHdr *resp;
+   SetQualifierReq sreq = BINREQ(OPS_SetQualifier, 3);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   XtokSetQualifier *req = (XtokSetQualifier *) hdr->cimRequest;
+   
+   path = NewCMPIObjectPath(req->op.nameSpace.data, NULL, NULL);   
+   q = ClQualifierDeclarationNew(req->op.nameSpace.data, req->qualifierdeclaration.name);
+   
+	if (req->qualifierdeclaration.overridable) q->flavor |= ClQual_F_Overridable;
+	if (req->qualifierdeclaration.tosubclass) q->flavor |= ClQual_F_ToSubclass;
+	if (req->qualifierdeclaration.toinstance) q->flavor |= ClQual_F_ToInstance;
+	if (req->qualifierdeclaration.translatable) q->flavor |= ClQual_F_Translatable;
+	if (req->qualifierdeclaration.isarray) q->type |= CMPI_ARRAY;
+   
+	if (req->qualifierdeclaration.type) q->type |= req->qualifierdeclaration.type;
+   
+	if(req->qualifierdeclaration.scope.class) q->scope |= ClQual_S_Class;
+	if(req->qualifierdeclaration.scope.association) q->scope |= ClQual_S_Association;
+	if(req->qualifierdeclaration.scope.reference) q->scope |= ClQual_S_Reference;
+	if(req->qualifierdeclaration.scope.property) q->scope |= ClQual_S_Property;
+	if(req->qualifierdeclaration.scope.method) q->scope |= ClQual_S_Method;
+	if(req->qualifierdeclaration.scope.parameter) q->scope |= ClQual_S_Parameter;
+	if(req->qualifierdeclaration.scope.indication) q->scope |= ClQual_S_Indication;
+    q->arraySize = req->qualifierdeclaration.arraySize;
+
+	if (req->qualifierdeclaration.data.value) {//default value is set
+		d.state=CMPI_goodValue;
+		d.type=q->type; //"specified" type
+		d.type|=req->qualifierdeclaration.data.type; //actual type
+		
+		//default value declared - isarray attribute must match, if set
+		if(req->qualifierdeclaration.isarrayIsSet)
+			if(!req->qualifierdeclaration.isarray ^ !(req->qualifierdeclaration.data.type & CMPI_ARRAY))
+				_SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERROR, 
+           		"ISARRAY attribute and default value conflict")));   			
+		
+		d.value=union2CMPIValue(d.type, req->qualifierdeclaration.data.value, &req->qualifierdeclaration.data.valueArray);
+		ClQualifierAddQualifier(&q->hdr, &q->qualifierData, req->qualifierdeclaration.name, d);		
+     } else { //no default value - rely on ISARRAY attr, check if it's set
+     	/*if(!req->qualifierdeclaration.isarrayIsSet)
+			_SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERROR, 
+           "ISARRAY attribute MUST be present if the Qualifier declares no default value")));*/
+     }
+     
+   qual = initQualifier(q);
+               
+   sreq.qualifier = setQualifierMsgSegment(&qual);
+   sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.hdr.sessionId=ctx->sessionId;
+   sreq.path = setObjectPathMsgSegment(path);
+
+   binCtx.oHdr = (OperationHdr *) req;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.rHdr = hdr;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) req);
+
+   _SFCB_TRACE(1, ("--- Provider context gotten"));
+   
+   if (irc == MSG_X_PROVIDER) {
+      resp = invokeProvider(&binCtx);
+      closeProviderContext(&binCtx);
+      resp->rc--;
+      if (resp->rc == CMPI_RC_OK) {
+         _SFCB_RETURN(iMethodResponse(hdr, NULL));
+      }   
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(resp->rc, 
+         (char*)resp->object[0].data)));
+   }
+   closeProviderContext(&binCtx); 
+   _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
+}
 
 static RespSegments notSupported(CimXmlRequestContext * ctx, RequestHdr * hdr)
 {
@@ -1805,10 +2070,10 @@ static Handler handlers[] = {
    {referenceNames},            //OPS_ReferenceNames 17
    {notSupported},              //OPS_GetProperty 18
    {notSupported},              //OPS_SetProperty 19
-   {notSupported},              //OPS_GetQualifier 20
-   {notSupported},              //OPS_SetQualifier 21
-   {notSupported},              //OPS_DeleteQualifier 22
-   {notSupported},              //OPS_EnumerateQualifiers 23
+   {getQualifier},              //OPS_GetQualifier 20
+   {setQualifier},              //OPS_SetQualifier 21
+   {deleteQualifier},           //OPS_DeleteQualifier 22
+   {enumQualifiers},            //OPS_EnumerateQualifiers 23
    {invokeMethod},              //OPS_InvokeMethod 24
 };
 

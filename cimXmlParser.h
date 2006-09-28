@@ -175,8 +175,26 @@ typedef struct xtokValueRefArray {
    XtokValueReference *values;
 } XtokValueRefArray;
 
+typedef struct xtokScope {
+	char class, association, reference, property, method, parameter, indication;
+} XtokScope;
 
+typedef struct xtokQualifierDeclarationData {
+   CMPIType type;   
+   union {
+     char *value;
+     XtokValueArray valueArray;
+   };   
+} XtokQualifierDeclarationData;
 
+typedef struct xtokQualifierDeclaration {
+   char *name;
+   CMPIType type;
+   unsigned int arraySize;   
+   XtokQualifierDeclarationData data;
+   XtokScope scope;
+   char isarray, isarrayIsSet,overridable, tosubclass, toinstance, translatable;   
+} XtokQualifierDeclaration;
 
 typedef struct xtokQualifier {
    struct xtokQualifier *next;
@@ -681,6 +699,52 @@ typedef struct xtokReferences {
    char **propertyList;
 } XtokReferences;
 
+/*
+ *    enumQualifiers
+*/
+
+typedef struct xtokEnumQualifiers {
+   OperationHdr op;
+} XtokEnumQualifiers;
+
+/*
+ *    getQualifier
+*/
+
+typedef struct xtokGetQualifier {
+   OperationHdr op;
+   char * name;
+} XtokGetQualifier;
+
+typedef struct xtokGetQualifierParm {
+   char* name;
+} XtokGetQualifierParm;
+
+/*
+ *    deleteQualifier
+*/
+
+typedef struct xtokDeleteQualifier {
+   OperationHdr op;
+   char * name;
+} XtokDeleteQualifier;
+
+typedef struct xtokDeleteQualifierParm {
+   char* name;
+} XtokDeleteQualifierParm;
+
+/*
+ *    setQualifier
+*/
+
+typedef struct xtokSetQualifier {
+   OperationHdr op;
+   XtokQualifierDeclaration qualifierdeclaration;
+} XtokSetQualifier;
+
+typedef struct xtokSetQualifierParm {
+   XtokQualifierDeclaration qualifierdeclaration;
+} XtokSetQualifierParm;
 
 /*
  *    Parser control

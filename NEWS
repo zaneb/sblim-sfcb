@@ -3,6 +3,7 @@ Changes in 1.2.0
 
 New features:
 - 1296278 Added slp support, integrated slp stuff into build system
+- 1566963 Added qualifier support
 - moved some util functions to sfcUtil, build as shared library
 
 Bugs fixed:

@@ -267,6 +267,28 @@ CMPIClassMI *loadClassMI(const char *provider,
    _SFCB_RETURN((CMPIClassMI*)(void*)-1);
 };
 
+typedef CMPIQualifierDeclMI *(*FIXED_QualifierDeclMI) (CMPIBroker * broker,
+                                                 CMPIContext * ctx);
+
+CMPIQualifierDeclMI *loadQualifierDeclMI(const char *provider,
+                                         void *library,
+                                         CMPIBroker * broker, CMPIContext * ctx)
+{
+   CMPIQualifierDeclMI *mi; 
+
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "loadQualifierDeclMI");
+   FIXED_QualifierDeclMI f =
+          (FIXED_QualifierDeclMI) getFixedEntryPoint(provider, library,
+                                                       "QualifierDecl");
+   if (f == NULL) _SFCB_RETURN(NULL);
+   
+   if (broker)  {
+      mi=(f)(broker,ctx);
+      _SFCB_RETURN(mi);
+   }
+   _SFCB_RETURN((CMPIQualifierDeclMI*)(void*)-1);
+};
+
 /****************************************************************************/
 
 

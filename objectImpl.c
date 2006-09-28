@@ -2116,6 +2116,125 @@ int ClArgsAddArg(ClArgs * arg, const char *id, CMPIData d)
    _SFCB_RETURN(addObjectPropertyH(&arg->hdr, prps, id, d));
 }
 
+
+//-------------------------------------------------------
+//-----
+//--  Qualifier support
+//-----
+//-------------------------------------------------------
+
+static ClQualifierDeclaration *newQualifierDeclarationH(ClObjectHdr * hdr, const char *ns, const char *name)
+{
+   ClQualifierDeclaration *q = (ClQualifierDeclaration *) malloc(sizeof(ClQualifierDeclaration));
+   if (hdr == NULL) hdr = &q->hdr;
+   
+   memset(q, 0, sizeof(ClQualifierDeclaration));
+   hdr->type = HDR_Qualifier;
+   if (name) q->qualifierName.id = addClString(hdr, name);
+   else q->qualifierName = nls;
+   
+   if (ns) q->nameSpace.id = addClString(&q->hdr, ns);
+   else q->nameSpace = nls;   
+      
+   q->flavor=0;
+   q->scope=0;
+   q->type=0;
+   q->arraySize=0;
+
+   clearClSection(&q->qualifierData);
+   
+   return q;
+}
+
+ClQualifierDeclaration *ClQualifierDeclarationNew(const char *ns, const char *name)
+{
+   return newQualifierDeclarationH(NULL, ns, name);
+}
+
+static long sizeQualifierDeclarationH(ClObjectHdr * hdr, ClQualifierDeclaration * q)
+{
+   long sz = sizeof(*q);
+   
+   sz += sizeQualifiers(hdr, &q->qualifierData);
+   sz += sizeStringBuf(hdr);
+   sz += sizeArrayBuf(hdr);
+
+   return ALIGN(sz,CLALIGN);
+}
+
+unsigned long ClSizeQualifierDeclaration(ClQualifierDeclaration * q)
+{
+   return sizeQualifierDeclarationH(&q->hdr, q);
+}
+
+static ClQualifierDeclaration *rebuildQualifierH(ClObjectHdr * hdr, ClQualifierDeclaration * q, void *area)
+{
+   int ofs = sizeof(ClQualifierDeclaration);
+   int sz = ClSizeQualifierDeclaration(q);
+   
+   sz=ALIGN(sz,CLALIGN) + CLEXTRA;
+   ClQualifierDeclaration *nq = area ? (ClQualifierDeclaration *) area : (ClQualifierDeclaration *) malloc(sz);
+
+   *nq = *q;
+   
+   nq->hdr.flags &= ~HDR_Rebuild;
+   ofs += copyQualifiers(ofs, sz, (char *) nq, &nq->qualifierData, hdr, &q->qualifierData);                         
+   ofs += copyStringBuf(ofs, sz, &nq->hdr, hdr);
+   ofs += copyArrayBuf(ofs, sz, &nq->hdr, hdr);
+   
+   nq->hdr.size = ALIGN(sz,CLALIGN);
+   
+   if (CLEXTRA) memcpy(((char*)nq)+sz-4,"%%%%",4);
+
+   return nq;
+}
+
+ClQualifierDeclaration *ClQualifierRebuildQualifier(ClQualifierDeclaration * q, void *area)
+{
+   return rebuildQualifierH(&q->hdr, q, area);
+}
+
+void ClQualifierRelocateQualifier(ClQualifierDeclaration * q)
+{
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "ClQualifierRelocateQualifier");
+   ClObjectRelocateStringBuffer(&q->hdr, q->hdr.strBuffer);
+   ClObjectRelocateArrayBuffer(&q->hdr,  q->hdr.arrayBuffer);
+   _SFCB_EXIT();
+}
+
+int ClQualifierAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
+                        const char *id, CMPIData d)
+{
+   ClQualifier q;
+
+   q = makeClQualifier(hdr, id, d);
+   return addClQualifier(hdr, qlfs, &q);
+}
+
+static int ClGetQualifierFromQualifierDeclaration(ClQualifierDeclaration * q, ClQualifier *qData, CMPIData * data)
+{
+   if (data) *data = qData->data;
+   if (data->type == CMPI_chars) {
+      const char *str =
+          ClObjectGetClString(&q->hdr, (ClString *) & data->value.chars);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL);
+      data->type = CMPI_string;
+   }
+   else if (data->type & CMPI_ARRAY) {
+      data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&q->hdr,
+            (ClArray *) & data->value.array);
+   }
+   return 0;
+}
+
+
+int ClQualifierDeclarationGetQualifierData(ClQualifierDeclaration * q, CMPIData * data)
+{
+   ClQualifier *qData;
+   qData = (ClQualifier *) ClObjectGetClSection(&q->hdr, &q->qualifierData);
+   return ClGetQualifierFromQualifierDeclaration(q,qData,data);   
+}
+
 void dumpClass(char *msg, CMPIConstClass *cls)
 {
    ClClass *cl=(ClClass*)cls->hdl;
@@ -2126,6 +2245,7 @@ void dumpClass(char *msg, CMPIConstClass *cls)
    dump("arrayBuf",buf+cl->hdr.arrayBufOffset,sizeof(ClArrayBuf));
    dump(msg, buf, cl->hdr.size);
 }
+
 
 /*
 char *ClArgToString(ClArg * cls)

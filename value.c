@@ -27,6 +27,8 @@
 
 #include "native.h"
 #include "constClass.h"
+#include "qualifier.h"
+#include "cmpidtx.h"
 
 void sfcb_native_release_CMPIValue(CMPIType type, CMPIValue * val)
 {
@@ -39,6 +41,10 @@ void sfcb_native_release_CMPIValue(CMPIType type, CMPIValue * val)
    case CMPI_class:
       CMRelease(val->inst);
       break;
+      
+   case CMPI_qualifierDecl:
+      CMRelease((CMPIQualifierDecl*)val->dataPtr.ptr);
+      break;      
 
    case CMPI_ref:
       CMRelease(val->ref);
@@ -94,6 +100,10 @@ CMPIValue sfcb_native_clone_CMPIValue(const CMPIType type,
          cl=(CMPIConstClass*)val->inst;
          v.inst = (CMPIInstance*)CMClone(cl, rc);
          break;
+         
+      case CMPI_qualifierDecl:
+      	v.dataPtr.ptr = CMClone((CMPIQualifierDecl*)val->dataPtr.ptr, rc);
+      	break;
 
       case CMPI_ref:
          v.ref = CMClone(val->ref, rc);

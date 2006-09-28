@@ -483,13 +483,13 @@ static int procImethodCall(YYSTYPE * lvalp, ParserControl * parm)
          if (strcasecmp(attr[0].attr, "setProperty") == 0)
             return unsupported(parm);
          if (strcasecmp(attr[0].attr, "getQualifier") == 0)
-            return unsupported(parm);
+            return XTOK_GETQUALIFIER;
          if (strcasecmp(attr[0].attr, "setQualifier") == 0)
-            return unsupported(parm);
+            return XTOK_SETQUALIFIER;
          if (strcasecmp(attr[0].attr, "deleteQualifier") == 0)
-            return unsupported(parm);
-         if (strcasecmp(attr[0].attr, "enumerateQualifier") == 0)
-            return unsupported(parm);
+            return XTOK_DELETEQUALIFIER;
+         if (strcasecmp(attr[0].attr, "enumerateQualifiers") == 0)
+            return XTOK_ENUMQUALIFIERS;
       }
    }
    return 0;
@@ -617,6 +617,8 @@ static IParm iParms[] = {
    {"querylanguage", XTOK_IP_QUERYLANG},
    {"query", XTOK_IP_QUERY},
    {"newclass", XTOK_IP_CLASS},
+   {"qualifierdeclaration", XTOK_IP_QUALIFIERDECLARATION},
+   {"qualifiername", XTOK_IP_QUALIFIERNAME}
 };
 
 static int procIParamValue(YYSTYPE * lvalp, ParserControl * parm)
@@ -884,6 +886,61 @@ static int procXml(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
+static int procQualifierDeclaration(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+		{"NAME"},
+		{"TYPE"},
+		{"ISARRAY"},
+		{"ARRAYSIZE"},
+		{"OVERRIDABLE"},
+		{"TOSUBCLASS"},
+		{"TOINSTANCE"},
+		{"TRANSLATABLE"},
+		{NULL}
+   };
+   XmlAttr attr[8];
+   int i, m;
+   
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "QUALIFIER.DECLARATION")) {
+      if (attrsOk(parm->xmb, elm, attr, "QUALIFIER.DECLARATION", ZTOK_QUALIFIERDECLARATION)) {
+         memset(&lvalp->xtokQualifierDeclaration, 0, sizeof(XtokQualifierDeclaration));
+         lvalp->xtokQualifierDeclaration.name = attr[0].attr;
+         lvalp->xtokQualifierDeclaration.type = (CMPIType) - 1;
+         if (attr[1].attr)
+            for (i = 0, m = num_types; i < m; i++) {
+               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
+                  lvalp->xtokQualifierDeclaration.type = types[i].type;
+                  break;
+               }
+            }
+         if (attr[2].attr) {
+            lvalp->xtokQualifierDeclaration.isarray = !strcasecmp(attr[2].attr, "true");
+			lvalp->xtokQualifierDeclaration.isarrayIsSet = 1;            
+         }
+         else
+         	lvalp->xtokQualifierDeclaration.isarrayIsSet = 0; //needed, because attr is mandatory
+         if (attr[3].attr)
+         	lvalp->xtokQualifierDeclaration.arraySize = atoi(attr[3].attr);
+         if (attr[4].attr)
+            lvalp->xtokQualifierDeclaration.overridable = !strcasecmp(attr[4].attr, "true");
+         else
+         	lvalp->xtokQualifierDeclaration.overridable = 1; //default true
+         if (attr[5].attr)
+            lvalp->xtokQualifierDeclaration.tosubclass = !strcasecmp(attr[5].attr, "true");
+         else
+         	lvalp->xtokQualifierDeclaration.tosubclass = 1; //default true
+         if (attr[6].attr)
+            lvalp->xtokQualifierDeclaration.toinstance = !strcasecmp(attr[6].attr, "true");
+         if (attr[7].attr)
+            lvalp->xtokQualifierDeclaration.translatable = !strcasecmp(attr[7].attr, "true");
+         return XTOK_QUALIFIERDECLARATION;
+      }
+   }
+   return 0;
+}
+
 static int procQualifier(YYSTYPE * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"NAME"},
@@ -929,6 +986,45 @@ static int procQualifier(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
+static int procScope(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+   {"CLASS"},
+   {"ASSOCIATION"},
+   {"REFERENCE"},
+   {"PROPERTY"},
+   {"METHOD"},
+   {"PARAMETER"},
+   {"INDICATION"},   
+   {NULL}
+   };
+   XmlAttr attr[7];
+
+   memset(attr, 0, sizeof(attr));
+   if (tagEquals(parm->xmb, "SCOPE")) {
+      if (attrsOk(parm->xmb, elm, attr, "SCOPE", ZTOK_SCOPE)) {
+               	
+         memset(&lvalp->xtokScope, 0, sizeof(XtokScope));
+
+         if (attr[0].attr)
+            lvalp->xtokScope.class = !strcasecmp(attr[0].attr, "true");
+         if (attr[1].attr)
+            lvalp->xtokScope.association = !strcasecmp(attr[1].attr, "true");            
+         if (attr[2].attr)
+            lvalp->xtokScope.reference = !strcasecmp(attr[2].attr, "true");
+         if (attr[3].attr)
+            lvalp->xtokScope.property = !strcasecmp(attr[3].attr, "true");
+         if (attr[4].attr)
+            lvalp->xtokScope.method = !strcasecmp(attr[4].attr, "true");
+         if (attr[5].attr)
+            lvalp->xtokScope.parameter = !strcasecmp(attr[5].attr, "true");
+         if (attr[6].attr)
+            lvalp->xtokScope.indication = !strcasecmp(attr[6].attr, "true");            
+         return XTOK_SCOPE;
+      }
+   }
+   return 0;
+}
 
 static int procProperty(YYSTYPE * lvalp, ParserControl * parm)
 {
@@ -1189,7 +1285,9 @@ static Tags tags[] = {
    {"PROPERTY.REFERENCE", procPropertyReference, ZTOK_PROPERTYREFERENCE},
    {"PROPERTY.ARRAY", procPropertyArray, ZTOK_PROPERTYARRAY},
    {"PROPERTY", procProperty, ZTOK_PROPERTY},
+   {"QUALIFIER.DECLARATION", procQualifierDeclaration, ZTOK_QUALIFIERDECLARATION},   
    {"QUALIFIER", procQualifier, ZTOK_QUALIFIER},
+   {"SCOPE", procScope, ZTOK_SCOPE},   
    {"PARAMETER.ARRAY", procParamArray, ZTOK_PARAMARRAY},
    {"PARAMETER.REFERENCE", procParamRef, ZTOK_PARAMREF},
    {"PARAMETER.REFARRAY", procParamRefArray, ZTOK_PARAMREFARRAY},

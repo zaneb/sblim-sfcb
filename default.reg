@@ -16,6 +16,12 @@
    type: instance association method
    unload: never
 #
+[$QualifierProvider$]
+   provider: QualifierProvider
+   location: sfcQualifierProvider
+   type: qualifier
+   unload: never
+#
 [CIM_IndicationHandlerCIMXML]
    provider: IndCIMXMLHandler
    location: sfcIndCIMXMLHandler

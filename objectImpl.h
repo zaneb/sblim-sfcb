@@ -150,6 +150,7 @@ typedef struct {
     #define HDR_Instance 2
     #define HDR_ObjectPath 3
     #define HDR_Args 4
+    #define HDR_Qualifier 5    
     #define HDR_Version 0x1010
    #endif
    union {
@@ -228,6 +229,32 @@ typedef struct {
    PFX(CLPFX,CMPIData) data;
 } PFX(CLPFX,ClQualifier);
 #endif
+
+typedef struct {
+   PFX(CLPFX,ClObjectHdr) hdr;
+   unsigned char flavor;
+   #ifndef SETCLPFX
+    #define ClQual_F_Overridable 1
+    #define ClQual_F_ToSubclass 2
+    #define ClQual_F_ToInstance 4
+    #define ClQual_F_Translatable 8        
+   #endif 
+   unsigned char scope;
+   #ifndef SETCLPFX
+   	#define ClQual_S_Class 1
+   	#define ClQual_S_Association 2
+   	#define ClQual_S_Reference 4
+   	#define ClQual_S_Property 8
+   	#define ClQual_S_Method 16
+   	#define ClQual_S_Parameter 32
+   	#define ClQual_S_Indication 64   	   	   
+   #endif
+   PFX(CLPFX,CMPIType) type;
+   unsigned int arraySize;
+   PFX(CLPFX,ClString) qualifierName;
+   PFX(CLPFX,ClString) nameSpace;
+   PFX(CLPFX,ClSection) qualifierData;
+} PFX(CLPFX,ClQualifierDeclaration);
 
 #ifndef CLP32   // different layout for power 32
 typedef struct {
@@ -462,6 +489,12 @@ extern void ClArgsFree(ClArgs *arg);
 extern int ClArgsGetArgCount(ClArgs *arg);
 extern int ClArgsGetArgAt(ClArgs *arg, int id, CMPIData *data, char **name);
 extern int ClArgsAddArg(ClArgs *arg, const char *id, CMPIData d);
+extern ClQualifierDeclaration *ClQualifierDeclarationNew(const char *ns, const char *name);
+extern unsigned long ClSizeQualifierDeclaration(ClQualifierDeclaration * q);
+extern ClQualifierDeclaration *ClQualifierRebuildQualifier(ClQualifierDeclaration * q, void *area);
+extern void ClQualifierRelocateQualifier(ClQualifierDeclaration * q);
+extern int ClQualifierAddQualifier(ClObjectHdr * hdr, ClSection * qlfs, const char *id, CMPIData d);
+extern int ClQualifierDeclarationGetQualifierData(ClQualifierDeclaration * q, CMPIData * data);
 
 #endif // SETCLPFX
    

@@ -37,6 +37,7 @@ extern char * configfile;
 extern int setupControl(char *fn);
 extern int getControlChars(char *id, char **val);
 
+ProviderInfo *qualiProvInfoPtr = NULL;
 ProviderInfo *classProvInfoPtr = NULL;
 ProviderInfo *defaultProvInfoPtr = NULL;
 ProviderInfo *interOpProvInfoPtr = NULL;
@@ -129,7 +130,10 @@ ProviderRegister *newProviderRegister(char *fn)
                      if (exFlags & 2) interOpProvInfoPtr=info;
                      else interopFound=1;
                   }   
-               }   
+               }               
+               else if (qualiProvInfoPtr==NULL) {
+                  if (strcmp(info->className,"$QualifierProvider$")==0) qualiProvInfoPtr=info;
+               }                  
                bb->ht->ft->put(bb->ht, info->className, info);
             }
             info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
@@ -170,6 +174,8 @@ ProviderRegister *newProviderRegister(char *fn)
                      info->type |= INDICATION_PROVIDER;
                   else if (strcmp(t, "class") == 0)
                      info->type |= CLASS_PROVIDER;
+                  else if (strcmp(t, "qualifier") == 0)
+                     info->type |= QUALIFIER_PROVIDER;                     
                   else {
                      mlogf(M_ERROR,M_SHOW,"--- invalid type specification: \n\t%d: %s\n", n, stmt);
                      err = 1;
@@ -213,6 +219,9 @@ ProviderRegister *newProviderRegister(char *fn)
    
    if (defaultProvInfoPtr==NULL) 
       mlogf(M_INFO,M_SHOW,"--- Default provider definition not found - no instance repository available\n");
+
+   if (qualiProvInfoPtr==NULL) 
+      mlogf(M_INFO,M_SHOW,"--- Qualifier provider definition not found - no qualifier support available\n");
    
    if (interOpProvInfoPtr==NULL) {
       if (exFlags & 2 && interopFound==0)

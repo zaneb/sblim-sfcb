@@ -346,6 +346,32 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
    return value;
 }
 
+CMPIValue union2CMPIValue(CMPIType type, char *val, XtokValueArray *arr)
+{
+	CMPIValue value;
+
+	if (type==0) {
+		type=guessType(val);
+	}
+
+	if (type & CMPI_ARRAY) {
+		type &= ~CMPI_ARRAY; //otherwise it gets treated as an array in str2CMPIValue, which we don't want
+		int i, max;
+		CMPIValue v;
+		max=arr->next;
+     
+		value.array = TrackedCMPIArray(max,type,NULL);
+		if (value.array != NULL) {
+			for (i=0; i<max; i++) {
+			v = str2CMPIValue(type, arr->values[i], NULL);
+			CMSetArrayElementAt(value.array, i, &v, type); 
+			}
+			return value;
+		}
+	}
+	return(str2CMPIValue(type, val, NULL));
+}
+
 int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
 {
    char str[256];
@@ -959,3 +985,85 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
    _SFCB_RETURN(0);
 }
 
+int qualifierDeclaration2xml(CMPIQualifierDecl * q, UtilStringBuffer * sb)
+{
+   ClQualifierDeclaration *qual = (ClQualifierDeclaration *) q->hdl;
+   CMPIData data;
+
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "qualifierDeclaration2xml");
+
+   data = q->ft->getQualifierDeclData(q, NULL);
+
+   sb->ft->appendChars(sb, "<QUALIFIER.DECLARATION NAME=\"");
+   sb->ft->appendChars(sb, q->ft->getCharQualifierName(q));
+   sb->ft->appendChars(sb, "\"");
+   if (qual->type) {
+		sb->ft->appendChars(sb," TYPE=\"");
+		sb->ft->appendChars(sb, dataType(qual->type));
+		sb->ft->appendChars(sb,"\"");
+   }
+   if(data.state != CMPI_goodValue) { //no default value - ISARRAY needs to be specified
+		if (qual->type & CMPI_ARRAY)
+			sb->ft->appendChars(sb," ISARRAY=\"true\"");
+		else
+			sb->ft->appendChars(sb," ISARRAY=\"false\"");
+   }
+   if (qual->arraySize) {
+   		int strtmpSize = sizeof(qual->arraySize)*8 / 3.32 + 1; //estimate max. no of possible digits
+   		char strtmp[strtmpSize];
+   		sprintf(strtmp, "%d", qual->arraySize);
+		sb->ft->appendChars(sb," ARRAYSIZE=\"");
+		sb->ft->appendChars(sb, strtmp);
+		sb->ft->appendChars(sb,"\"");
+   }
+   if (qual->flavor & ClQual_F_Overridable) //default true - so we have to mention it, if it's false
+		sb->ft->appendChars(sb," OVERRIDABLE=\"true\"");
+   else
+		sb->ft->appendChars(sb," OVERRIDABLE=\"false\"");
+   if (qual->flavor & ClQual_F_ToSubclass) //default true - so we have to mention it, if it's false
+		sb->ft->appendChars(sb," TOSUBCLASS=\"true\"");
+   else
+		sb->ft->appendChars(sb," TOSUBCLASS=\"false\"");   
+   if (qual->flavor & ClQual_F_ToInstance) sb->ft->appendChars(sb," TOINSTANCE=\"true\"");
+   if (qual->flavor & ClQual_F_Translatable) sb->ft->appendChars(sb," TRANSLATABLE=\"true\"");
+   sb->ft->appendChars(sb, ">\n");
+   
+   if (qual->scope) {
+		sb->ft->appendChars(sb, "<SCOPE");
+		if(qual->scope & ClQual_S_Class) sb->ft->appendChars(sb," CLASS=\"true\"");
+		if(qual->scope & ClQual_S_Association) sb->ft->appendChars(sb," ASSOCIATION=\"true\"");
+		if(qual->scope & ClQual_S_Reference) sb->ft->appendChars(sb," REFERENCE=\"true\"");
+		if(qual->scope & ClQual_S_Property) sb->ft->appendChars(sb," PROPERTY=\"true\"");
+		if(qual->scope & ClQual_S_Method) sb->ft->appendChars(sb," METHOD=\"true\"");
+		if(qual->scope & ClQual_S_Parameter) sb->ft->appendChars(sb," PARAMETER=\"true\"");
+		if(qual->scope & ClQual_S_Indication) sb->ft->appendChars(sb," INDICATION=\"true\"");
+		sb->ft->appendChars(sb, "></SCOPE>\n");
+   }
+   
+	if(data.state == CMPI_goodValue) {
+		if(data.type & CMPI_ARRAY) {
+			sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");
+			int i;
+			for(i=0; i< data.value.array->ft->getSize(data.value.array, NULL); i++)
+				value2xml(data.value.array->ft->getElementAt(data.value.array, i, NULL), sb, 1);
+			sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");			
+		} else {
+			value2xml(data, sb, 1);
+		}
+	}
+   sb->ft->appendChars(sb, "</QUALIFIER.DECLARATION>\n");
+
+   _SFCB_RETURN(0);
+}
+
+int qualiEnum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb)
+{
+   CMPIQualifierDecl *q;
+
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "qualiEnum2xml");
+   while (CMHasNext(enm, NULL)) {
+         q = CMGetNext(enm, NULL).value.dataPtr.ptr; 
+         qualifierDeclaration2xml(q, sb);
+   }
+   _SFCB_RETURN(0);
+}

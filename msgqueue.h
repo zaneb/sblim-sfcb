@@ -81,6 +81,7 @@ typedef struct msgXctl {
 #define MSG_SEG_INSTANCE 3
 #define MSG_SEG_CONSTCLASS 4
 #define MSG_SEG_ARGS 5
+#define MSG_SEG_QUALIFIER 6
 
 typedef struct msgList {
    long count;

@@ -42,6 +42,7 @@
 #include "control.h"
 #include "config.h"
 #include "constClass.h"
+#include "qualifier.h"
 
 #ifdef HAVE_INDICATIONS
 #define SFCB_INCL_INDICATION_SUPPORT 1
@@ -461,6 +462,17 @@ static int getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
    _SFCB_RETURN(rc);
 }
 
+static int getQualifierDeclMI(ProviderInfo *info, CMPIQualifierDeclMI **mi, CMPIContext *ctx)
+{
+   int rc;
+    _SFCB_ENTER(TRACE_PROVIDERDRV, "getQualiferMI");
+    
+   if (info->qualifierDeclMI == NULL) info->qualifierDeclMI =
+          loadQualifierDeclMI(info->providerName, info->library, Broker, ctx);
+   *mi = info->qualifierDeclMI;
+   rc = info->qualifierDeclMI ? 1 : 0;
+   _SFCB_RETURN(rc);
+}
 
 
 
@@ -737,8 +749,14 @@ static int sendResponse(int requestor, BinResponseHdr * hdr)
          buf->object[i].data = (void *) l;
          l += ol;
          break;
+      case MSG_SEG_QUALIFIER:
+         getSerializedQualifier((CMPIQualifierDecl *) hdr->object[i].data,
+                                 ((char *) buf) + l);
+         buf->object[i].data = (void *) l;
+         l += ol;
+         break;         
       default:
-         mlogf(M_ERROR,M_SHOW,"--- bad sendResponee request %d\n", hdr->object[i].type);
+         mlogf(M_ERROR,M_SHOW,"--- bad sendResponse request %d\n", hdr->object[i].type);
          *((char *) (void *) 0) = 0;
          _SFCB_ABORT();
       }
@@ -1018,6 +1036,163 @@ static BinResponseHdr *enumClasses(BinRequestHdr * hdr,
    _SFCB_RETURN(resp);
 }
 
+static BinResponseHdr *enumQualifiers(BinRequestHdr * hdr,
+                                         ProviderInfo * info, int requestor)
+{
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "enumQualifiers");
+   TIMING_PREP
+   EnumQualifiersReq *req = (EnumQualifiersReq *) hdr;
+   CMPIObjectPath *path = relocateSerializedObjectPath(req->path.data);
+   CMPIStatus rci = { CMPI_RC_OK, NULL };
+   CMPIArray *r;
+   CMPICount count;
+   CMPIResult *result = native_new_CMPIResult(requestor<0 ? 0 : requestor,0,NULL);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+   BinResponseHdr *resp;
+   CMPIFlags flgs=req->hdr.flags;
+   int i;
+
+   ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
+
+   _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
+
+   TIMING_START(hdr,info)
+   rci = info->qualifierDeclMI->ft->enumQualifiers(info->qualifierDeclMI, ctx, result,path);
+   TIMING_STOP(hdr,info)
+   r = native_result2array(result);
+
+   _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
+
+   if (rci.rc == CMPI_RC_OK) {
+   	  if (r) count = CMGetArrayCount(r, NULL);
+      else count=0;
+      resp = (BinResponseHdr *) calloc(1, sizeof(BinResponseHdr) +
+                                    ((count - 1) * sizeof(MsgSegment)));
+      resp->moreChunks=0;
+      resp->rc = 1;
+      resp->count = count;
+      for (i = 0; i < count; i++) {
+      	resp->object[i] = setQualifierMsgSegment(CMGetArrayElementAt(r, i, NULL).value.dataPtr.ptr);
+      }    
+   }
+   else resp = errorResp(&rci);
+    
+   _SFCB_RETURN(resp);
+}
+
+static BinResponseHdr *setQualifier(BinRequestHdr * hdr, ProviderInfo * info, 
+               int requestor)
+{
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "setQualifier");
+   TIMING_PREP
+   SetQualifierReq *req = (SetQualifierReq *) hdr;
+   CMPIObjectPath *path = relocateSerializedObjectPath(req->path.data);
+   CMPIQualifierDecl *q = relocateSerializedQualifier(req->qualifier.data);
+   CMPIStatus rci = { CMPI_RC_OK, NULL };
+   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+   BinResponseHdr *resp;
+   CMPIFlags flgs=0;
+
+   ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
+
+   _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
+   TIMING_START(hdr,info)
+   rci = info->qualifierDeclMI->ft->setQualifier(info->qualifierDeclMI, ctx, result, path, q);
+   TIMING_STOP(hdr,info)
+   _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
+
+   if (rci.rc == CMPI_RC_OK) {
+      resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+      resp->count = 0;
+      resp->moreChunks=0;
+      resp->rc = 1;
+   }
+   else resp = errorResp(&rci);
+
+   _SFCB_RETURN(resp);
+}
+
+static BinResponseHdr *getQualifier(BinRequestHdr * hdr, ProviderInfo * info, 
+   int requestor)
+{
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "getQualifier");
+   TIMING_PREP
+   GetQualifierReq *req = (GetQualifierReq *) hdr;
+   CMPIObjectPath *path = relocateSerializedObjectPath(req->path.data);
+   CMPIStatus rci = { CMPI_RC_OK, NULL };
+   CMPIArray *r;
+   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+   CMPICount count;
+   BinResponseHdr *resp;
+   int i;
+   CMPIFlags flgs=0;
+
+   ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
+
+   _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
+   TIMING_START(hdr,info)
+   rci = info->qualifierDeclMI->ft->getQualifier(info->qualifierDeclMI, ctx, result, path);
+   TIMING_STOP(hdr,info)
+   _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
+
+   r = native_result2array(result);
+
+   if (rci.rc == CMPI_RC_OK) {
+      count = 1;
+      resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr) +
+                                    ((count - 1) * sizeof(MsgSegment)));
+      resp->moreChunks=0;
+      resp->rc = 1;
+      resp->count = count;
+      for (i = 0; i < count; i++)
+         resp->object[i] = setQualifierMsgSegment(CMGetArrayElementAt(r, i, NULL).value.dataPtr.ptr);
+   }
+   else resp = errorResp(&rci);
+
+   _SFCB_RETURN(resp);
+}
+
+static BinResponseHdr *deleteQualifier(BinRequestHdr * hdr, ProviderInfo * info, 
+   int requestor)
+{
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "deleteQualifier");
+   TIMING_PREP
+   DeleteQualifierReq *req = (DeleteQualifierReq *) hdr;
+   CMPIObjectPath *path = relocateSerializedObjectPath(req->path.data);
+   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
+   CMPIStatus rci = { CMPI_RC_OK, NULL };
+   CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+   BinResponseHdr *resp;
+   CMPIFlags flgs=0;
+
+   ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
+
+   _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
+   TIMING_START(hdr,info)
+   rci = info->qualifierDeclMI->ft->deleteQualifier(info->qualifierDeclMI, ctx, result, path);
+   TIMING_STOP(hdr,info)
+   _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
+
+   if (rci.rc == CMPI_RC_OK) {
+      resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+      resp->count = 0;
+      resp->moreChunks=0;
+      resp->rc = 1;
+   }
+   else resp = errorResp(&rci);
+
+   _SFCB_RETURN(resp);
+}
 static BinResponseHdr *invokeMethod(BinRequestHdr * hdr, ProviderInfo * info, 
    int requestor)
 {
@@ -1849,7 +2024,10 @@ static int initProvider(ProviderInfo *info, unsigned int sessionId)
    }   
    if (info->type & CLASS_PROVIDER) {
       rc |= (getClassMI(info, (CMPIClassMI **) & mi, ctx) != 1);
-   }   
+   }
+   if (info->type & QUALIFIER_PROVIDER) {
+      rc |= (getQualifierDeclMI(info, (CMPIQualifierDeclMI **) & mi, ctx) != 1);
+   }
 
    if (rc) _SFCB_RETURN(-2);
 
@@ -1981,10 +2159,10 @@ static ProvHandler pHandlers[] = {
    {referenceNames},            //OPS_ReferenceNames 17
    {opNotSupported},            //OPS_GetProperty 18
    {opNotSupported},            //OPS_SetProperty 19
-   {opNotSupported},            //OPS_GetQualifier 20
-   {opNotSupported},            //OPS_SetQualifier 21
-   {opNotSupported},            //OPS_DeleteQualifier 22
-   {opNotSupported},            //OPS_EnumerateQualifiers 23
+   {getQualifier},              //OPS_GetQualifier 20
+   {setQualifier},              //OPS_SetQualifier 21
+   {deleteQualifier},           //OPS_DeleteQualifier 22
+   {enumQualifiers},            //OPS_EnumerateQualifiers 23
    {invokeMethod},              //OPS_InvokeMethod 24
    {loadProvider},              //OPS_LoadProvider 25
    {NULL},                      //OPS_PingProvider 26

@@ -63,6 +63,11 @@ CMPIClassMI *loadClassMI(const char *provider,
                                          void *library,
                                          CMPIBroker * broker,
                                          CMPIContext * ctx);
+                                         
+CMPIQualifierDeclMI *loadQualifierDeclMI(const char *provider,
+                                         void *library,
+                                         CMPIBroker * broker,
+                                         CMPIContext * ctx);                                         
 
 
 /*!

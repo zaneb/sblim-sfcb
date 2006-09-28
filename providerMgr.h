@@ -296,6 +296,31 @@ typedef struct indicationReq {
    void* filterId;
 } IndicationReq;
 
+typedef struct enumQualifiersReq {
+   BinRequestHdr hdr;
+   MsgSegment principal;
+   MsgSegment path;
+} EnumQualifiersReq;
+
+typedef struct setQualifierReq {
+   BinRequestHdr hdr;
+   MsgSegment principal;
+   MsgSegment path;
+   MsgSegment qualifier;   
+} SetQualifierReq;
+
+typedef struct getQualifierReq {
+   BinRequestHdr hdr;
+   MsgSegment principal;
+   MsgSegment path;   
+} GetQualifierReq;
+
+typedef struct deleteQualifierReq {
+   BinRequestHdr hdr;
+   MsgSegment principal;
+   MsgSegment path;   
+} DeleteQualifierReq;
+
 int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
 BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
                                  int *count);

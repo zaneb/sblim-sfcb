@@ -46,5 +46,8 @@ extern int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int f
 extern int args2xml(CMPIArgs * args, UtilStringBuffer * sb);
 extern int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
                     int xmlAs, unsigned int flags);
+extern int qualiEnum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb);
+extern CMPIValue union2CMPIValue(CMPIType type, char *val, XtokValueArray *arr);
+extern int qualifierDeclaration2xml(CMPIQualifierDecl * q, UtilStringBuffer * sb);
 
 #endif

@@ -1,3 +1,12 @@
+2006-09-28  Sven Schuetz
+
+	* cimXmlGen.c, cimXmlGen.h, cimXmlOps.y, cimXmlParser.c, cimXmlParser.h,
+	cimXmlRequest.c, cmpidtx.h, cmpiftx.h, cmpimacsx.h, default.reg, Makefile.am,
+	objectImpl.c, objectImpl.h, providerDrv.c, providerMgr.c, providerMgr.h,
+	providerRegister.c, providerRegister.h, qualifier.c, qualifier.h,
+	qualifierProvider.c, support.c, support.h, value.c, README:
+	Fixed 1566963: Added qualifier support
+
 2006-09-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* man/sfcbd.1.pre.in, control.c, providerDrv.c, README: 

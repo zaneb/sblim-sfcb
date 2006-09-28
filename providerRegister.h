@@ -64,6 +64,7 @@ typedef struct _ProviderInfo {
    CMPIIndicationMI *indicationMI;
    CMPIPropertyMI *propertyMI;
    CMPIClassMI *classMI;
+   CMPIQualifierDeclMI *qualifierDeclMI;   
 } ProviderInfo;
 
 typedef struct providerProcess {
@@ -82,6 +83,7 @@ typedef struct providerProcess {
 #define METHOD_PROVIDER         8
 #define PROPERTY_PROVIDER       16
 #define CLASS_PROVIDER          32
+#define QUALIFIER_PROVIDER      64
 #define FORCE_PROVIDER_NOTFOUND 128
 
 struct _Provider_Register_FT;

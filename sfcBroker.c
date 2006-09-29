@@ -162,7 +162,10 @@ static void stopBroker(void *p)
          if (stopNextAdapter()) {
             rc=pthread_cond_timedwait(&sdCnd,&sdMtx,&waitTime);
          }
-//         else adaptersStopped=1;
+         else {
+	   /* no adapters found */
+	   adaptersStopped=1;
+	 }
          pthread_mutex_unlock(&sdMtx);
       }
       
@@ -451,7 +454,6 @@ int main(int argc, char *argv[])
    if (name != NULL) ++name;
    else name = argv[0];
 
-   startHttp = 1;
    collectStat=0;
    processName="sfcbd";
    provPauseStr=getenv("SFCB_PAUSE_PROVIDER");
@@ -574,7 +576,7 @@ int main(int argc, char *argv[])
    sslMode=0;
    sslOMode=0;
 #endif
-
+   
    if (getControlBool("useChunking", &useChunking))
       useChunking=0;
    if (useChunking==0)
@@ -610,6 +612,21 @@ int main(int argc, char *argv[])
    else
        exFlags = exFlags | 2;
 
+   if (enableInterOp && pSockets < 2 || pSockets < 1) {
+     /* adjusting provider number */
+     if (enableInterOp) {
+       pSockets = 2;
+     } else {
+       pSockets = 1;
+     }
+     mlogf(M_INFO,M_SHOW,
+	   "--- Max provider process number adjusted to %d\n", pSockets);
+   }
+
+   if ((enableHttp && dSockets > 0) || (enableHttps && sSockets > 0) ) {
+     startHttp = 1;
+   }
+   
    initSem(dSockets,sSockets,pSockets);
    initProvProcCtl(pSockets);
    init_sfcBroker(NULL);

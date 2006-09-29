@@ -1,3 +1,10 @@
+2006-09-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* sfcBroker.c: 
+	Fixed 1567620: make sure provider process number isn't too low.
+	At least 1 (no interop) or 2 (with interop) providers must be
+	allowed.
+
 2006-09-28  Sven Schuetz
 
 	* cimXmlGen.c, cimXmlGen.h, cimXmlOps.y, cimXmlParser.c, cimXmlParser.h,

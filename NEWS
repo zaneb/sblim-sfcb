@@ -9,6 +9,7 @@ New features:
 Bugs fixed:
 - 1525280 Fixed segfaults when linking with sfcc
 - 1529096 Fixed unusable execution timing traces
+- 1567620 Ensure lower provider process limit
 
 Changes in 1.1.1
 ================

@@ -251,7 +251,7 @@ static void stopProc(void *p)
       if (pInfo->associationMI) pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx, 1);
       if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx, 1);
       if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx, 1);
-      dlclose(pInfo->library);
+      //dlclose(pInfo->library);
    }
    mlogf(M_INFO,M_SHOW,"---  stopped %s %d\n",processName,getpid());
    ctx->ft->release(ctx);
@@ -2401,6 +2401,7 @@ void processProviderInvocationRequests(char *name)
          }
       }
       else {
+      	free(parms);
       }   
    }
    _SFCB_EXIT();

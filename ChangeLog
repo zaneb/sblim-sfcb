@@ -1,5 +1,10 @@
 2006-09-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
+	* provDrc.c, qualifierProvider.c, internalProvider.c:
+	Fixed 1567676: fixed several memory leaks
+
+2006-09-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
 	* sfcBroker.c: 
 	Fixed 1567620: make sure provider process number isn't too low.
 	At least 1 (no interop) or 2 (with interop) providers must be

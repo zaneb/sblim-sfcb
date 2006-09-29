@@ -277,6 +277,7 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    CMPIObjectPath *op;
    CMPIArray *ar;
    CMPIData rv;
+   void *dummy;
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderEnumInstanceNames");
    _SFCB_TRACE(1,("%s %s",nss,cns));
@@ -291,7 +292,8 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    
    for (i=0; cns; i++) {
       if ((bi=_getIndex(bnss,cns))!=NULL) {
-	if (getFirst(bi,NULL,&kp,&ekl)) {
+	if ((dummy = getFirst(bi,NULL,&kp,&ekl))) {
+	  free(dummy);
 	  while(1) {
             strcpy(copKey,nss);
             strcat(copKey,":");
@@ -305,7 +307,8 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
 	      CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
 	      return st;
             }
-	    if (bi->next < bi->dSize && getNext(bi,NULL,&kp,&ekl)) {
+	    if (bi->next < bi->dSize && (dummy = getNext(bi,NULL,&kp,&ekl))) {
+	      free(dummy);
 	      continue;
 	    }
 	    break;
@@ -368,9 +371,11 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
             ci=relocateSerializedInstance(blob);
             _SFCB_TRACE(1,("--- returning instance %p",ci));
             retFnc(rslt,ci);
+            free(ci);
    //         CMReturnInstance(rslt, ci);
          }
       } 
+      freeBlobIndex(&bi,1);
       if (i<ac) cns=(char*)CMGetArrayElementAt(ar,i,NULL).value.string->hdl;
       else cns=NULL;  
    }
@@ -468,6 +473,7 @@ CMPIStatus InternalProviderGetInstance(CMPIInstanceMI * mi,
    
    if (st.rc==CMPI_RC_OK) {
       CMReturnInstance(rslt, ci);
+      free(ci);
    }
    
    _SFCB_RETURN(st);    
@@ -509,7 +515,8 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
       st.msg=sfcb_native_new_CMPIString("Unable to write to repository",NULL);
       return st;
    }
-
+   free(blob);
+   
    if (rslt) CMReturnObjectPath(rslt, cop);
 
    _SFCB_RETURN(st);
@@ -547,6 +554,7 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
    blob=malloc(len+64);
    getSerializedInstance(ci,blob);
    addBlob(bnss,cns,key,blob,(int)len);
+   free(blob);
 
    _SFCB_RETURN(st);
 }

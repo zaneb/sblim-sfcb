@@ -59,9 +59,9 @@ static CMPIStatus __aft_release(CMPIArray * array)
    if (a->mem_state && a->mem_state != MEM_RELEASED) {
       int i = a->size;
       if (a->mem_state!=MEM_TRACKED) while (i--) {
-         if (!(a->data[i].state & CMPI_nullValue) && a->refCount==0) {
-            sfcb_native_release_CMPIValue(a->type, &a->data[i].value);
-         }
+	      if (!(a->data[i].state & CMPI_nullValue) && a->refCount==0) {
+		      sfcb_native_release_CMPIValue(a->type, &a->data[i].value);
+	      }
       }
       memUnlinkEncObj(a->mem_state);
       a->mem_state = MEM_RELEASED;

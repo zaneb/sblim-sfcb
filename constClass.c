@@ -61,7 +61,7 @@ static CMPIStatus release(CMPIConstClass * cc)
    if (cc->hdl)  {
       if (cc->hdl != (void*)(cc+1)) free(cc->hdl);
    }
-   free(cc);
+   //free(cc);
    return rc;
 }
 

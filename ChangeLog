@@ -1,5 +1,10 @@
 2006-09-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
+	* constClass.c: 
+	Fixed 1567754: segfault on enumerate classes.
+
+2006-09-29  Sven Schuetz
+
 	* provDrc.c, qualifierProvider.c, internalProvider.c:
 	Fixed 1567676: fixed several memory leaks
 

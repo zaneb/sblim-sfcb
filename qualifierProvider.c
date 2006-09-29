@@ -126,6 +126,7 @@ static CMPIStatus QualifierProviderGetQualifier(CMPIQualifierDeclMI * mi,
 		
 		retQ.dataPtr = vp;
 		CMReturnQualifier(rslt, &retQ);
+		free(q);
    }
 
    _SFCB_RETURN(st);   
@@ -165,9 +166,10 @@ static CMPIStatus QualifierProviderSetQualifier(CMPIQualifierDeclMI * mi,
    if (addBlob(bnss,qualrep,qns,blob,(int)len)) {
       CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
       st.msg=sfcb_native_new_CMPIString("Unable to write to repository",NULL);
-      return st;
+      free(blob);
+      _SFCB_RETURN(st);
    }
-
+   free(blob);
    _SFCB_RETURN(st);
 }
 
@@ -226,6 +228,7 @@ static CMPIStatus QualifierProviderEnumQualifiers(CMPIQualifierDeclMI * mi,
 	if(getIndex(bnss,qualrep,strlen(bnss) + strlen(qualrep) + 64,0,&bi)){
 		for (blob=getFirst(bi,&len,NULL,0); blob; blob=getNext(bi,&len,NULL,0)) {
 			q=relocateSerializedQualifier(blob);
+			printf("pointer to qualifier in qualiprov.c: %d\n", q);
 			_SFCB_TRACE(1,("--- returning qualifier %p",q));
 			
 			CMPIValue retQ;
@@ -235,7 +238,9 @@ static CMPIStatus QualifierProviderEnumQualifiers(CMPIQualifierDeclMI * mi,
 			
 			retQ.dataPtr = vp;
 			CMReturnQualifier(rslt, &retQ);
+			free(q);
 		}
+		freeBlobIndex(&bi, 1);
 	} 
 
    _SFCB_RETURN(st);

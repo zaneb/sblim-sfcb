@@ -228,7 +228,6 @@ static CMPIStatus QualifierProviderEnumQualifiers(CMPIQualifierDeclMI * mi,
 	if(getIndex(bnss,qualrep,strlen(bnss) + strlen(qualrep) + 64,0,&bi)){
 		for (blob=getFirst(bi,&len,NULL,0); blob; blob=getNext(bi,&len,NULL,0)) {
 			q=relocateSerializedQualifier(blob);
-			printf("pointer to qualifier in qualiprov.c: %d\n", q);
 			_SFCB_TRACE(1,("--- returning qualifier %p",q));
 			
 			CMPIValue retQ;

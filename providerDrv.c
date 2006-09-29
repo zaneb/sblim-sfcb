@@ -1075,6 +1075,7 @@ static BinResponseHdr *enumQualifiers(BinRequestHdr * hdr,
       resp->count = count;
       for (i = 0; i < count; i++) {
       	resp->object[i] = setQualifierMsgSegment(CMGetArrayElementAt(r, i, NULL).value.dataPtr.ptr);
+      	printf("pointer to qualifier in provDrv.c: %d\n", resp->object[i].data);
       }    
    }
    else resp = errorResp(&rci);

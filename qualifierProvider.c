@@ -25,6 +25,7 @@
 #include "cmpimacs.h"
 #include "cmpimacsx.h"
 #include "qualifier.h"
+#include "native.h"
 
 #include "trace.h"
 

@@ -30,7 +30,11 @@
 #include "msgqueue.h"
 #include "cmpidt.h"
 #include "constClass.h"
+
+#ifdef HAVE_QUALREP
 #include "qualifier.h"
+#endif
+
 #include "objectImpl.h"
 
 #include "native.h"
@@ -439,6 +443,8 @@ static RespSegments genResponses(BinRequestContext * binCtx,
 //   _SFCB_RETURN(iMethodResponse(binCtx->rHdr, sb));
 }
 
+
+#ifdef HAVE_QUALREP
 static RespSegments genQualifierResponses(BinRequestContext * binCtx,
                                  BinResponseHdr * resp)
 {
@@ -467,6 +473,7 @@ static RespSegments genQualifierResponses(BinRequestContext * binCtx,
    rs=iMethodResponse(binCtx->rHdr, sb);
    _SFCB_RETURN(rs);
 }
+#endif
 
 RespSegments genFirstChunkResponses(BinRequestContext * binCtx,
                                  BinResponseHdr ** resp,
@@ -1808,6 +1815,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,1));
 }
 
+#ifdef HAVE_QUALREP
 static RespSegments enumQualifiers(CimXmlRequestContext * ctx, RequestHdr * hdr)
 {
 	CMPIObjectPath *path;
@@ -2041,6 +2049,7 @@ static RespSegments setQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
    closeProviderContext(&binCtx); 
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
 }
+#endif
 
 static RespSegments notSupported(CimXmlRequestContext * ctx, RequestHdr * hdr)
 {
@@ -2070,10 +2079,17 @@ static Handler handlers[] = {
    {referenceNames},            //OPS_ReferenceNames 17
    {notSupported},              //OPS_GetProperty 18
    {notSupported},              //OPS_SetProperty 19
+#ifdef HAVE_QUALREP   
    {getQualifier},              //OPS_GetQualifier 20
    {setQualifier},              //OPS_SetQualifier 21
    {deleteQualifier},           //OPS_DeleteQualifier 22
    {enumQualifiers},            //OPS_EnumerateQualifiers 23
+#else
+   {notSupported},              //OPS_GetQualifier 20
+   {notSupported},              //OPS_SetQualifier 21
+   {notSupported},              //OPS_DeleteQualifier 22
+   {notSupported},              //OPS_EnumerateQualifiers 23
+#endif   
    {invokeMethod},              //OPS_InvokeMethod 24
 };
 

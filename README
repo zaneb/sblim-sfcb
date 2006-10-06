@@ -265,6 +265,11 @@ Options:
 	
 	--enable-slp=[yes|no|standalone]
 		Enable slp support. Default=no
+		
+	--disable-qualifierrep=[yes|no]
+		Disable support for qualifier operations (Get-,Set-,Delete-,
+		EnumerateQualifiers)
+		Default=no
 
 
 9. Downloading the CIM Schema
@@ -864,6 +869,9 @@ from the class definition files in the staging area when sfcbrepos is run).
 In addition to the actual CIM classes defined in the providers mofs, 
 the classSchemas file also contain necessary information about any of their
 CIM superclasses (hence the need to install the DMTF CIM Schema!).
+
+In addition each namespace leaf directory may contain a file called
+"qualifiers", containing all qualifiers for the namespace.
 
 When sfcbd first starts up the internal class provider will scan the
 directory /usr/local/var/lib/sfcb/registration/repository/ and all its subdirs

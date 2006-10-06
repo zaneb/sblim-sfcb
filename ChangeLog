@@ -1,3 +1,9 @@
+2006-10-06	Sven Schuetz
+
+	* cimXmlRequest.c, qualifierProvider.c, providerMgr.c, providerDrv.c,
+	Makefile.am, configure.ac, README, cimXmlGen.c
+	Implemented 1569239: make qualifier provider configurable
+
 2006-09-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* constClass.c: 

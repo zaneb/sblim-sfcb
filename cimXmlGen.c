@@ -985,6 +985,7 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
    _SFCB_RETURN(0);
 }
 
+#ifdef HAVE_QUALREP
 int qualifierDeclaration2xml(CMPIQualifierDecl * q, UtilStringBuffer * sb)
 {
    ClQualifierDeclaration *qual = (ClQualifierDeclaration *) q->hdl;
@@ -1067,3 +1068,4 @@ int qualiEnum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb)
    }
    _SFCB_RETURN(0);
 }
+#endif

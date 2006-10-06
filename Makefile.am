@@ -60,6 +60,16 @@ SLP_LIBS =
 SLP_LIB =
 endif
 
+if QUALREP
+QUALREP_LIBS = libsfcQualifierProvider.la
+QUALREP_FILES = qualifier.c
+QUALREP_HEADER = qualifier.h
+else
+QUALREP_LIBS = 
+QUALREP_FILES =
+QUALREP_HEADER =
+endif
+
 lib_LTLIBRARIES = \
    libsfcUtil.la \
    libsfcBrokerCore.la \
@@ -74,7 +84,7 @@ lib_LTLIBRARIES = \
    libsfcCertificateAuthentication.la \
    libsfcObjectImplSwapI32toP32.la \
    libcimcClientSfcbLocal.la \
-   libsfcQualifierProvider.la \
+   $(QUALREP_LIBS) \
    $(SLP_LIBS) \
    $(INDICATION_LIBS)
 
@@ -129,7 +139,6 @@ libsfcBrokerCore_la_SOURCES = \
     providerRegister.c \
     objectImpl.c \
     constClass.c \
-    qualifier.c \
     genericlist.c \
     msgqueue.c \
     providerMgr.c \
@@ -147,7 +156,8 @@ libsfcBrokerCore_la_SOURCES = \
     sqlLexer.l \
     sqlParser.y \
     sqlStatement.c \
-    avltree.c
+    avltree.c \
+    $(QUALREP_FILES)
  
 else
 libsfcBrokerCore_la_SOURCES = \
@@ -172,7 +182,6 @@ libsfcBrokerCore_la_SOURCES = \
     providerRegister.c \
     objectImpl.c \
     constClass.c \
-    qualifier.c \
     genericlist.c \
     msgqueue.c \
     providerMgr.c \
@@ -185,7 +194,8 @@ libsfcBrokerCore_la_SOURCES = \
     queryStatement.c \
     cimXmlGen.c \
     mrwlock.c \
-    mlog.c 
+    mlog.c \
+    $(QUALREP_FILES)
 endif
 
 libsfcBrokerCore_la_CFLAGS = $(AM_CFLAGS) @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
@@ -256,11 +266,6 @@ libsfcClassProvider_la_SOURCES = \
    classProvider.c
 libsfcClassProvider_la_LIBADD=-lsfcBrokerCore
 
-libsfcQualifierProvider_la_SOURCES = \
-   qualifierProvider.c \
-   fileRepository.c
-libsfcQualifierProvider_la_LIBADD=-lsfcBrokerCore
-
 libsfcCimXmlCodec_la_SOURCES = \
    cimXmlOps.y \
    cimXmlParserProcessed.c \
@@ -275,6 +280,13 @@ libslpAgent_la_SOURCES = \
     cimslpSLP.c \
     cimslpUtil.c
 libslpAgent_la_LIBADD=-lslp -lcmpisfcc
+endif
+
+if QUALREP
+libsfcQualifierProvider_la_SOURCES = \
+   qualifierProvider.c \
+   fileRepository.c
+libsfcQualifierProvider_la_LIBADD=-lsfcBrokerCore
 endif
 
 sfcbd_SOURCES=sfcBroker.c
@@ -296,7 +308,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	fileRepository.h internalProvider.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h \
-        cimcClientSfcbLocal.h qualifier.h cmpidtx.h
+        cimcClientSfcbLocal.h $(QUALREP_HEADER) cmpidtx.h
 
 
 man_MANS=$(MANFILES)

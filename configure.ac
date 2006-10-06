@@ -46,6 +46,13 @@ AC_ARG_ENABLE(jdbc,
 AC_ARG_ENABLE(slp,
 	[AC_HELP_STRING([--enable-slp],
 		[include slp agent for SFCB - EXPERIMENTAL.])])
+		
+AC_ARG_ENABLE(qualifierrep,
+	[AC_HELP_STRING([--disable-qualifierrep],
+		[disable qualifier repository support.])],
+	[enable_qualifierrep=$enableval],
+	[enable_qualifierrep="yes"]
+	)		
 
 AC_ARG_ENABLE(indications,
 	[AC_HELP_STRING([--disable-indications],
@@ -90,6 +97,10 @@ fi
 
 if test "$enable_slp" == "yes"; then
    AC_DEFINE(HAVE_SLP,,[SLP support enabled.])
+fi
+
+if test "$enable_qualifierrep" == "yes"; then
+   AC_DEFINE(HAVE_QUALREP,,[Qualifier repository support enabled.])
 fi
 
 AC_CANONICAL_HOST
@@ -216,6 +227,7 @@ AM_CONDITIONAL(INDICATIONS,[test "$enable_indications" == "yes"])
 AM_CONDITIONAL(JDBC,[test "$enable_jdbc" == "yes"]) 
 AM_CONDITIONAL(SLP,[test "$enable_slp" == "yes"]) 
 AM_CONDITIONAL(SLP_ALONE,[test "$enable_slp" == "standalone"]) 
+AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"]) 
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
@@ -234,5 +246,6 @@ echo -e "indications"\\t"${enable_indications}"
 echo -e "ssl"\\t"${enable_ssl:-no}"
 echo -e "jdbc"\\t"${enable_jdbc:-no}"
 echo -e "slp"\\t"${enable_slp:-no}"
+echo -e "qualifierrep"\\t"${enable_qualifierrep:-no}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
 echo ======================================================

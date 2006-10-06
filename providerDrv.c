@@ -42,7 +42,10 @@
 #include "control.h"
 #include "config.h"
 #include "constClass.h"
+
+#ifdef HAVE_QUALREP
 #include "qualifier.h"
+#endif
 
 #ifdef HAVE_INDICATIONS
 #define SFCB_INCL_INDICATION_SUPPORT 1
@@ -462,6 +465,7 @@ static int getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
    _SFCB_RETURN(rc);
 }
 
+#ifdef HAVE_QUALREP
 static int getQualifierDeclMI(ProviderInfo *info, CMPIQualifierDeclMI **mi, CMPIContext *ctx)
 {
    int rc;
@@ -473,6 +477,7 @@ static int getQualifierDeclMI(ProviderInfo *info, CMPIQualifierDeclMI **mi, CMPI
    rc = info->qualifierDeclMI ? 1 : 0;
    _SFCB_RETURN(rc);
 }
+#endif
 
 
 
@@ -749,12 +754,14 @@ static int sendResponse(int requestor, BinResponseHdr * hdr)
          buf->object[i].data = (void *) l;
          l += ol;
          break;
+#ifdef HAVE_QUALREP         
       case MSG_SEG_QUALIFIER:
          getSerializedQualifier((CMPIQualifierDecl *) hdr->object[i].data,
                                  ((char *) buf) + l);
          buf->object[i].data = (void *) l;
          l += ol;
-         break;         
+         break;
+#endif
       default:
          mlogf(M_ERROR,M_SHOW,"--- bad sendResponse request %d\n", hdr->object[i].type);
          *((char *) (void *) 0) = 0;
@@ -1036,6 +1043,8 @@ static BinResponseHdr *enumClasses(BinRequestHdr * hdr,
    _SFCB_RETURN(resp);
 }
 
+#ifdef HAVE_QUALREP
+
 static BinResponseHdr *enumQualifiers(BinRequestHdr * hdr,
                                          ProviderInfo * info, int requestor)
 {
@@ -1075,7 +1084,6 @@ static BinResponseHdr *enumQualifiers(BinRequestHdr * hdr,
       resp->count = count;
       for (i = 0; i < count; i++) {
       	resp->object[i] = setQualifierMsgSegment(CMGetArrayElementAt(r, i, NULL).value.dataPtr.ptr);
-      	printf("pointer to qualifier in provDrv.c: %d\n", resp->object[i].data);
       }    
    }
    else resp = errorResp(&rci);
@@ -1194,6 +1202,8 @@ static BinResponseHdr *deleteQualifier(BinRequestHdr * hdr, ProviderInfo * info,
 
    _SFCB_RETURN(resp);
 }
+#endif
+
 static BinResponseHdr *invokeMethod(BinRequestHdr * hdr, ProviderInfo * info, 
    int requestor)
 {
@@ -2026,9 +2036,11 @@ static int initProvider(ProviderInfo *info, unsigned int sessionId)
    if (info->type & CLASS_PROVIDER) {
       rc |= (getClassMI(info, (CMPIClassMI **) & mi, ctx) != 1);
    }
+#ifdef HAVE_QUALREP   
    if (info->type & QUALIFIER_PROVIDER) {
       rc |= (getQualifierDeclMI(info, (CMPIQualifierDeclMI **) & mi, ctx) != 1);
    }
+#endif
 
    if (rc) _SFCB_RETURN(-2);
 
@@ -2160,10 +2172,17 @@ static ProvHandler pHandlers[] = {
    {referenceNames},            //OPS_ReferenceNames 17
    {opNotSupported},            //OPS_GetProperty 18
    {opNotSupported},            //OPS_SetProperty 19
+#ifdef HAVE_QUALREP
    {getQualifier},              //OPS_GetQualifier 20
    {setQualifier},              //OPS_SetQualifier 21
    {deleteQualifier},           //OPS_DeleteQualifier 22
    {enumQualifiers},            //OPS_EnumerateQualifiers 23
+#else
+   {opNotSupported},            //OPS_GetQualifier 20
+   {opNotSupported},            //OPS_SetQualifier 21
+   {opNotSupported},            //OPS_DeleteQualifier 22
+   {opNotSupported},            //OPS_EnumerateQualifiers 23
+#endif
    {invokeMethod},              //OPS_InvokeMethod 24
    {loadProvider},              //OPS_LoadProvider 25
    {NULL},                      //OPS_PingProvider 26

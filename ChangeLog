@@ -1,8 +1,15 @@
+2006-10-16  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* brokerUpc.c, msgqueue.c, providerDrv.c, providerMgr.c: 
+	Fixed 1578051: race condition in provider initialization code.
+	Further, hardened client (e.g. invokeProvider) code.
+
 2006-10-06	Sven Schuetz
 
 	* cimXmlRequest.c, qualifierProvider.c, providerMgr.c, providerDrv.c,
 	Makefile.am, configure.ac, README, cimXmlGen.c
 	Implemented 1569239: make qualifier provider configurable
+
 
 2006-09-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 

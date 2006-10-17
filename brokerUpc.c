@@ -56,6 +56,9 @@ extern CMPIObjectPath *TrackedCMPIObjectPath(const char *nameSpace,
                                       const char *className, CMPIStatus * rc);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
+extern int initProvider(ProviderInfo *info, unsigned int sessionId);
+
+
 void closeProviderContext(BinRequestContext * ctx);
 
 //---------------------------------------------------
@@ -207,7 +210,6 @@ static void setContext(BinRequestContext * binCtx, OperationHdr * oHdr,
 		       const CMPIObjectPath * cop)
 {
    CMPIData ctxData;
-   unsigned int sessionId=0;
    memset(binCtx,0,sizeof(BinRequestContext));
    oHdr->nameSpace = setCharsMsgSegment((char *)
                           ClObjectPathGetNameSpace((ClObjectPath *) cop->hdl));
@@ -222,7 +224,7 @@ static void setContext(BinRequestContext * binCtx, OperationHdr * oHdr,
    bHdr->object[1] = setObjectPathMsgSegment(cop);
    ctxData=CMGetContextEntry(ctx,CMPIInvocationFlags,NULL);
    bHdr->flags=ctxData.value.Int;
-   sessionId=ctx->ft->getEntry(ctx,"CMPISessionId",NULL).value.uint32;
+   bHdr->sessionId=ctx->ft->getEntry(ctx,"CMPISessionId",NULL).value.uint32;
 
    binCtx->oHdr = oHdr;
    binCtx->bHdr = bHdr;
@@ -298,11 +300,15 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
 
       irc = getProviderContext(&binCtx, &oHdr);
       
+      if (irc == MSG_X_PROVIDER) {
       for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
-         if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
+         if (pInfo->provIds.ids == binCtx.provA.ids.ids) {	   
             CMPIResult *result = native_new_CMPIResult(0,1,NULL);
             CMPIArray *r;
             unlockUpCall(broker);
+	    if (pInfo->initialized == 0) {
+	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	    }
             st = pInfo->instanceMI->ft->getInstance(pInfo->instanceMI,context,result,cop,props);
             if (rc) *rc=st;
             r = native_result2array(result);
@@ -312,7 +318,6 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
          }
       }
 
-      if (irc == MSG_X_PROVIDER) {
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
@@ -364,11 +369,15 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
       
       irc = getProviderContext(&binCtx, &oHdr);
 
+      if (irc == MSG_X_PROVIDER) {
       for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
          if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
             CMPIResult *result = native_new_CMPIResult(0,1,NULL);
             CMPIArray *r;
             unlockUpCall(broker);
+	    if (pInfo->initialized == 0) {
+	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	    }
             st = pInfo->instanceMI->ft->createInstance(pInfo->instanceMI,context,result,cop,inst);
             if (rc) *rc=st;
             r = native_result2array(result);
@@ -378,7 +387,6 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
          }
       }
       
-      if (irc == MSG_X_PROVIDER) {
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
@@ -438,17 +446,20 @@ static CMPIStatus modifyInstance(const CMPIBroker * broker,
 
       irc = getProviderContext(&binCtx, &oHdr);
 
+      if (irc == MSG_X_PROVIDER) {
       for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
          if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
             CMPIResult *result = native_new_CMPIResult(0,1,NULL);
             unlockUpCall(broker);
+	    if (pInfo->initialized == 0) {
+	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	    }
             st = pInfo->instanceMI->ft->modifyInstance(pInfo->instanceMI,context,result,cop,inst,props);
             if (sreq) free(sreq);
             return st;   
          }
       }
       
-      if (irc == MSG_X_PROVIDER) {
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
@@ -490,16 +501,19 @@ static CMPIStatus deleteInstance(const CMPIBroker * broker,
       
       irc = getProviderContext(&binCtx, &oHdr);
 
+      if (irc == MSG_X_PROVIDER) {
       for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
          if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
             CMPIResult *result = native_new_CMPIResult(0,1,NULL);
             unlockUpCall(broker);
+	    if (pInfo->initialized == 0) {
+	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	    }
             st = pInfo->instanceMI->ft->deleteInstance(pInfo->instanceMI,context,result,cop);
             return st;   
          }
       }
       
-      if (irc == MSG_X_PROVIDER) {
          resp = invokeProvider(&binCtx);
          closeProviderContext(&binCtx);
          resp->rc--;
@@ -527,7 +541,7 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
    BinRequestContext binCtx;
    ExecQueryReq sreq = BINREQ(OPS_ExecQuery, 4);
    OperationHdr oHdr = { OPS_ExecQuery, 2 };
-   CMPIStatus st = { CMPI_RC_OK, NULL },rci;
+   CMPIStatus st = { CMPI_RC_OK, NULL },rci = { CMPI_RC_OK, NULL};
    CMPIEnumeration *enm = NULL;
    CMPIArray *ar = NULL;
    int irc, i, c;
@@ -559,6 +573,9 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
                   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
                   local=1;
                   unlockUpCall(broker);
+		  if (pInfo->initialized == 0) {
+		    initProvider(pInfo,binCtx.bHdr->sessionId);
+		  }
                   rci = pInfo->instanceMI->ft->execQuery(
                      pInfo->instanceMI, context, result, cop, query, lang);
                   lockUpCall(broker);
@@ -600,7 +617,7 @@ static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
    BinRequestContext binCtx;
    EnumInstancesReq sreq = BINREQ(OPS_EnumerateInstances, 2);
    OperationHdr oHdr = { OPS_EnumerateInstances, 2 };
-   CMPIStatus st = { CMPI_RC_OK, NULL },rci;
+   CMPIStatus st = { CMPI_RC_OK, NULL },rci = {CMPI_RC_OK, NULL};
    CMPIEnumeration *enm = NULL;
    CMPIArray *ar = NULL;
    int irc, c, i;
@@ -628,6 +645,9 @@ static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
                   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
                   local=1;
                   unlockUpCall(broker);
+		  if (pInfo->initialized == 0) {
+		    initProvider(pInfo,binCtx.bHdr->sessionId);
+		  }
                   rci = pInfo->instanceMI->ft->enumInstances(
                      pInfo->instanceMI, context, result, cop, props);
                   lockUpCall(broker);
@@ -696,6 +716,9 @@ static CMPIEnumeration *enumInstanceNames(const CMPIBroker * broker,
                   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
                   local=1;
                   unlockUpCall(broker);
+		  if (pInfo->initialized == 0) {
+		    initProvider(pInfo,binCtx.bHdr->sessionId);
+		  }
                   rci = pInfo->instanceMI->ft->enumInstanceNames(
                      pInfo->instanceMI, context, result, cop);
                   lockUpCall(broker);

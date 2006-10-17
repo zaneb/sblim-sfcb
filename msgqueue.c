@@ -264,14 +264,18 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRcvMsg");
    _SFCB_TRACE(1, ("--- Receiving from %d", *s));
 
-   if ((spGetMsg(s, &fromfd, &spMsg, sizeof(spMsg), mqg)) == -1)
-      return spHandleError(s, em);
-      
-   if (mqg && mqg->teintr) {
-      mqg->eintr=1;    
-      mqg->rdone=0;
-      return 0;  
-   }
+   if (mqg==NULL) mqg=&imqg;
+   do {
+     if ((spGetMsg(s, &fromfd, &spMsg, sizeof(spMsg), mqg)) == -1)
+       return spHandleError(s, em);
+     
+     if (mqg && mqg->teintr) {
+       mqg->eintr=1;    
+       mqg->rdone=0;
+     }   
+     if (mqg->teintr) mqg->eintr=1;    
+   } while (mqg->teintr) ;       
+
    
    if (fromfd>0) spMsg.returnS=fromfd;   
    *from=spMsg.returnS;   
@@ -280,7 +284,6 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
 
    *length = spMsg.totalSize;
 
-   if (mqg==NULL) mqg=&imqg;
    mqg->rdone=1;
    mqg->eintr=0;
    

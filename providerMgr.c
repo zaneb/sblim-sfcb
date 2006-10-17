@@ -1003,6 +1003,11 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
          resp=NULL;
 //         spRecvResult(&resultSockets.receive, &fromS, (void**) &resp, &size);
          spRecvResult(&sockets.receive, &fromS, (void**) &resp, &size);
+	 /* nothing received -- construct a failure response */
+	 if (resp == NULL || size == 0) {
+	   resp = calloc(sizeof(BinResponseHdr),1);
+	   resp->rc = CMPI_RC_ERR_FAILED + 1;
+	 }
          for (i = 0; i < resp->count; i++) {
             resp->object[i].data=(void*)((int)resp->object[i].data+(char*)resp);
          }
@@ -1023,6 +1028,12 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
    else if ((ctx->noResp & 1)==0) {
 //      spRecvResult(&resultSockets.receive, &fromS, (void **) &resp, &size);
       spRecvResult(&sockets.receive, &fromS, (void **) &resp, &size);
+
+      /* nothing received -- construct a failure response */
+      if (resp == NULL || size == 0) {
+	resp = calloc(sizeof(BinResponseHdr),1);
+	resp->rc = CMPI_RC_ERR_FAILED + 1;
+      }
 
      ctx->rCount=ctx->pCount;
      if (resp->rvValue) {

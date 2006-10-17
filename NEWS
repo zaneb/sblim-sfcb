@@ -39,6 +39,7 @@ Bugs fixed:
 - 1564999 Fixed incorrect CimXmlRequest format.
 - 1565105 Fixed compile error with disabled debug.
 - 1185824 Added default instance properties
+- 1578051 Fixed race condition in provider initialization
 
 Changes in 1.1.0
 ================

@@ -382,6 +382,8 @@ void* providerIdleThread()
                            pInfo->instanceMI=NULL;
                            pInfo->associationMI=NULL;
                            pInfo->methodMI=NULL;
+                           pInfo->initialized=0;
+			   pthread_mutex_destroy(&pInfo->initMtx);
                         }   
                         else doNotExit=1;
                      }  
@@ -2006,7 +2008,7 @@ static BinResponseHdr *opNotSupported(BinRequestHdr * hdr, ProviderInfo * info, 
 
 
 
-static int initProvider(ProviderInfo *info, unsigned int sessionId)
+int initProvider(ProviderInfo *info, unsigned int sessionId)
 {
    CMPIInstanceMI *mi = NULL;
    int rc=0;
@@ -2015,36 +2017,43 @@ static int initProvider(ProviderInfo *info, unsigned int sessionId)
    
    _SFCB_ENTER(TRACE_PROVIDERDRV, "initProvider");
 
-   info->initialized=1;
+   pthread_mutex_lock(&info->initMtx);
+   if (info->initialized==0) {  
    
-   ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)"$$",CMPI_chars);
-   ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&sessionId,CMPI_uint32);
-   
-   if (info->type & INSTANCE_PROVIDER) {
-      rc |= (getInstanceMI(info, &mi, ctx) != 1);
-   }   
-   if (info->type & ASSOCIATION_PROVIDER) {
-      rc |= (getAssociationMI(info, (CMPIAssociationMI **) & mi, ctx) != 1);
-   }   
-   if (info->type & METHOD_PROVIDER) {
-      rc |= (getMethodMI(info, (CMPIMethodMI **) & mi, ctx) != 1);
-   }   
-   if (info->type & INDICATION_PROVIDER) {
-      rc |= (getIndicationMI(info, (CMPIIndicationMI **) & mi, ctx) != 1);
-   }   
-   if (info->type & CLASS_PROVIDER) {
-      rc |= (getClassMI(info, (CMPIClassMI **) & mi, ctx) != 1);
-   }
+     ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+     ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)"$$",CMPI_chars);
+     ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&sessionId,CMPI_uint32);
+     
+     if (info->type & INSTANCE_PROVIDER) {
+       rc |= (getInstanceMI(info, &mi, ctx) != 1);
+     }   
+     if (info->type & ASSOCIATION_PROVIDER) {
+       rc |= (getAssociationMI(info, (CMPIAssociationMI **) & mi, ctx) != 1);
+     }   
+     if (info->type & METHOD_PROVIDER) {
+       rc |= (getMethodMI(info, (CMPIMethodMI **) & mi, ctx) != 1);
+     }   
+     if (info->type & INDICATION_PROVIDER) {
+       rc |= (getIndicationMI(info, (CMPIIndicationMI **) & mi, ctx) != 1);
+     }   
+     if (info->type & CLASS_PROVIDER) {
+       rc |= (getClassMI(info, (CMPIClassMI **) & mi, ctx) != 1);
+     }   
 #ifdef HAVE_QUALREP   
-   if (info->type & QUALIFIER_PROVIDER) {
-      rc |= (getQualifierDeclMI(info, (CMPIQualifierDeclMI **) & mi, ctx) != 1);
+     if (info->type & QUALIFIER_PROVIDER) {
+       rc |= (getQualifierDeclMI(info, (CMPIQualifierDeclMI **) & mi, ctx) != 1);
+     }
+#endif   
+     
+     if (rc) {
+       rc = -2;
+     } else {
+       info -> initialized = 1;
+     }
+     pthread_mutex_unlock(&info->initMtx);
    }
-#endif
 
-   if (rc) _SFCB_RETURN(-2);
-
-   _SFCB_RETURN(0);
+   _SFCB_RETURN(rc);
 }
 
 
@@ -2253,6 +2262,11 @@ static void *processProviderInvocationRequestsThread(void *prms)
          req->object[i].data = NULL;
 
    if (req->operation != OPS_LoadProvider) {
+     if (req->provId == NULL) {
+       mlogf(M_ERROR,M_SHOW,"-#- no provider id specified for request --- terminating process.\n");
+       exit(-1);
+     }
+
       time(&curProvProc->lastActivity);
       for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
          if (pInfo->provIds.ids == req->provId) {
@@ -2266,15 +2280,12 @@ static void *processProviderInvocationRequestsThread(void *prms)
          mlogf(M_INFO,M_SHOW,"--- Reloading provider\n");
          doLoadProvider(pInfo,dlName);
       }  
- 
-      if (pInfo->initialized==0) {
-         pthread_mutex_lock(&pInfo->initMtx);
-         if (pInfo->initialized==0) {
-            initRc=initProvider(pInfo,req->sessionId);
-            _SFCB_TRACE(1, ("--- Provider initialization rc %d",initRc));
-         }  
-         pthread_mutex_unlock(&pInfo->initMtx);
-      }        
+      
+      if (pInfo && pInfo->initialized == 0) {
+	initRc=initProvider(pInfo,req->sessionId);
+	_SFCB_TRACE(1, ("--- Provider initialization rc %d",initRc));
+      }
+
    }
    else pInfo = NULL;
 

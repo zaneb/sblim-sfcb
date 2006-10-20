@@ -1,5 +1,8 @@
 2006-10-20  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
+	* dbpAdapter.c, sqlStatement.c: 
+	Fixed 1581214: compile problems.
+
 	* cimXmlRequest.c, constClass.c: 
 	Update for 1443864: use free instead of release to get rid of resultdata
 	arrays without causing a coredump.

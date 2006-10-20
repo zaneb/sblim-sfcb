@@ -64,7 +64,7 @@ extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array, CMPICount index
 extern void closeProviderContext(BinRequestContext * ctx);
 extern BinResponseHdr *invokeProvider(BinRequestContext * ctx);
 extern int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
-extern MsgSegment setCharsMsgSegment(char *str);
+extern MsgSegment setCharsMsgSegment(const char *str);
 extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
 
 
@@ -2486,8 +2486,8 @@ CMPIEnumeration * enumInstances(char * ns, char * cn) {
    	XtokEnumInstances *req = (XtokEnumInstances *) hdr->cimRequest;
 
    	sreq=calloc(1,sreqSize);
-   	sreq->operation=OPS_EnumerateInstances;
-   	sreq->count=req->properties+2;
+   	sreq->hdr.operation=OPS_EnumerateInstances;
+   	sreq->hdr.count=req->properties+2;
 
    	path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    	sreq->principal = setCharsMsgSegment(NULL);//ctx->principal
@@ -2736,8 +2736,8 @@ int deleteClass(char * ns, char * cn) {
    	XtokDeleteClass *req = (XtokDeleteClass *) hdr->cimRequest;
 
    	memset(&sreq,0,sizeof(sreq));
-   	sreq.operation=OPS_DeleteClass;
-   	sreq.count=2;
+   	sreq.hdr.operation=OPS_DeleteClass;
+   	sreq.hdr.count=2;
 
    	path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    	sreq.objectPath = setObjectPathMsgSegment(path);
@@ -2937,8 +2937,8 @@ int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl) {
 
    	if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
  	sreq=calloc(1,sreqSize);
- 	sreq->operation=OPS_ModifyInstance;
-   	sreq->count=req->properties+3;
+ 	sreq->hdr.operation=OPS_ModifyInstance;
+   	sreq->hdr.count=req->properties+3;
 
 
    	ExpressionLight * el;
@@ -3027,7 +3027,7 @@ UtilList * getClassNames(char * ns, char *filter) {
    	path = NewCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    	sreq.objectPath = setObjectPathMsgSegment(path);
    	sreq.principal = setCharsMsgSegment(NULL);
-   	sreq.flags = req->flags;
+   	sreq.hdr.flags = req->flags;
  	
    	binCtx.oHdr = (OperationHdr *) req;
    	binCtx.bHdr = &sreq.hdr;
@@ -3225,7 +3225,7 @@ ClassDef * getClassDef(const char *ns, const char *cn){
         }
     }
 	for (i = 0, l = cls->properties.used; i < l; i++) {
-  		CMPIData cd = ccl->ft->getPropertyAt(ccl, i, name, &quals, &rc);
+  		CMPIData cd = ccl->ft->getPropertyAt(ccl, i, name, &rc);
    		for (j = 0, m = ClClassGetPropQualifierCount(cls,i); j < m; j++) {
 	        CMPIString *name;
 	        CMPIData data = ccl->ft->getPropQualifierAt(ccl, i,j, &name, NULL);

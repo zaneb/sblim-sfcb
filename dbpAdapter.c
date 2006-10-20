@@ -35,6 +35,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+#include "cmpidt.h"
 #include "msgqueue.h"
 #include "utilft.h"
 #include "trace.h"

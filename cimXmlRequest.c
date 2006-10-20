@@ -421,7 +421,8 @@ static UtilStringBuffer *genEnumResponses(BinRequestContext * binCtx,
       enum2xml(enm, sb, binCtx->type, XML_asClass, binCtx->bHdr->flags);
    else enum2xml(enm, sb, binCtx->type, binCtx->xmlAs,binCtx->bHdr->flags);
    
-   ar->ft->release(ar);
+   //   ar->ft->release(ar);
+   free(ar);
 
    _SFCB_RETURN(sb);
 }

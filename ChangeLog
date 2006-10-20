@@ -1,3 +1,9 @@
+2006-10-20  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* cimXmlRequest.c, constClass.c: 
+	Update for 1443864: use free instead of release to get rid of resultdata
+	arrays without causing a coredump.
+
 2006-10-16  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* brokerUpc.c, msgqueue.c, providerDrv.c, providerMgr.c: 

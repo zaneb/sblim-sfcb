@@ -1,3 +1,10 @@
+2006-10-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* Makefile.am, classSchema2c.c, classProviderMem.c, classSchemaMem.c,
+	classSchemaMem.h: 
+	Fixed 1532425: Reenabled classSchema2c and went all the way and added
+	an in-memory class provider.
+
 2006-10-20  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* dbpAdapter.c, sqlStatement.c: 

@@ -78,6 +78,7 @@ lib_LTLIBRARIES = \
    libsfcInteropServerProvider.la \
    libsfcClassProvider.la \
    libsfcClassProviderGz.la \
+   libsfcClassProviderMem.la \
    libsfcCimXmlCodec.la \
    libsfcHttpAdapter.la \
    libsfcBasicAuthentication.la \
@@ -266,6 +267,10 @@ libsfcClassProvider_la_SOURCES = \
    classProvider.c
 libsfcClassProvider_la_LIBADD=-lsfcBrokerCore
 
+libsfcClassProviderMem_la_SOURCES = \
+   classProviderMem.c classSchemaMem.c interop_classSchema.c
+libsfcClassProviderMem_la_LIBADD=-lsfcBrokerCore
+
 libsfcCimXmlCodec_la_SOURCES = \
    cimXmlOps.y \
    cimXmlParserProcessed.c \
@@ -308,7 +313,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	fileRepository.h internalProvider.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h \
-        cimcClientSfcbLocal.h $(QUALREP_HEADER) cmpidtx.h
+       cimcClientSfcbLocal.h $(QUALREP_HEADER) cmpidtx.h classSchemaMem.h
 
 
 man_MANS=$(MANFILES)

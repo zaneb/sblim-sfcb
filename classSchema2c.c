@@ -100,23 +100,13 @@ static void buildClassSource(ClassRegister * cr, char *ns)
    CMPIConstClass *cc;
    ClObjectHdr *hdr;
    unsigned char *buf;
-   UtilList *ul;
    int j;
 
    it = cb->it = UtilFactory->newHashTable(61,
              UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
 
-   fprintf(stdout,"\n#include <stdio.h>\n\n"); 
-   fprintf(stdout,"typedef struct classDir {\n");
-   fprintf(stdout,"   char *name;\n");
-   fprintf(stdout,"   void *hdr;\n");
-   fprintf(stdout,"} ClassDir;\n\n");
-
-   fprintf(stdout,"typedef struct classSchema {\n");
-   fprintf(stdout,"   void *versionRecord;\n");
-   fprintf(stdout,"   ClassDir *classes;\n");
-   fprintf(stdout,"} ClassSchema; \n\n");        
-
+   fprintf(stdout,"\n#include \"classSchemaMem.h\"\n\n"); 
+   fprintf(stdout,"\n#include <stddef.h>\n\n"); 
    
    fprintf(stdout,"static unsigned char version[]={"); 
    
@@ -148,10 +138,9 @@ static void buildClassSource(ClassRegister * cr, char *ns)
       fprintf(stdout,"\t{\"%s\",%s},\n",cc->ft->getCharClassName(cc),cc->ft->getCharClassName(cc)); 
    }        
    fprintf(stdout,"\t{NULL,NULL}};\n"); 
-   fprintf(stdout,"\nClassSchema %s_classes[]={%s,classes};\n\n",ns,cr->vr ? "version" : "NULL");
+   fprintf(stdout,"\nClassSchema %s_classes={%s,classes};\n\n",ns,cr->vr ? "version" : "NULL");
        
 }
-
 
 static ClassRegister *newClassRegister(char *fname, char *ns)
 {
@@ -189,21 +178,23 @@ static ClassRegister *newClassRegister(char *fname, char *ns)
       CMPIConstClass *cc=NULL;
       char *buf=NULL;
       char *cn;
-      
+
       if (first) {
-         if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version &&
-            strcmp(vrp->id,"sfcd-rep")==0) vRec=1;
-         first=0;
+         if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version) vRec=1;
+         else if (vrp->size==sizeof(ClVersionRecord)<<24 && vrp->type==HDR_Version) {
+            mlogf(M_ERROR,M_SHOW,"--- %s is in wrong endian format\n",fin);
+            return NULL;
+         }
       }
       
       if (vRec==0 && hdr.type!=HDR_Class) {
-         mlogf(M_ERROR,M_SHOW,"--- %s contains non-class record(s) - directory skipped\n",fin);
+         mlogf(M_ERROR,M_SHOW,"--- %s contains non-class record(s)\n",fin);
          return NULL;
      }
       
       buf = (char *) malloc(hdr.size);
       if (buf==NULL) {
-         mlogf(M_ERROR,M_SHOW,"--- %s contains record(s) that are too long - directory skipped\n",fin);
+         mlogf(M_ERROR,M_SHOW,"--- %s contains record(s) that are too long\n",fin);
          return NULL;
       }
       
@@ -211,16 +202,37 @@ static ClassRegister *newClassRegister(char *fname, char *ns)
       *((ClObjectHdr *) buf) = hdr;
       
       if (fread(buf + sizeof(hdr), 1, hdr.size - sizeof(hdr), in) == hdr.size - sizeof(hdr)) {
-         if (vRec) {
+         if (vRec) {	    
             cr->vr=(ClVersionRecord*)buf;
-            continue;
+	    vrp = NEW(ClVersionRecord);
+	    memcpy(vrp,cr->vr,sizeof(ClVersionRecord));
+            if (strcmp(cr->vr->id,"sfcb-rep")) {
+               mlogf(M_ERROR,M_SHOW,"--- %s contains invalid version record - directory skipped\n",fin);
+               return NULL;
+            }   
+            vRec=0;
+         } else {
+	   vrp = NULL;
+	 }
+
+         if (first) {
+            int v=-1;
+            first=0;
+            if (ClVerifyObjImplLevel(vrp)) continue;
+            if (vrp) v=vrp->objImplLevel;
+            mlogf(M_ERROR,M_SHOW,"--- %s contains unsupported object implementation format (%d) - directory skipped\n",
+               fin,v);
+            return NULL;
          }
+
+                
          cc = NEW(CMPIConstClass);
          cc->hdl = buf;
          cc->ft = CMPIConstClassFT;
          cc->ft->relocate(cc);
          cn=(char*)cc->ft->getCharClassName(cc);
-         if (strncmp(cn,"DMY_",4)!=0) {
+         if (strncmp(cn,"DMY_",4)!=0) {    
+
             total+=s;
             cb->ht->ft->put(cb->ht, cn, cc);
             if (cc->ft->isAssociation(cc)) {

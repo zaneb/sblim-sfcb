@@ -17,6 +17,10 @@ Bugs fixed:
 Changes in 1.1.1
 ================
 
+New Features:
+- 1529013 Added execution timing traces
+- 1532425 Added in-memory class provider
+
 Bugs fixed:
 - 1420399 Changed getSchema.sh to be more easily customizable for
 	  different CIM Schema versions.
@@ -40,6 +44,7 @@ Bugs fixed:
 - 1565105 Fixed compile error with disabled debug.
 - 1185824 Added default instance properties
 - 1578051 Fixed race condition in provider initialization
+- 1532425 Fixed classSchema2c
 
 Changes in 1.1.0
 ================

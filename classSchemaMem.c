@@ -25,7 +25,7 @@
 #include "classSchemaMem.h"
 
 extern ClassSchema interop_classes;
-/* extern ClassSchema interop_classes; */
+/* extern ClassSchema cimv2_classes; */
 
 NamespaceDir sfcb_mem_namespaces[] = {
   {"root/interop", &interop_classes},

@@ -91,7 +91,7 @@ authorization SBLIM provider available from the SBLIM Project home page.
 sfcb does include support for basic authentication (which requires writing
 a custom authentication library) and authentication based on client 
 certificates which can be combined with basic authentication. See 
-19. for details.
+21. for details.
 
  
 2. Pre-requisites
@@ -586,13 +586,13 @@ SFCB_PAUSE_PROVIDER
 	Specifies the name of the SBLIM provider to pause after first
 	being loaded to facilitate attaching a runtime debugger to the
 	provider's process for debugging purposes.
-	See Section 19 below for more details on debugging providers.
+	See Section 23 below for more details on debugging providers.
  
 SFCB_PAUSE_CODEC 
 	Specifies the name of the sfcb codec (currently only "http") to pause
 	after first being started to facilitate attaching a runtime debugger
 	to the process.
-        See Section 15 below for more details on debugging sfcb.
+        See Section 16 below for more details on debugging sfcb.
 
 SFCB_PAUSE_HTTP
 	(duplicate of SFCB_PAUSE_CODEC=http? remove?)
@@ -637,7 +637,7 @@ and that the provider is properly registered using the sfcbstage and sfcbrepos
 commands as described in 17. and 18.
 Ideally the provider package is enabled for sfcb, so that a make install and/or
 make postinstall will care for the proper registration. For instance most
-of the SBLIM providers are prepared for sfcb. See 20. below.
+of the SBLIM providers are prepared for sfcb. See 22. below.
 
 15. Testing sfcb with wbemcat and xmltest
 =========================================
@@ -789,7 +789,7 @@ rudimentary CIM clients, the SBLIM project includes a more fully-fledged
 command-line CIM client called wbemcli. wbemcli is installed as part of the
 automated sfcb install process when using installsfcb.sh, otherwise you will
 have to downlaod and install the wbemcli package from the SBLIM website.
-See Section 20 below for more information about wbemcli.
+See Section 24 below for more information about wbemcli.
 
 
 16. Debugging sfcb
@@ -842,7 +842,7 @@ The following is the relevant code from providerDrv.c
 If the error(s) are determined to be in the SBLIM provider library, not the
 sfcb itself, then you should enabled provider debug messages using the
 SBLIM_TRACE environment variable and/or try attaching a runtime debugger to
-the provider's process and set appropriate breakpoints. See Section 19 below
+the provider's process and set appropriate breakpoints. See Section 23 below
 for more information about debugging providers.   
 
 
@@ -1014,7 +1014,82 @@ in the staging area.
 after which you must still rebuild the class repository and restart sfcb as
 before.
 
-19. Authentication Support
+20. Alternative Class Providers
+===============================
+As the class repository is implemented via a provider, it can easily be
+replaced by registerening an alternative provider in providerRegister.
+sfcb comes with three different class providers:
+
+sfcClassProvider
+----------------
+The default class provider: it loads all the classSchema file from the
+repository tree in memory. It's fast but can consume a lot of memory with
+larger schemas.
+
+sfcClassProviderGz
+------------------
+The compressing and caching class provider: it only holds a last recently
+used classes in a cache and will reload classes from the filesystem repository
+as needed. It is also capable to handle classSchema files compressed via
+gzip. It requires libgz to operate.
+
+sfcClassProviderMem
+-------------------
+This is a special purpose provider which allows to compile the schema into
+the provider. In consequence, no repository is needed on the file system.
+In order to use it in a meaningful way it is necessary to produce C source
+files containing the schema information, add those to the set of sources
+for the class provider and rebuild it. The default implementation of 
+sfcClassProviderMem comes with a prebuilt root/interop namespace.
+
+Instructions for adding namespaces to sfcClassProviderMem
+..........................................................
+
+Build and install sfcb as usual. Then build and install the providers, 
+including the post-install steps required to build the repository.
+Next, create a C source file from the class schema files in all the
+namespaces you want to include into the class provider.
+For this purpose, there's a program called classSchema2c, which you should
+invoke like this (for a namespace "xyz"):
+
+classSchema2c /usr/local/var/lib/sfcb/registration/repository/root/xyz xyz \
+  > xyz_classSchema.c
+
+This produces a file xyz_classSchema.c (by default, sfcb is shipped with
+a interop_classSchema.c) which needs to be compiled and linked with 
+the class provider library. In order to do this, spot the line in Makefile.am
+starting with sfcClassProviderMem_la_SOURCES and append this file's name to 
+list of source files. I.e., change 
+
+libsfcClassProviderMem_la_SOURCES = \
+   classProviderMem.c classSchemaMem.c interop_classSchema.c
+
+to 
+
+libsfcClassProviderMem_la_SOURCES = \
+   classProviderMem.c classSchemaMem.c interop_classSchema.c xyz_classSchema.c
+
+There's one step left to do: you must edit the file classSchemaMem.c and add
+a reference to the data structures in xyz_classSchemas.c to it. I.e., add
+
+extern ClassSchema xyz_classes;
+
+after the other extern ClassSchema statements, and add the line
+
+  { "xyz", &xyz_classes },
+
+before the line containing 
+
+  { NULL, NULL }
+
+That may sound complicated, just have a look at the file and you'll understand
+what to do.
+
+HINT: Before using sfcClassProviderMem you should verify that providers and
+schema work with the default class provider.
+
+
+21. Authentication Support
 ==========================
 sfcb can be configured to support HTTP basic authentication and authentication
 based on client certificates (for HTTP over SSL connections).
@@ -1054,7 +1129,7 @@ supply a trusted certificate AND succesfully authenticate via HTTP basic
 authentication. In the case of special requirements, it is necessary to
 implement a custom certificate authentication library.
 
-20. Installing Existing SBLIM Providers
+22. Installing Existing SBLIM Providers
 =======================================
 The cmpi-base SBLIM provider package - which is installed by default when you
 install sfcbd from CVS using the installsfcb.sh script - implements the
@@ -1094,7 +1169,7 @@ for a full list of available SBLIM providers, including a number of test
 providers.
 
 
-21. Debugging SBLIM Providers
+23. Debugging SBLIM Providers
 =============================
 Many of the existing SBLIM providers include extensive degub/trace messages
 to aid in debugging errors that may occur when running the providers. To
@@ -1152,7 +1227,7 @@ The following is the relevant code from providerDrv.c
 2015          }
 
 
-22. wbemcli, sfcc and other CIM Clients
+24. wbemcli, sfcc and other CIM Clients
 =======================================
 The SBLIM Project includes an Open Source command-line CIM client 'wbemcli'
 that can be used to send CIM requests to the sfcb and display returned
@@ -1244,7 +1319,7 @@ approriate home page for these clients for more information. In general,
 with sfcbd (except for the unsupported CIM operations mentioned in Section 2). 
 
 
-23. SLP Support
+25. SLP Support
 ===============
 Prerequisites for slp support are the openslp library available from
 http://www.openslp.org and the sfcc library available from our
@@ -1278,7 +1353,7 @@ For the syntax of the advertised attributes see the WBEM SLP Template available
 from the dmtf website at: http://www.dmtf.org/standards/wbem/wbem.1.0.en
 
 
-24. Files
+26. Files
 =========
 /usr/local/sbin/sfcbd
 	Small-footprint CIM broker daemon.
@@ -1371,7 +1446,7 @@ from the dmtf website at: http://www.dmtf.org/standards/wbem/wbem.1.0.en
 	CMPI API headers (used to build providers)
 
 
-25. Support and Reporting Bugs
+27. Support and Reporting Bugs
 ==============================
 The SBLIM project maintains a mailing list to which you should direct all
 questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
@@ -1384,7 +1459,7 @@ The SBLIM Project Bug tracking page can be found at
 	http://sourceforge.net/tracker/?group_id=128809&atid=712784
 
 
-26. Known Bugs
+28. Known Bugs
 ==============
 - The HTTP xml codec does not correctly handle arrays and reference arrays.
 - Namespace enforcement is not correct when provider registration has no namespace definition.

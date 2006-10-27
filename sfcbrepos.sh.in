@@ -143,10 +143,10 @@ then
     do
 	if ls $mofdir/*.mof > /dev/null 2>&1
 	then
-	    namespace=`echo $mofdir | sed s?$stagingdir/mofs??`
-	    repositorydir=$registrationdir/repository/$namespace
+	    namespace=`echo $mofdir | sed s?$stagingdir/mofs/??`
+	    repositorydir=$registrationdir/repository/
 	    [ -d $repositorydir ] || mkdir -p $repositorydir
-	    if ! sfcbmof -o $repositorydir/classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $mofdir/*.mof
+	    if ! sfcbmof -d $repositorydir -n $namespace -o classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $mofdir/*.mof
 	    then
 		echo Failed compiling the MOF files. >&2
 		exit 1

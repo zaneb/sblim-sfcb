@@ -54,12 +54,6 @@ extern void setStatus(CMPIStatus *st, CMPIrc rc, const char *msg);
 
 static const CMPIBroker *_broker;
 
-typedef struct keyIds {
-   CMPIString *key;
-   CMPIData data;
-} KeyIds;
-
-
 static char * repositoryNs (char * nss)
 {
   if (strcasecmp(nss,pg_interopNs)==0) {
@@ -69,11 +63,6 @@ static char * repositoryNs (char * nss)
   }   
 }
 
-static int qCompare(const void *arg1, const void *arg2)
-{
-   return strcasecmp((char *) ((KeyIds *) arg1)->key->hdl,
-                     (char *) ((KeyIds *) arg2)->key->hdl);
-}
 /*
 static int cpy2lower(char *in, char *out)
 {
@@ -82,111 +71,7 @@ static int cpy2lower(char *in, char *out)
    return i - 1;
 }
 */
-static char copKey[8192];
 
-static UtilStringBuffer *normalize_ObjectPath(const CMPIObjectPath * cop)
-{
-   int c = CMGetKeyCount(cop, NULL);
-   int i;
-   char pc = 0,*cp;
-   UtilStringBuffer *sb=newStringBuffer(512);
-      
-   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "normalize_ObjectPath");
-
-   KeyIds *ids = (KeyIds *) malloc(sizeof(KeyIds) * c);
-   
-   for (i = 0; i < c; i++) {
-      ids[i].data = CMGetKeyAt(cop, i, &ids[i].key, NULL);
-      cp=ids[i].key->hdl;
-      while (*cp) {
-         *cp=tolower(*cp);
-         cp++; 
-      }
-   }
-   qsort(ids, c, sizeof(KeyIds), qCompare);
-
-   for (i = 0; i < c; i++) {
-      if (pc) sb->ft->appendChars(sb,",");
-      sb->ft->appendChars(sb,(char*)ids[i].key->hdl);
-      sb->ft->appendChars(sb,"=");
-      if (ids[i].data.type==CMPI_ref) {
-         CMPIString *cn=CMGetClassName(ids[i].data.value.ref,NULL);
-	 CMPIString *ns=CMGetNameSpace(ids[i].data.value.ref,NULL);
-         UtilStringBuffer *sbt= normalize_ObjectPath(ids[i].data.value.ref);
-	 char *nss;
-         cp=(char*)cn->hdl;
-         while (*cp) {
-            *cp=tolower(*cp);
-            cp++; 
-         }
-	 if (ns==NULL) {
-	   nss = CMGetCharPtr(CMGetNameSpace(cop,NULL));
-	 } else {
-	   nss = CMGetCharPtr(ns);
-	 }
-	 if (nss) {
-	   sb->ft->appendChars(sb,nss);
-	   sb->ft->appendChars(sb,":");
-	 }
-         sb->ft->appendChars(sb,(char*)cn->hdl);
-         sb->ft->appendChars(sb,".");
-         sb->ft->appendChars(sb,sbt->ft->getCharPtr(sbt));
-         sbt->ft->release(sbt);
-      }
-      else {
-         char *v = sfcb_value2Chars(ids[i].data.type, &ids[i].data.value);
-         sb->ft->appendChars(sb,v);
-         free(v);
-      }   
-      pc = ',';
-   }
-   free(ids);
-   
-   _SFCB_TRACE(1,("--- key: >%s<",sb->ft->getCharPtr(sb)));
-
-   _SFCB_RETURN(sb);
-}
-/*
-static char *normalizeObjectPath(CMPIObjectPath * cop)
-{
-   int c = CMGetKeyCount(cop, NULL);
-   int i, p;
-   char pc = 0;
-   copKey[0]=0;
-   
-   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "normalizeObjectPath");
-
-normalize_ObjectPath(cop);
-   KeyIds *ids = (KeyIds *) malloc(sizeof(KeyIds) * c);
-   for (i = 0; i < c; i++) {
-      ids[i].data = CMGetKeyAt(cop, i, &ids[i].key, NULL);
-   }
-   qsort(ids, c, sizeof(KeyIds), qCompare);
-
-   p=0;
-   for (i = 0; i < c; i++) {
-      if (pc) copKey[p++] = pc;
-      p += cpy2lower(ids[i].key->hdl,copKey+p);
-      copKey[p++]='=';
-      char *v = sfcb_value2Chars(ids[i].data.type, &ids[i].data.value);
-      p += cpy2lower(v,copKey + p);
-      pc = ',';
-      free(v);
-   }
-   free(ids);
-   
-   _SFCB_TRACE(1,("--- key: >%s<",copKey));
-
-   _SFCB_RETURN(copKey);
-}
-*/
-char *normalizeObjectPath(const CMPIObjectPath *cop)
-{
-   UtilStringBuffer *sb=normalize_ObjectPath(cop);  
-   strcpy(copKey,sb->ft->getCharPtr(sb));
-   sb->ft->release(sb);
-   return copKey;
-}
 
 char *internalProviderNormalizeObjectPath(const CMPIObjectPath *cop)
 {

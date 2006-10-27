@@ -18,7 +18,7 @@
  * Directory/file based respository implementation.
  *
 */
-
+#include "sfcUtil/utilft.h"
 
 #ifndef _FILEREPOSITORY_
 #define _FILEREPOSITORY_
@@ -47,5 +47,7 @@ extern int existingBlob(char *ns, char * cls, char *id);
 extern int existingNameSpace(char *ns);
 extern void* getFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
 extern void* getNext(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
+extern char *normalizeObjectPath(const CMPIObjectPath *cop);
+extern UtilStringBuffer *normalize_ObjectPath(const CMPIObjectPath * cop);
 
 #endif

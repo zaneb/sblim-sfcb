@@ -6,6 +6,7 @@ New features:
 - 1566963 Added qualifier support
 - 1569239 Qualifier support configurable
 - moved some util functions to sfcUtil, build as shared library
+- 1578815 create fileRepository shared library
 
 Bugs fixed:
 - 1525280 Fixed segfaults when linking with sfcc

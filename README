@@ -268,8 +268,7 @@ Options:
 		
 	--disable-qualifierrep=[yes|no]
 		Disable support for qualifier operations (Get-,Set-,Delete-,
-		EnumerateQualifiers)
-		Default=no
+		EnumerateQualifiers). Default=no
 
 
 9. Downloading the CIM Schema

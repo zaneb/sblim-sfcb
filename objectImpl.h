@@ -55,7 +55,7 @@
  #define CLALIGN 4
  #define CLEXTRA 0
  
- #define ALIGN(x,y) ((((x-1)/y)+1)*y)
+ #define ALIGN(x,y) (x == 0 ? 0 : ((((x-1)/y)+1)*y))
 
 #endif
 

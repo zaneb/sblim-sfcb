@@ -7,6 +7,7 @@ New features:
 - 1569239 Qualifier support configurable
 - moved some util functions to sfcUtil, build as shared library
 - 1578815 create fileRepository shared library
+- 1587752 libObjectImplSwapI32toP32 now supports instances and qualifiers
 
 Bugs fixed:
 - 1525280 Fixed segfaults when linking with sfcc
@@ -14,6 +15,7 @@ Bugs fixed:
 - 1567620 Ensure lower provider process limit
 - 1567754 Fixed segfault on enumerateclasses
 - 1567676 Fixed several memory leaks
+- 1592037 Fixed ClArray creation issues
 
 Changes in 1.1.1
 ================

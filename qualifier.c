@@ -110,6 +110,8 @@ void getSerializedQualifier(CMPIQualifierDecl * q, void *area)
    memcpy(area, q, sizeof(CMPIQualifierDecl));
    ClQualifierRebuildQualifier((ClQualifierDeclaration *) q->hdl,
                        (void *) ((char *) area + sizeof(CMPIQualifierDecl)));
+   ((CMPIQualifierDecl *)(area))->hdl =
+   			(ClQualifierDeclaration *) ((char *) area + sizeof(CMPIQualifierDecl));                       
 }
 
 CMPIQualifierDecl initQualifier(ClQualifierDeclaration *qual)

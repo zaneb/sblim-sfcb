@@ -446,6 +446,7 @@ void getSerializedInstance(const CMPIInstance * ci, void *area)
    memcpy(area, ci, sizeof(struct native_instance));
    ClInstanceRebuild((ClInstance *) ci->hdl,
                      (void *) ((char *) area + sizeof(struct native_instance)));
+   ((CMPIInstance *)(area))->hdl = (ClInstance *) ((char *) area + sizeof(struct native_instance));
 }
 
 CMPIInstance *relocateSerializedInstance(void *area)

@@ -302,7 +302,8 @@ static long addClArray(ClObjectHdr * hdr, CMPIData d)
    }
 
    td.state = 0;
-   td.type = (ar->type == CMPI_string) ? CMPI_chars : ar->type;
+   //include array type, needed for objectImplSwapping in copyI32toP32ArrayBuf
+   td.type = ((ar->type == CMPI_string) ? CMPI_chars : ar->type) | CMPI_ARRAY;
    td.value.sint32 = ar->size; 
    buf->indexPtr[buf->iUsed++] = buf->bUsed;
    buf->buf[buf->bUsed++] = td;

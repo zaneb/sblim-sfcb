@@ -70,10 +70,21 @@ QUALREP_FILES =
 QUALREP_HEADER =
 endif
 
+if JDBC
+JDBC_FILES = \
+    dbpAdapter.c \
+    sqlLexer.l \
+    sqlParser.y \
+    sqlStatement.c \
+    avltree.c
+else
+JDBC_FILES =
+endif
+
 lib_LTLIBRARIES = \
    libsfcUtil.la \
-   libsfcFileRepository.la \
    libsfcBrokerCore.la \
+   libsfcFileRepository.la \
    libsfcInternalProvider.la \
    libsfcInteropProvider.la \
    libsfcInteropServerProvider.la \
@@ -118,7 +129,6 @@ libsfcUtil_la_SOURCES = \
 	sfcUtil/utilHashtable.c \
 	sfcUtil/utilStringBuffer.c
 
-if JDBC
 libsfcBrokerCore_la_SOURCES = \
     args.c \
     array.c \
@@ -154,51 +164,8 @@ libsfcBrokerCore_la_SOURCES = \
     cimXmlGen.c \
     mrwlock.c \
     mlog.c \
-    dbpAdapter.c \
-    sqlLexer.l \
-    sqlParser.y \
-    sqlStatement.c \
-    avltree.c \
+    $(JDBC_FILES) \
     $(QUALREP_FILES)
- 
-else
-libsfcBrokerCore_la_SOURCES = \
-    args.c \
-    array.c \
-    brokerEnc.c \
-    brokerUpc.c \
-    brokerOs.c \
-    context.c \
-    datetime.c \
-    enumeration.c \
-    instance.c \
-    objectpath.c \
-    result.c \
-    selectexp.c \
-    selectcond.c \
-    subcond.c \
-    predicate.c \
-    string.c \
-    value.c \
-    support.c \
-    providerRegister.c \
-    objectImpl.c \
-    constClass.c \
-    genericlist.c \
-    msgqueue.c \
-    providerMgr.c \
-    providerDrv.c \
-    trace.c \
-    control.c \
-    queryParser.y \
-    queryLexer.l \
-    queryOperation.c \
-    queryStatement.c \
-    cimXmlGen.c \
-    mrwlock.c \
-    mlog.c \
-    $(QUALREP_FILES)
-endif
 
 libsfcBrokerCore_la_CFLAGS = $(AM_CFLAGS) @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
 libsfcBrokerCore_la_LIBADD=-lsfcUtil

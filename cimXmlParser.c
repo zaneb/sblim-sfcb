@@ -1071,10 +1071,25 @@ static int procPropertyArray(YYSTYPE * lvalp, ParserControl * parm)
    {NULL}
    };
    XmlAttr attr[5];
+   int i,m;
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "PROPERTY.ARRAY")) {
       if (attrsOk(parm->xmb, elmPA, attr, "PROPERTY.ARRAY", ZTOK_PROPERTYARRAY)) {
+         memset(&lvalp->xtokProperty, 0, sizeof(XtokProperty));
+         lvalp->xtokProperty.valueType = (CMPIType) - 1;
+         if (attr[1].attr)
+            for (i = 0, m = num_types; i < m; i++) {
+               if (strcasecmp(attr[1].attr, types[i].str) == 0) {
+                  lvalp->xtokProperty.valueType = types[i].type;
+                  break;
+               }
+            }         
+         lvalp->xtokProperty.valueType |= CMPI_ARRAY;
+         lvalp->xtokProperty.name = attr[0].attr;
+         lvalp->xtokProperty.classOrigin = attr[2].attr;
+         if (attr[3].attr)
+            lvalp->xtokProperty.propagated = !strcasecmp(attr[3].attr, "true");      	
          return XTOK_PROPERTYARRAY;
       }
    }

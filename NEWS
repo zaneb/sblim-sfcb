@@ -16,6 +16,7 @@ Bugs fixed:
 - 1567754 Fixed segfault on enumerateclasses
 - 1567676 Fixed several memory leaks
 - 1592037 Fixed ClArray creation issues
+- 1592760 Fixed PROPERTY.ARRAY creation fails
 
 Changes in 1.1.1
 ================

@@ -454,7 +454,6 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <intValue>                ZTOK_PROPERTYREFERENCE
 
 %type  <xtokPropertyData>        propertyData
-%type  <xtokPropertyData>        propertyArray
 %type  <xtokPropertyData>        qualifierList
 %type  <xtokProperty>            property
 
@@ -2096,9 +2095,9 @@ property
     {
        $$.val=$3;
     }
-    | propertyArray
+    | XTOK_PROPERTYARRAY qualifierList propertyData ZTOK_PROPERTYARRAY
     {
-       $$.val=$1;
+       $$.val=$3;
     }
 ;
 
@@ -2117,12 +2116,15 @@ propertyData
     |
       value
     {
-//       printf("--- value: %s\n",$1.value);
        $$.value=$1.value;
     }
     | valueReference
     {
        $$.ref=$1;
+    }
+    | propertyList
+    {
+       $$.list=&$1;
     }
 ;  
 
@@ -2151,18 +2153,6 @@ qualifier
        $$.valueArray=$2.list;
     }
 ;
-
-
-propertyArray
-    : XTOK_PROPERTYARRAY qualifierList valueArray ZTOK_PROPERTYARRAY
-    {
-      $$.list = NULL;
-      //   printf("--- propertyArray\n");
-      /* need to translate valuearray */
-    }
-;
-
-
 
 /*
  *    localNameSpacePath 

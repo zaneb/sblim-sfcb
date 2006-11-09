@@ -1,5 +1,5 @@
 2006-11-09  Sven Schuetz
-	* cimXmlGen.c, cimXmlRequest.c:
+	* cimXmlGen.c, cimXmlRequest.c, objectImpl.c:
 	Fixed 1593220: bug in setQualifier
 
 2006-11-08  Sven Schuetz

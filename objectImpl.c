@@ -741,6 +741,7 @@ static int copyQualifiers(int ofs, int max, char *to, ClSection * ts,
 {
    ClQualifier *q;
    int l = ts->used * sizeof(ClQualifier);
+   if(l == 0) return 0;
    ts->max = ts->used;
 
    q = (ClQualifier *) ClObjectGetClSection(from, fs);

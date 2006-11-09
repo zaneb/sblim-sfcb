@@ -2010,13 +2010,17 @@ static RespSegments setQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
 				_SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERROR, 
            		"ISARRAY attribute and default value conflict")));   			
 		
-		d.value=union2CMPIValue(d.type, req->qualifierdeclaration.data.value, &req->qualifierdeclaration.data.valueArray);
+		d.value=str2CMPIValue(d.type, req->qualifierdeclaration.data.value,
+			(XtokValueReference *)&req->qualifierdeclaration.data.valueArray);		
 		ClQualifierAddQualifier(&q->hdr, &q->qualifierData, req->qualifierdeclaration.name, d);		
      } else { //no default value - rely on ISARRAY attr, check if it's set
      	/*if(!req->qualifierdeclaration.isarrayIsSet)
 			_SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERROR, 
            "ISARRAY attribute MUST be present if the Qualifier declares no default value")));*/
-     }
+           q->qualifierData.sectionOffset=0;
+           q->qualifierData.used=0;
+           q->qualifierData.max=0;
+	}
      
    qual = initQualifier(q);
                

@@ -1,6 +1,10 @@
+2006-11-09  Sven Schuetz
+	* cimXmlGen.c, cimXmlRequest.c:
+	Fixed 1593220: bug in setQualifier
+
 2006-11-08  Sven Schuetz
 	* cimXmlOps.y, cimXmlParser.c:
-	Fixed 1592760 sfcb PROPERTY.ARRAY creation fails
+	Fixed 1592760: sfcb PROPERTY.ARRAY creation fails
 
 2006-11-07  Sven Schuetz
 	* objectImpl.h, objectImplSwapI32toP32.c, instance.c,

@@ -346,32 +346,6 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
    return value;
 }
 
-CMPIValue union2CMPIValue(CMPIType type, char *val, XtokValueArray *arr)
-{
-	CMPIValue value;
-
-	if (type==0) {
-		type=guessType(val);
-	}
-
-	if (type & CMPI_ARRAY) {
-		type &= ~CMPI_ARRAY; //otherwise it gets treated as an array in str2CMPIValue, which we don't want
-		int i, max;
-		CMPIValue v;
-		max=arr->next;
-     
-		value.array = TrackedCMPIArray(max,type,NULL);
-		if (value.array != NULL) {
-			for (i=0; i<max; i++) {
-			v = str2CMPIValue(type, arr->values[i], NULL);
-			CMSetArrayElementAt(value.array, i, &v, type); 
-			}
-			return value;
-		}
-	}
-	return(str2CMPIValue(type, val, NULL));
-}
-
 int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
 {
    char str[256];
@@ -993,7 +967,12 @@ int qualifierDeclaration2xml(CMPIQualifierDecl * q, UtilStringBuffer * sb)
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "qualifierDeclaration2xml");
 
-   data = q->ft->getQualifierDeclData(q, NULL);
+   if(qual->qualifierData.used) {
+      data = q->ft->getQualifierDeclData(q, NULL);
+   }
+   else {
+      data.state = CMPI_badValue;
+   }
 
    sb->ft->appendChars(sb, "<QUALIFIER.DECLARATION NAME=\"");
    sb->ft->appendChars(sb, q->ft->getCharQualifierName(q));

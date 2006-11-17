@@ -635,7 +635,7 @@ int main(int argc, char *argv[])
    setSignal(SIGQUIT, handleSigquit,0);
    setSignal(SIGINT,  handleSigquit,0);
    
-   setSignal(SIGTERM, handleSigterm,0); /* kill cannot be intercepted */
+   setSignal(SIGTERM, handleSigquit,0);
    setSignal(SIGHUP,  handleSigHup,0);
    
    startLocalConnectServer();

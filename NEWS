@@ -18,6 +18,7 @@ Bugs fixed:
 - 1592037 Fixed ClArray creation issues
 - 1592760 Fixed PROPERTY.ARRAY creation fails
 - 1593220 Fixed bug in setQualifier
+- 1598227 Fixed handling of SIGTERM
 
 Changes in 1.1.1
 ================

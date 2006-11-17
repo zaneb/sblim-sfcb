@@ -1,3 +1,9 @@
+2006-11-17  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* sfcBroker.c: 
+	Fixed 1598227: Use the SIGQUIT handler for SIGTERM as well in order to
+	clean up the child processes.
+
 2006-11-09  Sven Schuetz
 	* cimXmlGen.c, cimXmlRequest.c, objectImpl.c:
 	Fixed 1593220: bug in setQualifier

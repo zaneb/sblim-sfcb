@@ -270,6 +270,15 @@ Options:
 		Disable support for qualifier operations (Get-,Set-,Delete-,
 		EnumerateQualifiers). Default=no
 
+        --disable-default-properties=[yes|no]
+                Disable generation of default instance properties for SFCB.
+		Default=no
+
+        --enable-optimized-enumeration=[yes|no]
+                Enable enumeration call optimization for polymorphic 
+		invocations. This option can result in less provider invocations
+		but may break providers expecting to be called for leaf classes
+		only (and then multiple times). Default=no
 
 9. Downloading the CIM Schema
 =============================

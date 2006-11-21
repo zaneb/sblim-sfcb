@@ -233,6 +233,25 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
    _SFCB_RETURN(defaultProvInfoPtr);
 }
 
+
+#ifdef HAVE_OPTIMIZED_ENUMERATION
+static int optimized_provider_list_contains(UtilList *list, ProviderInfo *info)
+{
+  ProviderInfo *pInfo;
+  
+  if (!list->ft->isEmpty(list)) {
+    pInfo = (ProviderInfo*)list->ft->getFirst(list);
+    while(pInfo) {
+      if (strcmp(pInfo->providerName,info->providerName) == 0) {
+	return 1;
+      }
+      pInfo = (ProviderInfo*)list->ft->getNext(list);
+    }
+  }
+  return 0;
+}
+#endif
+
 static int addProviders(long type, char *className, char *nameSpace, 
             UtilList * providerList)
 {
@@ -246,8 +265,14 @@ static int addProviders(long type, char *className, char *nameSpace,
 
    ip = lookupProvider(type,className,nameSpace,&st);
    if (ip == NULL) _SFCB_RETURN(st.rc);
-   
-   if (ip->providerName && !providerList->ft->contains(providerList, ip)) {
+
+   if (ip->providerName && 
+#ifdef HAVE_OPTIMIZED_ENUMERATION
+       !optimized_provider_list_contains(providerList,ip)
+#else
+       !providerList->ft->contains(providerList, ip)
+#endif   
+       ) {
       _SFCB_TRACE(1,("--- adding className: %s provider: %s",className,ip->providerName));
       providerList->ft->add(providerList, ip);
    } 

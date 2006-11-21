@@ -1459,6 +1459,22 @@ static BinResponseHdr *enumInstances(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIFlags flgs=0;
    char **props=NULL;
 
+#ifndef HAVE_OPTIMIZED_ENUMERATION
+   if (info->className && info->className[0] != '$') {
+     /* not a special provider, perform class name substitution if call is for a
+        parent class of the class the provider is registered for */
+     char * classname = CMGetCharPtr(CMGetClassName(path,NULL));
+     char * namespace = CMGetCharPtr(CMGetNameSpace(path,NULL));
+     if (classname && namespace && strcasecmp(info->className,classname)) {
+       CMPIObjectPath * provPath = CMNewObjectPath(Broker,namespace,info->className,NULL);
+       if (provPath && CMClassPathIsA(Broker,provPath,classname,NULL)) {
+	 _SFCB_TRACE(1, ("--- Replacing class name %s",info->className));
+	 path = provPath;
+       }
+     }
+   }
+#endif
+
    if (req->hdr.flags & FL_localOnly) flgs|=CMPI_FLAG_LocalOnly;
    if (req->hdr.flags & FL_deepInheritance) flgs|=CMPI_FLAG_DeepInheritance;
    if (req->hdr.flags & FL_includeQualifiers) flgs|=CMPI_FLAG_IncludeQualifiers;
@@ -1497,6 +1513,22 @@ static BinResponseHdr *enumInstanceNames(BinRequestHdr * hdr,
    CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    BinResponseHdr *resp;
    CMPIFlags flgs=0;
+
+#ifndef HAVE_OPTIMIZED_ENUMERATION
+   if (info->className && info->className[0] != '$') {
+     /* not a special provider, perform class name substitution if call is for a
+        parent class of the class the provider is registered for */
+     char * classname = CMGetCharPtr(CMGetClassName(path,NULL));
+     char * namespace = CMGetCharPtr(CMGetNameSpace(path,NULL));
+     if (classname && namespace && strcasecmp(info->className,classname)) {
+       CMPIObjectPath * provPath = CMNewObjectPath(Broker,namespace,info->className,NULL);
+       if (provPath && CMClassPathIsA(Broker,provPath,classname,NULL)) {
+	 _SFCB_TRACE(1, ("--- Replacing class name %s",info->className));
+	 path = provPath;
+       }
+     }
+   }
+#endif
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
    ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);

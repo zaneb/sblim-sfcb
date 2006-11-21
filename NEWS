@@ -20,6 +20,7 @@ Bugs fixed:
 - 1592760 Fixed PROPERTY.ARRAY creation fails
 - 1593220 Fixed bug in setQualifier
 - 1598227 Fixed handling of SIGTERM
+- 1193881 Fixed polymorphic enumeration behavior
 
 Changes in 1.1.1
 ================

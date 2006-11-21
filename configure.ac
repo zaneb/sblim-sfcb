@@ -68,6 +68,11 @@ AC_ARG_ENABLE(default-properties,
 	[enable_default_properties="yes"]
 	)
 
+AC_ARG_ENABLE(optimized-enumeration,
+	[AC_HELP_STRING([--enable-optimized-enumeration],
+		[Enable enumeration call optimization for polymorphic invocations.])],
+	)
+
 # Configuration Arguments
 AC_ARG_VAR([CIMSCHEMA_SOURCE],[The URL or path name of the CIM Schema ZIP File.])
 AC_ARG_VAR([CIMSCHEMA_MOF],[The file name of the top level MOF (CIMSchema.mof)])
@@ -101,6 +106,10 @@ fi
 
 if test "$enable_qualifierrep" == "yes"; then
    AC_DEFINE(HAVE_QUALREP,,[Qualifier repository support enabled.])
+fi
+
+if test "$enable_optimized_enumeration" == "yes"; then
+   AC_DEFINE(HAVE_OPTIMIZED_ENUMERATION,1,[Enumeration optimization enabled.])
 fi
 
 AC_CANONICAL_HOST

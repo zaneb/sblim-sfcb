@@ -8,6 +8,7 @@ New features:
 - moved some util functions to sfcUtil, build as shared library
 - 1578815 create fileRepository shared library
 - 1587752 libObjectImplSwapI32toP32 now supports instances and qualifiers
+- 1599697 sfcbrepos include default mofs and indication.mof
 
 Bugs fixed:
 - 1525280 Fixed segfaults when linking with sfcc

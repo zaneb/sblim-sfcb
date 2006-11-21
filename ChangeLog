@@ -1,3 +1,7 @@
+2006-11-21  Sven Schuetz
+	* sfcbrepos.sh.in, Makefile.am, interop.mof, indication.mof, README
+	Fixed 1599697: sfcbrepos include default mofs
+
 2006-11-17  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* sfcBroker.c: 

@@ -893,14 +893,22 @@ subdirectory, and copying a registration file containing the name of the
 class(es), type of provider (instance, association, etc) and
 the name of the executable library file to the ./regs subdirectory.
 Note that subdirectories under the staging area's ./mofs designate namespaces
-in the same way described in the preceding section about the class repository
-For example,
+in the same way described in the preceding section about the class repository.
+There are two default mof files in the staging directory, indication.mof
+(if indication support is enabled) and interop.mof as can be seen below.
+MOF files residing in the root stage mof directory (e.g.
+/usr/local/var/lib/sfcb/stage/mofs) will be compiled into each namespace
+when invoking sfcbrepos. This is useful if you want to have a set of default
+classes in each namespace (as it happens with the indication classes).
+The interop.mof is located in the interop namespace directory and will
+only be compiled into the interop namespace.
+The layout may look like the following example:
 
 # ls /usr/local/var/lib/sfcb/stage
-default.reg  interop.mof  mofs  regs
+default.reg  mofs  regs
 
 # ls /usr/local/var/lib/sfcb/stage/mofs
-root
+indication.mof  root
 
 # ls /usr/local/var/lib/sfcb/stage/mofs/root
 cimv2 interop
@@ -911,6 +919,9 @@ CWS_FAD.mof               TST_InstanceDefaults.mof    TST_ProcessIndication.mof
 CWS_Instance.mof          TST_InstanceKeys.mof        TST_Reef.mof
 CWS_Process.mof           TST_InstanceProperties.mof
 Linux_BaseIndication.mof  TST_LifeCycleInstance.mof
+
+# ls /usr/local/var/lib/sfcb/stage/mofs/root/interop
+interop.mof
 
 # ls /usr/local/var/lib/sfcb/stage/regs
 CWS_Authorization.reg  Linux_BaseIndication.reg     TST_ProcessIndication.reg

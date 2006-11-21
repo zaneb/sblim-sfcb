@@ -296,7 +296,7 @@ sfcbconf_DATA=sfcb.cfg
 
 dist_sfcbdata_SCRIPTS=genSslCert.sh getSchema.sh
 
-dist_sfcbdata_DATA=default.reg interop.mof
+dist_sfcbdata_DATA=default.reg interop.mof indication.mof
 
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage sfcbuuid
 
@@ -352,10 +352,16 @@ install-data-local:
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
 	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
 	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
+if INDICATIONS
+	$(INSTALL_DATA) $(srcdir)/indication.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs
+endif
 
 uninstall-local:
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/root/interop/interop.mof
+if INDICATIONS
+	rm -f $(DESTDIR)$(sfcbstatedir)/stage/mofs/indication.mof
+endif
 
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcbunstage sfcbuuid sfcb.cfg getSchema.sh sfcb \

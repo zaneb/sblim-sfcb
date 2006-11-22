@@ -1,5 +1,8 @@
 2006-11-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
+	* configure.ac, interop.mof, interopServerProvider.c: 
+	Fixed 1601274: fixed __namespace support.
+
 	* brokerUpc.c: 
 	Fixed 1601219: don't return bogus enumeration results by allocating an
 	empty result array.

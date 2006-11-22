@@ -22,7 +22,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 1.2.0pre1, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 1.2.0pre2, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE
@@ -228,6 +228,7 @@ if test -d $srcdir/mofc; then
    MOFC_DIR=mofc
    export sfcb_recursed=yes
    export with_sfcb=yes
+   export enable_relax_mofsyntax=yes
    AC_CONFIG_SUBDIRS([mofc])
    AC_SUBST(MOFC_DIR)
 fi

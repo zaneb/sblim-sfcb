@@ -26,3 +26,9 @@ class DMY_Namespace : CIM_Namespace
 class DMY_SubProfileRequiresProfile : CIM_SubProfileRequiresProfile
 {
 };
+
+class __Namespace
+{
+  [key]
+  string Name;
+};

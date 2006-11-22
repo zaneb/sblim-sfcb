@@ -24,6 +24,7 @@ Bugs fixed:
 - 1601005 Added missing function setHostAndNameSpaceFromObjectPath
 - 1600707 Fixed segfault with NULL string properties
 - 1601219 Fixed bogus enumeration upcall results
+- 1601274 Fixed legacy __Namespace support
 
 Changes in 1.1.1
 ================

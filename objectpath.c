@@ -212,27 +212,24 @@ static CMPIStatus __oft_addKey(CMPIObjectPath * op,
                                const CMPIValue * value, CMPIType type)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
-   CMPIData data = { type, CMPI_goodValue, {0} };
+   CMPIData data = { type, CMPI_goodValue, {0LL} };
 
-   if (type == CMPI_chars)
+   if (type == CMPI_chars) {
       data.value.chars = (char *) value;
-   else if (type == CMPI_string) {
-      if (value && value->string && value->string->hdl)
-         data.value.chars = (char *) value->string->hdl;
-      else data.value.chars=NULL;
-      data.type=CMPI_chars;
-   } else if (type == CMPI_dateTime) {
-      if (value && value->dateTime) { 
-	data.value.dateTime = value->dateTime;
-      }   else {
-	data.value.dateTime=NULL;
-	data.state=CMPI_nullValue;
-      }
+   } else if (type == CMPI_string) {
+     if (value && value->string) {
+       data.value.chars = (char *) value->string->hdl;
+     } else {
+       data.value.chars = NULL;
+     }
+     data.type=CMPI_chars;
+   } else if (value) {
+     data.value = *value;
    }
-   else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64)
-      data.value = *value;
-   else
-      data.value.Int = value->Int;
+
+   if (((type & CMPI_ENCA) && data.value.chars == NULL) || value == NULL) {
+     data.state=CMPI_nullValue;
+   }
 
    ClObjectPathAddKey(cop, name, data);
 

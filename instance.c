@@ -225,15 +225,12 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
 {
    struct native_instance *i = (struct native_instance *) instance;
    ClInstance *inst = (ClInstance *) instance->hdl;
-   CMPIData data = { type, CMPI_goodValue, {0} };
+   CMPIData data = { type, CMPI_goodValue, {0LL} };
    int rc;
 
    if (type == CMPI_chars) {
       /* VM: is this OK or do we need a __new copy */
       data.value.chars = (char *) value;
-      if (value == NULL) {
-	 data.state=CMPI_nullValue;
-      }
    } else if (type == CMPI_string) {
       data.type=CMPI_chars;
       if (value && value->string && value->string->hdl) {
@@ -241,28 +238,13 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
          data.value.chars = (char *) value->string->hdl;
       } else {
 	 data.value.chars=NULL;
-	 data.state=CMPI_nullValue;
       }
-   } else if (type == CMPI_dateTime ||type == CMPI_ref || 
-	      (type & CMPI_ARRAY)) {
-      if (value && value->chars) { 
-         data.value.chars = value->chars;
-      }   else {
-	 data.value.chars=NULL;
-	 data.state=CMPI_nullValue;
-      }
-   } else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64) {
-      if (value) {
-	 data.value = *value;
-      } else {
-	 data.state=CMPI_nullValue;
-      }
-   }  else {
-      if (value) {
-	 data.value.Int = value->Int;
-      } else {
-	 data.state=CMPI_nullValue;
-      }
+   } else if (value) {
+      data.value = *value;
+   }
+
+   if (((type & CMPI_ENCA) && data.value.chars == NULL) || value == NULL) {
+     data.state=CMPI_nullValue;
    }
 
    if (i->filtered == 0 ||

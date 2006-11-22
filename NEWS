@@ -22,6 +22,7 @@ Bugs fixed:
 - 1598227 Fixed handling of SIGTERM
 - 1193881 Fixed polymorphic enumeration behavior
 - 1601005 Added missing function setHostAndNameSpaceFromObjectPath
+- 1600707 Fixed segfault with NULL string properties
 
 Changes in 1.1.1
 ================

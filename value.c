@@ -156,100 +156,106 @@ char *sfcb_value2Chars(CMPIType type, CMPIValue * value)
    char str[256], *p;
    unsigned int size;
    CMPIString *cStr;
+   
+   str[0] = 0;
+   if (value) {
+     if (type & CMPI_ARRAY) {
 
-   if (type & CMPI_ARRAY) {
+     }
+     else if (type & CMPI_ENC) {
+       if (value->chars) {
+	 /* non - null encapsulated value */
+	 switch (type) {
+	 case CMPI_instance:
+	   break;
 
-   }
-   else if (type & CMPI_ENC) {
+	 case CMPI_ref:
+	   cStr = value->ref->ft->toString(value->ref, NULL); //  __oft_toString(value->ref, NULL);
+	   return strdup((char *) cStr->hdl);
+	   break;
 
-      switch (type) {
-      case CMPI_instance:
-         break;
+	 case CMPI_args:
+	   break;
 
-      case CMPI_ref:
-         cStr = value->ref->ft->toString(value->ref, NULL); //  __oft_toString(value->ref, NULL);
-         return strdup((char *) cStr->hdl);
-         break;
+	 case CMPI_filter:
+	   break;
 
-      case CMPI_args:
-         break;
+	 case CMPI_string:
+	 case CMPI_numericString:
+	 case CMPI_booleanString:
+	 case CMPI_dateTimeString:
+	 case CMPI_classNameString:
+	   if (value->string->hdl) {
+	     size = strlen((char *) value->string->hdl);
+	     p = malloc(size + 8);
+	     sprintf(p, "\"%s\"", (char *) value->string->hdl);
+	     return p;
+	   }
+	   break;
 
-      case CMPI_filter:
-         break;
+	 case CMPI_dateTime:
+	   cStr=CMGetStringFormat(value->dateTime,NULL);
+	   size = strlen((char *) cStr->hdl);
+	   p = malloc(size + 8);
+	   sprintf(p, "\"%s\"", (char *) cStr->hdl);
+	   return p;
+	   break;
+	 }
+       }
+     }
+     else if (type & CMPI_SIMPLE) {
 
-      case CMPI_string:
-      case CMPI_numericString:
-      case CMPI_booleanString:
-      case CMPI_dateTimeString:
-      case CMPI_classNameString:
-         size = strlen((char *) value->string->hdl);
-         p = malloc(size + 8);
-         sprintf(p, "\"%s\"", (char *) value->string->hdl);
-         return p;
-	 break;
-
-      case CMPI_dateTime:
-         cStr=CMGetStringFormat(value->dateTime,NULL);
-         size = strlen((char *) cStr->hdl);
-         p = malloc(size + 8);
-         sprintf(p, "\"%s\"", (char *) cStr->hdl);
-         return p;
-         break;
-      }
-
-   }
-   else if (type & CMPI_SIMPLE) {
-
-      switch (type) {
-      case CMPI_boolean:
+       switch (type) {
+       case CMPI_boolean:
          return strdup(value->boolean ? "true" : "false");
 
-      case CMPI_char16:
+       case CMPI_char16:
          break;
-      }
+       }
 
-   }
-   else if (type & CMPI_INTEGER) {
+     }
+     else if (type & CMPI_INTEGER) {
 
-      switch (type) {
-      case CMPI_uint8:
+       switch (type) {
+       case CMPI_uint8:
          sprintf(str, "%u", value->uint8);
          return strdup(str);
-      case CMPI_sint8:
+       case CMPI_sint8:
          sprintf(str, "%d", value->sint8);
          return strdup(str);
-      case CMPI_uint16:
+       case CMPI_uint16:
          sprintf(str, "%u", value->uint16);
          return strdup(str);
-      case CMPI_sint16:
+       case CMPI_sint16:
          sprintf(str, "%d", value->sint16);
          return strdup(str);
-      case CMPI_uint32:
+       case CMPI_uint32:
          sprintf(str, "%u", value->uint32);
          return strdup(str);
-      case CMPI_sint32:
+       case CMPI_sint32:
          sprintf(str, "%d", value->sint32);
          return strdup(str);
-      case CMPI_uint64:
+       case CMPI_uint64:
          sprintf(str, "%llu", value->uint64);
          return strdup(str);
-      case CMPI_sint64:
+       case CMPI_sint64:
          sprintf(str, "%lld", value->sint64);
          return strdup(str);
-      }
+       }
 
-   }
-   else if (type & CMPI_REAL) {
+     }
+     else if (type & CMPI_REAL) {
 
-      switch (type) {
-      case CMPI_real32:
+       switch (type) {
+       case CMPI_real32:
          sprintf(str, "%g", value->real32);
          return strdup(str);
-      case CMPI_real64:
+       case CMPI_real64:
          sprintf(str, "%g", value->real64);
          return strdup(str);
-      }
+       }
 
+   }
    }
    return strdup(str);
 }

@@ -239,7 +239,17 @@ static CMPIStatus __oft_addKey(CMPIObjectPath * op,
    CMReturn(CMPI_RC_OK);
 }
 
-
+static CMPIStatus __oft_setHostAndNameSpaceFromObjectPath(CMPIObjectPath * op,
+							  const CMPIObjectPath * src)
+{
+   ClObjectPath *s = (ClObjectPath *) src->hdl;
+   CMPIStatus   st = {CMPI_RC_OK, NULL};
+   st = __oft_setHostName(op, ClObjectPathGetHostName(s));
+   if (st.rc == CMPI_RC_OK) {
+     st = __oft_setNameSpace(op, ClObjectPathGetNameSpace(s));
+   }
+   return st;
+}
 
 static CMPIStatus __oft_setNameSpaceFromObjectPath(CMPIObjectPath * op,
                                                    const CMPIObjectPath * src)
@@ -348,7 +358,7 @@ static CMPIObjectPathFT oft = {
    __oft_getKeyAt,
    __oft_getKeyCount,
    __oft_setNameSpaceFromObjectPath,
-   NULL,
+   __oft_setHostAndNameSpaceFromObjectPath,
    NULL,
    NULL,
    NULL,

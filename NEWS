@@ -23,6 +23,7 @@ Bugs fixed:
 - 1193881 Fixed polymorphic enumeration behavior
 - 1601005 Added missing function setHostAndNameSpaceFromObjectPath
 - 1600707 Fixed segfault with NULL string properties
+- 1601219 Fixed bogus enumeration upcall results
 
 Changes in 1.1.1
 ================

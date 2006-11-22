@@ -1,5 +1,9 @@
 2006-11-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
+	* brokerUpc.c: 
+	Fixed 1601219: don't return bogus enumeration results by allocating an
+	empty result array.
+
 	* instance.c, objectpath.c, value.c: 
 	Fixed 1600707: added more checks for null strings (and other encapsulated
 	datatypes)

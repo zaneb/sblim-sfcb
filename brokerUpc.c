@@ -564,7 +564,7 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
          BinResponseHdr *resp;
          ProviderInfo *pInfo;
          int local;
-         ar = TrackedCMPIArray(1, CMPI_instance, NULL);
+         ar = TrackedCMPIArray(0, CMPI_instance, NULL);
          for (resp=NULL, c=0, i = 0; i < binCtx.pCount; i++,binCtx.pDone++) {
             local=0;
             binCtx.provA = binCtx.pAs[i];
@@ -636,7 +636,7 @@ static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
          BinResponseHdr *resp;
          ProviderInfo *pInfo;
          int local;
-         ar = TrackedCMPIArray(1, CMPI_instance, NULL);
+         ar = TrackedCMPIArray(0, CMPI_instance, NULL);
          for (resp=NULL, c=0, i = 0; i < binCtx.pCount; i++,binCtx.pDone++) {
             local=0;
             binCtx.provA = binCtx.pAs[i];
@@ -707,7 +707,7 @@ static CMPIEnumeration *enumInstanceNames(const CMPIBroker * broker,
          BinResponseHdr *resp;
          ProviderInfo *pInfo;
          int local;
-         ar = TrackedCMPIArray(1, CMPI_ref, NULL);
+         ar = TrackedCMPIArray(0, CMPI_ref, NULL);
          for (resp=NULL, c=0, i = 0; i < binCtx.pCount; i++,binCtx.pDone++) {
             local=0;
             binCtx.provA = binCtx.pAs[i];

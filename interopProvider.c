@@ -661,9 +661,9 @@ static CMPIStatus processSubscription(
       _SFCB_RETURN(st);
    }
 
-   _SFCB_TRACE(1,("--- setting subscription duration"));
+   _SFCB_TRACE(1,("--- setting subscription start time"));
    dt = CMNewDateTime(_broker,NULL);
-   CMSetProperty((CMPIInstance *)ci, "SubscriptionDuration", &dt, CMPI_dateTime);
+   CMSetProperty((CMPIInstance *)ci, "SubscriptionStartTime", &dt, CMPI_dateTime);
    
    su=addSubscription(ci, skey, fi, ha); 
    fowardSubscription(ctx, fi, &st);   
@@ -698,36 +698,48 @@ void initInterOp(
    op=CMNewObjectPath(broker,"root/interop","cim_indicationfilter",&st);
    ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,0);
    
-   if (ul) for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
-          ci=(CMPIInstance*)ul->ft->getNext(ul)) {
-      cop=CMGetObjectPath(ci,&st);
-      query=(char*)CMGetProperty(ci,"query",&st).value.string->hdl;
-      lng=(char*)CMGetProperty(ci,"querylanguage",&st).value.string->hdl;
-      sns=(char*)CMGetProperty(ci,"SourceNamespace",&st).value.string->hdl;
-      qs=parseQuery(MEM_NOT_TRACKED,query,lng,sns,&rc);
-      key=internalProviderNormalizeObjectPath(cop);
-      addFilter(ci,key,qs,query,lng,sns);
+   if (ul) {
+      for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
+                  ci=(CMPIInstance*)ul->ft->getNext(ul)) {
+         cop=CMGetObjectPath(ci,&st);
+         query=(char*)CMGetProperty(ci,"query",&st).value.string->hdl;
+         lng=(char*)CMGetProperty(ci,"querylanguage",&st).value.string->hdl;
+         sns=(char*)CMGetProperty(ci,"SourceNamespace",&st).value.string->hdl;
+         qs=parseQuery(MEM_NOT_TRACKED,query,lng,sns,&rc);
+         key=internalProviderNormalizeObjectPath(cop);
+         addFilter(ci,key,qs,query,lng,sns);
+         free(ci);
+      }
+      ul->ft->release(ul);
    }   
 
    _SFCB_TRACE(1,("--- checking for cim_listenerdestination"));
    op=CMNewObjectPath(broker,"root/interop","cim_listenerdestination",&st);
    ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,1);
    
-   if (ul) for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
-          ci=(CMPIInstance*) ul->ft->getNext(ul)) {
-      cop=CMGetObjectPath(ci,&st); 
-      addHandler(ci,cop);
+   if (ul) { 
+      for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
+             ci=(CMPIInstance*) ul->ft->getNext(ul)) {
+         cop=CMGetObjectPath(ci,&st); 
+         addHandler(ci,cop);
+         free(ci);
+      }
+      ul->ft->release(ul);   
    } 
    _SFCB_TRACE(1,("--- checking for cim_indicationsubscription"));
    op=CMNewObjectPath(broker,"root/interop","cim_indicationsubscription",&st);
    ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,0);
    
-   if (ul) for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
-          ci=(CMPIInstance*)ul->ft->getNext(ul)) {
-      CMPIObjectPath *hop;    
-      cop=CMGetObjectPath(ci,&st);
-      hop=CMGetKey(cop,"handler",NULL).value.ref;
-      processSubscription(broker,ctx,ci,cop);
+   if (ul) {
+      for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
+             ci=(CMPIInstance*)ul->ft->getNext(ul)) {
+         CMPIObjectPath *hop;    
+         cop=CMGetObjectPath(ci,&st);
+         hop=CMGetKey(cop,"handler",NULL).value.ref;
+         processSubscription(broker,ctx,ci,cop);
+         free(ci);
+      }
+      ul->ft->release(ul);    
    }
       
    _SFCB_EXIT(); 

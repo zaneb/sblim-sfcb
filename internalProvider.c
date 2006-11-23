@@ -256,7 +256,6 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
             ci=relocateSerializedInstance(blob);
             _SFCB_TRACE(1,("--- returning instance %p",ci));
             retFnc(rslt,ci);
-            free(ci);
    //         CMReturnInstance(rslt, ci);
          }
       } 
@@ -271,7 +270,8 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
 static void return2result(void *ret, const CMPIInstance *ci)
 {
    CMPIResult * rslt=(CMPIResult*)ret; 
-   CMReturnInstance(rslt, ci); 
+   CMReturnInstance(rslt, ci);
+   free(ci);   
 }
 
 static void return2lst(void *ret, const CMPIInstance *ci)

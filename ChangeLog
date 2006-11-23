@@ -1,3 +1,7 @@
+2006-11-23  Sven Schuetz
+	* interopProvider.c, internalProvider.c:
+	Fixed 1601174: fixed interopProvider segfault
+
 2006-11-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
 	* configure.ac, interop.mof, interopServerProvider.c: 

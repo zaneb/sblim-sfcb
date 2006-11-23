@@ -96,6 +96,8 @@ extern void *markHeap();
 extern void releaseHeap(void *hc);
 extern int spSendAck(int to);
 
+extern char *opsName[];
+
 static UtilList *_getConstClassChildren(const char *ns, const char *cn);
 static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus *st);
 static UtilList *_getAssocClassNames(const char *ns);
@@ -935,6 +937,16 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
    BinResponseHdr *resp=NULL;
    int fromS;
    void *heapCtl=markHeap();
+#ifdef SFCB_DEBUG
+   struct rusage us,ue;
+   struct timeval sv, ev;
+
+      if (_sfcb_trace_mask & TRACE_RESPONSETIMING) {
+	gettimeofday(&sv,NULL);
+	getrusage(RUSAGE_SELF,&us);
+      }
+#endif 
+
    hdr->provId = ctx->provA.ids.ids;
       
    for (l = size, i = 0; i < hdr->count; i++) {
@@ -1079,6 +1091,20 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
    }   
    
    releaseHeap(heapCtl);
+
+#ifdef SFCB_DEBUG
+   if (_sfcb_trace_mask & TRACE_RESPONSETIMING) {
+      gettimeofday(&ev,NULL);
+      getrusage(RUSAGE_SELF,&ue);
+      _sfcb_trace(1,__FILE__,__LINE__,
+		  _sfcb_format_trace("-#- Provider Remote Invocation %.5u %s-%s real: %f user: %f sys: %f \n",
+				     hdr->sessionId, 
+				     opsName[hdr->operation], ctx->oHdr->className.data,
+				     timevalDiff(&sv,&ev),
+				     timevalDiff(&us.ru_utime,&ue.ru_utime),
+				     timevalDiff(&us.ru_stime,&ue.ru_stime)));
+   }
+#endif
    _SFCB_RETURN(resp);
 }
 

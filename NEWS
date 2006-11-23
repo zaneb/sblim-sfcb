@@ -26,6 +26,7 @@ Bugs fixed:
 - 1601219 Fixed bogus enumeration upcall results
 - 1601274 Fixed legacy __Namespace support
 - 1601174 Fixed interopProvider segfault
+- 1601644 Added more timing traces
 
 Changes in 1.1.1
 ================

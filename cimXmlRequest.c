@@ -79,6 +79,8 @@ extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
 extern CMPIConstClass initConstClass(ClClass *cl);
 extern CMPIQualifierDecl initQualifier(ClQualifierDeclaration *qual);
 
+extern char * opsName[];
+
 static char *cimMsg[] = {
    "ok",
    "A general error occured that is not covered by a more specific error code",
@@ -433,6 +435,15 @@ static RespSegments genResponses(BinRequestContext * binCtx,
 {
    RespSegments rs;
    UtilStringBuffer *sb;
+#ifdef SFCB_DEBUG
+   struct rusage us,ue;
+   struct timeval sv, ev;
+
+      if (_sfcb_trace_mask & TRACE_RESPONSETIMING) {
+	gettimeofday(&sv,NULL);
+	getrusage(RUSAGE_SELF,&us);
+      }
+#endif 
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "genResponses");
 
@@ -440,6 +451,20 @@ static RespSegments genResponses(BinRequestContext * binCtx,
 
    rs=iMethodResponse(binCtx->rHdr, sb);
    if (binCtx->pDone<binCtx->pCount) rs.segments[6].txt=NULL;
+#ifdef SFCB_DEBUG
+   if (_sfcb_trace_mask & TRACE_RESPONSETIMING) {
+      gettimeofday(&ev,NULL);
+      getrusage(RUSAGE_SELF,&ue);
+      _sfcb_trace(1,__FILE__,__LINE__,
+		  _sfcb_format_trace("-#- XML Enum Response Generation %.5u %s-%s real: %f user: %f sys: %f \n",
+				     binCtx->bHdr->sessionId, 
+				     opsName[binCtx->bHdr->operation], 
+				     binCtx->oHdr->className.data,
+				     timevalDiff(&sv,&ev),
+				     timevalDiff(&us.ru_utime,&ue.ru_utime),
+				     timevalDiff(&us.ru_stime,&ue.ru_stime)));
+   }
+#endif
    _SFCB_RETURN(rs);
 //   _SFCB_RETURN(iMethodResponse(binCtx->rHdr, sb));
 }
@@ -2101,10 +2126,37 @@ static Handler handlers[] = {
 RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx)
 {
    RespSegments rs;
-   RequestHdr hdr = scanCimXmlRequest(ctx->cimXmlDoc);
+   RequestHdr hdr;
+   Handler hdlr;
+#ifdef SFCB_DEBUG
+   struct rusage us,ue;
+   struct timeval sv, ev;
 
-   Handler hdlr = handlers[hdr.opType];
+      if (_sfcb_trace_mask & TRACE_RESPONSETIMING) {
+	gettimeofday(&sv,NULL);
+	getrusage(RUSAGE_SELF,&us);
+      }
+#endif 
+
+   hdr = scanCimXmlRequest(ctx->cimXmlDoc);
+
+#ifdef SFCB_DEBUG
+   if (_sfcb_trace_mask & TRACE_RESPONSETIMING) {
+      gettimeofday(&ev,NULL);
+      getrusage(RUSAGE_SELF,&ue);
+      _sfcb_trace(1,__FILE__,__LINE__,
+		  _sfcb_format_trace("-#- XML Parsing %.5u %s-%s real: %f user: %f sys: %f \n",
+				     ctx->sessionId, 
+				     opsName[hdr.opType], "n/a",
+				     timevalDiff(&sv,&ev),
+				     timevalDiff(&us.ru_utime,&ue.ru_utime),
+				     timevalDiff(&us.ru_stime,&ue.ru_stime)));
+   }
+#endif
+
+   hdlr = handlers[hdr.opType];
    rs = hdlr.handler(ctx, &hdr);
+
    ctx->className=hdr.className;
    ctx->operation=hdr.opType;
    rs.buffer = hdr.xmlBuffer;

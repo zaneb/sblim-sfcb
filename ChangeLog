@@ -1,3 +1,8 @@
+2006-11-23  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* cimXmlRequest.c, providerMgr.c:
+	Fixed 1601644: added more timing traces.
+
 2006-11-23  Sven Schuetz
 	* interopProvider.c, internalProvider.c:
 	Fixed 1601174: fixed interopProvider segfault

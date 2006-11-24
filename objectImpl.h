@@ -164,11 +164,11 @@ typedef struct {
 } PFX(CLPFX,ClObjectHdr);
 
 typedef struct {
-   int id;
+   long id;
 } PFX(CLPFX,ClString);
 
 typedef struct {
-   int id;
+   long id;
 } PFX(CLPFX,ClArray);
 
 typedef struct {
@@ -486,6 +486,7 @@ extern unsigned long ClSizeArgs(ClArgs *arg);
 extern ClArgs *ClArgsRebuild(ClArgs *arg, void *area);
 extern void ClArgsRelocateArgs(ClArgs *arg);
 extern void ClArgsFree(ClArgs *arg);
+extern char *ClArgsToString(ClArgs *arg);
 extern int ClArgsGetArgCount(ClArgs *arg);
 extern int ClArgsGetArgAt(ClArgs *arg, int id, CMPIData *data, char **name);
 extern int ClArgsAddArg(ClArgs *arg, const char *id, CMPIData d);

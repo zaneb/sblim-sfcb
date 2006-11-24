@@ -24,7 +24,7 @@
 
 extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc, ClObjectHdr * hdr);
 
-static CMPIQualifierDecl *clone(CMPIQualifierDecl * q, CMPIStatus * rc);
+static CMPIQualifierDecl *qual_clone(CMPIQualifierDecl * q, CMPIStatus * rc);
 
 static CMPIStatus release(CMPIQualifierDecl* q)
 {
@@ -71,14 +71,14 @@ static CMPIData getQualifierDeclData(CMPIQualifierDecl * cq, CMPIStatus * rc)
 static struct _CMPIQualifierDecl_FT ift = {
    1,
    release,
-   clone,
+   qual_clone,
    getCharQualifierName,
    getQualifierDeclData
 };
 
 CMPIQualifierDecl_FT *CMPIQualifierDeclFT = &ift;
 
-static CMPIQualifierDecl *clone(CMPIQualifierDecl * cq, CMPIStatus * rc)
+static CMPIQualifierDecl *qual_clone(CMPIQualifierDecl * cq, CMPIStatus * rc)
 {
    CMPIQualifierDecl *q = (CMPIQualifierDecl *) malloc(getQualifierSerializedSize(cq));
    q->hdl = q + 1;

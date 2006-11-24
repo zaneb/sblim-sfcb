@@ -47,8 +47,9 @@ struct timespec {
 
    #define CMPI_THREAD_KEY_TYPE  pthread_key_t
 #else
+   #include <pthread.h>
    #define CMPI_THREAD_CDECL
-   #define CMPI_THREAD_KEY_TYPE unsigned long int
+   #define CMPI_THREAD_KEY_TYPE  pthread_key_t
 #endif
 
 

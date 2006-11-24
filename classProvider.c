@@ -789,7 +789,7 @@ static CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
    cReg=getNsReg(ref, &rc);
    if (cReg==NULL) {
       CMPIStatus st = { CMPI_RC_ERR_INVALID_NAMESPACE, NULL };
-      return st;
+      _SFCB_RETURN(st);
    }
 
    cReg->ft->rLock(cReg);
@@ -993,7 +993,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
    cReg=getNsReg(ref, &rc);
    if (cReg==NULL) {
       CMPIStatus st = { CMPI_RC_ERR_INVALID_NAMESPACE, NULL };
-      return st;
+      _SFCB_RETURN(st);
    }
 
    if (strcasecmp(methodName, "getchildren") == 0) {
@@ -1101,7 +1101,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       mlogf(M_ERROR,M_SHOW,"--- ClassProvider: Invalid invokeMethod request %s\n", methodName);
       st.rc = CMPI_RC_ERR_METHOD_NOT_FOUND;
    }
-   return st;
+   _SFCB_RETURN(st);
 }
 
 

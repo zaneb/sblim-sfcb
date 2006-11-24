@@ -75,6 +75,7 @@ static UtilHashTable *indicationProviderHt = NULL;
 extern unsigned long exFlags;
 extern ProviderRegister *pReg;
 
+extern CMPIString * args2String(CMPIArgs*);
 extern void processProviderInvocationRequests(ProviderInfo *);
 extern CMPIObjectPath *relocateSerializedObjectPath(void *area);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * op);
@@ -804,9 +805,9 @@ void processProviderMgrRequests()
 
       if ((rc = spRecvReq(&sfcbSockets.receive, &requestor, (void **) &req, &rl, &mqg)) == 0) {
          if (mqg.rdone) {
-            req->nameSpace.data=(void*)((int)req->nameSpace.data+(char*)req);
+            req->nameSpace.data=(void*)((long)req->nameSpace.data+(char*)req);
             if (req->className.length)
-               req->className.data=(void*)((int)req->className.data+(char*)req);
+               req->className.data=(void*)((long)req->className.data+(char*)req);
             else req->className.data=NULL;
             cn = (char *) req->className.data;
             ns = (char *) req->nameSpace.data;
@@ -930,7 +931,8 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR | TRACE_CIMXMLPROC, "intInvokeProvider");
    _SFCB_TRACE(1, ("--- localMode: %d",localMode)); 
-   int i, l, ol,rc;
+   int i, ol,rc;
+   long l;
    unsigned long size = ctx->bHdrSize;
    char *buf;
    BinRequestHdr *hdr = ctx->bHdr;
@@ -1046,7 +1048,7 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
 	   resp->rc = CMPI_RC_ERR_FAILED + 1;
 	 }
          for (i = 0; i < resp->count; i++) {
-            resp->object[i].data=(void*)((int)resp->object[i].data+(char*)resp);
+            resp->object[i].data=(void*)((long)resp->object[i].data+(char*)resp);
          }
          
          ctx->rCount=1;
@@ -1075,13 +1077,13 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
      ctx->rCount=ctx->pCount;
      if (resp->rvValue) {
         if (resp->rv.type==CMPI_chars)
-           resp->rv.value.chars=(int)resp->rvEnc.data+(char*)resp;
+           resp->rv.value.chars=(long)resp->rvEnc.data+(char*)resp;
         else if (resp->rv.type==CMPI_dateTime) 
            resp->rv.value.dateTime=
-              sfcb_native_new_CMPIDateTime_fromChars((int)resp->rvEnc.data+(char*)resp,NULL);
+              sfcb_native_new_CMPIDateTime_fromChars((long)resp->rvEnc.data+(char*)resp,NULL);
      }
      for (i = 0; i < resp->count; i++) {
-         resp->object[i].data=(void*)((int)resp->object[i].data+(char*)resp);   
+         resp->object[i].data=(void*)((long)resp->object[i].data+(char*)resp);   
      }    
    }
    else {

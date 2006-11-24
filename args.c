@@ -93,18 +93,25 @@ static CMPIStatus __aft_addArg(const CMPIArgs * args, const char *name,
    ClArgs *ca = (ClArgs *) args->hdl;
    CMPIData data = { type, CMPI_goodValue, {0} };
 
-   if (type == CMPI_chars)
+   if (type == CMPI_chars) {
+      /* VM: is this OK or do we need a __new copy */
       data.value.chars = (char *) value;
-   else if (type == CMPI_string) {
-      if (value && value->string && value->string->hdl)
-         data.value.chars = (char *) value->string->hdl;
-      else data.value.chars=NULL;
+   } else if (type == CMPI_string) {
       data.type=CMPI_chars;
-   }
-   else if (type == CMPI_sint64 || type == CMPI_uint64 || type == CMPI_real64)
+      if (value && value->string && value->string->hdl) {
+	 /* VM: is this OK or do we need a __new copy */
+         data.value.chars = (char *) value->string->hdl;
+      } else {
+	 data.value.chars=NULL;
+      }
+   } else if (value) {
       data.value = *value;
-   else
-      data.value.Int = value->Int;
+   }
+
+   if (((type & CMPI_ENCA) && data.value.chars == NULL) || value == NULL) {
+     data.state=CMPI_nullValue;
+   }
+
    ClArgsAddArg(ca, name, data);
 
    CMReturn(CMPI_RC_OK);
@@ -249,6 +256,13 @@ MsgSegment setArgsMsgSegment(CMPIArgs * args)
    s.length = args ? getArgsSerializedSize(args) : 0;
    return s;
 }
+
+CMPIString *args2String(CMPIArgs * arg, CMPIStatus * rc)
+{
+   char * argstr = ClArgsToString((ClArgs*)arg->hdl);
+   return sfcb_native_new_CMPIString(argstr, NULL);
+}
+
 
 /*****************************************************************************/
 

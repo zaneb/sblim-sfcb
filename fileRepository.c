@@ -391,7 +391,7 @@ int addBlob(char *ns, char * cls, char *id, void *blob, int len)
       fclose(bi->fd);
       bi->fd=NULL;
 
-      es=sprintf(idxe,"    %d %s %d %d\r\n",strlen(id),id,len,0);
+      es=sprintf(idxe,"    %zd %s %d %d\r\n",strlen(id),id,len,0);
       ep=sprintf(idxe,"%d",es);
       idxe[ep]=' ';
 
@@ -408,7 +408,7 @@ int addBlob(char *ns, char * cls, char *id, void *blob, int len)
          bi->fd=fopen(bi->fnd,"rb");
          fseek(bi->fd,0,SEEK_END);
          bi->dlen=ftell(bi->fd);
-         es=sprintf(idxe,"    %d %s %d %lu\r\n",strlen(id),id,len,bi->dlen);
+         es=sprintf(idxe,"    %zd %s %d %lu\r\n",strlen(id),id,len,bi->dlen);
          ep=sprintf(idxe,"%d",es);
          idxe[ep]=' ';
 
@@ -426,7 +426,7 @@ int addBlob(char *ns, char * cls, char *id, void *blob, int len)
          fclose(bi->fd);
          bi->fd=NULL;
 
-         es=sprintf(idxe,"    %d %s %d %lu\r\n",strlen(id),id,len,bi->fpos);
+         es=sprintf(idxe,"    %zd %s %d %lu\r\n",strlen(id),id,len,bi->fpos);
          ep=sprintf(idxe,"%d",es);
          idxe[ep]=' ';
 

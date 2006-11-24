@@ -81,7 +81,7 @@ static void prepResultBuffer(NativeResult *nr)
 
 static int xferResultBuffer(NativeResult *nr, int to, int more, int rc)
 {
-   int l=sizeof(BinResponseHdr)+((nr->sNext-1)*sizeof(MsgSegment));
+   long l=sizeof(BinResponseHdr)+((nr->sNext-1)*sizeof(MsgSegment));
    int i,dmy=-1,s1=l;
  
    _SFCB_ENTER(TRACE_PROVIDERDRV, "xferResultBuffer");
@@ -114,7 +114,7 @@ int xferLastResultBuffer(CMPIResult *result, int to, int rc)
 
 static void* nextResultBufferPos(NativeResult *nr, int type, int length)
 {
-   int pos,npos;
+   long pos,npos;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "nextResultBufferPos");
    
@@ -144,7 +144,7 @@ static void* nextResultBufferPos(NativeResult *nr, int type, int length)
    pos=nr->dNext;
    nr->dNext+=length;
 
-   npos=(int)(nr->data+pos);
+   npos=(long)(nr->data+pos);
    _SFCB_RETURN((void*)npos);
 }
 

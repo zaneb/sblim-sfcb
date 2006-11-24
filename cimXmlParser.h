@@ -293,7 +293,7 @@ typedef struct xtokParam {
    int pType;
    char *name;
    char *refClass;
-   char *arraySize;
+   int arraySize;
    CMPIType type;
 } XtokParam;
 

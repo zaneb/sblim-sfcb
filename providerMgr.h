@@ -112,8 +112,8 @@ struct requestHdr;
 typedef union provIds {
    void *ids;
    struct { 
-      short procId;
-      short provId;
+      SFCB_HALFWORD procId;
+      SFCB_HALFWORD provId;
    } ;  
 } ProvIds; 
 

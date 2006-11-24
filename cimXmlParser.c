@@ -1215,7 +1215,7 @@ static int procParamArray(YYSTYPE * lvalp, ParserControl * parm)
                   break;
                }
             }
-         lvalp->xtokParam.arraySize = attr[2].attr;
+         lvalp->xtokParam.arraySize = atoi(attr[2].attr);
          return XTOK_PARAM;
       }
    }
@@ -1264,7 +1264,7 @@ static int procParamRefArray(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokParam.pType = ZTOK_PARAMREFARRAY;
          lvalp->xtokParam.name = attr[0].attr;
          lvalp->xtokParam.refClass = attr[1].attr;
-         lvalp->xtokParam.arraySize = attr[2].attr;
+         lvalp->xtokParam.arraySize = atoi(attr[2].attr);
          lvalp->xtokParam.type = CMPI_refA;
          return XTOK_PARAM;
       }

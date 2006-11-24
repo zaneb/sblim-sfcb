@@ -669,7 +669,8 @@ typedef struct provHandler {
 static int sendResponse(int requestor, BinResponseHdr * hdr)
 {
    _SFCB_ENTER(TRACE_PROVIDERDRV, "sendResponse");
-   int i, l, rvl=0, ol, size, dmy=-1;
+   int i, rvl=0, ol, size, dmy=-1;
+   long l;
    char str_time[26];
    BinResponseHdr *buf;
    
@@ -997,7 +998,7 @@ static BinResponseHdr *enumClassNames(BinRequestHdr * hdr,
       if (r) count = CMGetArrayCount(r, NULL);
       else count=0;
       resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr) +
-                                    ((count - 1) * sizeof(MsgSegment)));
+				       ((count?count - 1:0) * sizeof(MsgSegment)));
       resp->moreChunks=0;
       resp->rc = 1;
       resp->count = count;
@@ -1077,10 +1078,10 @@ static BinResponseHdr *enumQualifiers(BinRequestHdr * hdr,
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    if (rci.rc == CMPI_RC_OK) {
-   	  if (r) count = CMGetArrayCount(r, NULL);
+      if (r) count = CMGetArrayCount(r, NULL);
       else count=0;
       resp = (BinResponseHdr *) calloc(1, sizeof(BinResponseHdr) +
-                                    ((count - 1) * sizeof(MsgSegment)));
+				       ((count?count - 1:0) * sizeof(MsgSegment)));
       resp->moreChunks=0;
       resp->rc = 1;
       resp->count = count;
@@ -2289,7 +2290,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
  
    for (i = 0; i < req->count; i++)
       if (req->object[i].length)
-         req->object[i].data=(void*)((int)req->object[i].data+(char*)req);
+         req->object[i].data=(void*)((long)req->object[i].data+(char*)req);
       else if (req->object[i].type == MSG_SEG_CHARS)
          req->object[i].data = NULL;
 

@@ -519,7 +519,7 @@ static int copyArrayBuf(int ofs, int sz, ClObjectHdr * th, ClObjectHdr * fh)
 static char *cat2string(stringControl * sc, const char *str)
 {
    int nmax, l = strlen(str) + 1;
-   if (str != NULL || sc->str == NULL) {
+   if (str) {
       if (sc->str == NULL) {
          for (nmax = sc->max; nmax <= sc->used + l; nmax *= 2);
          sc->str = (char *) malloc((sc->max = nmax));
@@ -1090,6 +1090,8 @@ static char *addPropertyToString(stringControl * sc, ClObjectHdr * hdr,
    cat2string(sc, " ");
    cat2string(sc, ClObjectGetClString(hdr, &p->id));
    if (array) cat2string(sc, array);
+   cat2string(sc, " = ");
+   cat2string(sc, dataValueToString(hdr,&p->data));     
    cat2string(sc, ";\n");
    return sc->str + o;
 }
@@ -1227,12 +1229,12 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
             _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
             
          if (d.type != CMPI_chars) {
-            replaceClString(hdr, (int) od.value.chars, "");
+            replaceClString(hdr, (long)od.value.chars, "");
             (p + i - 1)->data = d;
          }
          else if (od.value.chars) {
             (p + i - 1)->data = d;
-            replaceClString(hdr, (int) od.value.chars, d.value.chars);
+            replaceClString(hdr, (long)od.value.chars, d.value.chars);
             (p + i - 1)->data.value.chars=od.value.chars;
          }
          else {
@@ -1247,7 +1249,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          dateTime2chars(d.value.dateTime, NULL, chars);
 	 if (od.value.chars) {
 	   (p + i - 1)->data = d;
-	   replaceClString(hdr, (int) od.value.chars, chars);
+	   replaceClString(hdr, (long)od.value.chars, chars);
 	   (p + i - 1)->data.value.chars=od.value.chars;
 	 } else {
 	   (p + i - 1)->data = d;
@@ -1261,7 +1263,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          sfcb_pathToChars(d.value.ref, &st, chars);
 	 if (od.value.chars) {   
 	   (p + i - 1)->data = d;
-	   replaceClString(hdr, (int) od.value.chars, chars);
+	   replaceClString(hdr, (long)od.value.chars, chars);
 	   (p + i - 1)->data.value.chars=od.value.chars;
 	 } else {
 	   (p + i - 1)->data = d;
@@ -1273,7 +1275,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       else if ((od.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
 	if (od.value.array) {
 	  (p + i - 1)->data = d;
-	  replaceClArray(hdr, (int) od.value.array, d);
+	  replaceClArray(hdr, (long)od.value.array, d);
 	  (p + i - 1)->data.value.array=od.value.array;
 	} else {
 	  (p + i - 1)->data = d;
@@ -2249,8 +2251,7 @@ void dumpClass(char *msg, CMPIConstClass *cls)
 }
 
 
-/*
-char *ClArgToString(ClArg * cls)
+char *ClArgsToString(ClArgs * arg)
 {
     stringControl sc = { NULL, 0, 32 };
     ClProperty *p;
@@ -2258,19 +2259,18 @@ char *ClArgToString(ClArg * cls)
     ClQualifier *q;
 
     cat2string(&sc, "CMPIArgs ");
-    cat2string(&sc, ClObjectGetClString(&cls->hdr, &cls->name));
-    cat2string(&sc, " {\n");
+    cat2string(&sc, " (\n");
 
-    p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
-    for (i = 0, l = cls->properties.used; i < l; i++) {
-        addPropertyToString(&sc, &cls->hdr, p + i);
+    p = (ClProperty *) ClObjectGetClSection(&arg->hdr, &arg->properties);
+    for (i = 0, l = arg->properties.used; i < l; i++) {
+        addPropertyToString(&sc, &arg->hdr, p + i);
     }
 
-    cat2string(&sc, "};\n");
+    cat2string(&sc, ");\n");
 
     return sc.str;
 }
-*/
+
 //#define MAIN_TEST
 #ifdef MAIN_TEST
 

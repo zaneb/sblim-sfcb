@@ -52,7 +52,7 @@ extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc, ClObject
 extern CMPIObjectPath *getObjectPath(char *path, char **msg);
 
 unsigned long getConstClassSerializedSize(CMPIConstClass * cl);
-static CMPIConstClass *clone(CMPIConstClass * cc, CMPIStatus * rc);
+static CMPIConstClass *cls_clone(CMPIConstClass * cc, CMPIStatus * rc);
 
 static CMPIStatus release(CMPIConstClass * cc)
 {
@@ -274,7 +274,7 @@ static CMPIArray *getKeyList(CMPIConstClass * cc)
 struct _CMPIConstClass_FT ift = {
    1,
    release,
-   clone,
+   cls_clone,
    getClassName,
    getSuperClassName,
    getProperty,
@@ -298,7 +298,7 @@ struct _CMPIConstClass_FT ift = {
 
 CMPIConstClass_FT *CMPIConstClassFT = &ift;
 
-static CMPIConstClass *clone(CMPIConstClass * cc, CMPIStatus * rc)
+static CMPIConstClass *cls_clone(CMPIConstClass * cc, CMPIStatus * rc)
 {
    CMPIConstClass *cl =
        (CMPIConstClass *) malloc(getConstClassSerializedSize(cc));

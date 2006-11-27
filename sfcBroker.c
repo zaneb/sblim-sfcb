@@ -602,7 +602,7 @@ int main(int argc, char *argv[])
    if (getControlNum("providerTimeoutInterval", &provTimeoutInterval))
       provTimeoutInterval = 60;
    if (getControlBool("providerAutoGroup", &provAutoGroup))
-      provAutoGroup=0;
+      provAutoGroup=1;
 
    resultSockets=getSocketPair("sfcbd result");
    sfcbSockets=getSocketPair("sfcbd sfcb");

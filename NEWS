@@ -10,6 +10,7 @@ New features:
 - 1587752 libObjectImplSwapI32toP32 now supports instances and qualifiers
 - 1599697 sfcbrepos include default mofs and indication.mof
 - 1414618 Added 64-bit support
+- 1603796 Automatic provider grouping enabled by default
 
 Bugs fixed:
 - 1525280 Fixed segfaults when linking with sfcc

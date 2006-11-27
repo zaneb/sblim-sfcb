@@ -160,7 +160,7 @@ provider manager. Default: \fI60\fR
 .B providerAutoGroup
 If set to true, all providers residing in the same shared library will
 be executed in the same process unless another group has been specified
-in the provider registration file. Default: \fIfalse\fR
+in the provider registration file. Default: \fItrue\fR
 .TP
 .B sslCertificateFilePath
 Specify the name of the file containing the server's certificate. 

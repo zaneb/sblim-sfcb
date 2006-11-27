@@ -535,7 +535,7 @@ providerTimeoutInterval
 providerAutoGroup
 	If set to true, all providers residing in the same shared library will
 	be executed in the same process unless another group has been specified
-  	in the provider registration file. Default: false
+  	in the provider registration file. Default: true
 
 sslClientCertificate
 	Specify the way sfcb handles client certificate based authentication. If set to

@@ -1,5 +1,8 @@
 2006-11-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
+	* control.c, sfcBroker.c, README, man/sfcbd.1.pre.in: 
+	Fixed 1603796: automatic provider grouping is now enabled by default.
+
 	* configure.ac, Makefile.am: 
 	Minor enhancements for build systems without bison and multi-processor
 	compiles.

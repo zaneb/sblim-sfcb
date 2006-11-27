@@ -169,6 +169,7 @@ libsfcBrokerCore_la_SOURCES = \
 
 libsfcBrokerCore_la_CFLAGS = $(AM_CFLAGS) @SFCB_CMPI_OS@ @SFCB_CMPI_PLATFORM@ 
 libsfcBrokerCore_la_LIBADD=-lsfcUtil
+libsfcBrokerCore_la_DEPENDENCIES=libsfcUtil.la
 
 if JDBC
 sqlLexer.c: $(srcdir)/sqlLexer.l
@@ -193,15 +194,18 @@ cimXmlParserProcessed.c: $(srcdir)/cimXmlParser.c
 libcimcClientSfcbLocal_la_SOURCES = \
    cimcClientSfcbLocal.c
 libcimcClientSfcbLocal_la_LIBADD=-lsfcBrokerCore
+libcimcClientSfcbLocal_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcFileRepository_la_SOURCES = \
 	fileRepository.c
 libsfcFileRepository_la_LIBADD=-lsfcBrokerCore	
+libsfcFileRepository_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcHttpAdapter_la_SOURCES = \
    httpAdapter.c \
    httpComm.c
 libsfcHttpAdapter_la_LIBADD=-lsfcBrokerCore -lsfcCimXmlCodec
+libsfcHttpAdapter_la_DEPENDENCIES=libsfcBrokerCore.la libsfcCimXmlCodec.la
 
 libsfcBasicAuthentication_la_SOURCES = \
    sfcBasicAuthentication.c
@@ -212,41 +216,51 @@ libsfcCertificateAuthentication_la_SOURCES = \
 libsfcInternalProvider_la_SOURCES = \
    internalProvider.c
 libsfcInternalProvider_la_LIBADD=-lsfcBrokerCore -lsfcFileRepository
+libsfcInternalProvider_la_DEPENDENCIES=libsfcBrokerCore.la libsfcFileRepository.la
 
 libsfcObjectImplSwapI32toP32_la_SOURCES = \
    objectImplSwapI32toP32.c 
 libsfcObjectImplSwapI32toP32_la_LIBADD=-lsfcBrokerCore
+libsfcObjectImplSwapI32toP32_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcInteropProvider_la_SOURCES = \
    interopProvider.c 
 libsfcInteropProvider_la_LIBADD=-lsfcBrokerCore -lsfcInternalProvider
+libsfcInteropProvider_la_DEPENDENCIES=libsfcBrokerCore.la libsfcInternalProvider.la
 
 libsfcInteropServerProvider_la_SOURCES = \
    interopServerProvider.c 
 libsfcInteropServerProvider_la_LIBADD=-lsfcBrokerCore 
+libsfcInteropServerProvider_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcIndCIMXMLHandler_la_SOURCES = \
    indCIMXMLHandler.c \
    indCIMXMLExport.c 
 libsfcIndCIMXMLHandler_la_LIBADD=-lsfcBrokerCore -lsfcInternalProvider -lsfcCimXmlCodec -lsfcHttpAdapter
+libsfcIndCIMXMLHandler_la_DEPENDENCIES=libsfcBrokerCore.la libsfcInternalProvider.la \
+	libsfcCimXmlCodec.la libsfcHttpAdapter.la
 
 libsfcClassProviderGz_la_SOURCES = \
    classProviderGz.c
 libsfcClassProviderGz_la_LIBADD=-lsfcBrokerCore @SFCB_LIBZ@
+libsfcClassProviderGz_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcClassProvider_la_SOURCES = \
    classProvider.c
 libsfcClassProvider_la_LIBADD=-lsfcBrokerCore
+libsfcClassProvider_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcClassProviderMem_la_SOURCES = \
    classProviderMem.c classSchemaMem.c interop_classSchema.c
 libsfcClassProviderMem_la_LIBADD=-lsfcBrokerCore
+libsfcClassProviderMem_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcCimXmlCodec_la_SOURCES = \
    cimXmlOps.y \
    cimXmlParserProcessed.c \
    cimXmlRequest.c 
 libsfcCimXmlCodec_la_LIBADD=-lsfcBrokerCore 
+libsfcCimXmlCodec_la_DEPENDENCIES=libsfcBrokerCore.la
 
 if SLP
 libslpAgent_la_CFLAGS = $(AM_CFLAGS)
@@ -262,10 +276,12 @@ if QUALREP
 libsfcQualifierProvider_la_SOURCES = \
    qualifierProvider.c
 libsfcQualifierProvider_la_LIBADD=-lsfcBrokerCore -lsfcFileRepository
+libsfcQualifierProvider_la_DEPENDENCIES=libsfcBrokerCore.la libsfcFileRepository.la
 endif
 
 sfcbd_SOURCES=sfcBroker.c
 sfcbd_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter $(SLP_LIB)
+sfcbd_DEPENDENCIES=libsfcBrokerCore.la libsfcCimXmlCodec.la libsfcHttpAdapter.la
 
 sfcbmofpp_SOURCES=mofpp.c
 
@@ -273,6 +289,7 @@ sfcbdump_SOURCES=sfcbdump.c
 
 classSchema2c_SOURCES=classSchema2c.c
 classSchema2c_LDADD=-lsfcBrokerCore
+classSchema2c_DEPENDENCIES=libsfcBrokerCore.la
 
 noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	constClass.h   msgqueue.h     providerRegister.h \

@@ -2133,6 +2133,7 @@ propertyList
     {
        $2.values[$2.next]=NULL;
        $$.list=$2;
+       if ($$.list.next == 0) $$.list.next=1;
     }
 ;
 
@@ -2247,7 +2248,12 @@ value
 ;
 
 valueArray
-    : value
+	:
+	{
+	   $$.values=(char**)malloc(sizeof(char*));
+	   $$.next=0;
+	} 
+    | value
     {
        $$.next=1;
        $$.max=64;

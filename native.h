@@ -82,7 +82,7 @@ CMPIEnumeration *sfcb_native_new_CMPIEnumeration(CMPIArray *, CMPIStatus *);
 CMPIInstance *NewCMPIInstance(CMPIObjectPath *, CMPIStatus *);
 CMPIInstance *TrackedCMPIInstance(const CMPIObjectPath *, CMPIStatus *);
 CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath *,
-                                        CMPIStatus *);
+                                        CMPIStatus *, int override);
 
 CMPIObjectPath *NewCMPIObjectPath(const char *, const char *, CMPIStatus *);
 CMPIObjectPath *TrackedCMPIObjectPath(const char *, const char *, CMPIStatus *);

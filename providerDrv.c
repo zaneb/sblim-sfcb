@@ -832,7 +832,7 @@ char **makePropertyList(int n, MsgSegment *ms)
    char **l;
    int i;
 
-   if (n==1 && ms[0].data==NULL) return NULL;
+   //if (n==1 && ms[0].data==NULL) return NULL;
    l=(char**)malloc(sizeof(char*)*(n+1));
 
    for (i=0; i<n; i++)

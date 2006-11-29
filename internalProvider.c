@@ -72,6 +72,20 @@ static int cpy2lower(char *in, char *out)
 }
 */
 
+const char **getKeyList(const CMPIObjectPath *cop)
+{
+	CMPIString * s;
+	char ** list;
+	int i = cop->ft->getKeyCount(cop, NULL);
+	list = malloc((i+1) * sizeof(char*));
+	list[i] = NULL;
+	while(i) {
+		i--;
+		cop->ft->getKeyAt(cop, i, &s, NULL);
+		list[i] = s->ft->getCharPtr(s, NULL);
+	}
+	return list;
+}
 
 char *internalProviderNormalizeObjectPath(const CMPIObjectPath *cop)
 {
@@ -254,6 +268,9 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
       if ((bi=_getIndex(bnss,cns))!=NULL) {
 	for (blob=getFirst(bi,&len,NULL,0); blob; blob=getNext(bi,&len,NULL,0)) {
             ci=relocateSerializedInstance(blob);
+            if(properties) {
+               ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
+            }
             _SFCB_TRACE(1,("--- returning instance %p",ci));
             retFnc(rslt,ci);
    //         CMReturnInstance(rslt, ci);
@@ -355,6 +372,9 @@ CMPIStatus InternalProviderGetInstance(CMPIInstanceMI * mi,
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderGetInstance");
    
    ci=internalProviderGetInstance(cop,&st);
+   if(properties) {
+      ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
+   }
    
    if (st.rc==CMPI_RC_OK) {
       CMReturnInstance(rslt, ci);
@@ -434,6 +454,10 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
       CMPIStatus st = { CMPI_RC_ERR_NOT_FOUND, NULL };
       return st;
    }
+   
+   if(properties) {
+      ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
+   }   
 
    len=getInstanceSerializedSize(ci);
    blob=malloc(len+64);

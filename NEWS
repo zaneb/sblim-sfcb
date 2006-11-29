@@ -29,6 +29,7 @@ Bugs fixed:
 - 1601274 Fixed legacy __Namespace support
 - 1601174 Fixed interopProvider segfault
 - 1601644 Added more timing traces
+- 1605216 Fixed empty propertyList causes parser error
 
 Changes in 1.1.1
 ================

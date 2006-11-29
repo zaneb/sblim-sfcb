@@ -23,6 +23,10 @@ class DMY_InstCreation : CIM_InstCreation
 {
 };
 
+class DMY_InstModification : CIM_InstModification
+{
+};
+
 class DMY_ListenerDestinationCIMXML : CIM_ListenerDestinationCIMXML
 {
 };

@@ -328,16 +328,40 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
                                           const char **propertyList, 
 					  const char **keys)
 {
+   int j,m;
+   CMPIObjectPath * cop;
+   CMPIInstance * newInstance;
+   CMPIStatus st;
+   CMPIData data;
+   CMPIString * name;
    struct native_instance *i = (struct native_instance *) instance;
-//printf("__ift_setPropertyFilter %p %p\n",propertyList,keys);
+   struct native_instance *iNew,iTemp;
+   
+   cop = instance->ft->getObjectPath(instance, NULL);
+   if(cop) {
+      newInstance = internal_new_CMPIInstance(i->mem_state, cop, &st, 1);
+   }
+   for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
+      data = __ift_getPropertyAt(instance, j, &name, &st);
+      if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
+         newInstance->ft->setProperty(newInstance, name->hdl, &data.value, data.type);
+      }
+   }
+   iNew = (struct native_instance *) newInstance;
+
    if (i->filtered) {
       __release_list(i->property_list);
       __release_list(i->key_list);
    }
 
-   i->filtered = 1;
-   i->property_list = __duplicate_list(propertyList);
-   i->key_list = __duplicate_list(keys);
+   iNew->filtered = 1;
+   iNew->property_list = __duplicate_list(propertyList);
+   iNew->key_list = __duplicate_list(keys);
+   
+   memcpy(&iTemp, i, sizeof(struct native_instance));
+   memcpy(i, iNew, sizeof(struct native_instance));
+   memcpy(iNew, &iTemp, sizeof(struct native_instance));
+   newInstance->ft->release(newInstance);
 
    CMReturn(CMPI_RC_OK);
 }
@@ -453,7 +477,7 @@ MsgSegment setInstanceMsgSegment(CMPIInstance * ci)
 }
 
 CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
-                                        CMPIStatus * rc)
+                                        CMPIStatus * rc, int override)
 {
    static CMPIInstance i = {
       "CMPIInstance",
@@ -505,8 +529,10 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
    tInst->mem_state=state;
    tInst->refCount=0;
    
-#ifdef HAVE_DEFAULT_PROPERTIES 
-   instFillDefaultProperties(tInst,ns,cn);
+#ifdef HAVE_DEFAULT_PROPERTIES
+   if(!override) {
+      instFillDefaultProperties(tInst,ns,cn);
+   }
 #endif
 
    return (CMPIInstance*)tInst;
@@ -514,12 +540,12 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
 
 CMPIInstance *TrackedCMPIInstance(const CMPIObjectPath * cop, CMPIStatus * rc)
 {
-   return internal_new_CMPIInstance(MEM_TRACKED, cop, rc);
+   return internal_new_CMPIInstance(MEM_TRACKED, cop, rc, 0);
 }
 
 CMPIInstance *NewCMPIInstance(CMPIObjectPath * cop, CMPIStatus * rc)
 {
-   return internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, rc);
+   return internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, rc, 0);
 }
 
 

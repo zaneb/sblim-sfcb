@@ -903,7 +903,12 @@ enumClassNamesParmsList
 ;
 
 enumClassNamesParms
-    : XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
+    : XTOK_IP_CLASSNAME ZTOK_IPARAMVALUE
+    {
+       $$.className = NULL;
+       $$.flags = $$.flagsSet = 0 ;
+    }
+    | XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
     {
        $$.className = $2;
        $$.flags = $$.flagsSet = 0 ;
@@ -959,7 +964,12 @@ enumClassesParmsList
 ;
 
 enumClassesParms
-    : XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
+    : XTOK_IP_CLASSNAME ZTOK_IPARAMVALUE
+    {
+       $$.className = NULL;
+       $$.flags = $$.flagsSet = 0 ;
+    }
+    | XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
     {
        $$.className = $2;
        $$.flags = $$.flagsSet = 0 ;

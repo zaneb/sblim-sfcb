@@ -2,6 +2,9 @@
 	* cimXmlOps.y, internalProvider.c, providerDrv.c, instance.c, indication.mof,
 	native.h:
 	Fixed 1605216: empty propertyList causes parser error
+	
+	* cimXmlOps.y:
+	Fixed 1605234: parse error when IPARAMVALUE CLASSNAME is missing
 
 2006-11-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 

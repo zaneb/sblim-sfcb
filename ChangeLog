@@ -1,3 +1,8 @@
+2006-11-30  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
+	* classProvider.c, classProviderGz.c, classProviderMem.c: 
+	Fixed 1606013: prevent segfault with deepInheritance=false.
+
 2006-11-29  Sven Schuetz
 	* cimXmlOps.y, internalProvider.c, providerDrv.c, instance.c, indication.mof,
 	native.h:

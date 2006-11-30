@@ -676,20 +676,21 @@ static CMPIStatus ClassProviderEnumClassNames(CMPIClassMI * mi,
             }   
          }   
       }     
-   }
-   
-   else if (cn && ((flgs & CMPI_FLAG_DeepInheritance)==0)) {
-      UtilList *ul = getChildren(cReg,cn);
-      char *child;
-      for (child = (char *) ul->ft->getFirst(ul); child;  child = (char *) ul->ft->getNext(ul)) {
+   } else {
+     cls = getClass(cReg,cn);
+     if (cls == NULL) {
+       st.rc = CMPI_RC_ERR_INVALID_CLASS;
+     } else if ((flgs & CMPI_FLAG_DeepInheritance)==0) {
+       UtilList *ul = getChildren(cReg,cn);
+       char *child;
+       if (ul) for (child = (char *) ul->ft->getFirst(ul); child;  child = (char *) ul->ft->getNext(ul)) {
          op=CMNewObjectPath(_broker,ns,child,NULL);
          CMReturnObjectPath(rslt,op);
-      }     
-   }
-   
-   else if (cn && (flgs & CMPI_FLAG_DeepInheritance)) {
-      if (((flgs & FL_assocsOnly)==0) || cls->ft->isAssociation(cls))
+       }     
+     } else if (flgs & CMPI_FLAG_DeepInheritance) {
+       if (((flgs & FL_assocsOnly)==0) || cls->ft->isAssociation(cls))
          loopOnChildNames(cReg, cn, rslt);
+     }
    }
      
    cReg->ft->rUnLock(cReg);
@@ -753,17 +754,20 @@ static CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
             CMReturnInstance(rslt, (CMPIInstance *) cls);
          }   
       }     
-   }
-   else if (cn && ((flgs & CMPI_FLAG_DeepInheritance)==0)) {
-      UtilList *ul = getChildren(cReg,cn);
-      char *child;
-      for (child = (char *) ul->ft->getFirst(ul); child;  child = (char *) ul->ft->getNext(ul)) {
+   } else {
+     cls = getClass(cReg,cn);
+     if (cls == NULL) {
+       st.rc = CMPI_RC_ERR_INVALID_CLASS;
+     } else if ((flgs & CMPI_FLAG_DeepInheritance)==0) {
+       UtilList *ul = getChildren(cReg,cn);
+       char *child;
+       if (ul) for (child = (char *) ul->ft->getFirst(ul); child;  child = (char *) ul->ft->getNext(ul)) {
          cls = getClass(cReg,child);
          CMReturnInstance(rslt, (CMPIInstance *) cls);
-      }     
-   }
-   else if (cn && (flgs & CMPI_FLAG_DeepInheritance)) {
-      loopOnChildren(cReg, cn, rslt);
+       }     
+     } else if (flgs & CMPI_FLAG_DeepInheritance) {
+       loopOnChildren(cReg, cn, rslt);
+     }
    }
      
    cReg->ft->rUnLock(cReg);

@@ -339,7 +339,7 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
    
    cop = instance->ft->getObjectPath(instance, NULL);
    if(cop) {
-      newInstance = internal_new_CMPIInstance(i->mem_state, cop, &st, 1);
+      newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);
    }
    for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
       data = __ift_getPropertyAt(instance, j, &name, &st);
@@ -349,18 +349,16 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
    }
    iNew = (struct native_instance *) newInstance;
 
-   if (i->filtered) {
-      __release_list(i->property_list);
-      __release_list(i->key_list);
-   }
-
    iNew->filtered = 1;
    iNew->property_list = __duplicate_list(propertyList);
    iNew->key_list = __duplicate_list(keys);
    
    memcpy(&iTemp, i, sizeof(struct native_instance));
    memcpy(i, iNew, sizeof(struct native_instance));
+   i->mem_state = iTemp.mem_state;
+   i->refCount = iTemp.refCount;
    memcpy(iNew, &iTemp, sizeof(struct native_instance));
+   iNew->mem_state = MEM_NOT_TRACKED;
    newInstance->ft->release(newInstance);
 
    CMReturn(CMPI_RC_OK);

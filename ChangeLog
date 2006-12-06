@@ -1,3 +1,9 @@
+2006-12-05  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* instance.c: 
+	Fixed 1609711: segfault during default property population of
+	instances of undefined class.
+
 2006-12-03  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* instance.c: 

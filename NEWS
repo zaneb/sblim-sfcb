@@ -32,6 +32,7 @@ Bugs fixed:
 - 1605216 Fixed empty propertyList causes parser error
 - 1605234 Fixed parse error when IPARAMVALUE CLASSNAME is missing
 - 1606013 Fixed class provider segfault with deepInheritance=false
+- 1609711 Fixed instance creation crash with undefined class
 
 Changes in 1.1.1
 ================

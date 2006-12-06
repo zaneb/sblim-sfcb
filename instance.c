@@ -645,7 +645,9 @@ static void instFillDefaultProperties(struct native_instance *inst,
    
    if ((cc = clt->ft->get(clt, cn)) == NULL) {	 
       cc = getConstClass(ns,cn);
-      clt->ft->put(clt, strdup(cn), cc->ft->clone(cc,NULL));
+      if (cc) {
+	 clt->ft->put(clt, strdup(cn), cc->ft->clone(cc,NULL));
+      }
    }
    Broker->xft->unlockMutex(*mtx);
    if (cc) {

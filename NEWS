@@ -33,6 +33,7 @@ Bugs fixed:
 - 1605234 Fixed parse error when IPARAMVALUE CLASSNAME is missing
 - 1606013 Fixed class provider segfault with deepInheritance=false
 - 1609711 Fixed instance creation crash with undefined class
+- 1610514 Aligned sfcc/sfcb libsfcUtil versions
 
 Changes in 1.1.1
 ================

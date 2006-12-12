@@ -25,6 +25,7 @@
 #include "cmpidt.h"
 #include "cimXmlRequest.h"
 #include "cimXmlParser.h"
+#include "cimXmlGen.h"
 #include "msgqueue.h"
 #include "cmpidt.h"
 #include "constClass.h"
@@ -572,9 +573,9 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
       }
       
       else if (*type == '%') {         
-         const char *eo=ClGetStringData((CMPIInstance*)obj,data->value.dataPtr.length);
-         char *sp;
-         int freesp = 0;
+         //const char *eo=ClGetStringData((CMPIInstance*)obj,data->value.dataPtr.length);
+         //char *sp;
+         //int freesp = 0;
          
          sb->ft->appendChars(sb, bTag);
          sb->ft->appendChars(sb, (char *) name->hdl);
@@ -583,13 +584,14 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb,"<QUALIFIER NAME=\"EmbeddedObject\" TYPE=\"boolean\">\n"
               "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
          sb->ft->appendChars(sb, "<VALUE>");
-         sp = XMLEscape((char*)eo);
-         if (sp) freesp = 1; 
+         //sp = XMLEscape((char*)eo);
+         //if (sp) freesp = 1; 
          sb->ft->appendChars(sb, "<![CDATA[");
-         sb->ft->appendChars(sb, sp);
+         //sb->ft->appendChars(sb, sp);
+         instance2xml(data->value.inst, sb, 0);
          sb->ft->appendChars(sb, "]]>");
          sb->ft->appendChars(sb, "</VALUE>\n");
-         if (freesp) free(sp);
+         //if (freesp) free(sp);
      }
       
       else {
@@ -623,17 +625,21 @@ static void quals2xml(unsigned long quals, UtilStringBuffer * sb)
       sb->ft->appendChars(sb,
                           "<QUALIFIER NAME=\"Deprecated\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
-   if (quals & ClProperty_Q_Key << 8)
+   if (quals & (ClProperty_Q_Key << 8))
       sb->ft->appendChars(sb, "<QUALIFIER NAME=\"Key\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
-   if (quals & ClProperty_Q_Propagated << 8)
+   if (quals & (ClProperty_Q_Propagated << 8))
       sb->ft->appendChars(sb,
                           "<QUALIFIER NAME=\"Propagated\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
-   if (quals & ClProperty_Q_Deprecated << 8)
+   if (quals & (ClProperty_Q_Deprecated << 8))
       sb->ft->appendChars(sb,
                           "<QUALIFIER NAME=\"Deprecated\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
+   if (quals & (ClProperty_Q_EmbeddedObject << 8))
+      sb->ft->appendChars(sb,
+                          "<QUALIFIER NAME=\"EmbeddedObject\" TYPE=\"boolean\">\n"
+                          "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");                          
 }
 
 static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *parm, CMPIString *pname, 

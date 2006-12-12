@@ -35,6 +35,7 @@ Bugs fixed:
 - 1609711 Fixed instance creation crash with undefined class
 - 1610514 Aligned sfcc/sfcb libsfcUtil versions
 - 1613925 Fixed memory loss in providerinfo cache
+- 1613933 Fixed embedded Objects in Indications do not work
 
 Changes in 1.1.1
 ================

@@ -63,6 +63,7 @@ extern void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time);
 extern char *sfcb_pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str);
 
 static ClString nls = { 0 };
+static int objectSize = 0;
 
 ClVersionRecord ClBuildVersionRecord(unsigned short opt, int endianMode, long *size)
 {
@@ -124,6 +125,11 @@ const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id)
    return &(buf->buf[buf->indexPtr[id->id - 1]]);
 }
 
+const char *ClObjectGetClObject(ClObjectHdr * hdr, ClString * id)
+{
+   return(ClObjectGetClString(hdr, id)); 
+}
+
 const CMPIData *ClObjectGetClArray(ClObjectHdr * hdr, ClArray * id)
 {
    ClArrayBuf *buf;
@@ -173,7 +179,15 @@ static long addClString(ClObjectHdr * hdr, const char *str)
 {
    _SFCB_ENTER(TRACE_OBJECTIMPL, "addClString");
 
-   int nmax = 16, l = strlen(str) + 1;
+   int nmax = 16, l;
+   
+   //see addClObject - hack to get anything into a stringbuffer
+   if(objectSize) {
+      l = objectSize;
+   }
+   else {
+      l = strlen(str) + 1;
+   }
    ClStrBuf *buf;
 
    if (hdr->strBufOffset == 0) {
@@ -230,13 +244,23 @@ static long addClString(ClObjectHdr * hdr, const char *str)
       }
    }
 
-   strcpy(buf->buf + buf->bUsed, str);
+   //strcpy(buf->buf + buf->bUsed, str);
+   memcpy(buf->buf + buf->bUsed, str, l);
    buf->indexPtr[buf->iUsed++] = buf->bUsed;
    buf->bUsed += l;
 
    _SFCB_RETURN(buf->iUsed);
 }
 
+//hack to get anything into a stringbuffer
+static long addClObject(ClObjectHdr * hdr, const void *obj, int size)
+{
+	objectSize = size;
+	long retCode;
+	retCode = addClString(hdr, obj);
+	objectSize = 0;
+	return(retCode);
+}
 
 static long addClArray(ClObjectHdr * hdr, CMPIData d)
 {
@@ -421,6 +445,14 @@ static void replaceClString(ClObjectHdr * hdr, int id, const char *str)
    fb->indexPtr[id - 1] = fb->indexPtr[i-1];
 
   _SFCB_EXIT();
+}
+
+//hack to get anything into a stringbuffer
+static void replaceClObject(ClObjectHdr * hdr, int id, const void *obj, int size)
+{
+	objectSize = size;
+	replaceClString(hdr, id, obj);
+	objectSize = 0;
 }
 
 static void replaceClArray(ClObjectHdr * hdr, int id, CMPIData d)
@@ -1206,7 +1238,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          p->data = d;
          p->data.value.array = (CMPIArray *) addClArray(hdr, d);
       }
-      else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
+      /*else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
          (d.state & CMPI_nullValue) == 0) {
 //      printf("added embedded object %d %s\n",getpid(),id);
          p->data = d;
@@ -1214,6 +1246,18 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          p->quals |= ClProperty_Q_EmbeddedObject;
          p ->flags &= ~ClProperty_EmbeddedObjectAsString;
          hdr->flags |= HDR_ContainsEmbeddedObject;
+      }*/
+      else if(hdr->type == HDR_Instance && //needed to not corrupt CMPIArgs
+      			d.type == CMPI_instance && (d.state & CMPI_nullValue) == 0) {
+         p->data = d;
+         int size = getInstanceSerializedSize(d.value.inst);
+         void * blob = malloc(size);
+         getSerializedInstance(d.value.inst, blob);
+         p->data.value.inst = (CMPIInstance *) addClObject(hdr, blob, size);
+         free(blob);
+         hdr->flags |= HDR_ContainsEmbeddedObject;
+         p->quals |= ClProperty_Q_EmbeddedObject;
+         p ->flags &= ~ClProperty_EmbeddedObjectAsString;
       }
       else p->data = d;
       _SFCB_RETURN(prps->used);
@@ -1280,10 +1324,10 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
 	} else {
 	  (p + i - 1)->data = d;
 	  (p + i - 1)->data.value.array = (CMPIArray *) addClArray(hdr, d);
-}
       }
+     }
       
-      else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
+      /*else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
          (d.state & CMPI_nullValue) == 0) {
          if (((p + i - 1)->quals && ClProperty_Q_EmbeddedObject) == 0 ) 
             _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
@@ -1291,6 +1335,27 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
          (p + i - 1)->data = d;
          hdr->flags |= HDR_ContainsEmbeddedObject;
          (p + i - 1)->data.value.dataPtr.length=-1; 
+      }*/
+      else if (hdr->type == HDR_Instance && 
+               od.type == CMPI_instance && (d.state & CMPI_nullValue) == 0) {
+         if (d.type != CMPI_instance) {
+            //replaceClObject(hdr, (long)od.value.chars, "");
+            //(p + i - 1)->data = d;
+            _SFCB_RETURN(CMPI_RC_ERR_TYPE_MISMATCH);
+         }
+         else {
+         	(p + i - 1)->data = d;
+            int size = getInstanceSerializedSize(d.value.inst);
+            void * blob = malloc(size);
+            getSerializedInstance(d.value.inst, blob);
+            if (od.value.chars) {printf("old value da\n");
+               replaceClObject(hdr, (long)od.value.chars, blob, size);
+            }
+            else {printf("old value nicht da\n");
+               (p + i - 1)->data.value.inst = (CMPIInstance *) addClObject(hdr, blob, size);
+            }
+            free(blob);
+         }
       }
       else(p + i - 1)->data = d;
       
@@ -1515,6 +1580,10 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(p + id)->id));
    if (quals) *quals = (p + id)->quals;
    
+   if ((p + id)->quals & ClProperty_Q_EmbeddedObject) {
+   	     data->type = CMPI_instance;
+   }
+   
    if (data->state & CMPI_nullValue)  {
       data->value.uint64=0;
    }
@@ -1532,6 +1601,11 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    else if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&cls->hdr,
             (ClArray *) & data->value.array);
+   }
+   else if (data->type == CMPI_instance) {
+      data->value.inst = 
+   	      relocateSerializedInstance((void *)ClObjectGetClObject(&cls->hdr,
+   	  							(ClString *) & data->value.inst));   	
    }
    return 0;
 }
@@ -1777,6 +1851,13 @@ int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&inst->hdr,
             (ClArray *) & data->value.array);
    }
+   if (data->type == CMPI_instance) {
+   	  //void * blob2 = ClObjectGetClString(&inst->hdr, (ClString *) & data->value.inst);
+   	  //data->value.inst = relocateSerializedInstance(blob2);
+      data->value.inst =
+         relocateSerializedInstance((void *)ClObjectGetClObject(&inst->hdr,
+      								(ClString *) & data->value.inst));
+   }   
    _SFCB_RETURN(0);
 }
 

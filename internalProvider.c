@@ -528,8 +528,8 @@ static CMPIConstClass *assocForName(const char *nameSpace, const char *assocClas
    _SFCB_TRACE(1,("--- nameSpace: %s assocClass: %s cc: %p",nameSpace,assocClass,cc));
    
    if (cc!=NULL && cc->ft->isAssociation(cc) != 0 &&
-       (role==NULL || (cc->ft->getProperty(cc,role,NULL).state & CMPI_notFound)!=0) &&
-       (resultRole==NULL || (cc->ft->getProperty(cc,resultRole,NULL).state & CMPI_notFound)!=0)) {
+       (role==NULL || (cc->ft->getProperty(cc,role,NULL).state & CMPI_notFound)==0) &&
+       (resultRole==NULL || (cc->ft->getProperty(cc,resultRole,NULL).state & CMPI_notFound)==0)) {
       _SFCB_RETURN(cc); 
    }   
    else _SFCB_RETURN(NULL);

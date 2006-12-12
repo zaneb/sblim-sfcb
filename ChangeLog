@@ -1,5 +1,10 @@
 2006-12-12  Sven Schuetz
 
+	* internalProvider.c, brokerEnc.c:
+	Fixed 1613936: associator call fails when role parameters are set
+
+2006-12-12  Sven Schuetz
+
 	* cimXmlGen.c, objectImpl.c:
 	Fixed 1613933: embedded Objects in Indications do not work
 

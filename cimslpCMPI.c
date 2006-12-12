@@ -31,25 +31,6 @@
 
 char * interOpNS;
 
-void initializeService(cimSLPService  *rs) {
-	rs->AuthenticationMechanismsSupported = NULL;
-	rs->AuthenticationMechansimDescriptions = NULL;
-	rs->Classinfo = NULL;
-	rs->CommunicationMechanism = NULL;
-	rs->FunctionalProfileDescriptions = NULL;
-	rs->FunctionalProfilesSupported = NULL;
-	rs->InteropSchemaNamespace = NULL;
-	rs->MultipleOperationsSupported = NULL;
-	rs->Namespace = NULL;
-	rs->OtherCommunicationMechanismDescription = NULL;
-	rs->ProtocolVersion = NULL;
-	rs->RegisteredProfilesSupported = NULL;
-	rs->service_hi_description = NULL;
-	rs->service_hi_name = NULL;
-	rs->service_id = NULL;
-	rs->url_syntax = NULL;
-}
-
 
 //helper function ... until better solution is found to get to the
 //interop Namespace
@@ -57,7 +38,7 @@ char ** getInterOpNS()
 {
 	char ** retArr;
 
-	interOpNS = "root/pg_interop";
+	interOpNS = "root/interop";
 	
 	retArr = malloc(2 * sizeof(char *));
 	retArr[0] = (char *)malloc((strlen(interOpNS) + 1) * sizeof(char));
@@ -83,7 +64,7 @@ CMPIInstance ** myGetInstances(CMCIClient *cc, char * path, char * objectname)
 
 	//severe error, cimom not running etc.
 	if(status.rc == CMPI_RC_ERR_FAILED) {
-		printf("Fatal error. CIMOM not running? Connection params ok?\n");
+		//printf("Fatal error. CIMOM not running? Connection params ok?\n");
 		exit(0);
 	}
 	
@@ -145,7 +126,7 @@ cimSLPService getSLPData(cimomConfig cfg)
 	CMPIConstClass *ccls;
 
 	cimSLPService rs; //service which is going to be returned to the calling function
-	initializeService(&rs);
+	memset(&rs, 0, sizeof(cimSLPService));
 
 	cc = cmciConnect(cfg.cimhost,
 					cfg.commScheme,
@@ -378,6 +359,7 @@ char * transformValue(char* cssf, CMPIConstClass * ccls, char * propertyName)
 			ele = CMGetArrayElementAt(arr, j, NULL);
 			valuestr = value2Chars(eletyp, &ele.value);
 			j++;
+			if(j == n) return cssf; //nothing found, probably "NULL" -> return it
 		}
 		free(valuestr);
 		free(cssf);
@@ -448,7 +430,7 @@ char ** myGetPropertyArray(CMPIInstance *instance, char *propertyName)
 	char **propertyArray = NULL;
 
 	propertyData = instance->ft->getProperty(instance, propertyName, &status);
-	if (!status.rc) {
+	if (!status.rc && propertyData.state!=CMPI_nullValue) {
 		if(CMIsArray(propertyData)) {
 			CMPIArray *arr = propertyData.value.array;
 			CMPIType  eletyp = propertyData.type & ~CMPI_ARRAY;

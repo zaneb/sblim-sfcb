@@ -333,9 +333,9 @@ CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
    for (i = 0, m = (int) av->value.sint32; i < m; i++)
       if (av[i + 1].type == CMPI_string) {
          char *chars = (char *) ClObjectGetClString(hdr, (ClString *) & av[i + 1].value.chars);
-         __aft_setElementAt((CMPIArray *) array, i, (CMPIValue *) chars, CMPI_chars);
+         arraySetElementNotTrackedAt((CMPIArray *) array, i, (CMPIValue *) chars, CMPI_chars);
       }
-      else __aft_setElementAt((CMPIArray *) array, i, &av[i + 1].value,
+      else arraySetElementNotTrackedAt((CMPIArray *) array, i, &av[i + 1].value,
          av[i + 1].type);
                        
    return (CMPIArray *) array;

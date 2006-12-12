@@ -188,7 +188,7 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
       CMPIStatus *st)
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR, "lookupProvider");
-   const char *cls = className;
+   const char *cls;
    ProviderInfo *info;
    UtilHashTable **ht=provHt(type,0);
    
@@ -210,25 +210,32 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
    if (interOpProvInfoPtr != forceNoProvInfoPtr && 
       (strcasecmp(className,"cim_indicationfilter")==0 ||
        strcasecmp(className,"cim_indicationsubscription")==0)) {
-      _SFCB_TRACE(1,("interopProvider for %s",cls));
+      _SFCB_TRACE(1,("interopProvider for %s",className));
       _SFCB_RETURN(interOpProvInfoPtr);
    }   
    
+   cls = className ? strdup(className) : NULL;
    while (cls != NULL) {
       info = pReg->ft->getProvider(pReg, cls, type);
       if (info && nameSpaceOk(info,nameSpace)) {
          if ((*ht)->ft->get(*ht, cls)==NULL)
 	   (*ht)->ft->put(*ht, strdup(cls), info);
+	 free(cls);
          _SFCB_RETURN(info);
       }
       else {
          _SFCB_TRACE(1,("Getting class %s",cls));
          CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, st);
+	 free(cls);
          if (cc == NULL) {
             _SFCB_TRACE(1,("Returning NULL for %s",className));
            _SFCB_RETURN(NULL);
          }
          cls = cc->ft->getCharSuperClassName(cc);
+         if (cls) {
+	   cls = strdup(cls);
+	 }
+	 CMRelease(cc);
       }
    }
     
@@ -289,9 +296,11 @@ static int addProviders(long type, char *className, char *nameSpace,
            child = children->ft->getNext(children)) {
          _SFCB_TRACE(1,("--- add child %s",child));
          rc = addProviders(type,child, nameSpace, providerList);
-          _SFCB_TRACE(1,("--- add child %s rc: %d",child,rc));
+	 _SFCB_TRACE(1,("--- add child %s rc: %d",child,rc));
+	 free(child);
         if (rc) _SFCB_RETURN(rc);
       }
+      CMRelease(children);
    }
 
    _SFCB_RETURN(rc);
@@ -448,7 +457,7 @@ static void processIndProviderList(int *requestor, OperationHdr * req)
 static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
 {
    long type = ASSOCIATION_PROVIDER;
-   const char *cls = className;
+   const char *cls;
    ProviderInfo *info;
    CMPIStatus rc;
 
@@ -463,18 +472,25 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
    info = (ProviderInfo *) assocProviderHt->ft->get(assocProviderHt, className);
    if (info) _SFCB_RETURN(info);
 
+   cls = className ? strdup(className) : NULL;
    while (cls != NULL) {
       info = pReg->ft->getProvider(pReg, cls, type);
       if (info) {
 	assocProviderHt->ft->put(assocProviderHt, strdup(className), info);
-         _SFCB_RETURN(info);
+	free(cls);
+	_SFCB_RETURN(info);
       }
       else {
          CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, &rc);
+	 free(cls);
          if (cc == NULL) {
             _SFCB_RETURN(NULL);
          }
          cls = cc->ft->getCharSuperClassName(cc);
+         if (cls) {
+	   cls = strdup(cls);
+	 }
+	 CMRelease(cc);
       }
    }
    
@@ -600,7 +616,7 @@ static void assocProviderList(int *requestor, OperationHdr * req)
 static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
 {
    long type = METHOD_PROVIDER;
-   const char *cls = className;
+   const char *cls;
    ProviderInfo *info;
    CMPIStatus rc;
 
@@ -618,18 +634,25 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
        strcasecmp(className,"cim_indicationsubscription")==0)
       _SFCB_RETURN(interOpProvInfoPtr);
       
+   cls = className ? strdup(className) : NULL;
    while (cls != NULL) {
       info = pReg->ft->getProvider(pReg, cls, type);
       if (info) {
 	methodProviderHt->ft->put(methodProviderHt, strdup(className), info);
-         _SFCB_RETURN(info);
+	free(cls);
+	_SFCB_RETURN(info);
       }
       else {
          CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, &rc);
+	 free(cls);
          if (cc == NULL) {
             _SFCB_RETURN(NULL);
          }
          cls = cc->ft->getCharSuperClassName(cc);
+         if (cls) {
+	   cls = strdup(cls);
+	 }
+	 CMRelease(cc);
       }
    }
    
@@ -1261,7 +1284,6 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
       if (resp->rc == CMPI_RC_OK) {
          ccl = relocateSerializedConstClass(resp->object[0].data);
          ccl = ccl->ft->clone(ccl, NULL);
-         memAdd(ccl,&x);
       }
    }
    _SFCB_TRACE(1, ("--- Invoking ClassProvider for %s %s rc: %d",ns,cn,resp->rc));
@@ -1413,12 +1435,13 @@ static UtilList *_getConstClassChildren(const char *ns, const char *cn)
          ul = UtilFactory->newList();
          for (i = 0, m = CMGetArrayCount(ar, NULL); i < m; i++) {
             str=CMGetArrayElementAt(ar, i, NULL).value.string;
-            if (str && str->hdl) ul->ft->append(ul,str->hdl);
+            if (str && str->hdl) ul->ft->append(ul,strdup(str->hdl));
          }                  
       }
    }
    CMRelease(path);
    if (out) CMRelease(out);
+   if (ar) CMRelease(ar);
    CMRelease(in);
 
    _SFCB_RETURN(ul);

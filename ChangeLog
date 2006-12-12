@@ -1,3 +1,9 @@
+2006-12-12  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* array.c, providerMgr.c: 
+	Fixed 1613925: use of non-tracked array operations allows
+	to release the array of provider-infos properly.
+
 2006-12-06  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* Makefile.am, libsfcUtil.Versions:

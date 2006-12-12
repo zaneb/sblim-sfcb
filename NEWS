@@ -34,6 +34,7 @@ Bugs fixed:
 - 1606013 Fixed class provider segfault with deepInheritance=false
 - 1609711 Fixed instance creation crash with undefined class
 - 1610514 Aligned sfcc/sfcb libsfcUtil versions
+- 1613925 Fixed memory loss in providerinfo cache
 
 Changes in 1.1.1
 ================

@@ -75,7 +75,7 @@ static int cpy2lower(char *in, char *out)
 const char **getKeyList(const CMPIObjectPath *cop)
 {
 	CMPIString * s;
-	char ** list;
+	const char ** list;
 	int i = cop->ft->getKeyCount(cop, NULL);
 	list = malloc((i+1) * sizeof(char*));
 	list[i] = NULL;
@@ -227,7 +227,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
 				const CMPIContext * ctx, void *rslt,
 				const CMPIObjectPath * ref, 
 				const char **properties,
-				void(*retFnc)(void*,const CMPIInstance*), 
+				void(*retFnc)(void*,CMPIInstance*), 
 				int ignprov)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -284,14 +284,14 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-static void return2result(void *ret, const CMPIInstance *ci)
+static void return2result(void *ret, CMPIInstance *ci)
 {
    CMPIResult * rslt=(CMPIResult*)ret; 
    CMReturnInstance(rslt, ci);
-   free(ci);   
+   free((void*)ci);   
 }
 
-static void return2lst(void *ret, const CMPIInstance *ci)
+static void return2lst(void *ret, CMPIInstance *ci)
 {
    UtilList *ul=(UtilList*)ret; 
    ul->ft->append(ul,ci); 
@@ -456,7 +456,7 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
    }
    
    if(properties) {
-      ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
+     ci->ft->setPropertyFilter((CMPIInstance*)ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
    }   
 
    len=getInstanceSerializedSize(ci);
@@ -557,14 +557,14 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
    UtilList *refs= UtilFactory->newList();
    char *ns=(char*)CMGetNameSpace(cop,NULL)->hdl;
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   CMPIUint32 newFlgs=FL_assocsOnly || CMPI_FLAG_DeepInheritance;
    
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "getRefs");
    
    if (assocClass != NULL) {
       CMPIObjectPath *path;
       if (assocForName(ns,assocClass,role,resultRole) == NULL) {
-         setStatus(&st,CMPI_RC_ERR_INVALID_PARAMETER,assocClass);
+	//         setStatus(&st,CMPI_RC_ERR_INVALID_PARAMETER,assocClass);
+	// for unknown class we just return nothing
          return st;
       }
       path=CMNewObjectPath(_broker,ns,assocClass,NULL);
@@ -572,19 +572,24 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
    }
     
    else {
+      CMPIData rv;
       CMPIObjectPath *op=CMNewObjectPath(Broker,ns,"$ClassProvider$",&st);
-      CMAddContextEntry((CMPIContext*)ctx, CMPIInvocationFlags,&newFlgs,CMPI_uint32);  
-      CMPIEnumeration *enm=CBEnumInstanceNames(Broker,ctx,op,&st); 
-      
-      if (enm) while (CMHasNext(enm,NULL)) {      
-         CMPIObjectPath *cop=CMGetNext(enm,NULL).value.ref;
-         if (assocForName((char*)CMGetNameSpace(cop,NULL)->hdl,(char*)CMGetClassName(cop,NULL)->hdl,
-               role,resultRole) != NULL)
-            SafeInternalProviderAddEnumInstances(refs, NULL, ctx, cop, propertyList, &st, 1);  
-      }
-      else {
-         st.rc=CMPI_RC_OK;
-         _SFCB_RETURN(st);
+      CMPIArgs *in=CMNewArgs(Broker,NULL);
+      CMPIArgs *out=CMNewArgs(Broker,NULL);
+      rv=CBInvokeMethod(Broker,ctx,op,"getassocs",in,out,&st);
+      if (out) {
+	int i,m;
+         CMPIArray *ar = CMGetArg(out, "assocs", &st).value.array;
+         for (i = 0, m = CMGetArrayCount(ar, NULL); i < m; i++) {
+            char *name=CMGetArrayElementAt(ar,i,NULL).value.string->hdl;
+            if (name) {
+	      CMPIObjectPath *cop=CMNewObjectPath(Broker,ns,name,NULL);
+	      if (cop) {
+		SafeInternalProviderAddEnumInstances(refs, NULL, ctx, cop, propertyList, &st, 1);  
+	      }
+	    }
+            _SFCB_TRACE(1,("--- assoc %s",name));
+         }
       }
    }
 
@@ -595,9 +600,10 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
       UtilStringBuffer *pn=normalize_ObjectPath(cop);
       for (ci=refs->ft->getFirst(refs); ci; ci=refs->ft->getNext(refs)) {
          CMPIData data=CMGetProperty(ci,role,NULL);
-         if ((data.state & CMPI_notFound)==0 && data.type==CMPI_ref) {
-            if (objectPathEquals(pn,data.value.ref,NULL,1)) continue;
-            refs->ft->removeCurrent(refs);
+         if ((data.state & CMPI_notFound) || 
+	     data.type!=CMPI_ref ||
+	     objectPathEquals(pn,data.value.ref,NULL,0)==0) {
+	   refs->ft->removeCurrent(refs);
          }
       }
       pn->ft->release(pn);
@@ -611,7 +617,7 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
       for (ci=refs->ft->getFirst(refs); ci; ci=refs->ft->getNext(refs)) {
          for (matched=0,i=0,m=CMGetPropertyCount(ci,NULL); i<m; i++) {
             CMPIData data=CMGetPropertyAt(ci,i,NULL,NULL);
-            if (data.type==CMPI_ref && objectPathEquals(pn,data.value.ref,NULL,1)) {
+            if (data.type==CMPI_ref && objectPathEquals(pn,data.value.ref,NULL,0)) {
                matched=1;
                break;
             }
@@ -652,8 +658,9 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
          if (resultRole) {
             CMPIData data=CMGetProperty(ci,resultRole,NULL);
             UtilStringBuffer *an=NULL;
-            if (objectPathEquals(pn,data.value.ref,&an,0)==0) {
-               if (CMClassPathIsA(Broker,cop,resultClass,NULL)) {
+            if ((data.state & CMPI_notFound)==0 && data.type==CMPI_ref && 
+		objectPathEquals(pn,data.value.ref,&an,0)==0) {
+               if (resultClass ==NULL || CMClassPathIsA(Broker,data.value.ref,resultClass,NULL)) {
                   CMPIInstance *aci=CBGetInstance(Broker,ctx,data.value.ref,propertyList,&st);
                   assocs->ft->put(assocs,an->ft->getCharPtr(an),aci);
                }                  
@@ -670,9 +677,6 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
                   CMPIString *tns=CMGetNameSpace(ref,NULL);
                   if (tns==NULL || tns->hdl==NULL) CMSetNameSpace(ref,ns);
                   UtilStringBuffer *an=NULL;
-          //        CMPIString *pn=CMObjectPathToString(ref,NULL);
-                  pn=normalize_ObjectPath(ref);
-                  printf("ref::::: %s %s\n",(char*)tns->hdl,(char*)pn->hdl);
                   if (objectPathEquals(pn,ref,&an,0)==0) {
          
                      if (resultClass==NULL || CMClassPathIsA(Broker,ref,resultClass,NULL)) {
@@ -700,6 +704,7 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
          }
       }  
       
+      pn->ft->release(pn);
       _SFCB_RETURN(st);
         
    }

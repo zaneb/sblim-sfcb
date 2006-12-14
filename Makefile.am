@@ -128,7 +128,7 @@ libsfcUtil_la_SOURCES = \
 	sfcUtil/utilFactory.c \
 	sfcUtil/utilHashtable.c \
 	sfcUtil/utilStringBuffer.c \
-	sfcUtil/libsfcUtil.versions
+	sfcUtil/libsfcUtil.Versions
 libsfcUtil_la_LDFLAGS = -Wl,--version-script,$(srcdir)/sfcUtil/libsfcUtil.Versions
 
 libsfcBrokerCore_la_SOURCES = \

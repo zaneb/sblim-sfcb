@@ -562,8 +562,12 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
       if (*type == '*') {
          sb->ft->appendChars(sb, bTag);
          sb->ft->appendChars(sb, (char *) name->hdl);
-         sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
-         sb->ft->appendChars(sb, opGetClassNameChars(data->value.ref));
+	 if (param) {
+	   sb->ft->appendChars(sb, "\" PARAMTYPE=\"reference");
+	 } else {
+	   sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+	   sb->ft->appendChars(sb, opGetClassNameChars(data->value.ref));
+	 }
          sb->ft->appendChars(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (inst) {
@@ -836,7 +840,6 @@ int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags)
 int args2xml(CMPIArgs * args, UtilStringBuffer * sb)
 {
    int i, m;
-   char *type;
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "args2xml");
    
@@ -851,25 +854,10 @@ int args2xml(CMPIArgs * args, UtilStringBuffer * sb)
       CMPIData data;
       data = CMGetArgAt(args, i, &name, NULL);
       
-      if (data.type & CMPI_ARRAY) {
-         mlogf(M_ERROR,M_SHOW,"-#- args2xml: arrays in CMPIArgs not yet supported\n");
-         abort();
-//         data2xml(&data,args,name,"<PROPERTY.ARRAY NAME=\"", "</PROPERTY.ARRAY>\n",
-//                  sb, qsb, 1);
-      }   
-      else {
-         type = dataType(data.type);
-         if (*type == '*') {
-           mlogf(M_ERROR,M_SHOW,"-#- args2xml: references in CMPIArgs not yet supported\n");
-           abort();
-//              data2xml(&data,args,name,"<PROPERTY.REFERENCE NAME=\"",
-//                     "</PROPERTY.REFERENCE>\n", sb, qsb, 1);
-         }            
-         else data2xml(&data,args,name,"<PARAMVALUE NAME=\"", "</PARAMVALUE>\n", sb, NULL, 1,1);
-      }
+      data2xml(&data,args,name,"<PARAMVALUE NAME=\"", "</PARAMVALUE>\n", sb, NULL, 1,1);
       
       if (data.type & (CMPI_ENC|CMPI_ARRAY)) {// don't get confused using generic release 
-         data.value.inst->ft->release(data.value.inst);
+	data.value.inst->ft->release(data.value.inst);
       }   
       CMRelease(name);
    }

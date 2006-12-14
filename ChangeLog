@@ -1,3 +1,9 @@
+2006-12-14  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-70.boeblingen.de.ibm.com>
+
+	* cimXmlGen.c: 
+	Fixed 1613172: generation of PARAMVALUE xml for references
+	and arrays.
+	
 2006-12-13  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* internalProvider.c: 

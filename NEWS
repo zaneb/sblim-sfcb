@@ -39,7 +39,7 @@ Bugs fixed:
 - 1613936 Fixed associator call fails when role parameters are set
 - 1614075 Fixed enabling slp can lead to a segfault
 - 1529134 Fixed internal provider associator operations
-
+- 1613172 Fixed XML generation for reference and array PARAMVALUEs
 
 Changes in 1.1.1
 ================

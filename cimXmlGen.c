@@ -274,8 +274,10 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
      XtokValueArray *arr = (XtokValueArray*)ref;
      XtokValueRefArray *refarr = (XtokValueRefArray*)arr;
      max=arr->next;
-     if (type & CMPI_ref) {
+     if ((type & CMPI_ref) == CMPI_ref) {
        t = CMPI_ref;
+     } else if (type & ~CMPI_ARRAY) {
+       t = type & ~CMPI_ARRAY;
      } else {
        /* the guess type can go wrong */
        t = guessType(arr->values[0]);

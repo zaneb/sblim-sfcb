@@ -5,6 +5,9 @@
 
 2006-12-14  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-70.boeblingen.de.ibm.com>
 
+	* cimXmlOps.y, cimXmlGen.c: 
+	Fixed 1615776: parsing of PARAMVALUE xml (empty ones and arrays).
+
 	* cimXmlGen.c: 
 	Fixed 1613172: generation of PARAMVALUE xml for references
 	and arrays.

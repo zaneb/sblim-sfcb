@@ -658,7 +658,12 @@ paramValues
 ;
 
 paramValue
-    : XTOK_PARAMVALUE value ZTOK_PARAMVALUE
+    : XTOK_PARAMVALUE ZTOK_PARAMVALUE
+    {
+       $1.value.value=NULL;
+       addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
+    }   
+    | XTOK_PARAMVALUE value ZTOK_PARAMVALUE
     {
        $1.value=$2;
        addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
@@ -666,7 +671,7 @@ paramValue
     | XTOK_PARAMVALUE propertyList ZTOK_PARAMVALUE
     {
        $1.valueArray=$2.list;
-       $1.type=CMPI_ARRAY;
+       $1.type|=CMPI_ARRAY;
        addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
     | XTOK_PARAMVALUE valueReference ZTOK_PARAMVALUE

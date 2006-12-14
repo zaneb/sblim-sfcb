@@ -109,7 +109,7 @@ cimslp_SOURCES = \
 	cimslpSLP.c \
 	cimslpUtil.c 
 
-cimslp_LDADD=-lslp -lcmpisfcc
+cimslp_LDADD=-lslp -lcmpisfcc -lsfcBrokerCore
 else
 SLP_PROGRAMFILES = 
 endif
@@ -396,4 +396,3 @@ install-cimschema: getSchema.sh
 
 postinstall: install-cimschema
 	test -f $(DESTDIR)$(sfcbstatedir)/registration/providerRegister || $(INSTALL_DATA) $(DESTDIR)$(sfcbstatedir)/stage/default.reg $(DESTDIR)$(sfcbstatedir)/registration/providerRegister 
-

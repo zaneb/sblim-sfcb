@@ -1,3 +1,8 @@
+2006-12-14  Sven Schuetz
+	* cimslpCMPI.c, cimslp.h, trace.h, trace.c, cimslp.c, Makefile.am, 
+	cimslpCMPI.h, cimslpUtil.h, cimslpSLP.h, cimslpSLP.c:
+	Fixed 1615731: slp enhancements (shutdown, tracing)
+
 2006-12-14  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-70.boeblingen.de.ibm.com>
 
 	* cimXmlGen.c: 

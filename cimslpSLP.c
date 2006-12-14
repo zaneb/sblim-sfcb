@@ -28,12 +28,14 @@
 #include "cimslpCMPI.h"
 #include "cimslpSLP.h"
 #include "cimslpUtil.h"
+#include "trace.h"
 
 
 #define SIZE 1024
 
 int size;
 char * gAttrstring = "NULL";
+char* urlsyntax=NULL;
 
 void freeCSS(cimSLPService css)
 {
@@ -55,19 +57,13 @@ void freeCSS(cimSLPService css)
 	freeArr(css.RegisteredProfilesSupported);
 }
 
-void MySLPRegReport(SLPHandle hslp, SLPError errcode, void* cookie)
+void onErrorFnc(SLPHandle hslp, SLPError errcode, void* cookie)
 {
-    /* return the error code in the cookie */
     *(SLPError*)cookie = errcode;
 
 	if(errcode) {
 		printf("Callback Code %i\n",errcode);
 	}
-    /* You could do something else here like print out  */
-    /* the errcode, etc.  Remember, as a general rule,  */
-    /* do not try to do too much in a callback because  */
-    /* it is being executed by the same thread that is  */
-    /* reading slp packets from the wire.               */
 }
 
 
@@ -144,21 +140,41 @@ char* buildAttrStringFromArray(char * name, char ** value, char * attrstring)
 
 }
 
+void deregisterCIMService()
+{
+	SLPHandle hslp;
+	SLPError callbackerr = 0;
+	SLPError err = 0;
+	
+	err = SLPOpen("", SLP_FALSE, &hslp);
+	if(err != SLP_OK)
+	{
+		printf("Error opening slp handle %i\n",err);
+	}	
+	err = SLPDereg( hslp, urlsyntax, onErrorFnc, &callbackerr);
+    if(( err != SLP_OK) || (callbackerr != SLP_OK)) {
+        printf("--- Error deregistering service with slp (%i) ... it will now timeout\n",err);
+    }
+}
 
 int registerCIMService(cimSLPService css, int slpLifeTime)
 {
-
+	SLPHandle hslp;
 	SLPError err = 0;
 	SLPError callbackerr = 0;
-	SLPHandle hslp;
 	char *attrstring;
 	int retCode = 0;
-		
+	
+	_SFCB_ENTER(TRACE_SLP, "registerCIMService");
+	
 	size = SIZE;
 	
 	if(! css.url_syntax) {
 		freeCSS(css);
 		return 1;
+	} else {
+		freeStr(urlsyntax);
+		urlsyntax = strdup(css.url_syntax);;
 	}
 	
 	attrstring = malloc(sizeof(char) * SIZE);
@@ -211,7 +227,7 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
 		an error code
 		*/
 		if(strcmp(gAttrstring, "NULL")) {
-			err = SLPDereg( hslp, css.url_syntax, MySLPRegReport, &callbackerr);
+			err = SLPDereg( hslp, css.url_syntax, onErrorFnc, &callbackerr);
 			free(gAttrstring);
 		}
 	}	
@@ -221,8 +237,8 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
               NULL,
               attrstring,
               SLP_TRUE,
-              MySLPRegReport,
-              &callbackerr );			
+              onErrorFnc,
+              &callbackerr );
 
 	#ifdef HAVE_SLP_ALONE
 	printf("url_syntax: %s\n", css.url_syntax);
@@ -249,5 +265,5 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
 	
     SLPClose(hslp);
     
-    return retCode;
+    _SFCB_RETURN(retCode);
 }

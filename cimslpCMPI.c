@@ -26,7 +26,9 @@
 #include <stdlib.h>
 
 #include "cimslpCMPI.h"
+#include "cimslpSLP.h"
 #include "cimslpUtil.h"
+#include "trace.h"
 
 
 char * interOpNS;
@@ -58,6 +60,8 @@ CMPIInstance ** myGetInstances(CMCIClient *cc, char * path, char * objectname)
 	CMPIEnumeration * enumeration;
 	CMPIInstance ** retArr = NULL;
 
+	_SFCB_ENTER(TRACE_SLP, "myGetInstances");	
+
 	objectpath = newCMPIObjectPath(path, objectname, NULL);
 
 	enumeration = cc->ft->enumInstances(cc, objectpath, 0, NULL, &status);
@@ -65,6 +69,8 @@ CMPIInstance ** myGetInstances(CMCIClient *cc, char * path, char * objectname)
 	//severe error, cimom not running etc.
 	if(status.rc == CMPI_RC_ERR_FAILED) {
 		//printf("Fatal error. CIMOM not running? Connection params ok?\n");
+		printf("--- CIMOM no longer active. Deregistering service with slp\n");
+		deregisterCIMService();
 		exit(0);
 	}
 	
@@ -91,7 +97,7 @@ CMPIInstance ** myGetInstances(CMCIClient *cc, char * path, char * objectname)
 	if (status.msg) CMRelease(status.msg);	
 	if (objectpath) CMRelease(objectpath);
 	if (enumeration) CMRelease(enumeration);				
-	return retArr;
+	_SFCB_RETURN(retArr);
 }
 
 CMPIConstClass * myGetClass(CMCIClient *cc, char * path, char * objectname)
@@ -99,6 +105,8 @@ CMPIConstClass * myGetClass(CMCIClient *cc, char * path, char * objectname)
 	CMPIStatus status;
 	CMPIObjectPath * objectpath;
 	CMPIConstClass * ccls;
+	
+	_SFCB_ENTER(TRACE_SLP, "myGetClass");
 
 	objectpath = newCMPIObjectPath(path, objectname, &status);
 
@@ -107,11 +115,11 @@ CMPIConstClass * myGetClass(CMCIClient *cc, char * path, char * objectname)
 	if (objectpath) CMRelease(objectpath);	
 	
 	if (!status.rc) {
-		return ccls;
+		_SFCB_RETURN(ccls);
 	} else {
 		//printf("Could not get class... ?\n");
 		//printf("Status: %d\n", status.rc);
-		return NULL;
+		_SFCB_RETURN(NULL);
 	}
 
 
@@ -126,6 +134,9 @@ cimSLPService getSLPData(cimomConfig cfg)
 	CMPIConstClass *ccls;
 
 	cimSLPService rs; //service which is going to be returned to the calling function
+	
+	_SFCB_ENTER(TRACE_SLP, "getSLPData");
+	
 	memset(&rs, 0, sizeof(cimSLPService));
 
 	cc = cmciConnect(cfg.cimhost,
@@ -209,7 +220,7 @@ cimSLPService getSLPData(cimomConfig cfg)
 
 	if (cc) CMRelease(cc);
 
-	return rs;
+	_SFCB_RETURN(rs);
 				
 }
 
@@ -222,11 +233,13 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
 	char ** retArr;
 	int i,j=0;
 	
+	_SFCB_ENTER(TRACE_SLP, "myGetRegProfiles");	
+	
 	//count instances
 	for(i = 0; instances != NULL && instances[i] != NULL; i++){}
 
     if(i == 0) {
-		return NULL;
+		_SFCB_RETURN(NULL);;
 	}
 				
 	//allocating memory for the return array
@@ -243,7 +256,7 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
 		objectpath = instances[i]->ft->getObjectPath(instances[i], &status);
 		if(status.rc) {
 			//no object path ??
-			return NULL;
+			_SFCB_RETURN(NULL);
 		}
 		objectpath->ft->setNameSpace(objectpath, interOpNS);
 		
@@ -316,7 +329,7 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
 	if (status.msg) CMRelease(status.msg);
 
 	
-	return retArr;
+	_SFCB_RETURN(retArr);
 }
 
 char ** transformValueArray(char ** cssf, CMPIConstClass * ccls, char * propertyName)
@@ -338,10 +351,12 @@ char * transformValue(char* cssf, CMPIConstClass * ccls, char * propertyName)
 	CMPIStatus status;
 	char * valuestr;
 
+	_SFCB_ENTER(TRACE_SLP, "transformValue");
+
 	qd=ccls->ft->getPropertyQualifier(ccls, propertyName, "ValueMap", &status);
 	if (status.rc) {
 		printf("getPropertyQualifier failed ... Status: %d\n", status.rc);
-		return NULL;
+		_SFCB_RETURN(NULL);
 	}
    
 	if (CMIsArray(qd)) {
@@ -359,7 +374,7 @@ char * transformValue(char* cssf, CMPIConstClass * ccls, char * propertyName)
 			ele = CMGetArrayElementAt(arr, j, NULL);
 			valuestr = value2Chars(eletyp, &ele.value);
 			j++;
-			if(j == n) return cssf; //nothing found, probably "NULL" -> return it
+			if(j == n) _SFCB_RETURN(cssf); //nothing found, probably "NULL" -> return it
 		}
 		free(valuestr);
 		free(cssf);
@@ -369,16 +384,16 @@ char * transformValue(char* cssf, CMPIConstClass * ccls, char * propertyName)
 			eletyp = qd.type & ~CMPI_ARRAY;
 			ele = CMGetArrayElementAt(arr, j-1, NULL);
 			cssf = value2Chars(eletyp, &ele.value);
-			return cssf;
+			_SFCB_RETURN(cssf);
 		} else {
 			//printf("No Valuemap Entry for %s in %s. Exiting ...\n", cssf, propertyName);
-			return NULL;
+			_SFCB_RETURN(NULL);
 		}
 	}
 	
 	else {
 		//printf("No qualifier found for %s. Exiting ...\n", propertyName);
-		return NULL;
+		_SFCB_RETURN(NULL);
 	}
 }
 

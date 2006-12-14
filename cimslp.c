@@ -31,6 +31,7 @@
 #include "cimslpCMPI.h"
 #include "cimslpSLP.h"
 #include "cimslp.h"
+#include "trace.h"
 
 #ifdef HAVE_SLP
 #include "control.h"
@@ -75,6 +76,9 @@ void slpAgent()
 	int enableHttp,enableHttps=0;
 
 	extern char * configfile;
+
+	_SFCB_ENTER(TRACE_SLP, "slpAgent");	
+	
 	setupControl(configfile);
 	
 	setUpDefaults(&cfgHttp);	
@@ -102,8 +106,7 @@ void slpAgent()
 	getControlNum("slpRefreshInterval", &i);
 	slpLifeTime = (int)i;	
 	setUpTimes(&slpLifeTime, &sleepTime);
-
-	
+    
 	while(1) {		
 		if(enableHttp) {
 			asHttp = getSLPData(cfgHttp);
@@ -115,6 +118,7 @@ void slpAgent()
 		}
 		sleep(sleepTime);
 	}
+	_SFCB_EXIT();	
 }
 
 #endif

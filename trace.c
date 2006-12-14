@@ -69,6 +69,8 @@ TraceId traceIds[]={
   {"msgQueue",          TRACE_MSGQUEUE},
   {"xmlParsing",        TRACE_XMLPARSING},
   {"responseTiming",    TRACE_RESPONSETIMING},
+  {"dbpdaemon",         TRACE_DBPDAEMON},
+  {"slp",               TRACE_SLP},
   {NULL,0}
 };   
 

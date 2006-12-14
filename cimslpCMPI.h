@@ -19,6 +19,9 @@
  *
 */
 
+#ifndef _cimslpCMPI_h
+#define _cimslpCMPI_h
+
 #include <cmci.h>
 #include <unistd.h>
 
@@ -63,3 +66,5 @@ char ** transformValueArray(char ** cssf, CMPIConstClass * ccls, char * property
 char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc);
 char ** getInterOpNS();
 char * getUrlSyntax(char* sn, char * cs, char * port);
+
+#endif

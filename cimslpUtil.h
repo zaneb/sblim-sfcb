@@ -19,6 +19,9 @@
  *
 */
 
+#ifndef _cimslpUtil_h
+#define _cimslpUtil_h
+
 #include <cmci.h>
 
 /*#define freeArr(arr) \
@@ -30,3 +33,4 @@
 void freeInstArr(CMPIInstance ** arr);
 void freeArr(char ** arr);
 
+#endif

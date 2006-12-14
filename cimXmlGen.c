@@ -578,7 +578,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, eTag);
       }
       
-      else if (*type == '%') {         
+      else if (*type == '%' && data->value.inst) {         
          //const char *eo=ClGetStringData((CMPIInstance*)obj,data->value.dataPtr.length);
          //char *sp;
          //int freesp = 0;

@@ -155,6 +155,7 @@ void deregisterCIMService()
     if(( err != SLP_OK) || (callbackerr != SLP_OK)) {
         printf("--- Error deregistering service with slp (%i) ... it will now timeout\n",err);
     }
+    SLPClose(hslp);
 }
 
 int registerCIMService(cimSLPService css, int slpLifeTime)

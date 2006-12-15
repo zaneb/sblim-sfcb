@@ -276,9 +276,10 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
 			propertyData = instances[i]->ft->getProperty(instances[i],
 													"RegisteredOrganization",
 													&status);
-	        retArr[j] = value2Chars(propertyData.type, &propertyData.value);
+			char * profilestring;
+	        profilestring = value2Chars(propertyData.type, &propertyData.value);
 
-			retArr[j] = transformValue(retArr[j], ccls, "RegisteredOrganization");
+			profilestring = transformValue(profilestring, ccls, "RegisteredOrganization");
 	        
 			propertyData = instances[i]->ft->getProperty(instances[i],
 													"RegisteredName",
@@ -286,9 +287,9 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
 			
 			char * tempString = value2Chars(propertyData.type, &propertyData.value);
 						
-			retArr[j] = realloc(retArr[j], strlen(retArr[j]) + strlen(tempString) + 2);
-			retArr[j] = strcat(retArr[j], ":");
-			retArr[j] = strcat(retArr[j], tempString);
+			profilestring = realloc(profilestring, strlen(profilestring) + strlen(tempString) + 2);
+			profilestring = strcat(profilestring, ":");
+			profilestring = strcat(profilestring, tempString);
 			free(tempString);
 
 			//now search for a CIM_RegisteredSubProfile for this instance
@@ -303,6 +304,7 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
 										NULL,
 										NULL);
 			if(!enumeration || !enumeration->ft->hasNext(enumeration, NULL)) {
+				retArr[j] = strdup(profilestring);
 				j++;
 			} else 
 			while(enumeration->ft->hasNext(enumeration, &status)) {
@@ -312,13 +314,12 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
 															&status);
 				char * subprofilestring = value2Chars(propertyData.type,
 													&propertyData.value);
-				retArr[j] = realloc(retArr[j],
-								strlen(retArr[j]) + strlen(subprofilestring) + 2);
-				retArr[j] = strcat(retArr[j], ":");
-				retArr[j] = strcat(retArr[j], subprofilestring);
+				retArr[j] = (char*)malloc(strlen(profilestring) + strlen(subprofilestring) + 2);
+				sprintf(retArr[j], "%s:%s", profilestring, subprofilestring);
 				j++;
 				free(subprofilestring);
 			}
+			free(profilestring);
 		}
 		if (objectpath) CMRelease(objectpath);
 	}
@@ -373,8 +374,8 @@ char * transformValue(char* cssf, CMPIConstClass * ccls, char * propertyName)
 			free(valuestr);
 			ele = CMGetArrayElementAt(arr, j, NULL);
 			valuestr = value2Chars(eletyp, &ele.value);
-			j++;
 			if(j == n) _SFCB_RETURN(cssf); //nothing found, probably "NULL" -> return it
+			j++;
 		}
 		free(valuestr);
 		free(cssf);

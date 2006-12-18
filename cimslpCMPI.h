@@ -50,6 +50,9 @@ typedef struct {
 	char * port;
 	char * cimuser;
 	char * cimpassword;
+	char * trustStore;
+	char * certFile;
+	char * keyFile;
 } cimomConfig;
 
 extern char *value2Chars(CMPIType type, CMPIValue * value);

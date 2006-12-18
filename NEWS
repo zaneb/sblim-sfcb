@@ -43,6 +43,7 @@ Bugs fixed:
 - 1615776 Fixed XML parsing of PARAMVALUEs
 - 1615731 Fixed slp tracing and shutdown
 - 1618216 Fixed method parameter and returnvalue processing
+- 1618258 Fixed slp problems when ssl is enabled
 
 Changes in 1.1.1
 ================

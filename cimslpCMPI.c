@@ -69,7 +69,7 @@ CMPIInstance ** myGetInstances(CMCIClient *cc, char * path, char * objectname)
 	//severe error, cimom not running etc.
 	if(status.rc == CMPI_RC_ERR_FAILED) {
 		//printf("Fatal error. CIMOM not running? Connection params ok?\n");
-		printf("--- CIMOM no longer active. Deregistering service with slp\n");
+		printf("--- HTTP-Daemon no longer active. Deregistering service with slp\n");
 		deregisterCIMService();
 		exit(0);
 	}
@@ -139,11 +139,15 @@ cimSLPService getSLPData(cimomConfig cfg)
 	
 	memset(&rs, 0, sizeof(cimSLPService));
 
-	cc = cmciConnect(cfg.cimhost,
+	cc = cmciConnect2(cfg.cimhost,
 					cfg.commScheme,
 					cfg.port,
 					cfg.cimuser,
 					cfg.cimpassword,
+					CMCI_VERIFY_PEER,
+					cfg.trustStore,
+					cfg.certFile,
+					cfg.keyFile,
 					&status);
 	
 	if(status.rc) {
@@ -470,7 +474,7 @@ char * getUrlSyntax(char* sn, char * cs, char * port)
 	
 	//colon, double slash, colon, \0, service:wbem = 18
 	url_syntax = (char *) malloc((strlen(sn) + strlen(cs) + strlen(port) + 18) * sizeof(char));
-	sprintf(url_syntax, "service:wbem:%s://%s:%s", cs, sn, port);
+	sprintf(url_syntax, "%s://%s:%s", cs, sn, port);
 	
 	free(sn);
 	

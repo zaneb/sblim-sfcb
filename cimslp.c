@@ -26,6 +26,7 @@
 #include <string.h>
 #include <slp.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "config.h"
 #include "cimslpCMPI.h"
@@ -52,7 +53,10 @@ void setUpDefaults(cimomConfig *cfg) {
 	cfg->cimhost = strdup("localhost");
 	cfg->port = strdup("5988");
 	cfg->cimuser = strdup("");
-	cfg->cimpassword = strdup("");	
+	cfg->cimpassword = strdup("");
+	cfg->keyFile = NULL;
+	cfg->trustStore = NULL;
+	cfg->certFile = NULL;	
 }
 
 void setUpTimes(int * slpLifeTime, int * sleepTime) {
@@ -65,14 +69,35 @@ void setUpTimes(int * slpLifeTime, int * sleepTime) {
 		
 	*sleepTime = *slpLifeTime -15;		
 }
+
 #ifdef HAVE_SLP
+
+void forkSLPAgent(cimomConfig cfg, int slpLifeTime, int sleepTime)
+{
+	cimSLPService service;
+	int pid;
+    pid= fork();
+    if (pid < 0) {
+      char *emsg=strerror(errno);
+      mlogf(M_ERROR,M_SHOW, "-#- http fork: %s",emsg);
+      exit(2);
+    }
+    if (pid == 0) {
+    	while(1) {
+    		service = getSLPData(cfg);
+    		registerCIMService(service, slpLifeTime);
+    		sleep(sleepTime);
+    	}
+      	//if awaked-exit
+      	exit(0);
+    }
+}
 
 void slpAgent()
 {
 	int slpLifeTime = SLP_LIFETIME_DEFAULT;
 	int sleepTime;
 	cimomConfig cfgHttp, cfgHttps;
-	cimSLPService asHttp, asHttps; //Service which is going to be advertised
 	int enableHttp,enableHttps=0;
 
 	extern char * configfile;
@@ -89,38 +114,32 @@ void slpAgent()
 	long i;
 	
 	if (!getControlBool("enableHttp", &enableHttp)) {
-		cfgHttp.commScheme = strdup("http");
 		getControlNum("httpPort", &i);
 		free(cfgHttp.port);
 		cfgHttp.port = malloc(6 * sizeof(char)); //portnumber has max. 5 digits
 		sprintf(cfgHttp.port, "%d", (int)i);
 	}
 	if (!getControlBool("enableHttps", &enableHttps)) {
+		free(cfgHttps.commScheme);
 		cfgHttps.commScheme = strdup("https");
 		getControlNum("httpsPort", &i);
 		free(cfgHttps.port);
 		cfgHttps.port = malloc(6 * sizeof(char)); //portnumber has max. 5 digits		
 		sprintf(cfgHttps.port, "%d", (int)i);
+		getControlChars("sslClientTrustStore", &cfgHttps.trustStore);
+		getControlChars("sslCertificateFilePath:", &cfgHttps.certFile);
+		getControlChars("sslKeyFilePath", &cfgHttps.keyFile);
 	}
 	
 	getControlNum("slpRefreshInterval", &i);
-	slpLifeTime = (int)i;	
+	slpLifeTime = (int)i;
 	setUpTimes(&slpLifeTime, &sleepTime);
-    
-	while(1) {		
-		if(enableHttp) {
-			asHttp = getSLPData(cfgHttp);
-			registerCIMService(asHttp, slpLifeTime);
-		}
-		if(enableHttps) {
-			asHttps = getSLPData(cfgHttps);
-			registerCIMService(asHttps, slpLifeTime);
-		}
-		sleep(sleepTime);
-	}
-	_SFCB_EXIT();	
+	
+	if(enableHttp) forkSLPAgent(cfgHttp, slpLifeTime, sleepTime);
+	if(enableHttps) forkSLPAgent(cfgHttps, slpLifeTime, sleepTime);
+	
+	exit(0);
 }
-
 #endif
 
 #ifdef HAVE_SLP_ALONE

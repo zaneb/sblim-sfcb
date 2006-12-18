@@ -88,11 +88,7 @@ char* buildAttrString(char * name, char * value, char * attrstring)
 		strcat(attrstring, ",");
 	}
 
-	strcat(attrstring, "(");
-	strcat(attrstring, name);
-	strcat(attrstring, "=");
-	strcat(attrstring, value);
-	strcat(attrstring, ")");
+	sprintf(attrstring, "%s(%s=%s)",attrstring, name, value);
 
 	return attrstring;
 
@@ -174,13 +170,29 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
 		freeCSS(css);
 		return 1;
 	} else {
+		/*
+		 * We have 2x urlsyntax:
+		 * css.url_syntax, which is just the url, e.g.
+		 *  http://somehost:someport
+		 * urlsyntax, which is the complete service string as required by slp, e.g.
+		 *  service:wbem:http://somehost:someport
+		 */
 		freeStr(urlsyntax);
-		urlsyntax = strdup(css.url_syntax);;
+		urlsyntax = (char*)malloc(strlen(css.url_syntax) + 14);//("service:wbem:" = 13) + \0
+		sprintf(urlsyntax, "service:wbem:%s", css.url_syntax);
 	}
 	
 	attrstring = malloc(sizeof(char) * SIZE);
 	attrstring[0] = 0;
 
+	attrstring = buildAttrString("template-type",
+								"wbem", attrstring);
+	attrstring = buildAttrString("template-version",
+								"1.0", attrstring);
+	attrstring = buildAttrString("template-description",
+								"This template describes the attributes used for advertising WBEM Servers.", attrstring);
+	attrstring = buildAttrString("template-url-syntax",
+								css.url_syntax, attrstring);								
 	attrstring = buildAttrString("service-hi-name",
 								css.service_hi_name, attrstring);
 	attrstring = buildAttrString("service-hi-description",
@@ -228,12 +240,12 @@ int registerCIMService(cimSLPService css, int slpLifeTime)
 		an error code
 		*/
 		if(strcmp(gAttrstring, "NULL")) {
-			err = SLPDereg( hslp, css.url_syntax, onErrorFnc, &callbackerr);
+			err = SLPDereg( hslp, urlsyntax, onErrorFnc, &callbackerr);
 			free(gAttrstring);
 		}
 	}	
     err = SLPReg( hslp,
-              css.url_syntax,
+              urlsyntax,
               slpLifeTime,
               NULL,
               attrstring,

@@ -491,22 +491,24 @@ int instanceName2xml(CMPIObjectPath * cop, UtilStringBuffer * sb)
 static int refValue2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
 {
   _SFCB_ENTER(TRACE_CIMXMLPROC, "refValue2xml");
-  char * ns = CMGetCharPtr(CMGetNameSpace(ci,NULL));
-  char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
   
   sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
-  if (hn && *hn && ns && *ns) {
-    sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
-    nsPath2xml(ci, sb);
-  } else if (ns && *ns) {
-    sb->ft->appendChars(sb, "<LOCALINSTANCEPATH>\n");
-    nsPath2xml(ci, sb);
-  }
-  instanceName2xml(ci, sb);
-  if (hn && *hn && ns && *ns) {
-    sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
-  } else if (ns && *ns) {
-    sb->ft->appendChars(sb, "</LOCALINSTANCEPATH>\n");
+  if (ci && ci->hdl) {
+    char * ns = CMGetCharPtr(CMGetNameSpace(ci,NULL));
+    char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
+    if (hn && *hn && ns && *ns) {
+      sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+      nsPath2xml(ci, sb);
+    } else if (ns && *ns) {
+      sb->ft->appendChars(sb, "<LOCALINSTANCEPATH>\n");
+      nsPath2xml(ci, sb);
+    }
+    instanceName2xml(ci, sb);
+    if (hn && *hn && ns && *ns) {
+      sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
+    } else if (ns && *ns) {
+      sb->ft->appendChars(sb, "</LOCALINSTANCEPATH>\n");
+    }
   }
   sb->ft->appendChars(sb, "</VALUE.REFERENCE>\n");
   _SFCB_RETURN(0);
@@ -551,7 +553,11 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          for (j = 0; j < ac; j++) {
             d = CMGetArrayElementAt(ar, j, NULL);
 	    if ((d.state & CMPI_nullValue)==0) {
-	      value2xml(d, sb, 1);
+	      if (d.type == CMPI_ref) {
+		refValue2xml(d.value.ref,sb);
+	      } else {
+		value2xml(d, sb, 1);
+	      }
 	    }
          }
          sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");
@@ -572,7 +578,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
 	 }
          sb->ft->appendChars(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
-         if (inst) {
+         if (inst && data->value.ref) {
 	   refValue2xml(data->value.ref,sb);
          }
          sb->ft->appendChars(sb, eTag);
@@ -858,7 +864,8 @@ int args2xml(CMPIArgs * args, UtilStringBuffer * sb)
       
       data2xml(&data,args,name,"<PARAMVALUE NAME=\"", "</PARAMVALUE>\n", sb, NULL, 1,1);
       
-      if (data.type & (CMPI_ENC|CMPI_ARRAY)) {// don't get confused using generic release 
+      if ((data.type & (CMPI_ENC|CMPI_ARRAY)) && data.value.inst) {
+	// don't get confused using generic release 
 	data.value.inst->ft->release(data.value.inst);
       }   
       CMRelease(name);
@@ -881,7 +888,7 @@ static int keyBinding2xml(CMPIObjectPath * op, UtilStringBuffer * sb)
       sb->ft->appendChars(sb, name);
       sb->ft->appendChars(sb, "\">\n");
       type = keyType(data.type);
-      if (*type == '*') {
+      if (*type == '*' && data.value.ref) {
 	refValue2xml(data.value.ref,sb);
       }
       else {

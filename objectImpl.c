@@ -342,6 +342,18 @@ static long addClArray(ClObjectHdr * hdr, CMPIData d)
          td.value.chars = (char *) addClString(hdr, ar->data[i].value.string->hdl);
          td.type = CMPI_string;
       }
+      else if (ar->type == CMPI_dateTime && ((td.state & CMPI_nullValue) == 0)) {
+         char chars[26];
+         dateTime2chars(ar->data[i].value.dateTime, NULL, chars);
+         td.value.chars = (char *) addClString(hdr, chars);
+         td.type = CMPI_dateTime;
+      }
+      else if (ar->type == CMPI_ref && ((td.state & CMPI_nullValue) == 0)) {
+         char str[4096] = { 0 };
+         sfcb_pathToChars(ar->data[i].value.ref, NULL, str);
+         td.value.chars = (char *) addClString(hdr, str);
+         td.type = CMPI_ref;
+      }
       else {
          td.value = ar->data[i].value;
          td.type =ar->type&~CMPI_ARRAY;

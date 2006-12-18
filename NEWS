@@ -42,6 +42,7 @@ Bugs fixed:
 - 1613172 Fixed XML generation for reference and array PARAMVALUEs
 - 1615776 Fixed XML parsing of PARAMVALUEs
 - 1615731 Fixed slp tracing and shutdown
+- 1618216 Fixed method parameter and returnvalue processing
 
 Changes in 1.1.1
 ================

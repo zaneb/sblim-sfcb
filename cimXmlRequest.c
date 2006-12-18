@@ -184,6 +184,49 @@ static char exportIndTrailer1[] =
    "</MESSAGE>\n" 
   "</CIM>";
     
+
+static char *paramType(CMPIType type)
+{
+   switch (type & ~CMPI_ARRAY) {
+   case CMPI_chars:
+   case CMPI_string:
+      return "string";
+   case CMPI_sint64:
+      return "sint64";
+   case CMPI_uint64:
+      return "uint64";
+   case CMPI_sint32:
+      return "sint32";
+   case CMPI_uint32:
+      return "uint32";
+   case CMPI_sint16:
+      return "sint16";
+   case CMPI_uint16:
+      return "uint16";
+   case CMPI_uint8:
+      return "uint8";
+   case CMPI_sint8:
+      return "sint8";
+   case CMPI_boolean:
+      return "boolean";
+   case CMPI_char16:
+      return "char16";
+   case CMPI_real32:
+      return "real32";
+   case CMPI_real64:
+      return "real64";
+   case CMPI_dateTime:
+      return "datetime"; 
+   case CMPI_ref:
+      return "reference";
+   }
+   mlogf(M_ERROR,M_SHOW,"%s(%d): invalid data type %d %x\n", __FILE__, __LINE__, (int) type,
+          (int) type);
+   SFCB_ASM("int $3");
+   abort();
+   return "*??*";
+}
+
 void dumpSegments(RespSegment *rs)
 {
    int i;
@@ -1826,7 +1869,9 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
       if (resp->rc == CMPI_RC_OK) {
          out = relocateSerializedArgs(resp->object[0].data);
          sb = UtilFactory->newStrinBuffer(1024);
-         sb->ft->appendChars(sb,"<RETURNVALUE>\n");
+         sb->ft->appendChars(sb,"<RETURNVALUE PARAMTYPE=\"");
+	 sb->ft->appendChars(sb,paramType(resp->rv.type));
+         sb->ft->appendChars(sb,"\">\n");
          value2xml(resp->rv, sb, 1);
          sb->ft->appendChars(sb,"</RETURNVALUE>\n");
          args2xml(out, sb);

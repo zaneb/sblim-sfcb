@@ -31,6 +31,7 @@
 #include "array.h"
 #include "objectImpl.h"
 
+extern CMPIObjectPath *getObjectPath(char *path, char **msg);
 extern const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id);
 extern int localClientMode;
 
@@ -151,26 +152,40 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, const CMPIV
       CMPIValue v;
 
       if ( type == CMPI_chars && a->type == CMPI_string ) {
-         v.string = sfcb_native_new_CMPIString ( (char *) val, NULL );
-         type = CMPI_string;
-         val  = &v;
+	 if (val) {
+	     v.string = sfcb_native_new_CMPIString ( (char *) val, NULL );
+	     type = CMPI_string;
+	     val  = &v;
+	 } else {
+	     type = CMPI_null;
+	 }
+      }
+
+      if ((type & (CMPI_ENC|CMPI_ARRAY)) && (val==NULL || val->chars==NULL)) {
+	 type = CMPI_null;
       }
 
       if ( opt || type == a->type ) {
          CMPIStatus rc = {CMPI_RC_OK, NULL};
-         a->data[index].state = 0;
-         if (opt) a->data[index].value = *val;
-         else a->data[index].value =  ( a->mem_state == MEM_TRACKED )?  *val:
-               sfcb_native_clone_CMPIValue ( type, val, &rc );
-         if (localClientMode) switch (a->type) {
-            case CMPI_instance:
-            case CMPI_ref:
-            case CMPI_class:
-            case CMPI_string:
-               ((nativeEncObject*)a->data[index].value.inst)->refCount++;
-            default: ;
-            }   
-         return rc;
+         if ( ! ( a->data[index].state & CMPI_nullValue ) ) {
+            __make_NULL ( a, index, index, a->mem_state == MEM_NOT_TRACKED );
+         }
+
+	 if (opt) a->data[index].value = *val;
+	 else a->data[index].value =  ( a->mem_state == MEM_TRACKED )?  *val:
+		 sfcb_native_clone_CMPIValue ( type, val, &rc );
+	 if (localClientMode) switch (a->type) {
+	 case CMPI_instance:
+	 case CMPI_ref:
+	 case CMPI_class:
+	 case CMPI_string:
+		 ((nativeEncObject*)a->data[index].value.inst)->refCount++;
+	 default: ;
+	 }
+	 if (rc.rc == CMPI_RC_OK) {
+		 a->data[index].state = 0;
+	 }		 
+	 return rc;
       }
 
       if ( type == CMPI_null ) {
@@ -331,13 +346,21 @@ CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
    int i, m;
 
    for (i = 0, m = (int) av->value.sint32; i < m; i++)
-      if (av[i + 1].type == CMPI_string) {
-         char *chars = (char *) ClObjectGetClString(hdr, (ClString *) & av[i + 1].value.chars);
-         arraySetElementNotTrackedAt((CMPIArray *) array, i, (CMPIValue *) chars, CMPI_chars);
-      }
-      else arraySetElementNotTrackedAt((CMPIArray *) array, i, &av[i + 1].value,
-         av[i + 1].type);
-                       
+      if (av[i + 1].state != CMPI_nullValue) {
+	  if (av[i + 1].type == CMPI_string) {
+	      char *chars = (char *) ClObjectGetClString(hdr, (ClString *) & av[i + 1].value.chars);
+	      arraySetElementNotTrackedAt((CMPIArray *) array, i, (CMPIValue *) chars, CMPI_chars);
+	  } else if (av[i + 1].type == CMPI_ref) {
+	      CMPIValue value;
+	      char msg[10] = "";
+	      char *chars = (char *) ClObjectGetClString(hdr, (ClString *) & av[i + 1].value.chars);
+	      value.ref = getObjectPath(chars,&msg);	      
+	      arraySetElementNotTrackedAt((CMPIArray *) array, i, &value, CMPI_ref);
+	  } else {
+	      arraySetElementNotTrackedAt((CMPIArray *) array, i, &av[i + 1].value,
+					  av[i + 1].type);
+	  }
+      }           
    return (CMPIArray *) array;
 }
 
@@ -358,5 +381,5 @@ CMPIStatus sfcb_simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type
 
 /*** Local Variables:  ***/
 /*** mode: C           ***/
-/*** c-basic-offset: 8 ***/
+/*** c-basic-offset: 4 ***/
 /*** End:              ***/

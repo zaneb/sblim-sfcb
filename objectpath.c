@@ -533,6 +533,9 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
    int ref = 0;
    CMPIObjectPath *op;
 
+   if (path == NULL) {
+     return NULL;
+   }
    u = origu = strdup(path);
    last = u + strlen(u);
    *msg = NULL;

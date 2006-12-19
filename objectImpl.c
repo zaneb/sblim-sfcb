@@ -1864,9 +1864,11 @@ int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
             (ClArray *) & data->value.array);
    }
    if (data->type == CMPI_instance) {
-      data->value.inst =
-         relocateSerializedInstance((void *)ClObjectGetClObject(&inst->hdr,
-      								(ClString *) & data->value.inst));
+   	  data->value.inst = (void *)ClObjectGetClObject(&inst->hdr,
+      								(ClString *) & data->value.inst);
+      if(data->value.inst) {
+      	 relocateSerializedInstance(data->value.inst);
+      }
    }   
    _SFCB_RETURN(0);
 }

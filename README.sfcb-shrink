@@ -1,0 +1,136 @@
+Shrinking sfcb
+==============
+
+The resources consumed by Small Footprint can be further reduced by 
+applying configuration options and manually removing files from the
+installed image. This text outlines a few possibilites to shrink the
+footprint.
+
+Bottom line is that you can configure sfcb on an i386 Linux system 
+to use less then 600 KB of disk space and less than 800 KB of 
+extra memory.
+
+
+I. Reducing Disk Footprint
+
+I.1. Debug/Trace Support
+By default trace support is available in sfcb. By specifying 
+--disable-debug the trace support can be removed. Only recommended in
+special cases where no servicability aids are required.
+
+I.2. Indication Support
+The indication functionality of sfcb can be de-configured via
+--disable-indications, in consequence sfcb won't be able to deliver
+indications.
+
+I.3. Deployment Support
+If sfcb is to be used with a defined schema and providers it is
+not necessary to include the deployment tools and the CIM Schema
+MOFs in the runtime.
+The schema can be omitted by leaving out the make postinstall step.
+The deployment tools can be removed by deleting the following
+files from an installed sfcb:
+$bindir/sfcb*
+$bindir/wbemcat
+$bindir/xmltest
+$libdir/lib/libsfcObjectImplSwapI32toP32.*
+
+I.4 Interop Support
+If the interop namespace is not needed, the registration for 
+the interop provider can removed from providerRegister.
+Further the sfcb.cfg property enableInterOp must be set to
+"false" and the following files can be deleted from an installed 
+sfcb:
+$libdir/libsfcInterop*
+
+I.5 Miscellaneous Files
+On an embedded system, documentation can be considered superfluous.
+The following files can be removed from an installed sfcb:
+$mandir/man1/sfcb*.1
+$mandir/man1/wbemcat.1
+$mandir/man1/xmltest.1
+$docdir/sfcb-nnn/*
+
+I.6 Caching/Compressing Class Provider
+Another possibility to reduce disk footprint is to use the caching 
+and compressing class provider. It is nessary to specify 
+sfcClassProviderGz in the location property of the [$ClassProvider$]
+section in providerRegister to achieve this. Further, the 
+classSchemas file has to be compressed with the gzip command.
+The file size of classSchemas file is typically reduced by a factor
+of 5-6.
+If only the caching class provider is being used, the following
+files can be removed from an installed sfcb:
+$libdir/libsfcClassProvider.*
+
+II. Reducing Memory Footprint
+
+II.1 Provider Process Grouping
+By default sfcb is spawning a process for each provider library.
+While the sfcb processes share major portions of memory, each
+process adds some overhead. This can be eliminated by grouping
+providers using the group property in providerRegister.
+Putting all providers (including the sfcb internal ones) into
+one group limits the number of resident sfcb processes to 3.
+A safer approach would be to put the sfcb providers in one group
+and the custom providers in another.
+
+II.2 Caching Class Provider
+Using the caching class provider (see above) reduces the number 
+of classes loaded into memory to an upper limit of 10.
+
+II.3 Process Stack Size
+Threads allocate their stacks on the heap using the ulimit -s
+value. Specifying a smaller stack size, for instance 
+ulimit -s 256, reduces the virtual size of the sfcb processes.
+NOTE: This "optimization" is pretty useless, as the virtual
+memory for the stack is not mapped to real memory. It only
+looks smaller in the ps output.
+
+Appendix A: Disk Footprint Numbers (i386, gcc 4.1, glibc 2.4)
+
+Note: the numbers below exclude the size of the class
+repository which varies with the actual schema served.
+Further, any providers add to the total disk usage.
+
+1. Default options, stripped, CIM schema 2.9.0: 4360 KB.
+2. Default options, stripped, no schema: 1016 KB.
+3. --disable-debug, stripped, no schema: 884 KB.
+4. --disable-indications, stripped, no schema: 984 KB.
+5. No deployment tools, stripped, no schema: 928KB
+6. No interop support, --disable-indications, stripped, no schema: 928 KB.
+7. No documentation, stripped, no schema, 892 KB.
+8. Caching class provider only, stripped, no schema 990KB.
+8. Minimum configuration: no deployment, no interop, no documentation,
+  --disable-debug, disable-indications, caching class provider only, 
+  no schema: 588 KB
+
+Appendix B: Memory Consumption (i386)
+
+The measurements were made using /proc/<pid>/smaps which 
+provides detailed memory usage information on an idle
+sfcb.
+
+1. Default configuration as outlined above.
+   Number of processes: 4 (broker, http adapter, class provider,
+                        interop provider)
+   Private memory totals: 120 + 96 + 324 + 180 = 720 KB
+   Shared memory totals: max(1328,652,1056,1020) = 1328 KB
+   Total memory usage (including system libs *): 2058 KB
+   System library shared usage: ~ 400-900 KB.
+
+2. Minimum configuration as outlined above. All providers in one
+   group.
+   Number of processes: 3 (broker, http adapter, provider)
+   Private memory totals: 124 + 96 + 244 = 464 KB
+   Shared memory totals: max(712,492,692) = 712 KB
+   Total memory usage (including system libs *): 1176 KB
+   System library shared usage: ~ 400 KB.
+
+* The "system libraries" libc.so, ld.so, libdl.so, libpthread.so,
+  etc contribute to the shared memory consumption.
+  If sfcb isn't the only process  on the system, the memory
+  for these libraries should be subtracted from the totals
+  number in order to get a fair number.
+
+Author: Viktor Mihajlovski <mihajlov@de.ibm.com>

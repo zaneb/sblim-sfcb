@@ -584,7 +584,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, eTag);
       }
       
-      else if (*type == '%' && data->value.inst) {         
+      else if (*type == '%') {         
          //const char *eo=ClGetStringData((CMPIInstance*)obj,data->value.dataPtr.length);
          //char *sp;
          //int freesp = 0;
@@ -595,14 +595,16 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          else sb->ft->appendChars(sb, "\" TYPE=\"string\">\n");
          sb->ft->appendChars(sb,"<QUALIFIER NAME=\"EmbeddedObject\" TYPE=\"boolean\">\n"
               "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
-         sb->ft->appendChars(sb, "<VALUE>");
-         //sp = XMLEscape((char*)eo);
-         //if (sp) freesp = 1; 
-         sb->ft->appendChars(sb, "<![CDATA[");
-         //sb->ft->appendChars(sb, sp);
-         instance2xml(data->value.inst, sb, 0);
-         sb->ft->appendChars(sb, "]]>");
-         sb->ft->appendChars(sb, "</VALUE>\n");
+         if(data->value.inst) {
+	         sb->ft->appendChars(sb, "<VALUE>");
+	         //sp = XMLEscape((char*)eo);
+	         //if (sp) freesp = 1; 
+	         sb->ft->appendChars(sb, "<![CDATA[");
+	         //sb->ft->appendChars(sb, sp);
+	         instance2xml(data->value.inst, sb, 0);
+	         sb->ft->appendChars(sb, "]]>");
+	         sb->ft->appendChars(sb, "</VALUE>\n");
+         }
          //if (freesp) free(sp);
      }
       

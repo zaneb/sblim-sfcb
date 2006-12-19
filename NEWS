@@ -44,6 +44,7 @@ Bugs fixed:
 - 1615731 Fixed slp tracing and shutdown
 - 1618216 Fixed method parameter and returnvalue processing
 - 1618258 Fixed slp problems when ssl is enabled
+- 1616130 Fixed bad message during shutdown
 
 Changes in 1.1.1
 ================

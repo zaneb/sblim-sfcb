@@ -690,11 +690,11 @@ void localConnectServer()
       read(nsocket, &msg.size, sizeof(msg.size));
       read(nsocket, &msg.oper, msg.size);
       
-      sprintf(cMsg,"--- Local Client connect - pid: %d user: %s\n",msg.pid,msg.id); 
-      mlogf(M_INFO,M_SHOW,cMsg);
-      
-      if (msg.size!=0) 
+      if (msg.size!=0) {
+         sprintf(cMsg,"--- Local Client connect - pid: %d user: %s\n",msg.pid,msg.id);
+         mlogf(M_INFO,M_SHOW,cMsg);
          spSendCtlResult(&nsocket, &sfcbSockets.send, MSG_X_LOCAL, 0, 0, 0);
+      }
       else notDone=0;   
       
       close (nsocket);

@@ -253,7 +253,7 @@ if test -d $srcdir/mofc; then
    MOFC_DIR=mofc
    export sfcb_recursed=yes
    export with_sfcb=yes
-   export enable_relax_mofsyntax=yes
+   export enable_namespace_kludge=yes
    AC_CONFIG_SUBDIRS([mofc])
    AC_SUBST(MOFC_DIR)
 fi

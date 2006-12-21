@@ -93,7 +93,7 @@ void forkSLPAgent(cimomConfig cfg, int slpLifeTime, int sleepTime)
     }
 }
 
-void slpAgent()
+int slpAgent()
 {
 	int slpLifeTime = SLP_LIFETIME_DEFAULT;
 	int sleepTime;
@@ -138,7 +138,7 @@ void slpAgent()
 	if(enableHttp) forkSLPAgent(cfgHttp, slpLifeTime, sleepTime);
 	if(enableHttps) forkSLPAgent(cfgHttps, slpLifeTime, sleepTime);
 	
-	exit(0);
+	_SFCB_RETURN(0);
 }
 #endif
 

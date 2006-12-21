@@ -376,24 +376,7 @@ static int startDbpd(int argc, char *argv[], int sslMode)
 
 static int startSLPAgent()
 {
-	int pid;//,sfcPid=currentProc;
-	//sleep(2);
-    pid= fork();
-    if (pid < 0) {
-       perror("slpAgent fork");
-       exit(2);
-    }
-    if (pid == 0) {
-    	//currentProc=getpid();
-    	//dbpDaemon(argc, argv, sslMode, sfcPid);
-    	//closeSocket(&sfcbSockets,cRcv,"startHttpd");
-      	//closeSocket(&resultSockets,cAll,"startHttpd");
-      	slpAgent();
-    }
-    else {
-    	//addStartedAdapter(pid);
-       	return 0;
-    }
+    slpAgent();
     return 0;
 }
 

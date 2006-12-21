@@ -23,6 +23,6 @@
 #ifndef _cimslp_h
 #define _cimslp_h
 
-void slpAgent();
+int slpAgent();
 
 #endif

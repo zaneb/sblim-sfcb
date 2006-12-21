@@ -1,6 +1,6 @@
 [$ClassProvider$]
    provider: ClassProvider
-   location: sfcClassProvider
+   location: sfcClassProviderGz
    type: class method
    unload: never
 #

@@ -1,0 +1,19 @@
+{
+   supie
+   Memcheck:Param
+   socketcall.sendmsg(msg)
+   fun:sendmsg
+}
+{
+   supoe
+   Memcheck:Param
+   semctl(arg)
+   fun:semctl@@GLIBC_2.2
+   fun:semGetValue
+}
+{
+   supww
+   Memcheck:Param
+   socketcall.recvmsg(msg)
+   fun:recvmsg
+}

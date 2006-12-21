@@ -2,6 +2,9 @@
 
 	* cimslp.h, cimslp.c, sfcBroker.c:
 	Fixed 1620005: unnecessary fork when slp is enabled
+	
+	* interopServerProvider:
+	Fixed 1620020: allocation error in interopServerProvider
 
 2006-12-19  Adrian Schuur
 

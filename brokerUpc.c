@@ -132,7 +132,13 @@ static CMPIStatus deliverIndication(const CMPIBroker* mb, const CMPIContext* ctx
             in=CMNewArgs(mb,NULL);
             CMAddArg(in,"nameSpace",ns,CMPI_chars);
             CMAddArg(in,"indication",&ind,CMPI_instance);
-            CMAddArg(in,"filterid",&se->filterId,CMPI_uint32);
+            CMAddArg(in,"filterid",&se->filterId,
+#if SIZEOF_INT == SIZEOF_VOIDP
+		     CMPI_uint32
+#else
+		     CMPI_uint64
+#endif		     
+		     );
          }  
          CBInvokeMethod(mb,ctx,op,"_deliver",in,NULL,&st);
       }

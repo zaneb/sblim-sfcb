@@ -197,12 +197,13 @@ static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** n
    return rv;
 }
 
-static CMPIData getPropQualifierAt(CMPIConstClass * cc, CMPICount p, CMPICount i,
+static CMPIData getPropQualifierAt(CMPIConstClass * cc, const char* cp, CMPICount i,
                             CMPIString ** name, CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
    char *n;
    CMPIData rv = { 0, CMPI_notFound, {0} };
+   CMPICount p = (CMPICount)(unsigned long)cp;
    
    if (ClClassGetPropQualifierAt(cls, p, i, &rv, name ? &n : NULL)) {
       if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);

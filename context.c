@@ -244,6 +244,7 @@ static CMPIData __convert2CMPIData ( struct native_property * prop,
 		}
 
 	} else {
+	        result.type = CMPI_null;
 		result.state = CMPI_nullValue;
 	}
 

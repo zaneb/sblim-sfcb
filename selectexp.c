@@ -31,13 +31,9 @@
 
 static NativeSelectExp *__new_exp(int node,
          const char *queryString, const char *language, const char *sns, 
-         CMPIArray ** projection, CMPIStatus * rc);
+				  CMPIArray ** projection, CMPIStatus * rc);
 extern CMPIValue queryGetValue(QLPropertySource* src, char* name, QLOpd *type);
 extern CMPISelectCond *TrackedCMPISelectCond(CMPIArray *conds, int type, CMPIStatus * rc);
-
-
-static NativeSelectExp *__new_exp(int, const char *,  const char *, const char *sns,
-                                          CMPIArray **, CMPIStatus *);
 
 
 /*****************************************************************************/
@@ -116,7 +112,7 @@ CMPISelectCond *__eft_getCOD(const CMPISelectExp * exp, CMPIStatus * rc)
 }
 
 CMPIBoolean __eft_evaluateUsingAccessor(const CMPISelectExp * se,
-                                        const CMPIAccessor * accessor,
+                                        CMPIAccessor * accessor,
                                         void *parm, CMPIStatus * rc)
 {
    if (rc)
@@ -141,7 +137,7 @@ static CMPISelectExp eFt = {
 };
 
 static NativeSelectExp *__new_exp(int mode, const char *queryString,
-               const char *language, const char *sns, CMPIArray ** projection, CMPIStatus * rc)
+				  const char *language, const char *sns, CMPIArray ** projection, CMPIStatus * rc)
 {               
    int state,irc;
    NativeSelectExp exp,*tExp;

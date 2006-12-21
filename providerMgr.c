@@ -188,7 +188,7 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
       CMPIStatus *st)
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR, "lookupProvider");
-   const char *cls;
+   char *cls;
    ProviderInfo *info;
    UtilHashTable **ht=provHt(type,0);
    
@@ -231,7 +231,7 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
             _SFCB_TRACE(1,("Returning NULL for %s",className));
            _SFCB_RETURN(NULL);
          }
-         cls = cc->ft->getCharSuperClassName(cc);
+         cls = (char*) cc->ft->getCharSuperClassName(cc);
          if (cls) {
 	   cls = strdup(cls);
 	 }
@@ -354,7 +354,7 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
    ProviderInfo *info;
    int dmy = 0, rc,indFound=0;
    char *msg = NULL;
-   CMPIStatus st;
+   CMPIStatus st = {CMPI_RC_OK, NULL};
 
    providers = lookupProviders(type,className,nameSpace,&st);
 
@@ -457,7 +457,7 @@ static void processIndProviderList(int *requestor, OperationHdr * req)
 static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
 {
    long type = ASSOCIATION_PROVIDER;
-   const char *cls;
+   char *cls;
    ProviderInfo *info;
    CMPIStatus rc;
 
@@ -486,7 +486,7 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
          if (cc == NULL) {
             _SFCB_RETURN(NULL);
          }
-         cls = cc->ft->getCharSuperClassName(cc);
+         cls = (char*)cc->ft->getCharSuperClassName(cc);
          if (cls) {
 	   cls = strdup(cls);
 	 }
@@ -616,7 +616,7 @@ static void assocProviderList(int *requestor, OperationHdr * req)
 static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
 {
    long type = METHOD_PROVIDER;
-   const char *cls;
+   char *cls;
    ProviderInfo *info;
    CMPIStatus rc;
 
@@ -648,7 +648,7 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
          if (cc == NULL) {
             _SFCB_RETURN(NULL);
          }
-         cls = cc->ft->getCharSuperClassName(cc);
+         cls = (char*)cc->ft->getCharSuperClassName(cc);
          if (cls) {
 	   cls = strdup(cls);
 	 }
@@ -1254,7 +1254,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    BinResponseHdr *resp;
    BinRequestContext binCtx;
    OperationHdr req = { OPS_GetClass, 2 };
-   int irc,x;
+   int irc;
    char *msg;
    
    path = NewCMPIObjectPath(ns, cn, st);
@@ -1414,7 +1414,7 @@ static UtilList *_getConstClassChildren(const char *ns, const char *cn)
    CMPIArgs *in = NewCMPIArgs(NULL);
    CMPIArgs *out = NULL;
    CMPIData data;
-   CMPIArray *ar;
+   CMPIArray *ar = NULL;
    CMPIStatus rc;
    UtilList *ul = NULL;
    int i, m, irc;

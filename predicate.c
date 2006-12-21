@@ -87,8 +87,8 @@ static CMPIStatus __eft_getData(const CMPIPredicate* pred, CMPIType* type,
    return irc;
 }
 
-static int __eft_evaluate (const CMPIPredicate* pr, const CMPIValue* value,
-               CMPIType type, CMPIStatus* rc)
+static CMPIBoolean __eft_evaluate (const CMPIPredicate* pred,  
+				   CMPIAccessor * acc, void *v, CMPIStatus *rc)
 {
     if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_SUPPORTED);
     return 0;   

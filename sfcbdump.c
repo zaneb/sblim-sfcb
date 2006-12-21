@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
 	    state = REC_QUIT;
 	  } else if (clv.size != sizeof(ClVersionRecord)) {
 	    rc = 1;
-	    fprintf(stderr, "%s: version record size mismatch, is %d expected %d\n",
+	    fprintf(stderr, "%s: version record size mismatch, is %d expected %zd\n",
 		    SCHEMA_NAME, clv.size, sizeof(ClVersionRecord));
 	    state = REC_QUIT;
 	  } else  {
@@ -95,7 +95,7 @@ int main(int argc, char * argv[])
 	    state = REC_QUIT;
 	  } else if (coh.size < sizeof(ClObjectHdr)) {
 	    rc = 1;
-	    fprintf(stderr, "%s: header record size mismatch, is %d expected at least %d\n",
+	    fprintf(stderr, "%s: header record size mismatch, is %d expected at least %zd\n",
 		    SCHEMA_NAME, coh.size, sizeof(ClObjectHdr));
 	    state = REC_QUIT;
 	  } else {
@@ -162,7 +162,7 @@ int main(int argc, char * argv[])
 	  memcpy(fillBuf,&coh,sizeof(ClObjectHdr));
 	  if ((numRead=read(fdSchema, fillBuf+sizeof(ClObjectHdr), numFill)) != numFill) {
 	    rc = 1;
-	    fprintf(stderr, "%s: structure record short, is %d expected %d\n",
+	    fprintf(stderr, "%s: structure record short, is %zd expected %zd\n",
 		    SCHEMA_NAME, numRead + sizeof(ClObjectHdr),
 		    numFill + sizeof(ClObjectHdr));
 	    state = REC_QUIT;
@@ -263,7 +263,7 @@ static int dumpString(const ClObjectHdr *hdr, const ClString *cs, const char * p
         rc = 2;
       }
     } else {
-      fprintf(stderr,"%s string index key %d out of range (0..%d) \n",
+      fprintf(stderr,"%s string index key %ld out of range (0..%d) \n",
 	      prefix,cs->id,sb->iMax);
         rc = 2;
     }
@@ -337,7 +337,7 @@ static int dumpArrayBuffer(const ClObjectHdr *hdr, const char *prefix)
       rc = 2;
     }
   } else {
-    fprintf(stderr,"%s invalid array buffer offset %d, must be < %d\n",
+    fprintf(stderr,"%s invalid array buffer offset %d, must be < %zd\n",
 	    prefix,abs(hdr->arrayBufOffset),hdr->size + sizeof(ClArrayBuf));
     rc = 2;
   }

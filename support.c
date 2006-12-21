@@ -710,7 +710,7 @@ static int find(char *str, char c)
 char *decode64(char *din)
 {
    unsigned char *data=(unsigned char*)din;
-   int i, o = 0, len = strlen(data);
+   int i, o = 0, len = strlen((char*)data);
    unsigned char c, c1;
    unsigned char *ret = (unsigned char *) malloc(len * 2);
 
@@ -740,7 +740,7 @@ char *decode64(char *din)
    }
 
    ret[o] = 0;
-   return (ret);
+   return ((char*)ret);
 }
 
 void dump(char *msg, void *a, int len)

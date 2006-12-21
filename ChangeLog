@@ -1,3 +1,13 @@
+2006-12-21  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-70.boeblingen.de.ibm.com>
+
+	* brokerUpc.c, cimXmlGen.c, cimXmlParser.c, cimcClientSfcbLocal.c,
+	constClass.c, context.c, httpAdapter.c, httpAdapter.c, httpComm.h,
+	instance.c, interopProvider.c, mofpp.c, msgqueue.c, objectImpl.c,
+	predicate.c, providerDrv.c, providerMgr.c, providerRegister.h,
+	queryStatement.c, result.c, selectexp.c, sfcBroker.c, sfcbdump.c,
+	support.c:
+	Fixed 1620136: compile warnings on 32- and 64-bit platforms.
+
 2006-12-21  Sven Schuetz
 
 	* cimslp.h, cimslp.c, sfcBroker.c:

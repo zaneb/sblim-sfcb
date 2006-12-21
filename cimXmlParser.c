@@ -193,7 +193,7 @@ static int getWord(XmlBuffer * xb, const char *w, int xCase)
 
 static int tagEquals(XmlBuffer * xb, const char *t)
 {
-   char *start;
+   char *start = NULL;
    int sz = 0;
    if (*xb->cur == 0) {
       xb->cur++;

@@ -175,12 +175,14 @@ static void qcClear(QLCollector *qc) {
    qc->propName=NULL;
 }
 
+#ifdef NEEDS_CLEANUP
 static QLOperand* newNameOperand(QLStatement *qs)
 {    
    QLOperand* o=newPropQueryOperand(qs,newPropertyNameData(qs)); 
    QL_TRACE(fprintf(stderr,"newNameOperand %p\n",o));
    return o; 
 }
+#endif
 
 static void qcAddPropIdentifier(QLCollector *qc, QLStatement *qs, char *cls, char *prop, int index)
 {
@@ -240,7 +242,7 @@ QLStatement *parseQuery(int mode, const char *query, const char *lang, const cha
       &ctlFt
    };
    
-   q=query;
+   q=(char*)query;
    ofs=0;
    ctl.statement=qs=newQLStatement(8,mode);
    if (strcasecmp(lang,"wql")==0) ctl.statement->lang=QL_WQL;

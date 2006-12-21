@@ -73,7 +73,7 @@ typedef struct commHndl {
   BIO *bio;
   SSL *ssl;
 #endif
-  int rc;
+  //  int rc;
 } CommHndl;
 
 void commInit();

@@ -65,6 +65,11 @@ extern void processProviderMgrRequests();
 extern int stopNextProc();
 extern int testStartedProc(int pid, int *left);
 
+extern void uninitProvProcCtl();
+extern void uninitSocketPairs();
+extern void sunsetControl();
+extern void uninitGarbageCollector();
+
 extern TraceId traceIds[];
 extern int sfcBrokerPid;
 
@@ -297,6 +302,7 @@ static void handleSigChld(int sig)
    errno = oerrno;
 }
 
+#ifdef NEEDS_CLEANUP
 static void handleSigterm(int sig)
 {
    if (!terminating) {
@@ -308,6 +314,7 @@ static void handleSigterm(int sig)
       kill(currentProc,SIGKILL);
    exit(1);
 }
+#endif
 
 static void handleSigSegv(int sig)
 {
@@ -573,18 +580,18 @@ int main(int argc, char *argv[])
    if (getControlBool("enableInterOp", &enableInterOp))
        enableInterOp=0;
 
-   if (getControlNum("httpProcs", &dSockets))
+   if (getControlNum("httpProcs", (long*)&dSockets))
       dSockets = 10;
-   if (getControlNum("httpsProcs", &sSockets))
+   if (getControlNum("httpsProcs", (long*)&sSockets))
       sSockets = 10;
-   if (getControlNum("provProcs", &pSockets))
+   if (getControlNum("provProcs", (long*)&pSockets))
       pSockets = 16;
 
-   if (getControlNum("providerSampleInterval", &provSampleInterval))
+   if (getControlNum("providerSampleInterval", (long*)&provSampleInterval))
       provSampleInterval = 30;
-   if (getControlNum("providerTimeoutInterval", &provTimeoutInterval))
+   if (getControlNum("providerTimeoutInterval", (long*)&provTimeoutInterval))
       provTimeoutInterval = 60;
-   if (getControlBool("providerAutoGroup", &provAutoGroup))
+   if (getControlBool("providerAutoGroup", (int*)&provAutoGroup))
       provAutoGroup=1;
 
    resultSockets=getSocketPair("sfcbd result");
@@ -595,7 +602,7 @@ int main(int argc, char *argv[])
    else
        exFlags = exFlags | 2;
 
-   if (enableInterOp && pSockets < 2 || pSockets < 1) {
+   if ((enableInterOp && pSockets < 2 ) || pSockets < 1) {
      /* adjusting provider number */
      if (enableInterOp) {
        pSockets = 2;

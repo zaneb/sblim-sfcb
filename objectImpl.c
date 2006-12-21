@@ -61,6 +61,7 @@ static void *ensureClSpace(ClObjectHdr * hdr, ClSection * sct, int size,
                            int iSize);
 extern void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time);
 extern char *sfcb_pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str);
+extern void dump(char *msg, void *a, int l);
 
 static ClString nls = { 0 };
 static int objectSize = 0;
@@ -2348,8 +2349,7 @@ char *ClArgsToString(ClArgs * arg)
 {
     stringControl sc = { NULL, 0, 32 };
     ClProperty *p;
-    int sb = 2, i, l;
-    ClQualifier *q;
+    int i, l;
 
     cat2string(&sc, "CMPIArgs ");
     cat2string(&sc, " (\n");

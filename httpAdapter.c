@@ -168,7 +168,7 @@ int remProcCtl()
 
 int baValidate(char *cred, char **principal)
 {
-   char *auth,*pw;
+   char *auth,*pw=NULL;
    int i,err=0;
    static void *authLib=NULL;
    static Authenticate authenticate=NULL;
@@ -926,6 +926,7 @@ static void handleHttpRequest(int connFd)
 
       conn_fd.socket=connFd;
       conn_fd.file=fdopen(connFd,"a");
+      conn_fd.buf = NULL;
       if (conn_fd.file == NULL) {
 	mlogf(M_ERROR,M_SHOW,"--- failed to create socket stream - continue with raw socket: %s\n",strerror(errno));
       } else {

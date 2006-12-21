@@ -363,7 +363,7 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
    else {
       if (wv) sb->ft->appendChars(sb, "<VALUE>");
       if ((d.type & (CMPI_UINT|CMPI_SINT))==CMPI_UINT) {
-         unsigned long long ul;
+         unsigned long long ul = 0LL;
          switch (d.type) {
          case CMPI_uint8:
             ul = d.value.uint8;
@@ -382,7 +382,7 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
       }
       
       else if (d.type & CMPI_SINT) {
-         long long sl;
+         long long sl = 0LL;
           switch (d.type) {
          case CMPI_sint8:
             sl = d.value.sint8;
@@ -749,7 +749,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       if (flags & FL_includeQualifiers) quals2xml(quals << 8, qsb);
       if (flags & FL_includeQualifiers)
          for (q = 0, qm = ClClassGetPropQualifierCount(cl, i); q < qm; q++) {
-            qdata = cls->ft->getPropQualifierAt(cls, i, q, &qname, NULL);
+	   qdata = cls->ft->getPropQualifierAt(cls, (char*)(unsigned long)i, q, &qname, NULL);
             data2xml(&qdata,cls,qname,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
             CMRelease(qname);
          }

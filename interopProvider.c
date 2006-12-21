@@ -1014,7 +1014,12 @@ CMPIStatus InteropProviderInvokeMethod(
       char *suName;
       CMPIArgs *hin=CMNewArgs(_broker,NULL);
       CMPIInstance *ind=CMGetArg(in,"indication",NULL).value.inst;
-      void *filterId=(void*)CMGetArg(in,"filterid",NULL).value.uint32;
+      void *filterId=(void*)CMGetArg(in,"filterid",NULL).value.
+#if SIZEOF_INT == SIZEOF_VOIDP	
+	uint32;
+#else
+        uint64;
+#endif
       char *ns=(char*)CMGetArg(in,"namespace",NULL).value.string->hdl;
       
       CMAddArg(hin,"indication",&ind,CMPI_instance);

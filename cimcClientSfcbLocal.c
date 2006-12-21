@@ -59,6 +59,8 @@ extern CMPIDateTime *NewCMPIDateTimeFromChars(const char *utcTime, CMPIStatus *r
 
 extern int localClientMode;
 
+extern void sunsetControl();
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -1904,7 +1906,7 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
    serverAddr.sun_family=AF_UNIX;
    strcpy(serverAddr.sun_path,socketName);
    
-   if (connect(sock,(struct sockAddr*)&serverAddr,
+   if (connect(sock,(struct sockaddr*)&serverAddr,
       sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
       if (st) {
          st->rc=CMPI_RC_ERR_FAILED;

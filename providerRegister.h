@@ -111,7 +111,7 @@ struct _Provider_Register_FT {
    void (*removeProvider) (ProviderRegister * br, const char *clsName);
    ProviderInfo *(*locateProvider) (ProviderRegister * br,
                        const char *provName);
-   int (*resetProvider) (ProviderRegister * br, int pid);
+   void (*resetProvider) (ProviderRegister * br, int pid);
 };
 
 extern Provider_Register_FT *ProviderRegisterFT;

@@ -340,27 +340,27 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
    cop = instance->ft->getObjectPath(instance, NULL);
    if(cop) {
       newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);
-   }
-   for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
-      data = __ift_getPropertyAt(instance, j, &name, &st);
-      if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
-         newInstance->ft->setProperty(newInstance, name->hdl, &data.value, data.type);
+      for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
+	 data = __ift_getPropertyAt(instance, j, &name, &st);
+	 if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
+	    newInstance->ft->setProperty(newInstance, name->hdl, &data.value, data.type);
+	 }
       }
+      iNew = (struct native_instance *) newInstance;
+      
+      iNew->filtered = 1;
+      iNew->property_list = __duplicate_list(propertyList);
+      iNew->key_list = __duplicate_list(keys);
+      
+      memcpy(&iTemp, i, sizeof(struct native_instance));
+      memcpy(i, iNew, sizeof(struct native_instance));
+      i->mem_state = iTemp.mem_state;
+      i->refCount = iTemp.refCount;
+      memcpy(iNew, &iTemp, sizeof(struct native_instance));
+      iNew->mem_state = MEM_NOT_TRACKED;
+      newInstance->ft->release(newInstance);
    }
-   iNew = (struct native_instance *) newInstance;
-
-   iNew->filtered = 1;
-   iNew->property_list = __duplicate_list(propertyList);
-   iNew->key_list = __duplicate_list(keys);
    
-   memcpy(&iTemp, i, sizeof(struct native_instance));
-   memcpy(i, iNew, sizeof(struct native_instance));
-   i->mem_state = iTemp.mem_state;
-   i->refCount = iTemp.refCount;
-   memcpy(iNew, &iTemp, sizeof(struct native_instance));
-   iNew->mem_state = MEM_NOT_TRACKED;
-   newInstance->ft->release(newInstance);
-
    CMReturn(CMPI_RC_OK);
 }
 
@@ -557,7 +557,7 @@ static void dataToString(CMPIData d, UtilStringBuffer * sb)
       return;
    }
    if (d.type & CMPI_UINT) {
-      unsigned long long ul;
+      unsigned long long ul = 0LL;
       switch (d.type) {
       case CMPI_uint8:
          ul = d.value.uint8;
@@ -575,7 +575,7 @@ static void dataToString(CMPIData d, UtilStringBuffer * sb)
       sprintf(str, "%llu", ul);
    }
    else if (d.type & CMPI_SINT) {
-      long long sl;
+      long long sl = 0LL;
       switch (d.type) {
       case CMPI_sint8:
          sl = d.value.sint8;

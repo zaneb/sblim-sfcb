@@ -632,7 +632,7 @@ void stopLocalConnectServer()
    serverAddr.sun_family=AF_UNIX;
    strcpy(serverAddr.sun_path,path);
    
-   if (connect(sock,(struct sockAddr*)&serverAddr,
+   if (connect(sock,(const struct sockaddr*)&serverAddr,
       sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
       perror("connect error");
       return;
@@ -671,7 +671,7 @@ void localConnectServer()
    strcpy(serverAddr.sun_path,path);
    unlink(path);
    
-   if (bind(ssocket,(struct sockAddr*)&serverAddr,
+   if (bind(ssocket,(const struct sockaddr*)&serverAddr,
       sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
       perror("bind error");
       return;
@@ -680,9 +680,9 @@ void localConnectServer()
    listen(ssocket,1);
    
    do {
-      sfcbSockets.send;
+     // sfcbSockets.send;
       cl=sizeof(clientAddr);
-      if ((nsocket=accept(ssocket,(struct sockAddr*)&serverAddr,&cl))<0) {
+      if ((nsocket=accept(ssocket,(struct sockaddr*)&serverAddr,&cl))<0) {
          perror("accept error");
          return;
       }

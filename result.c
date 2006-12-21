@@ -66,7 +66,7 @@ static void prepResultBuffer(NativeResult *nr)
 {
    _SFCB_ENTER(TRACE_PROVIDERDRV, "prepResultBuffer");
    
-   if (getControlNum("chunkSize",&nr->dMax)) nr->dMax=50000;
+   if (getControlNum("chunkSize",(long*)&nr->dMax)) nr->dMax=50000;
 
    nr->dNext=0;
    nr->data=(char*)malloc(nr->dMax);

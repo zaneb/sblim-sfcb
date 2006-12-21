@@ -47,6 +47,7 @@ Bugs fixed:
 - 1616130 Fixed bad message during shutdown
 - 1620005 Fixed unnecessary fork when slp is enabled
 - 1620020 Fixed allocation error in interopServerProvider
+- 1620136 Fixed compile warnings
 
 Changes in 1.1.1
 ================

@@ -56,7 +56,7 @@ int incOK(char *str, char **s, char **e, char **ifn, FILE **f)
                   *ifn=strdup(fn);
                   **e=ch;
                   (*e)++;
-                  while (**e && **e<=' ') *e++;
+                  while (**e && **e<=' ') (*e)++;
                   if (**e==')') 
                      *f=fopen(fn,"r");
                   return 1;   
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
    FILE *in;
    
    if (argc!=2) {
-      fprintf(stderr,"usage: %s filename\n",argv[0],argv[0]);
+      fprintf(stderr,"usage: %s filename\n",argv[0]);
       return 2;
    }
    

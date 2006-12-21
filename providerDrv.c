@@ -143,6 +143,9 @@ unsigned      provAutoGroup=0;
 static int stopping=0;
 
 void uninitProvProcCtl();
+extern void uninitSocketPairs();
+extern void sunsetControl();
+extern void uninitGarbageCollector();
 
 
 typedef struct parms { 
@@ -330,7 +333,7 @@ void* providerIdleThread()
 {
    struct timespec idleTime;
    time_t next;
-   int rc,val,doNotExit,noBreak;
+   int rc,val,doNotExit,noBreak=1;
    ProviderInfo *pInfo;
    ProviderProcess *proc;
    CMPIContext *ctx = NULL;
@@ -1864,7 +1867,7 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    CMPIFlags flgs=0;
    int makeActive=0;
-   char *type;
+   char *type = NULL;
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
    ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);

@@ -1,3 +1,9 @@
+Changes in 1.2.1
+================
+
+Bugs fixed:
+- 1620730 Fixed mismatch in C++ wrapper definition in cmpimacs.h
+
 Changes in 1.2.0
 ================
 

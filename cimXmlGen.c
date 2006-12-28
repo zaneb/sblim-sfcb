@@ -562,7 +562,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          }
          sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");
       }
-      sb->ft->appendChars(sb, eTag);
+//      sb->ft->appendChars(sb, eTag);
    }
    
    else {
@@ -581,7 +581,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          if (inst && data->value.ref) {
 	   refValue2xml(data->value.ref,sb);
          }
-         sb->ft->appendChars(sb, eTag);
+//         sb->ft->appendChars(sb, eTag);
       }
       
       else if (*type == '%') {         
@@ -617,9 +617,10 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (data->state == 0) value2xml(*data, sb, 1);
-         sb->ft->appendChars(sb, eTag);
+//         sb->ft->appendChars(sb, eTag);
       }
    }
+   sb->ft->appendChars(sb, eTag);
 }
 
 static void quals2xml(unsigned long quals, UtilStringBuffer * sb)
@@ -771,7 +772,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       }
       CMRelease(name);
    }
-   
+   printf("method count in cimxmlgen: %d\n",ClClassGetMethodCount(cl));
    for (i = 0, m = ClClassGetMethodCount(cl); i < m; i++) {
       ClMethod *meth;
       ClParameter *parm;

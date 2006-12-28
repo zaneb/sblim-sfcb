@@ -981,14 +981,14 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       UtilHashTable *ct = cb->ht;
       HashTableIterator *i;
       char *cn;
-      CMPIConstClass *cc;
+      ClassRecord *crec;
       int n;
 
       cReg->ft->rLock(cReg);
    
-       for (n = 0, i = ct->ft->getFirst(ct, (void **) &cn, (void **) &cc); i;
-           i = ct->ft->getNext(ct, i, (void **) &cn, (void **) &cc)) {
-         if (cc->ft->isAssociation(cc) && cc->ft->getCharSuperClassName(cc) == NULL) {
+       for (n = 0, i = ct->ft->getFirst(ct, (void **) &cn, (void **) &crec); i;
+           i = ct->ft->getNext(ct, i, (void **) &cn, (void **) &crec)) {
+         if(crec->flags & CREC_isAssociation && crec->parent == NULL) {
 	   /* add top-level association class */
 	   CMSetArrayElementAt(ar, n++, cn, CMPI_chars);
          }

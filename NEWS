@@ -55,6 +55,8 @@ Bugs fixed:
 - 1620005 Fixed unnecessary fork when slp is enabled
 - 1620020 Fixed allocation error in interopServerProvider
 - 1620136 Fixed compile warnings
+- 1621417 Fixed associators and references calls fail in SFCB 1.2
+- 1623249 Fixed Incomplete <PROPERTY> xml generation
 
 Changes in 1.1.1
 ================

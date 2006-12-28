@@ -1,3 +1,11 @@
+2006-12-28  Sven Schuetz
+	* cimXmlGen.c:
+	applied patch from Adrian Schuur
+	Fixed 1623249: Incomplete <PROPERTY> xml generated
+	
+	* classProviderGz.c:
+	Fixed 1621417: associators and references calls fail in SFCB 1.2
+
 2006-12-22  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* cmpimacs.h: 

@@ -2,7 +2,7 @@
 /*
  * providerMgr.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2006
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -494,8 +494,8 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
       }
    }
    
-   if (strcasecmp(nameSpace,"interop")==0 ||
-        strcasecmp(nameSpace,"pg_interop")==0) {
+   if (strcasecmp(nameSpace,"root/interop")==0 ||
+        strcasecmp(nameSpace,"root/pg_interop")==0) {
       _SFCB_RETURN(interOpProvInfoPtr);  
    }     
 

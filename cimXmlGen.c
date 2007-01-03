@@ -683,7 +683,7 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
          sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
          sb->ft->appendChars(sb, pdata->refName);
       }
-      sb->ft->appendChars(sb, "\"\n");
+      sb->ft->appendChars(sb, "\">\n");
       etag="</PARAMETER.REFERENCE>\n";
    }
    else if (pdata->type==CMPI_refA) {
@@ -698,8 +698,10 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
       char size[128];
          sb->ft->appendChars(sb, "<PARAMETER.ARRAY NAME=\"");
          sb->ft->appendChars(sb, (char*)pname->hdl);
-         sprintf(size,"\" ARRAYSIZE=\"%d\"",pdata->arraySize);
-         sb->ft->appendChars(sb, size);
+         if(pdata->arraySize) {
+         	sprintf(size,"\" ARRAYSIZE=\"%d",pdata->arraySize);
+         	sb->ft->appendChars(sb, size);
+         }
          etag="</PARAMETER.ARRAY>\n";
       }
       else {
@@ -708,7 +710,7 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
       }
       sb->ft->appendChars(sb, "\" TYPE=\"");
       sb->ft->appendChars(sb, dataType(pdata->type));
-      sb->ft->appendChars(sb, "\"\n");
+      sb->ft->appendChars(sb, "\">\n");
    } 
  
    if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
@@ -772,7 +774,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       }
       CMRelease(name);
    }
-   printf("method count in cimxmlgen: %d\n",ClClassGetMethodCount(cl));
+   
    for (i = 0, m = ClClassGetMethodCount(cl); i < m; i++) {
       ClMethod *meth;
       ClParameter *parm;

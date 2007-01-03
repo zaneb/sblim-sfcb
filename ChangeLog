@@ -1,3 +1,8 @@
+2007-01-03  Sven Schuetz
+
+	* objectImpl.c, cimXmlGen.c:
+	Partially fixed 1624528: sfcb getclass doesn't return methods
+
 2006-12-29  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* providerMgr.c: 

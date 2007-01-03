@@ -969,6 +969,7 @@ static int addClassMethodH(ClObjectHdr * hdr, ClSection * mths,
       m = (ClMethod *) ensureClSpace(hdr, mths, sizeof(*m), 8);
       m = m + (mths->used++);
       clearClSection(&m->qualifiers);
+      clearClSection(&m->parameters);
       m->id.id = addClString(hdr, id);
       m->quals = 0;
       m->originId=0;

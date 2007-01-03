@@ -5,6 +5,7 @@ Bugs fixed:
 - 1620730 Fixed mismatch in C++ wrapper definition in cmpimacs.h
 - 1621417 Fixed associators and references calls fail in SFCB 1.2
 - 1623249 Fixed Incomplete <PROPERTY> xml generation
+- 1624528 Fixed (partially) sfcb getclass doesn't return methods
 
 Changes in 1.2.0
 ================

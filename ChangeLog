@@ -1,3 +1,9 @@
+2007-01-04  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* httpAdapter.c: 
+	Fixed 1627910: basic authentication challenge issue. Added 
+	WWW-Authenticate header to response.
+
 2007-01-03  Sven Schuetz
 
 	* objectImpl.c, cimXmlGen.c:

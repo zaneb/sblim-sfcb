@@ -772,8 +772,8 @@ static int doHttpRequest(CommHndl conn_fd)
 
    if (doBa) {
      if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principal))) {
-       //char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
-       genError(conn_fd, &inBuf, 401, "Unauthorized", NULL);  //more);
+       char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
+       genError(conn_fd, &inBuf, 401, "Unauthorized", more);
        /* we continue to parse headers and empty the socket
 	  to be graceful with the client */
        discardInput=1;

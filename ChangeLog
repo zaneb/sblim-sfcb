@@ -1,5 +1,11 @@
 2007-01-08  Sven Schuetz
 
+	* objectImpl.h, objectImpl.c, sfcbdumpP32onI32.c, objectImplSwapI32toP32.c,
+	cimXmlGen.c:
+	Fixed 1627778: default class qualifiers are returned twice
+
+2007-01-08  Sven Schuetz
+
 	* objectImpl.c:
 	Fixed 1624528: sfcb getclass doesn't return methods
 

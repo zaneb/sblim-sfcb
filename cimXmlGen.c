@@ -636,20 +636,8 @@ static void quals2xml(unsigned long quals, UtilStringBuffer * sb)
       sb->ft->appendChars(sb,
                           "<QUALIFIER NAME=\"Indication\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
-   if (quals & ClClass_Q_Deprecated)
-      sb->ft->appendChars(sb,
-                          "<QUALIFIER NAME=\"Deprecated\" TYPE=\"boolean\">\n"
-                          "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
    if (quals & (ClProperty_Q_Key << 8))
       sb->ft->appendChars(sb, "<QUALIFIER NAME=\"Key\" TYPE=\"boolean\">\n"
-                          "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
-   if (quals & (ClProperty_Q_Propagated << 8))
-      sb->ft->appendChars(sb,
-                          "<QUALIFIER NAME=\"Propagated\" TYPE=\"boolean\">\n"
-                          "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
-   if (quals & (ClProperty_Q_Deprecated << 8))
-      sb->ft->appendChars(sb,
-                          "<QUALIFIER NAME=\"Deprecated\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
    if (quals & (ClProperty_Q_EmbeddedObject << 8))
       sb->ft->appendChars(sb,

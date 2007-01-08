@@ -711,12 +711,11 @@ int ClClassAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
          cls->quals |= ClClass_Q_Association;
       else if (strcasecmp(id, "Indication") == 0)
          cls->quals |= ClClass_Q_Indication;
-      else if (strcasecmp(id, "Deprecated") == 0)
-         cls->quals |= ClClass_Q_Deprecated;
       else {
          q = makeClQualifier(hdr, id, d);
          return addClQualifier(hdr, qlfs, &q);
       }
+      return 0;
    }
 
    q = makeClQualifier(hdr, id, d);
@@ -728,13 +727,8 @@ int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p,
 {
    if (strcasecmp(id, "key") == 0)
       p->quals |= ClProperty_Q_Key;
-   else if (strcasecmp(id, "propagated") == 0)
-      p->quals |= ClProperty_Q_Propagated;
-   else if (strcasecmp(id, "deprecated") == 0)
-      p->quals |= ClProperty_Q_Deprecated;
    else if (strcasecmp(id, "embeddedobject") == 0)
       p->quals |= ClProperty_Q_EmbeddedObject;
-
    else
       return ClClassAddQualifier(hdr, &p->qualifiers, id, d);
    return 0;
@@ -1556,8 +1550,6 @@ char *ClClassToString(ClClass * cls)
             cat2string(&sc, ",Association");
          if (quals & ClClass_Q_Indication)
             cat2string(&sc, ",Indication");
-         if (quals & ClClass_Q_Deprecated)
-            cat2string(&sc, ",Deprecated");
          cat2string(&sc, "]");
       }
       cat2string(&sc, "\n");

@@ -178,7 +178,6 @@ typedef struct {
     #define ClClass_Q_Abstract 1
     #define ClClass_Q_Association 2
     #define ClClass_Q_Indication 4
-    #define ClClass_Q_Deprecated 8
    #endif
    unsigned char parents;
    unsigned short reserved;
@@ -268,8 +267,6 @@ typedef struct {
    unsigned char quals;
    #ifndef SETCLPFX
     #define ClProperty_Q_Key 1
-    #define ClProperty_Q_Propagated 2
-    #define ClProperty_Q_Deprecated 4
     #define ClProperty_Q_EmbeddedObject 8
    #endif 
    unsigned char originId;

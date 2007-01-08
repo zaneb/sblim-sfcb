@@ -79,7 +79,6 @@ typedef struct {
    #ifndef SETCLPFX
     #define ClProperty_Q_Key 1
     #define ClProperty_Q_Propagated 2
-    #define ClProperty_Q_Deprecated 4
     #define ClProperty_Q_EmbeddedObject 8
    #endif 
    unsigned char originId;

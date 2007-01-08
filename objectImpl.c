@@ -62,7 +62,8 @@ static void *ensureClSpace(ClObjectHdr * hdr, ClSection * sct, int size,
 extern void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time);
 extern char *sfcb_pathToChars(CMPIObjectPath * cop, CMPIStatus * rc, char *str);
 extern void dump(char *msg, void *a, int l);
-
+extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
+                                 ClObjectHdr * hdr);
 static ClString nls = { 0 };
 static int objectSize = 0;
 
@@ -742,13 +743,18 @@ int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p,
 int ClClassAddMethodQualifier(ClObjectHdr * hdr, ClMethod * m,
                                 const char *id, CMPIData d)
 {
-   return ClClassAddQualifier(hdr, &m->qualifiers, id, d);
+   ClQualifier q;
+   q = makeClQualifier(hdr, id, d);
+   return addClQualifier(hdr, &m->qualifiers, &q);
+
 }
 
 int ClClassAddMethParamQualifier(ClObjectHdr * hdr, ClParameter * p,
                                 const char *id, CMPIData d)
 {
-   return ClClassAddQualifier(hdr, &p->qualifiers, id, d);
+	ClQualifier q;
+	q = makeClQualifier(hdr, id, d);
+	return addClQualifier(hdr, &p->qualifiers, &q);
 }
 
 static void freeQualifiers(ClObjectHdr * hdr, ClSection * s)
@@ -1074,7 +1080,15 @@ int ClClassGetMethParamQualifierAt(ClClass * cls, ClParameter *parm, int id, CMP
    ClQualifier *q;
    q = (ClQualifier *) ClObjectGetClSection(&cls->hdr, &parm->qualifiers);
    if (id < 0 || id > parm->qualifiers.used) return 1;
-   return ClGetQualifierAt(cls,q,id,data,name); 
+   
+   ClGetQualifierAt(cls,q,id,data,name); 
+   
+   if (data->type & CMPI_ARRAY && data->value.array) {
+      data->value.array = native_make_CMPIArray((CMPIData *) data->value.array, 
+         NULL, &cls->hdr);
+   }   
+   
+   return 0;
 }
 
 
@@ -1682,7 +1696,14 @@ int ClClassGetMethQualifierAt(ClClass * cls, ClMethod *m, int qid, CMPIData * da
 
    q = (ClQualifier *) ClObjectGetClSection(&cls->hdr, &m->qualifiers);
    if (qid < 0 || qid > m->qualifiers.used) return 1;
-   return ClGetQualifierAt(cls,q,qid,data,name); 
+   
+   ClGetQualifierAt(cls,q,qid,data,name);
+   if (data->type & CMPI_ARRAY && data->value.array) {
+      data->value.array = native_make_CMPIArray((CMPIData *) data->value.array, 
+         NULL, &cls->hdr);
+   }
+   
+   return 0;
 }
 
 int ClClassGetMethParameterAt(ClClass * cls, ClMethod *m, int pid, CMPIParameter * parm,

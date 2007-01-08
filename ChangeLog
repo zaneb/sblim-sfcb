@@ -1,3 +1,8 @@
+2007-01-08  Sven Schuetz
+
+	* objectImpl.c:
+	Fixed 1624528: sfcb getclass doesn't return methods
+
 2007-01-04  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* httpAdapter.c: 

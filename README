@@ -1224,9 +1224,11 @@ process is spawned and enter a pause loop to allow you to attach to the
 process from the debugger. Once attached, do the following to exit the pause
 loop and so be able to debug the normal execution of the provider process:
 
-	1. set the value of the variable debug_break to 1 so that the pause
+	1. set a breakpoint at the sleep(5) statement at line 2459 in
+	   providerDrv.c.and continue.
+	2. set the value of the variable debug_break to 1 so that the pause
 	   loop will be broken out of when line 2456 is executed.
-	2. set any breakpoints you desire in the provider code and continue.
+	3. set any breakpoints you desire in the provider code and continue.
 
 	NOTE: Due to optimization, setting debug_break might not work. In
 	      this case sfcb will need to be built without optimizations by

@@ -1203,47 +1203,51 @@ to STDERR, then set the environment variable
 	export SBLIM_TRACE_FILE=/path/to/file.
 
 After setting either variable you must get all the SBLIM providers to be
-reloaded, which is mostly easily accomplished by restarting sfcb.
-Unlike the similar trace/debug messages found in sfcb itself, SBLIM providers
-to not typically have component-level tracing, hence there is no equivalent
+reloaded, which is most easily accomplished by restarting sfcb. Unlike the 
+similar trace/debug messages found in sfcb itself, SBLIM providers do not 
+typically have component-level tracing, hence there is no equivalent 
 bit-mask that you can set to restrict debug messages to individual providers.
-Enabling SBLIM_TRACE will turn of debugging for all SBLIM providers with
+Enabling SBLIM_TRACE will turn on debugging for all SBLIM providers with
 SBLIM_TRACE support.
 
 If the debug messages do not provide adequate information by which to isolate
-the problem, it is all possible to attach a runtime debugger to the provider
+the problem, it is possible to attach a runtime debugger to the provider
 processes and set breakpoints. Along the same lines as attaching a runtime
 debugger to the sfcb processes (described in Section 15) to attach
-a debugger to a provider process immediately that it is started by
+a debugger to a provider process immediately after it is started by
 the main sfcb broker, set the environment variable
                                                                                 
         export SFCB_PAUSE_PROVIDER=<providername>
                                                                                 
 before starting sfcbd. sfcb will then display the provider pid when the child
-process is spawned and enter an pause loop to allow you to attach to the
-process from the debugger. One attached, do the following to exit this pause
-loop and so be able to debug the normal execution of this process:
-                                                                                
-        1. set a breakpoint at the sleep(5) statement 2006 in providerDrv.c
-        2. set the next instruction to the first statement after the
-           sleep loop (2009).
-        3. set any other breakpoint that you desire for debugging and continue
+process is spawned and enter a pause loop to allow you to attach to the
+process from the debugger. Once attached, do the following to exit the pause
+loop and so be able to debug the normal execution of the provider process:
+
+	1. set the value of the variable debug_break to 1 so that the pause
+	   loop will be broken out of when line 2456 is executed.
+	2. set any breakpoints you desire in the provider code and continue.
+
+	NOTE: Due to optimization, setting debug_break might not work. In
+	      this case sfcb will need to be built without optimizations by
+	      adding "CFLAGS=-g" when configuring sfcb.
                                                                                 
 The following is the relevant code from providerDrv.c
-                                                                                
-2003          if (once && debugMode && parms->req->operation != OPS_LoadProvider) for (;;) {
-2004             fprintf(stdout,"-#- Pausing for provider: %s -pid: %d\n",name,currentProc);
-2005             once=0;
-2006             sleep(5);
-2007          }
-2008
-2009          if (parms->req->operation == OPS_LoadProvider || debugMode) {
-2010             processProviderInvocationRequestsThread(parms);
-2011          }
-2012          else {
-2013             pthread_create(&t, &tattr, (void *(*)(void *))
-2014                 processProviderInvocationRequestsThread, (void *) parms);
-2015          }
+
+2455          if (once && debugMode && parms->req->operation != OPS_LoadProvider) for (;;) {
+2456            if (debug_break) break;
+2457             fprintf(stdout,"-#- Pausing for provider: %s -pid: %d\n",name,currentProc);
+2458             once=0;      
+2459             sleep(5);
+2460          }
+2461 
+2462          if (parms->req->operation == OPS_LoadProvider || debugMode) {
+2463             processProviderInvocationRequestsThread(parms);
+2464          }
+2465          else {
+2466             pthread_create(&t, &tattr, (void *(*)(void *))
+2467                 processProviderInvocationRequestsThread, (void *) parms);
+2468          }
 
 
 24. wbemcli, sfcc and other CIM Clients

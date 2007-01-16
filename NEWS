@@ -217,3 +217,4 @@ Changes in Beta 3-0.8.5
 - Added SIGHUP support for restarting sfcb.
 - Extended regression the testing environment with wbemcat and catdif scripts.
   (now deprecated)
+

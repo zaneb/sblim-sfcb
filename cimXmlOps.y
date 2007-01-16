@@ -379,6 +379,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 
 %token <xtokValueArray>          XTOK_VALUEARRAY
 %type  <xtokValueArray>          valueArray
+%type  <xtokValueArray>          valueList
 %token <intValue>                ZTOK_VALUEARRAY
 
 %token <intValueReference>       XTOK_VALUEREFERENCE
@@ -1240,6 +1241,7 @@ modifyInstanceParms
     {
        $$.namedInstance=$2;
        $$.namedInstSet=1;
+       $$.propertyList=NULL;
        $$.properties=0;
        $$.flags = $$.flagsSet = 0 ;
     }
@@ -2139,7 +2141,7 @@ propertyData
     }
     | propertyList
     {
-       $$.list=&$1;
+       $$.list=$1;
     }
 ;  
 
@@ -2263,23 +2265,32 @@ value
 ;
 
 valueArray
-	:
+        :
 	{
-	   $$.values=(char**)malloc(sizeof(char*));
-	   $$.next=0;
+	  $$.values=(char**)malloc(sizeof(char*));
+	  $$.next=0;
 	} 
-    | value
-    {
-       $$.next=1;
-       $$.max=64;
-       $$.values=(char**)malloc(sizeof(char*)*64);
-       $$.values[0]=$1.value;
-    }
-    | valueArray value
-    {
-       $$.values[$$.next]=$2.value;
-       $$.next++;
-    }
+        | valueList
+        {
+	  $$.values=$1.values;
+	  $$.next=$1.next;
+	}
+;
+
+valueList
+	:
+        value
+        {
+          $$.next=1;
+          $$.max=64;
+          $$.values=(char**)malloc(sizeof(char*)*64);
+          $$.values[0]=$1.value;
+        }
+        | valueList value
+        {
+          $$.values[$$.next]=$2.value;
+          $$.next++;
+        }
 ;
 
 valueReference

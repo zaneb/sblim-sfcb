@@ -147,7 +147,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
          }
 
          cn=in->className;
-         op=NewCMPIObjectPath(ns,cn,NULL);
+         op=TrackedCMPIObjectPath(ns,cn,NULL);
          CMSetHostname(op,hn);
 
          for (i = 0, m = in->bindings.next; i < m; i++) {
@@ -743,6 +743,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
 	   qdata = cls->ft->getPropQualifierAt(cls, (char*)(unsigned long)i, q, &qname, NULL);
             data2xml(&qdata,cls,qname,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
             CMRelease(qname);
+	    sfcb_native_release_CMPIValue(qdata.type,&qdata.value);
          }
       if (data.type & CMPI_ARRAY) data2xml(&data,cls,name,"<PROPERTY.ARRAY NAME=\"",
           "</PROPERTY.ARRAY>\n", sb, qsb, 0,0);
@@ -766,29 +767,42 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
    for (i = 0, m = ClClassGetMethodCount(cl); i < m; i++) {
       ClMethod *meth;
       ClParameter *parm;
-      CMPIString name,mname;
+      char * sname, *smname;
+      CMPIString *name, *mname;
+      
       qsb->ft->reset(qsb);
-      ClClassGetMethodAt(cl, i, &mtype, (char**)&mname.hdl, &quals);
+      ClClassGetMethodAt(cl, i, &mtype, &smname, &quals);
+      mname=sfcb_native_new_CMPIString(smname,NULL);
       meth=((ClMethod*)ClObjectGetClSection(&cl->hdr,&cl->methods))+i;
       
       if (flags & FL_includeQualifiers) {
          for (q = 0, qm = ClClassGetMethQualifierCount(cl, i); q < qm; q++) {
-            ClClassGetMethQualifierAt(cl, meth, q, &qdata, (char**)&name.hdl);
-            data2xml(&qdata,cls,&name,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+            ClClassGetMethQualifierAt(cl, meth, q, &qdata, &sname);
+	    name=sfcb_native_new_CMPIString(sname,NULL);
+            data2xml(&qdata,cls,name,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+	    CMRelease(name);
+	    free(sname);
          }
       }   
       
       for (p = 0, pm = ClClassGetMethParameterCount(cl, i); p < pm; p++) {
          CMPIParameter pdata;
-         ClClassGetMethParameterAt(cl, meth, p, &pdata, (char**)&name.hdl);
+         ClClassGetMethParameterAt(cl, meth, p, &pdata, &sname);
+	 name=sfcb_native_new_CMPIString(sname,NULL);
          parm=((ClParameter*)ClObjectGetClSection(&cl->hdr,&meth->parameters))+p;
-         param2xml(&pdata,cls,parm,&name,qsb,flags);
+         param2xml(&pdata,cls,parm,name,qsb,flags);
+	 CMRelease(name);
+	 free(sname);
       }
  
-      method2xml(mtype,&mname,"<METHOD NAME=\"", "</METHOD>\n",sb, qsb);
+      method2xml(mtype,mname,"<METHOD NAME=\"", "</METHOD>\n",sb, qsb);
+      CMRelease(mname);
+      free(smname);
    }
    
    sb->ft->appendChars(sb, "</CLASS>\n");
+
+   qsb->ft->release(qsb);
 
    _SFCB_RETURN(0);
 }

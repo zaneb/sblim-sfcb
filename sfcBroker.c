@@ -627,7 +627,9 @@ int main(int argc, char *argv[])
    
    setSignal(SIGTERM, handleSigquit,0);
    setSignal(SIGHUP,  handleSigHup,0);
-   
+
+   atexit(uninitGarbageCollector);
+
    startLocalConnectServer();
    
    if (startHttp) {

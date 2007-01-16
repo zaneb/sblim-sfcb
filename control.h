@@ -22,6 +22,7 @@
 #define _CONTROL_
 
 int setupControl(char *fn);
+void sunsetControl();
 int getControlChars(char *id, char **val);
 int getControlNum(char *id, long *val);
 int getControlBool(char *id, int *val);

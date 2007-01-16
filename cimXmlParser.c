@@ -1391,3 +1391,316 @@ RequestHdr scanCimXmlRequest(char *xmlData)
 
    return control.reqHdr;
 }
+
+static void freeInstanceName(XtokInstanceName *op);
+
+static void freePropertyList(char **op)
+{
+  if (op) {
+    free(op);
+  }
+}
+
+static void freeNameSpacePath(XtokNameSpacePath *op)
+{
+  if (op->nameSpacePath) {
+    free(op->nameSpacePath);
+  }
+}
+
+static void freeLocalInstancePath(XtokLocalInstancePath *op)
+{
+  if (op->path) {
+    free(op->path);
+  }
+  freeInstanceName(&op->instanceName);
+}
+
+static void freeInstancePath(XtokInstancePath *op)
+{
+  freeNameSpacePath(&op->path);
+  freeInstanceName(&op->instanceName );
+}
+
+static void freeReference(XtokValueReference *op)
+{
+  switch (op->type) {
+  case typeValRef_InstanceName:
+    freeInstanceName(&op->instanceName);
+    break;
+  case typeValRef_InstancePath:
+    freeInstancePath(&op->instancePath);
+    break;
+  case typeValRef_LocalInstancePath:
+    freeLocalInstancePath(&op->localInstancePath);
+    break;
+  }
+}
+
+static void freeKeyBinding(XtokKeyBinding *op)
+{
+  if (strcmp(op->type,"ref")==0) {
+    freeReference(&op->ref);
+  }
+}
+
+static void freeKeyBindings(XtokKeyBindings *op)
+{
+  int i;
+  if (op->keyBindings) {
+    for (i=0; i<op->next; i++) {
+      freeKeyBinding(op->keyBindings+i);
+    }
+    free(op->keyBindings);
+  }
+}
+
+static void freeInstanceName(XtokInstanceName *op)
+{
+  freeKeyBindings(&op->bindings);
+}
+
+static void freeRefArray(XtokValueRefArray *op)
+{
+  int i;
+  if (op->values) {
+    for (i=0; i<op->next; i++) {
+      freeReference(op->values+i);
+    }
+    free(op->values);
+  }
+}
+
+static void freeArray(XtokValueArray *op)
+{
+  if (op->values) {
+    free(op->values);
+  }
+}
+
+static void freeParamValue(XtokParamValue *op)
+{
+  if ((op->type & CMPI_refA) == CMPI_refA) {
+    freeRefArray(&op->valueRefArray);
+  } else if (op->type & CMPI_ARRAY) {
+    freeArray(&op->valueArray);
+  } else if (op->type & CMPI_ref) {
+    freeReference(&op->valueRef);
+  }
+}
+
+static void freeParamValues(XtokParamValues *op)
+{
+  XtokParamValue * pv = op->first , *dv;
+  while (pv) {
+    freeParamValue(pv);
+    dv = pv;
+    pv = pv->next;
+    free(dv);
+  }
+}
+
+static void freeQualifier(XtokQualifier *op)
+{
+  if (op->type & CMPI_ARRAY) {
+    freeArray(&op->valueArray);
+  }
+}
+
+static void freeQualifiers(XtokQualifiers* op)
+{
+  XtokQualifier * qv = op->first , *dv;
+  while (qv) {
+    freeQualifier(qv);
+    dv = qv;
+    qv = qv->next;
+    free(dv);
+  }
+}
+
+static void freeProperty(XtokProperty *op)
+{
+  if (op->valueType & CMPI_ARRAY) {    
+    freeArray(&op->val.list.list);
+  } else if (op->valueType & CMPI_ref) {
+    freeReference(&op->val.ref);
+  }
+  freeQualifiers(&op->val.qualifiers);
+}
+
+static void freeProperties(XtokProperties* op)
+{
+  XtokProperty * pv = op->first , *dv;
+  while (pv) {
+    freeProperty(pv);
+    dv = pv;
+    pv = pv->next;
+    free(dv);
+  }
+}
+
+static void freeParam(XtokParam* op)
+{
+  freeQualifiers(&op->qualifiers);
+}
+
+static void freeParams(XtokParams* op)
+{
+  XtokParam * pv = op->first , *dv;
+  while (pv) {
+    freeParam(pv);
+    dv = pv;
+    pv = pv->next;
+    free(dv);
+  }
+}
+
+static void freeMethod(XtokMethod* op)
+{
+  freeQualifiers(&op->qualifiers);
+  freeParams(&op->params);
+}
+
+static void freeMethods(XtokMethods* op)
+{
+  XtokMethod * mv = op->first , *dv;
+  while (mv) {
+    freeMethod(mv);
+    dv = mv;
+    mv = mv->next;
+    free(dv);
+  }
+}
+
+static void freeInstance(XtokInstance *op)
+{
+  freeProperties(&op->properties);
+  freeQualifiers(&op->qualifiers);
+}
+
+static void freeMethodCall(XtokMethodCall* op)
+{
+  freeInstanceName(&op->instanceName);
+  freeParamValues(&op->paramValues);
+}
+
+static void freeGetClass(XtokGetClass* op)
+{
+  freePropertyList(op->propertyList);
+}
+
+static void freeCreateClass(XtokCreateClass* op)
+{
+  freeProperties(&op->cls.properties);
+  freeQualifiers(&op->cls.qualifiers);
+  freeMethods(&op->cls.methods);
+}
+
+static void freeGetInstance(XtokGetInstance* op)
+{
+  freeInstanceName(&op->instanceName);
+  freePropertyList(op->propertyList);
+}
+
+static void freeCreateInstance(XtokCreateInstance* op)
+{
+  freeInstance(&op->instance);
+}
+
+static void freeModifyInstance(XtokModifyInstance* op)
+{
+  freeInstance(&op->namedInstance.instance);
+  freeInstanceName(&op->namedInstance.path);
+  freePropertyList(op->propertyList);
+}
+
+static void freeDeleteInstance(XtokDeleteInstance* op)
+{
+  freeInstanceName(&op->instanceName);
+}
+
+static void freeEnumInstances(XtokEnumInstances* op)
+{
+  freePropertyList(op->propertyList);
+}
+
+static void freeAssociatorNames(XtokAssociatorNames* op)
+{
+  freeInstanceName(&op->objectName);
+}
+
+static void freeReferenceNames(XtokReferenceNames* op)
+{
+  freeInstanceName(&op->objectName);
+}
+
+static void freeAssociators(XtokAssociators* op)
+{
+  freeInstanceName(&op->objectName);
+  freePropertyList(op->propertyList);
+}
+
+static void freeReferences(XtokReferences* op)
+{
+  freeInstanceName(&op->objectName);
+  freePropertyList(op->propertyList);
+}
+
+static void freeSetQualifier(XtokSetQualifier* op)
+{
+  if (op->qualifierdeclaration.data.type & CMPI_ARRAY) {
+    freeArray(&op->qualifierdeclaration.data.valueArray);
+  }
+}
+
+void freeCimXmlRequest(RequestHdr hdr)
+{
+  if (hdr.cimRequest) {
+    OperationHdr *op = (OperationHdr *)hdr.cimRequest;
+    if (op->nameSpace.data) {
+      free(op->nameSpace.data);
+    }
+    switch(hdr.opType) {
+    case OPS_InvokeMethod:
+      freeMethodCall((XtokMethodCall *)hdr.cimRequest);
+      break;
+    case OPS_GetClass:
+      freeGetClass((XtokGetClass *)hdr.cimRequest);
+      break;
+    case OPS_CreateClass:
+      freeCreateClass((XtokCreateClass *)hdr.cimRequest);
+      break;
+    case OPS_GetInstance:
+      freeGetInstance((XtokGetInstance *)hdr.cimRequest);
+      break;
+    case OPS_CreateInstance:
+      freeCreateInstance((XtokCreateInstance *)hdr.cimRequest);
+      break;
+    case OPS_ModifyInstance:
+      freeModifyInstance((XtokModifyInstance *)hdr.cimRequest);
+      break;
+    case OPS_DeleteInstance:
+      freeDeleteInstance((XtokDeleteInstance *)hdr.cimRequest);
+      break;
+    case OPS_EnumerateInstances:
+      freeEnumInstances((XtokEnumInstances *)hdr.cimRequest);
+      break;
+    case OPS_AssociatorNames:
+      freeAssociatorNames((XtokAssociatorNames *)hdr.cimRequest);
+      break;
+    case OPS_ReferenceNames:
+      freeReferenceNames((XtokReferenceNames *)hdr.cimRequest);
+      break;
+    case OPS_Associators:
+      freeAssociators((XtokAssociators *)hdr.cimRequest);
+      break;
+    case OPS_References:
+      freeReferences((XtokReferences *)hdr.cimRequest);
+      break;
+    case OPS_SetQualifier:
+      freeSetQualifier((XtokSetQualifier *)hdr.cimRequest);
+      break;
+    }
+    free (hdr.cimRequest);
+  }
+}

@@ -7,6 +7,7 @@ Bugs fixed:
 - 1623249 Fixed Incomplete <PROPERTY> xml generation
 - 1624528 Fixed sfcb getclass doesn't return methods
 - 1627910 Fixed basic authentication challenge
+- 1635811 Fixed HTTP adapter memory leaks
 - 1627778 Fixed "default" qualifiers are returned twice
 
 Changes in 1.2.0

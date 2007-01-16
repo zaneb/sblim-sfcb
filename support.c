@@ -358,11 +358,14 @@ static void __cleanup_mt(void *ptr)
    _SFCB_ENTER(TRACE_MEMORYMGR, "__cleanup_mt");
    managed_thread *mt = (managed_thread *) ptr;
 
-   __flush_mt(mt);
-
-   free(mt->hc.memObjs);
-   free(mt->hc.memEncObjs);
-   free(mt);
+   if (mt && mt->cleanupDone == 0) {
+     mt->cleanupDone = 1;
+     __flush_mt(mt);
+     
+     free(mt->hc.memObjs);
+     free(mt->hc.memEncObjs);
+     free(mt);
+   }
    _SFCB_EXIT();
 }
 
@@ -379,10 +382,10 @@ void uninitGarbageCollector()
    mt = (managed_thread *)
        CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
    if (mt==NULL) return;
+   
+   __cleanup_mt(mt);
+   CMPI_BrokerExt_Ftab->setThreadSpecific(__mm_key,NULL);
 
-   free(mt->hc.memObjs);
-   free(mt->hc.memEncObjs);
-   free(mt);
 }
 
 static managed_thread *__init_mt()

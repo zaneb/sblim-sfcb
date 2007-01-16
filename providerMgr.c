@@ -1186,6 +1186,18 @@ BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
    _SFCB_RETURN(resp);
 }
 
+void freeResponseHeaders(BinResponseHdr ** resp, BinRequestContext * binCtx)
+{
+  if (resp && binCtx) {
+    int count = binCtx->pCount;
+    while (count--) {
+      if (resp[count]) {
+	free(resp[count]);
+      }
+    }
+    free(resp);
+  }
+}
 
 extern void lockUpCall(CMPIBroker* mb);
 extern void unlockUpCall(CMPIBroker* mb);

@@ -31,9 +31,8 @@ static CMPIStatus release(CMPIQualifierDecl* q)
    CMPIStatus rc = { 0, NULL };
 
    if (q->hdl)  {
-      if (q->hdl != (void*)(q+1)) free(q->hdl);
+     ClQualifierFree(q->hdl);
    }
-   free(q);
    return rc;
 }
 

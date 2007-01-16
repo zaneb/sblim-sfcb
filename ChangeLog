@@ -1,3 +1,12 @@
+2007-01-12  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-119.boeblingen.de.ibm.com>
+
+	* cimXmlGen.c, cimXmlOps.y, cimXmlParser.c, cimXmlParser.h, 
+	cimXmlRequest.c, constClass.c, control.h, httpAdapter.c, objectImpl.c, 
+	objectImp.h, providerMgr.c, providerMgr.h, qualifier.c, sfcBroker.c, 
+	support.c, support.h:
+	Fixed 1635811: memory leaks in HTTP Adapter. There were leaks in the 
+	parser and the response XML generation.
+
 2007-01-08  Sven Schuetz
 
 	* objectImpl.h, objectImpl.c, sfcbdumpP32onI32.c, objectImplSwapI32toP32.c,

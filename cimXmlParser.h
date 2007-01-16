@@ -88,7 +88,7 @@ typedef struct requestHdr {
 
 
 extern RequestHdr scanCimXmlRequest(char *xmlData);
-extern void freeCimXmlRequest(RequestHdr * hdr);
+extern void freeCimXmlRequest(RequestHdr hdr);
 
 
 
@@ -212,13 +212,15 @@ typedef struct xtokQualifiers {
 } XtokQualifiers;
 
 
-struct xtokPropertyList;
+typedef struct xtokPropertyList {
+   XtokValueArray list;
+} XtokPropertyList;
 
 typedef struct xtokPropertyData {
    union {
       char *value;
       XtokValueReference ref;
-      struct xtokPropertyList *list;
+      struct xtokPropertyList list;
    };   
    XtokQualifiers qualifiers;
 } XtokPropertyData;
@@ -262,10 +264,6 @@ typedef struct xtokNamedInstance {
    XtokInstanceName path;
    XtokInstance instance;
 } XtokNamedInstance;
-
-typedef struct xtokPropertyList {
-   XtokValueArray list;
-} XtokPropertyList;
 
 
 typedef struct xtokParamValue {

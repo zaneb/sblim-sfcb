@@ -133,6 +133,7 @@ struct _managed_thread {
    void *ctx;
    void *data;
    HeapControl hc;
+   int   cleanupDone;
 };
 
 
@@ -154,6 +155,9 @@ void memUnlinkEncObj(int memId);
 void memLinkEncObj(void *ptr, int *memId);
 void memLinkInstance(CMPIInstance *ci);
 
+void * markHeap();
+void releaseHeap(void * heap);
+
 
 typedef struct cntlVals {
    int type;
@@ -166,6 +170,7 @@ int cntlParseStmt(char *in, CntlVals * rv);
 char *cntlGetVal(CntlVals * rv);
 
 int uninit_sfcBroker();
+void uninitGarbageCollector();
 
 extern double timevalDiff(struct timeval *sv, struct timeval *ev);
 

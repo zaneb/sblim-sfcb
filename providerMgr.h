@@ -325,5 +325,6 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
 BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
                                  int *count);
 BinResponseHdr *invokeProvider(BinRequestContext * ctx);
+void freeResponseHeaders(BinResponseHdr ** resp, BinRequestContext * ctx);
 
 #endif

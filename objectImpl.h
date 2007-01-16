@@ -493,6 +493,7 @@ extern ClQualifierDeclaration *ClQualifierRebuildQualifier(ClQualifierDeclaratio
 extern void ClQualifierRelocateQualifier(ClQualifierDeclaration * q);
 extern int ClQualifierAddQualifier(ClObjectHdr * hdr, ClSection * qlfs, const char *id, CMPIData d);
 extern int ClQualifierDeclarationGetQualifierData(ClQualifierDeclaration * q, CMPIData * data);
+extern void ClQualifierFree(ClQualifierDeclaration * q);
 
 #endif // SETCLPFX
    

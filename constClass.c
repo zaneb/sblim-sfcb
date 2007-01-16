@@ -61,7 +61,9 @@ static CMPIStatus release(CMPIConstClass * cc)
    if (cc->hdl)  {
       if (cc->hdl != (void*)(cc+1)) free(cc->hdl);
    }
-   free(cc);
+   if (cc->refCount == 0) {
+     free(cc);
+   }
    return rc;
 }
 
@@ -330,7 +332,7 @@ CMPIConstClass *relocateSerializedConstClass(void *area)
    CMPIConstClass *cl = (CMPIConstClass *) area;
    cl->hdl = cl + 1;
    cl->ft = &ift;
-   cl->refCount=0;
+   cl->refCount=1; /* this is a kludge: disallow double free */
    ClClassRelocateClass((ClClass *) cl->hdl);
    return (CMPIConstClass *) cl;
 }

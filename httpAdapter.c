@@ -846,6 +846,7 @@ static int doHttpRequest(CommHndl conn_fd)
 
    _SFCB_TRACE(1, ("--- Generate http response"));
    if (response.chunkedMode==0) writeResponse(conn_fd, response);
+   cleanupCimXmlRequest(&response);
 
 #ifdef SFCB_DEBUG
    if (uset && (_sfcb_trace_mask & TRACE_RESPONSETIMING) ) {
@@ -895,7 +896,8 @@ static void handleHttpRequest(int connFd)
          semAcquireUnDo(httpProcSem,0);
          semReleaseUnDo(httpProcSem,httpProcIdX+1);
          semRelease(httpWorkSem,0);
-
+	 atexit(uninitGarbageCollector);
+	 atexit(sunsetControl);
       }
       else if (r>0) {
          running++;

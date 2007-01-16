@@ -2347,6 +2347,16 @@ int ClQualifierDeclarationGetQualifierData(ClQualifierDeclaration * q, CMPIData 
    return ClGetQualifierFromQualifierDeclaration(q,qData,data);   
 }
 
+void ClQualifierFree(ClQualifierDeclaration * q)
+{
+  if (q->hdr.flags & HDR_Rebuild) {
+    freeQualifiers(&q->hdr, &q->qualifierData);
+    freeStringBuf(&q->hdr);
+    freeArrayBuf(&q->hdr);
+  }
+  free(q);
+}
+
 void dumpClass(char *msg, CMPIConstClass *cls)
 {
    ClClass *cl=(ClClass*)cls->hdl;

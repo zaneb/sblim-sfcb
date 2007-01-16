@@ -1349,31 +1349,20 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       }
      }
       
-      /*else if (hdr->type == HDR_Instance && d.type == CMPI_instance && 
-         (d.state & CMPI_nullValue) == 0) {
-         if (((p + i - 1)->quals && ClProperty_Q_EmbeddedObject) == 0 ) 
-            _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
-         (p + i - 1)->flags &= ~ClProperty_EmbeddedObjectAsString;
-         (p + i - 1)->data = d;
-         hdr->flags |= HDR_ContainsEmbeddedObject;
-         (p + i - 1)->data.value.dataPtr.length=-1; 
-      }*/
       else if (hdr->type == HDR_Instance && 
                od.type == CMPI_instance && (d.state & CMPI_nullValue) == 0) {
          if (d.type != CMPI_instance) {
-            //replaceClObject(hdr, (long)od.value.chars, "");
-            //(p + i - 1)->data = d;
             _SFCB_RETURN(CMPI_RC_ERR_TYPE_MISMATCH);
          }
          else {
-         	(p + i - 1)->data = d;
+            (p + i - 1)->data = d;
             int size = getInstanceSerializedSize(d.value.inst);
             void * blob = malloc(size);
             getSerializedInstance(d.value.inst, blob);
-            if (od.value.chars) {printf("old value da\n");
+            if (od.value.chars) {
                replaceClObject(hdr, (long)od.value.chars, blob, size);
             }
-            else {printf("old value nicht da\n");
+            else {
                (p + i - 1)->data.value.inst = (CMPIInstance *) addClObject(hdr, blob, size);
             }
             free(blob);

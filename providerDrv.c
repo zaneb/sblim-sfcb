@@ -1922,12 +1922,12 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
       TIMING_STOP(hdr,info)
       _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
-      if (indicationEnabled==0 && rci.rc==CMPI_RC_OK) {
+      /*if (indicationEnabled==0 && rci.rc==CMPI_RC_OK) {
       indicationEnabled=1;
 	TIMING_START(hdr,info)
       info->indicationMI->ft->enableIndications(info->indicationMI,ctx);
 	TIMING_STOP(hdr,info)
-      }
+      }*/
 
       if (rci.rc==CMPI_RC_OK) {
          resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
@@ -2006,25 +2006,87 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
 static BinResponseHdr *enableIndications(BinRequestHdr *hdr, ProviderInfo* info, 
              int requestor)
 {
-   BinResponseHdr *resp;
-   CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   _SFCB_ENTER(TRACE_PROVIDERDRV, "enableIndications");
-
-   mlogf(M_ERROR,M_SHOW,"--- enableIndications not yet supported\n");
-   resp = errorResp(&rci);
-   _SFCB_RETURN(resp);
+	_SFCB_ENTER(TRACE_PROVIDERDRV|TRACE_INDPROVIDER, "enableIndications");
+	TIMING_PREP
+	   
+	IndicationReq *req = (IndicationReq*)hdr;
+	BinResponseHdr *resp=NULL;
+	CMPIStatus rci = { CMPI_RC_OK, NULL };
+	//CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
+	CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+	CMPIFlags flgs=0;
+	
+	ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+	ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
+	ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
+	
+	if (info->indicationMI==NULL) {
+		CMPIStatus st;
+		setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"Provider does not support indications");
+		resp = errorResp(&st);
+		_SFCB_RETURN(resp);  
+	}
+	
+	if (indicationEnabled==0 && rci.rc==CMPI_RC_OK) {
+		indicationEnabled=1;
+		TIMING_START(hdr,info)
+		info->indicationMI->ft->enableIndications(info->indicationMI,ctx);
+		TIMING_STOP(hdr,info)
+	}
+	
+	if (rci.rc==CMPI_RC_OK) {
+		resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+		resp->rc=1;
+	}
+	if (rci.rc!=CMPI_RC_OK) {
+		resp = errorResp(&rci);
+		_SFCB_TRACE(1, ("--- Not OK rc: %d", rci.rc));
+	}
+	
+	_SFCB_RETURN(resp);
 }
 
 static BinResponseHdr *disableIndications(BinRequestHdr *hdr, ProviderInfo* info, 
              int requestor)
 {
-   BinResponseHdr *resp;
-   CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   _SFCB_ENTER(TRACE_PROVIDERDRV, "");
-
-   mlogf(M_ERROR,M_SHOW,"--- disableIndications not yet supported\n");
-   resp = errorResp(&rci);
-   _SFCB_RETURN(resp);
+	_SFCB_ENTER(TRACE_PROVIDERDRV|TRACE_INDPROVIDER, "disableIndications");
+	TIMING_PREP
+	   
+	IndicationReq *req = (IndicationReq*)hdr;
+	BinResponseHdr *resp=NULL;
+	CMPIStatus rci = { CMPI_RC_OK, NULL };
+	//CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
+	CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+	CMPIFlags flgs=0;
+	
+	ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
+	ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
+	ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
+	
+	if (info->indicationMI==NULL) {
+		CMPIStatus st;
+		setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"Provider does not support indications");
+		resp = errorResp(&st);
+		_SFCB_RETURN(resp);  
+	}
+	
+	if (indicationEnabled==1 && rci.rc==CMPI_RC_OK) {
+		indicationEnabled=0;
+		TIMING_START(hdr,info)
+		info->indicationMI->ft->disableIndications(info->indicationMI,ctx);
+		TIMING_STOP(hdr,info)
+	}
+	
+	if (rci.rc==CMPI_RC_OK) {
+		resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+		resp->rc=1;
+	}
+	if (rci.rc!=CMPI_RC_OK) {
+		resp = errorResp(&rci);
+		_SFCB_TRACE(1, ("--- Not OK rc: %d", rci.rc));
+	}
+	
+	_SFCB_RETURN(resp);
 }
 
 #endif   
@@ -2233,15 +2295,15 @@ static ProvHandler pHandlers[] = {
    {NULL},                      //OPS_PingProvider 26
    {NULL},                      //OPS_IndicationLookup   27
 #ifdef SFCB_INCL_INDICATION_SUPPORT   
-   {activateFilter},            //OPS_ActivateFilter     30
-   {deactivateFilter},          //OPS_DeactivateFilter   31
-   {enableIndications},         //OPS_EnableIndications  32
-   {disableIndications}         //OPS_DisableIndications 33
+   {activateFilter},            //OPS_ActivateFilter     28
+   {deactivateFilter},          //OPS_DeactivateFilter   29
+   {disableIndications},        //OPS_DisableIndications  30
+   {enableIndications}          //OPS_EnableIndications 31
 #else
-   {NULL},                      //OPS_ActivateFilter     30
-   {NULL},                      //OPS_DeactivateFilter   31
-   {NULL},                      //OPS_EnableIndications  32
-   {NULL}                       //OPS_DisableIndications 33
+   {NULL},                      //OPS_ActivateFilter     28
+   {NULL},                      //OPS_DeactivateFilter   29
+   {NULL},                      //OPS_EnableIndications  30
+   {NULL}                       //OPS_DisableIndications 31
 #endif   
 };
 

@@ -319,7 +319,7 @@ static int isa(const char *sns, const char *child, const char *parent)
 
 /* ------------------------------------------------------------------------- */
 
-CMPIStatus deactivateFilter(
+/*CMPIStatus deactivateFilter(
 	const CMPIContext * ctx,
 	const char * ns,
 	const char * cn,
@@ -331,7 +331,7 @@ CMPIStatus deactivateFilter(
    BinResponseHdr **resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = {OPS_IndicationLookup, 2};
-   char *principal=ctx->ft->getEntry(ctx,CMPIPrincipal,NULL).value.string->hdl;;
+   char *principal=ctx->ft->getEntry(ctx,CMPIPrincipal,NULL).value.string->hdl;
    int irc,err,cnt,i;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "deactivateFilter"); 
@@ -362,7 +362,6 @@ CMPIStatus deactivateFilter(
  
    if (irc == MSG_X_PROVIDER) {      
       _SFCB_TRACE(1, ("--- Invoking Providers"));
-      /* one good provider makes success */
       resp = invokeProviders(&binCtx,&err,&cnt);
       if (err == 0) {
 	setStatus(&st,0,NULL);
@@ -394,7 +393,7 @@ CMPIStatus deactivateFilter(
    }   
  
    _SFCB_RETURN(st);
-}
+}*/
 
 /* ------------------------------------------------------------------------- */
 
@@ -404,23 +403,31 @@ CMPIStatus deactivateFilter(
 
 extern CMPISelectExp *TempCMPISelectExp(QLStatement *qs);
 
-CMPIStatus activateSubscription(
+/*
+ * This generic function serves 4 kinds of request, specified by optype:
+ * OPS_ActivateFilter     28
+ * OPS_DeactivateFilter   29
+ * OPS_DisableIndications 30
+ * OPS_EnableIndications  31
+ */
+CMPIStatus genericSubscriptionRequest(
 	const char * principal,
 	const char * cn,
 	const char * type,
 	Filter * fi,
+	int optype,
 	int * rrc)
 {
    CMPIObjectPath *path;
    CMPIStatus st={CMPI_RC_OK,NULL},rc;
-   IndicationReq sreq = BINREQ(OPS_ActivateFilter, 6);
+   IndicationReq sreq = BINREQ(optype, 6);
    BinResponseHdr **resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = {OPS_IndicationLookup, 2};
    int irc=0,err,cnt,i;
    
-   _SFCB_ENTER(TRACE_INDPROVIDER, "activateSubscription");
-   _SFCB_TRACE(4, ("principal %s, class %s, type %s",principal, cn, type));
+   _SFCB_ENTER(TRACE_INDPROVIDER, "genericSubscriptionRequest");
+   _SFCB_TRACE(4, ("principal %s, class %s, type %s, optype %d",principal, cn, type, optype));
    
    if (rrc) *rrc=0;
    path = TrackedCMPIObjectPath(fi->sns, cn, &rc);
@@ -489,7 +496,8 @@ CMPIStatus activateLifeCycleSubscription(
 	char * principal,
 	const char * cn,
 	Filter * fi,
-	int type)
+	int type,
+	int optype)
 {
    CMPIStatus st={CMPI_RC_OK,NULL};
    CMPISelectExp *exp=TempCMPISelectExp(fi->qs);
@@ -520,7 +528,7 @@ CMPIStatus activateLifeCycleSubscription(
                      has_isa=1;
                      _SFCB_TRACE(1,("lhs: %s",(char*)lhs->hdl)); 
                      _SFCB_TRACE(1,("rhs: %s\n",(char*)rhs->hdl));
-                     st=activateSubscription(principal,(char*)rhs->hdl,cn,fi,&irc);
+                     st=genericSubscriptionRequest(principal,(char*)rhs->hdl,cn,fi,optype,&irc);
                      if (irc==MSG_X_INVALID_CLASS) 
                         st.rc=CMPI_RC_ERR_INVALID_CLASS;
                      break;
@@ -532,7 +540,7 @@ CMPIStatus activateLifeCycleSubscription(
       }
       if (has_isa==0) {
 	/* no ISA predicate -- need to process indication class provider */
-	st=activateSubscription(principal,cn,cn,fi,&irc);
+	st=genericSubscriptionRequest(principal,cn,cn,fi,optype,&irc);
 	if (irc==MSG_X_INVALID_CLASS) 
 	  st.rc=CMPI_RC_ERR_INVALID_CLASS;
       }
@@ -548,6 +556,7 @@ CMPIStatus activateLifeCycleSubscription(
 int fowardSubscription(
 	const CMPIContext * ctx,
 	Filter * fi,
+	int optype,
 	CMPIStatus * st)
 {
    CMPIStatus rc;
@@ -570,25 +579,25 @@ int fowardSubscription(
 
       /* Check if this is a process indication */
       if (isa(fi->sns, *fClasses, "CIM_ProcessIndication")) {
-         *st = activateSubscription(principal, *fClasses, *fClasses, fi, &irc);
+         *st = genericSubscriptionRequest(principal, *fClasses, *fClasses, fi, optype, &irc);
          if (st->rc == CMPI_RC_OK) activated++; 
       }
 
       /* Check if this is a lifecycle instance creation indication */
       else if (isa("root/interop", *fClasses, "CIM_InstCreation")) {
-         *st = activateLifeCycleSubscription(principal, *fClasses, fi, CREATE_INST);
+         *st = activateLifeCycleSubscription(principal, *fClasses, fi, CREATE_INST, optype);
          if (st->rc == CMPI_RC_OK) activated++;
       }
 
       /* Check if this is a lifecycle instance deletion indication */
       else if (isa("root/interop", *fClasses, "CIM_InstDeletion")) {
-         *st = activateLifeCycleSubscription(principal, *fClasses, fi, DELETE_INST);
+         *st = activateLifeCycleSubscription(principal, *fClasses, fi, DELETE_INST, optype);
          if (st->rc == CMPI_RC_OK) activated++;
       }
 
       /* Check if this is a lifecycle instance modification indication */
       else if (isa("root/interop", *fClasses, "CIM_InstModification")) {
-         *st = activateLifeCycleSubscription(principal, *fClasses, fi, MODIFY_INST);
+         *st = activateLifeCycleSubscription(principal, *fClasses, fi, MODIFY_INST, optype);
          if (st->rc == CMPI_RC_OK) activated++;
       }
 
@@ -611,6 +620,27 @@ int fowardSubscription(
 /* ------------------------------------------------------------------------- */
 
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
+
+CMPIStatus switchIndications(const CMPIContext *ctx,
+	const CMPIInstance *ci,
+	int optype)
+{
+	CMPIStatus st={CMPI_RC_OK,NULL};
+	Filter *fi;
+	CMPIObjectPath *op;
+	char *key;
+	
+	_SFCB_ENTER(TRACE_INDPROVIDER, "enableIndications()");
+	
+	op = CMGetProperty(ci, "filter", &st).value.ref;
+	key = internalProviderNormalizeObjectPath(op);
+	fi = getFilter(key);
+	free(key);
+	
+	fowardSubscription(ctx, fi, optype, &st);
+
+	_SFCB_RETURN(st);
+}
 
 static CMPIStatus processSubscription(
 	const CMPIBroker *broker,
@@ -666,9 +696,19 @@ static CMPIStatus processSubscription(
    CMSetProperty((CMPIInstance *)ci, "SubscriptionStartTime", &dt, CMPI_dateTime);
    
    su=addSubscription(ci, skey, fi, ha); 
-   fowardSubscription(ctx, fi, &st);   
-       
-   if (st.rc != CMPI_RC_OK) removeSubscription(su, skey); 
+   fowardSubscription(ctx, fi, OPS_ActivateFilter, &st);
+   
+   if (st.rc != CMPI_RC_OK) removeSubscription(su, skey);
+   //activation succesful, try to enable it
+   else {
+   	  //check property
+   	  CMPIData d = CMGetProperty(ci, "SubscriptionState", &st);
+   	  if(d.state == CMPI_goodValue) {
+   	  	if(d.value.uint16 == 2) { //==enabled
+   	  	   fowardSubscription(ctx, fi, OPS_EnableIndications, &st);
+   	  	}
+   	  }
+   }   
       
    _SFCB_RETURN(st); 
 }
@@ -822,19 +862,20 @@ CMPIStatus InteropProviderCreateInstance(
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(cop, NULL);
    char *cns = cn->ft->getCharPtr(cn,NULL);
+   CMPIString *ns = CMGetNameSpace(cop, NULL);
+   char *nss = ns->ft->getCharPtr(ns,NULL);
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderCreateInstance");
   
    if (interOpNameSpace(cop,&st)!=1) _SFCB_RETURN(st);
    
-   if (strcasecmp(cns,"cim_indicationsubscription")==0) {
+   if(isa(nss, cns, "cim_indicationsubscription")) {
    
       _SFCB_TRACE(1,("--- create cim_indicationsubscription"));
       
       st=processSubscription(_broker,ctx,ci,cop);
    }
-   
-   else if (strcasecmp(cns,"cim_indicationfilter")==0) {
+   else if (isa(nss, cns, "cim_indicationfilter")) {
       QLStatement *qs=NULL;
       int rc,i,n,m;
       char *key=NULL,*ql,lng[16];
@@ -899,9 +940,49 @@ CMPIStatus InteropProviderModifyInstance(
 	const CMPIInstance * ci,
 	const char ** properties)
 {
-   CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderSetInstance");
-   _SFCB_RETURN(st);
+	CMPIStatus st = { CMPI_RC_OK, NULL };
+	CMPIString *cn = CMGetClassName(cop, NULL);
+	char *cns = cn->ft->getCharPtr(cn,NULL);
+	
+	_SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderModifyInstance");
+   
+   	if(isa("root/interop", cns, "cim_indicationsubscription")) {
+		char *key = internalProviderNormalizeObjectPath(cop);
+		_SFCB_TRACE(1,("--- modify cim_indicationsubscription %s",key));
+		Subscription *su;
+		CMPIInstance *oldInst;
+		 
+		//check if SubscriptionState changed
+		//enable/disableIndication
+		su=getSubscription(key);
+		free(key);
+		if(!su) {
+			st.rc = CMPI_RC_ERR_NOT_FOUND;
+			return st;      	
+		}
+		oldInst = su->sci;
+		
+		CMPIData oldState = CMGetProperty(oldInst, "SubscriptionState", &st);
+		CMPIData newState = CMGetProperty(ci, "SubscriptionState", &st);
+		
+		if(newState.state == CMPI_goodValue) {
+			if(newState.value.uint16 == 2 && oldState.value.uint16 != 2) {
+				switchIndications(ctx, ci, OPS_EnableIndications);
+			}  
+			else if(newState.value.uint16 == 4 && oldState.value.uint16 != 4) {
+				switchIndications(ctx, ci, OPS_DisableIndications);
+			}
+		}
+		//replace the instance in the hashtable
+		CMRelease(su->sci);
+		su->sci=CMClone(ci,NULL);
+   	  
+	}
+	else setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"Class not supported");
+	
+	if (st.rc==CMPI_RC_OK)
+		st=InternalProviderModifyInstance(NULL,ctx,rslt,cop,ci,properties);
+	_SFCB_RETURN(st);   
 }
 
 /* ------------------------------------------------------------------------- */
@@ -915,21 +996,24 @@ CMPIStatus InteropProviderDeleteInstance(
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(cop, NULL);
    char *cns = cn->ft->getCharPtr(cn,NULL);
+   CMPIString *ns = CMGetNameSpace(cop, NULL);
+   char *nss = ns->ft->getCharPtr(ns,NULL);
    char *key = internalProviderNormalizeObjectPath(cop);
    Filter *fi;
    Subscription *su;
-   char *ns = (char*)CMGetNameSpace(cop,NULL)->hdl;
+   //char *ns = (char*)CMGetNameSpace(cop,NULL)->hdl;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderDeleteInstance");
    
-   if (strcasecmp(cns,"cim_indicationsubscription")==0) {
+   if(isa(nss, cns, "cim_indicationsubscription")) {
       _SFCB_TRACE(1,("--- delete cim_indicationsubscription %s",key));
       if ((su=getSubscription(key))) {
          fi=su->fi;
          if (fi->useCount==1) {
             char **fClasses=fi->qs->ft->getFromClassList(fi->qs);
             for ( ; *fClasses; fClasses++) {
-	      deactivateFilter(ctx, ns, *fClasses, fi);
+	      char *principal=ctx->ft->getEntry(ctx,CMPIPrincipal,NULL).value.string->hdl;
+	      genericSubscriptionRequest(principal, *fClasses, cns, fi, OPS_DeactivateFilter, NULL);
             }
          }   
          removeSubscription(su,key);
@@ -937,7 +1021,7 @@ CMPIStatus InteropProviderDeleteInstance(
       else setStatus(&st,CMPI_RC_ERR_NOT_FOUND,NULL);
    }
    
-   else if (strcasecmp(cns,"cim_indicationfilter")==0) {
+   else if (isa(nss, cns, "cim_indicationfilter")) {
       _SFCB_TRACE(1,("--- delete cim_indicationfilter %s",key));
       
       if ((fi=getFilter(key))) {
@@ -997,14 +1081,15 @@ CMPIStatus InteropProviderInvokeMethod(
 	CMPIArgs * out)
 { 
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   char *ns=(char*)CMGetNameSpace(ref,NULL)->hdl;
+   //char *ns=(char*)CMGetNameSpace(ref,NULL)->hdl;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderInvokeMethod");
    
-   if (strcasecmp(ns,"root/interop") && strcasecmp(ns,"root/pg_interop")) {
+   /*if (strcasecmp(ns,"root/interop") && strcasecmp(ns,"root/pg_interop")) {
       setStatus(&st,CMPI_RC_ERR_FAILED,"Object must reside in root/interop");
       return st;
-   }
+   }*/
+   if (interOpNameSpace(ref,&st)!=1) _SFCB_RETURN(st);
    
    _SFCB_TRACE(1,("--- Method: %s",methodName)); 
 

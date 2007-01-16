@@ -1,4 +1,9 @@
-2007-01-08  Sven Schuetz
+2007-01-12  Sven Schuetz
+
+	* internalProvider.h, interopProvider.c, objectImpl.c, providerDrv.c: 
+	Fixed 1217828: add indication SubscriptionState support
+
+2007-01-12  Sven Schuetz
 
 	* providerRegister.c, providerRegister.h, providerMgr.c, default.reg: 
 	Fixed 1379327: lifecycle indication provider registration faulty

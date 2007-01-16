@@ -42,6 +42,12 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
 					  const CMPIResult * rslt, 
 					  const CMPIObjectPath * cop, 
 					  const CMPIInstance * ci);
+CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
+					  const CMPIContext * ctx,
+					  const CMPIResult * rslt,
+					  const CMPIObjectPath * cop,
+					  const CMPIInstance * ci, 
+					  const char **properties);					  
 CMPIStatus InternalProviderGetInstance(CMPIInstanceMI * mi,
 				       const CMPIContext * ctx,
 				       const CMPIResult * rslt,

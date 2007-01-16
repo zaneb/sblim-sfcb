@@ -1,6 +1,9 @@
 Changes in 1.2.1
 ================
 
+New features:
+- 1217828 added indication SubscriptionState support
+
 Bugs fixed:
 - 1620730 Fixed mismatch in C++ wrapper definition in cmpimacs.h
 - 1621417 Fixed associators and references calls fail in SFCB 1.2

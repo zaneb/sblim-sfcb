@@ -34,6 +34,18 @@
    type: instance method
    namespace: root/interop
 #
+[CIM_IndicationSubscription]
+   provider: InteropProvider
+   location: sfcInteropProvider
+   type: instance association method
+   namespace: root/interop
+#
+[CIM_IndicationFilter]
+   provider: InteropProvider
+   location: sfcInteropProvider
+   type: instance association method
+   namespace: root/interop
+#
 [CIM_Namespace]
    provider: ServerProvider
    location: sfcInteropServerProvider

@@ -74,6 +74,22 @@ static ProviderRegister *pClone(ProviderRegister * br)
    return NULL;
 }
 
+static void addProviderToHT(ProviderInfo *info, UtilHashTable *ht)
+{
+	ProviderInfo *checkDummy;
+	//check if we already have a provider for that classname
+	checkDummy = ht->ft->get(ht, info->className);
+	if(checkDummy) {
+		//if yes, build provider chain, attach newly found to last one
+		while(checkDummy->next) {
+			checkDummy = checkDummy->next;
+		}
+		checkDummy->nextInRegister = info;
+	} else {                  
+		ht->ft->put(ht, info->className, info);
+	}	
+}
+
 ProviderRegister *newProviderRegister(char *fn)
 {
    FILE *in;
@@ -133,8 +149,8 @@ ProviderRegister *newProviderRegister(char *fn)
                }               
                else if (qualiProvInfoPtr==NULL) {
                   if (strcmp(info->className,"$QualifierProvider$")==0) qualiProvInfoPtr=info;
-               }                  
-               bb->ht->ft->put(bb->ht, info->className, info);
+               }
+               addProviderToHT(info, bb->ht);
             }
             info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
             info->className = strdup(rv.id);
@@ -179,8 +195,8 @@ ProviderRegister *newProviderRegister(char *fn)
                   else {
                      mlogf(M_ERROR,M_SHOW,"--- invalid type specification: \n\t%d: %s\n", n, stmt);
                      err = 1;
-                     }
-            }
+                  }
+               }
             }
             else if (strcmp(rv.id, "namespace") == 0) {
                int max=1,next=0;
@@ -206,9 +222,9 @@ ProviderRegister *newProviderRegister(char *fn)
       }
 
       if (info) {
-         bb->ht->ft->put(bb->ht, info->className, info);
+      	 addProviderToHT(info, bb->ht);
       }
-   }   
+   }
 
    fclose(in);
    

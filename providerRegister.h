@@ -57,7 +57,9 @@ typedef struct _ProviderInfo {
    time_t lastActivity;
    int startSeq;
    struct _ProviderInfo *next;
-   struct providerProcess *proc;
+   struct _ProviderInfo *nextInRegister; //not actually next in Register,but
+   //pointer to the next provider serving the same class (for indications)   									
+   struct providerProcess *proc;         
    CMPIInstanceMI *instanceMI;
    CMPIAssociationMI *associationMI;
    CMPIMethodMI *methodMI;

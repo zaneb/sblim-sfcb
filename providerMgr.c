@@ -207,12 +207,12 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
    }
 
    
-   if (interOpProvInfoPtr != forceNoProvInfoPtr && 
+   /*if (interOpProvInfoPtr != forceNoProvInfoPtr && 
       (strcasecmp(className,"cim_indicationfilter")==0 ||
        strcasecmp(className,"cim_indicationsubscription")==0)) {
       _SFCB_TRACE(1,("interopProvider for %s",className));
       _SFCB_RETURN(interOpProvInfoPtr);
-   }   
+   }*/   
    
    cls = className ? strdup(className) : NULL;
    while (cls != NULL) {
@@ -276,15 +276,21 @@ static int addProviders(long type, char *className, char *nameSpace,
    ip = lookupProvider(type,className,nameSpace,&st);
    if (ip == NULL) _SFCB_RETURN(st.rc);
 
-   if (ip->providerName && 
+   while(ip) {
+      if (ip->providerName && 
 #ifdef HAVE_OPTIMIZED_ENUMERATION
-       !optimized_provider_list_contains(providerList,ip)
+          !optimized_provider_list_contains(providerList,ip)
 #else
-       !providerList->ft->contains(providerList, ip)
+          !providerList->ft->contains(providerList, ip)
 #endif   
-       ) {
-      _SFCB_TRACE(1,("--- adding className: %s provider: %s",className,ip->providerName));
-      providerList->ft->add(providerList, ip);
+          ) {
+         _SFCB_TRACE(1,("--- adding className: %s provider: %s",className,ip->providerName));
+         providerList->ft->add(providerList, ip);
+      }
+      if(ip->type != INDICATION_PROVIDER) {
+         break;
+      }
+      ip = ip->nextInRegister;
    } 
       
    _SFCB_TRACE(1,("--- getting children")); 
@@ -1500,5 +1506,4 @@ static UtilList *_getAssocClassNames(const char *ns)
 
    _SFCB_RETURN(ul);
 }
-
 

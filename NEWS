@@ -9,6 +9,7 @@ Bugs fixed:
 - 1627910 Fixed basic authentication challenge
 - 1635811 Fixed HTTP adapter memory leaks
 - 1627778 Fixed "default" qualifiers are returned twice
+- 1379327 Fixed lifecycle indication provider registration faulty
 
 Changes in 1.2.0
 ================

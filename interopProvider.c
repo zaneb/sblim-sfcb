@@ -319,84 +319,6 @@ static int isa(const char *sns, const char *child, const char *parent)
 
 /* ------------------------------------------------------------------------- */
 
-/*CMPIStatus deactivateFilter(
-	const CMPIContext * ctx,
-	const char * ns,
-	const char * cn,
-	Filter * fi)
-{
-   CMPIObjectPath *path;
-   CMPIStatus st={CMPI_RC_OK,NULL};
-   IndicationReq sreq = BINREQ(OPS_DeactivateFilter, 6);
-   BinResponseHdr **resp=NULL;
-   BinRequestContext binCtx;
-   OperationHdr req = {OPS_IndicationLookup, 2};
-   char *principal=ctx->ft->getEntry(ctx,CMPIPrincipal,NULL).value.string->hdl;
-   int irc,err,cnt,i;
-   
-   _SFCB_ENTER(TRACE_INDPROVIDER, "deactivateFilter"); 
-   _SFCB_TRACE(4, ("class %s",cn));
-   
-   path = TrackedCMPIObjectPath(ns, cn, &st);
-   
-   sreq.principal = setCharsMsgSegment(principal);
-   sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.query = setCharsMsgSegment(fi->query);
-   sreq.language = setCharsMsgSegment(fi->lang);
-   sreq.type = setCharsMsgSegment(fi->type);
-   sreq.sns = setCharsMsgSegment(fi->sns);
-   sreq.filterId=fi;
-
-   req.nameSpace = setCharsMsgSegment(fi->sns);
-   req.className = setCharsMsgSegment((char*) cn);
-
-   memset(&binCtx,0,sizeof(BinRequestContext));
-   binCtx.oHdr = &req;
-   binCtx.bHdr = &sreq.hdr;
-   binCtx.bHdrSize = sizeof(sreq);
-   binCtx.chunkedMode=binCtx.xmlAs=0;
-
-   _SFCB_TRACE(1, ("--- getProviderContext for %s-%s",fi->sns,cn));
-
-   irc = getProviderContext(&binCtx, &req);
- 
-   if (irc == MSG_X_PROVIDER) {      
-      _SFCB_TRACE(1, ("--- Invoking Providers"));
-      resp = invokeProviders(&binCtx,&err,&cnt);
-      if (err == 0) {
-	setStatus(&st,0,NULL);
-      } else {
-	setStatus(&st,resp[err-1]->rc,NULL);
-	for (i=0; i<binCtx.pCount; i++) {
-	  if (resp[i]->rc == 0) {
-	    setStatus(&st,0,NULL);
-	    break;
-	  }
-	}
-      }
-      _SFCB_TRACE(1, ("--- Invoking Provider rc: %d",st.rc));
-   }
-   
-   else {  // this should not occur
-      if (irc==MSG_X_PROVIDER_NOT_FOUND) setStatus(&st,CMPI_RC_ERR_FAILED,
-         "No eligible indication provider found");
-      else {
-         char msg[512];
-         snprintf(msg,511,"Failing to find eligible indication provider. Rc: %d",irc);
-         setStatus(&st,CMPI_RC_ERR_FAILED,msg);
-      }   
-   }   
-   
-   if (resp) {
-      free(resp);
-      closeProviderContext(&binCtx);
-   }   
- 
-   _SFCB_RETURN(st);
-}*/
-
-/* ------------------------------------------------------------------------- */
-
 #define CREATE_INST 1
 #define DELETE_INST 2
 #define MODIFY_INST 3
@@ -809,7 +731,7 @@ CMPIStatus InteropProviderEnumInstanceNames(
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderEnumInstanceNames");
 
-   if (interOpNameSpace(ref,NULL) != 1) _SFCB_RETURN(st);
+   if (interOpNameSpace(ref,&st) != 1) _SFCB_RETURN(st);
    st=InternalProviderEnumInstanceNames(NULL, ctx, rslt, ref);
 
    _SFCB_RETURN(st);
@@ -1081,14 +1003,9 @@ CMPIStatus InteropProviderInvokeMethod(
 	CMPIArgs * out)
 { 
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   //char *ns=(char*)CMGetNameSpace(ref,NULL)->hdl;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderInvokeMethod");
    
-   /*if (strcasecmp(ns,"root/interop") && strcasecmp(ns,"root/pg_interop")) {
-      setStatus(&st,CMPI_RC_ERR_FAILED,"Object must reside in root/interop");
-      return st;
-   }*/
    if (interOpNameSpace(ref,&st)!=1) _SFCB_RETURN(st);
    
    _SFCB_TRACE(1,("--- Method: %s",methodName)); 
@@ -1190,6 +1107,10 @@ CMPIStatus InteropProviderAssociators(
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderAssociators");
+   
+   if (interOpNameSpace(cop,&st)!=1) _SFCB_RETURN(st);
+   st=InternalProviderAssociators(NULL, ctx, rslt, cop, assocClass,
+   			resultClass, role, resultRole, propertyList);   
    _SFCB_RETURN(st);
 }
 
@@ -1207,6 +1128,10 @@ CMPIStatus InteropProviderAssociatorNames(
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderAssociatorNames");
+
+   if (interOpNameSpace(cop,&st)!=1) _SFCB_RETURN(st);
+   st=InternalProviderAssociatorNames(NULL, ctx, rslt, cop, assocClass,
+   					resultClass, role, resultRole);
    _SFCB_RETURN(st);
 }
 
@@ -1223,6 +1148,7 @@ CMPIStatus InteropProviderReferences(
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderReferences");
+   InternalProviderReferences(NULL, ctx, rslt, cop, assocClass, role, propertyList);
    _SFCB_RETURN(st);
 }
 
@@ -1238,6 +1164,7 @@ CMPIStatus InteropProviderReferenceNames(
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderReferenceNames");
+   InternalProviderReferenceNames(NULL, ctx, rslt, cop, assocClass, role);
    _SFCB_RETURN(st);
 }
 

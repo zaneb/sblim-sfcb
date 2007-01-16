@@ -13,6 +13,7 @@ Bugs fixed:
 - 1635811 Fixed HTTP adapter memory leaks
 - 1627778 Fixed "default" qualifiers are returned twice
 - 1379327 Fixed lifecycle indication provider registration faulty
+- 1636805 Fixed ain does not work for indication subscriptions
 
 Changes in 1.2.0
 ================

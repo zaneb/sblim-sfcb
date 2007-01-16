@@ -1,5 +1,10 @@
 2007-01-16  Sven Schuetz
 
+	* interopProvider.c, internalProvider.h:
+	Fixed 1636805: ain does not work for indication subscriptions
+
+2007-01-16  Sven Schuetz
+
 	* internalProvider.h, interopProvider.c, objectImpl.c, providerDrv.c: 
 	Fixed 1217828: add indication SubscriptionState support
 

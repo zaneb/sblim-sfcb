@@ -171,6 +171,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokQualifier                 xtokQualifier;
    XtokQualifierDeclaration      xtokQualifierDeclaration;
    XtokQualifierDeclarationData  xtokQualifierDeclarationData;
+   XtokQualifiers                xtokQualifiers;
    
    XtokParamValue                xtokParamValue;  
    XtokParam                     xtokParam;
@@ -455,7 +456,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <intValue>                ZTOK_PROPERTYREFERENCE
 
 %type  <xtokPropertyData>        propertyData
-%type  <xtokPropertyData>        qualifierList
+%type  <xtokQualifiers>          qualifierList
 %type  <xtokProperty>            property
 
 %token <xtokParam>               XTOK_PARAM
@@ -2106,14 +2107,17 @@ scope
 property
     : XTOK_PROPERTY qualifierList propertyData ZTOK_PROPERTY
     {
+       $3.qualifiers=$2;
        $$.val=$3;
     }  
     | XTOK_PROPERTYREFERENCE qualifierList propertyData ZTOK_PROPERTYREFERENCE
     {
+       $3.qualifiers=$2;
        $$.val=$3;
     }
     | XTOK_PROPERTYARRAY qualifierList propertyData ZTOK_PROPERTYARRAY
     {
+       $3.qualifiers=$2;
        $$.val=$3;
     }
 ;
@@ -2121,10 +2125,12 @@ property
 qualifierList
     :
     {
+      $$.first = $$.last = NULL;
     }
     | qualifierList qualifier
     {
-       addQualifier(&(((ParserControl*)parm)->qualifiers),&$2);
+       addQualifier(&$1,&$2);
+       $$ = $1;
     }
 ;
 
@@ -2162,13 +2168,12 @@ propertyList
 qualifier
     : XTOK_QUALIFIER value ZTOK_QUALIFIER
     {
-//       printf("--- qualifier %s: %s\n",$1.name,$2.value);
        $$.value=$2.value;
     }
     | XTOK_QUALIFIER propertyList ZTOK_QUALIFIER
     {
-//       printf("--- qualifier %s: %s\n",$1.name,$2.value);
        $$.valueArray=$2.list;
+       $$.type |= CMPI_ARRAY;
     }
 ;
 
@@ -2372,7 +2377,7 @@ keyBindings
     {
        $$.next=1;
        $$.max=16;
-       $$.keyBindings=(XtokKeyBinding*)malloc(sizeof(XtokKeyBinding)*16);
+       $$.keyBindings=(XtokKeyBinding*)calloc(16,sizeof(XtokKeyBinding));
        $$.keyBindings[0].name=$1.name;
        $$.keyBindings[0].value=$1.value;
        $$.keyBindings[0].type=$1.type;

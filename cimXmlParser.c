@@ -1392,7 +1392,7 @@ RequestHdr scanCimXmlRequest(char *xmlData)
    return control.reqHdr;
 }
 
-static void freeInstanceName(XtokInstanceName *op);
+static void freeReference(XtokValueReference *op);
 
 static void freePropertyList(char **op)
 {
@@ -1406,6 +1406,29 @@ static void freeNameSpacePath(XtokNameSpacePath *op)
   if (op->nameSpacePath) {
     free(op->nameSpacePath);
   }
+}
+
+static void freeKeyBinding(XtokKeyBinding *op)
+{
+  if (strcmp(op->type,"ref")==0) {
+    freeReference(&op->ref);
+  }
+}
+
+static void freeKeyBindings(XtokKeyBindings *op)
+{
+   int i;  
+   if (op->keyBindings) {
+     for (i=0; i<op->next; i++) {
+       freeKeyBinding(op->keyBindings+i);
+     }
+     free(op->keyBindings);
+  }
+}
+
+static void freeInstanceName(XtokInstanceName *op)
+{
+  freeKeyBindings(&op->bindings);
 }
 
 static void freeLocalInstancePath(XtokLocalInstancePath *op)
@@ -1437,29 +1460,6 @@ static void freeReference(XtokValueReference *op)
   }
 }
 
-static void freeKeyBinding(XtokKeyBinding *op)
-{
-  if (strcmp(op->type,"ref")==0) {
-    freeReference(&op->ref);
-  }
-}
-
-static void freeKeyBindings(XtokKeyBindings *op)
-{
-  int i;
-  if (op->keyBindings) {
-    for (i=0; i<op->next; i++) {
-      freeKeyBinding(op->keyBindings+i);
-    }
-    free(op->keyBindings);
-  }
-}
-
-static void freeInstanceName(XtokInstanceName *op)
-{
-  freeKeyBindings(&op->bindings);
-}
-
 static void freeRefArray(XtokValueRefArray *op)
 {
   int i;
@@ -1484,7 +1484,7 @@ static void freeParamValue(XtokParamValue *op)
     freeRefArray(&op->valueRefArray);
   } else if (op->type & CMPI_ARRAY) {
     freeArray(&op->valueArray);
-  } else if (op->type & CMPI_ref) {
+  } else if ((op->type & CMPI_ref) == CMPI_ref) {
     freeReference(&op->valueRef);
   }
 }
@@ -1522,7 +1522,7 @@ static void freeProperty(XtokProperty *op)
 {
   if (op->valueType & CMPI_ARRAY) {    
     freeArray(&op->val.list.list);
-  } else if (op->valueType & CMPI_ref) {
+  } else if ((op->valueType & CMPI_ref) == CMPI_ref) {
     freeReference(&op->val.ref);
   }
   freeQualifiers(&op->val.qualifiers);

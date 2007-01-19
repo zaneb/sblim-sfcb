@@ -2,7 +2,7 @@
 /*
  * cimXmlParser.c
  *
- * (C) Copyright IBM Corp. 2005
+ *  © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -302,24 +302,57 @@ static char *getValue(XmlBuffer * xb, const char *v)
    return NULL;
 }
 
+static struct _xmlescape {
+  char * escaped;
+  char   unescaped;
+  int    len;
+} xmlEscapeTab[] = {
+    { "&apos;", '\'', 6 },
+    { "&quot;", '\"', 6 },
+    { "&amp;", '&', 5 },
+    { "&gt;", '>', 4 },
+    { "&lt;", '<', 4 },
+};
 
+static int xmlUnescape(char *buf, char *end)
+{
+  int i;
+  for (i=0; i < sizeof(xmlEscapeTab)/sizeof(struct _xmlescape);i++) {
+    if (end-buf >= xmlEscapeTab[i].len && 
+	strncmp(buf,xmlEscapeTab[i].escaped,xmlEscapeTab[i].len) == 0) {
+      *buf = xmlEscapeTab[i].unescaped;
+      memmove(buf+1,buf+xmlEscapeTab[i].len,end-buf-xmlEscapeTab[i].len+1);
+      return xmlEscapeTab[i].len-1;
+    }
+  }
+  return 0;
+}
 
 static char *getContent(XmlBuffer * xb)
 {
-   char *start = xb->cur,*end;
-   if (xb->eTagFound)
+   char *start = xb->cur,*end, *help;
+    if (xb->eTagFound)
       return NULL;
    for (; *xb->cur != '<' && xb->cur < xb->last; xb->cur++);
-   if (start == xb->cur) return "";
-//   memmove(start-2,start,xb->cur-start);
-   while (*start && *start<=' ') start++;
    xb->nulledChar = *(xb->cur);
    *(xb->cur) = 0;
+   /* skip leading blanks */
+   while (*start && *start<=' ') start++;
+   if (start == NULL) return "";
    end=xb->cur;
-   if (*(end-1)<=' ') {
-      end--;
-      while (*end && *end<=' ') *end--=0;
-   }   
+   /* strip trailing blanks */
+   while (*(end-1)<=' ') {
+     *(end-1) = 0;
+     end -= 1;
+   }
+   /* unescape */
+   help = start;
+   while (help < end) {
+     if (*help == '&') {
+       end -= xmlUnescape(help, end);
+     }
+     help += 1;
+   }
    return start;
 }
 

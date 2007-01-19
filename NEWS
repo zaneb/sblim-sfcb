@@ -3,6 +3,7 @@ Changes in 1.2.1
 
 New features:
 - 1217828 added indication SubscriptionState support
+- 1639670 Enabled classSchema2c to support cross-builds
 
 Bugs fixed:
 - 1620730 Fixed mismatch in C++ wrapper definition in cmpimacs.h

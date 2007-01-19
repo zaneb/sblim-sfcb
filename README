@@ -16,6 +16,9 @@ most of the functions required by CIM clients to manage such the system.
 Supported CIM operations include:
 
 	GetClass
+        ModifyClass
+        CreateClass
+        DeleteClass
 	EnumerateClasses
 	EnumerateClassNames
 	GetInstance
@@ -73,9 +76,6 @@ implemented, although probably at the expense of a larger footprint.
 sfcb does not support Property providers at this time. To summarize, the
 following CIM operations are *not* yet supported:
 
-        ModifyClass
-        CreateClass
-        DeleteClass
         GetProperty
         SetProperty
 
@@ -1043,14 +1043,16 @@ sfcClassProvider
 ----------------
 The default class provider: it loads all the classSchema file from the
 repository tree in memory. It's fast but can consume a lot of memory with
-larger schemas.
+larger schemas. At present it's the only class provider allowing to add,
+modify and delete classes while sfcb is running.
 
 sfcClassProviderGz
 ------------------
 The compressing and caching class provider: it only holds a last recently
 used classes in a cache and will reload classes from the filesystem repository
 as needed. It is also capable to handle classSchema files compressed via
-gzip. It requires libgz to operate.
+gzip. It requires libgz to operate. This provider doesn't support add,
+modify and delete.
 
 sfcClassProviderMem
 -------------------
@@ -1060,6 +1062,7 @@ In order to use it in a meaningful way it is necessary to produce C source
 files containing the schema information, add those to the set of sources
 for the class provider and rebuild it. The default implementation of 
 sfcClassProviderMem comes with a prebuilt root/interop namespace.
+This provider doesn't support add, modify and delete.
 
 Instructions for adding namespaces to sfcClassProviderMem
 ..........................................................
@@ -1107,6 +1110,22 @@ what to do.
 HINT: Before using sfcClassProviderMem you should verify that providers and
 schema work with the default class provider.
 
+Cross-Build Support for sfcClassProviderMem
+...........................................
+
+When cross-compiling sfcb for another platform the endianness, alignment
+and padding of the structures in the generated source file might not be
+correct. The option -X can be used to specify the cross-compilation target.
+Currently it is possible to produde compilable class schema files for
+big-endian 32-bit platforms on an i386 based host, by invoking classSchema.c
+like this:
+
+classSchema2c -X P32 /usr/local/var/lib/sfcb/registration/repository/root/xyz xyz \
+  > xyz_classSchema.c
+
+This has been tested for the following platforms:
+s390 (31-bit)
+ppc (32-bit)
 
 21. Authentication Support
 ==========================
@@ -1341,7 +1360,7 @@ and receive CIM client commands to sfcb and browse the hierarchy of CIM
 classes supported by its registered providers. Please see the 
 approriate home page for these clients for more information. In general,
 *any* CIM client that adheres to the CIMXML-over-http standard should work
-with sfcbd (except for the unsupported CIM operations mentioned in Section 2). 
+with sfcbd (except for the unsupported CIM operations mentioned in Section 1). 
 
 
 25. SLP Support

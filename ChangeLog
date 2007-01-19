@@ -1,5 +1,9 @@
 2007-01-19  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-119.boeblingen.de.ibm.com>
 
+	* classSchema2c.c, interop_classSchema2.c, README: 
+	Fixed 1639670: allow the generation of big-endian compilable schema
+	files on i386 build systems.
+
 	* cimXmlParser.c: 
 	Fixed 1638073: added unescaping code to the XML parser.
 

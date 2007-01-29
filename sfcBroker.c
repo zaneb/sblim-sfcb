@@ -2,7 +2,7 @@
 /*
  * sfcBroker.c
  *
- * (C) Copyright IBM Corp. 2005
+ * (C) Copyright IBM Corp. 2005-2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -27,6 +27,7 @@
 #include "utilft.h"
 #include "string.h"
 #include "cimXmlParser.h"
+//#include "brokerOs.c"
 
 #include <unistd.h>
 #include <errno.h>
@@ -51,6 +52,16 @@
 #include "cimslp.h"
 static int startSLP = 1;
 #endif
+
+//#define USE_THREADS
+
+// for use by thread in startHttpd, startDbpd
+struct adapterThreadParams {
+  int argc;
+  char* argv;
+  int sslMode;
+  int sfcPid;
+};
 
 extern void setExFlag(unsigned long f);
 extern char *parseTarget(const char *target);
@@ -103,6 +114,14 @@ typedef struct startedAdapter {
 
 StartedAdapter *lastStartedAdapter=NULL;
 
+typedef struct startedThreadAdapter {
+   struct startedThreadAdapter *next;
+   int stopped;
+   pthread_t tid;
+} StartedThreadAdapter;
+
+StartedThreadAdapter *lastStartedThreadAdapter=NULL;
+
 static void addStartedAdapter(int pid)
 {
    StartedAdapter *sa=(StartedAdapter*)malloc(sizeof(StartedAdapter));
@@ -136,6 +155,48 @@ static int stopNextAdapter()
          sa->stopped=1;
          kill(sa->pid,SIGUSR1);
          return sa->pid;
+      }   
+      sa=sa->next;
+   }
+   return 0;
+}
+
+// thread-based adapter functions
+
+static void addStartedThreadAdapter(pthread_t tid)
+{
+ 
+   StartedThreadAdapter *sa=(StartedThreadAdapter*)malloc(sizeof(StartedThreadAdapter));
+
+   sa->stopped=0;
+   sa->tid=tid;
+   sa->next=lastStartedThreadAdapter;
+   lastStartedThreadAdapter=sa;
+}
+
+static int testStartedThreadAdapter(pthread_t tid, int *left) 
+{
+   StartedThreadAdapter *sa=lastStartedThreadAdapter;
+   int stopped=0;
+   
+   *left=0;
+   while (sa) {
+     if (pthread_equal(sa->tid, tid)) stopped=sa->stopped=1;
+      if (sa->stopped==0) (*left)++;
+      sa=sa->next;
+   }
+   return stopped;
+}         
+
+static int stopNextThreadAdapter()
+{
+   StartedThreadAdapter *sa=lastStartedThreadAdapter;
+   
+   while (sa) {
+      if (sa->stopped==0) {
+         sa->stopped=1;
+         pthread_exit(sa->tid);
+         return sa->tid;
       }   
       sa=sa->next;
    }
@@ -229,6 +290,7 @@ static void startLocalConnectServer()
 
 static void handleSigquit(int sig)
 {
+
    pthread_t t;
    pthread_attr_t tattr;
    
@@ -243,6 +305,7 @@ static void handleSigquit(int sig)
 
 static void handleSigHup(int sig)
 {
+
   pthread_t t;
   pthread_attr_t tattr;
   
@@ -258,6 +321,7 @@ static void handleSigHup(int sig)
 
 static void handleSigChld(int sig)
 {
+
    const int oerrno = errno;
    pid_t pid;
    int status,left;
@@ -305,6 +369,7 @@ static void handleSigChld(int sig)
 #ifdef NEEDS_CLEANUP
 static void handleSigterm(int sig)
 {
+
    if (!terminating) {
       mlogf(M_ERROR,M_SHOW, "--- %s - %d exiting due to signal %d\n", processName, currentProc, sig);
       dumpTiming(currentProc);
@@ -329,8 +394,32 @@ static void handleSigAbort(int sig)
 }
 */
 
+void* startHttpThread(void* params) {
+  struct adapterThreadParams* p = (struct adapterThreadParams*)params;
+  currentProc=getpid();
+
+  httpDaemon(p->argc, p->argv, p->sslMode, p->sfcPid);
+  closeSocket(&sfcbSockets,cRcv,"startHttpd");
+  closeSocket(&resultSockets,cAll,"startHttpd");
+
+}
+
 static int startHttpd(int argc, char *argv[], int sslMode)
 {
+#ifdef USE_THREADS
+
+   int pid,sfcPid=currentProc;
+   struct adapterThreadParams htparams = {argc, argv, sslMode, sfcPid};
+   pthread_t httpThread;
+   pthread_create(&httpThread, NULL, &startHttpThread, &htparams);
+   //newThread(&startHttpThread, &htparams, 0);
+
+   pthread_yield();
+
+   addStartedThreadAdapter(httpThread);
+
+#else
+
    int pid,sfcPid=currentProc;
 
    pid= fork();
@@ -349,6 +438,7 @@ static int startHttpd(int argc, char *argv[], int sslMode)
       addStartedAdapter(pid);
       return 0;
    }
+#endif
    return 0;
 }
 

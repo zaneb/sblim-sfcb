@@ -1,3 +1,8 @@
+2007-01-26  Chris Buccella
+
+	* httpAdapter.c, sfcBroker.c
+	Added suport for threads on http connections
+
 2007-01-19  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-119.boeblingen.de.ibm.com>
 
 	* classSchema2c.c, interop_classSchema2.c, README: 

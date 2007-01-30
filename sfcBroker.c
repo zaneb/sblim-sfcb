@@ -161,6 +161,8 @@ static int stopNextAdapter()
    return 0;
 }
 
+
+#ifdef USE_THREADS
 // thread-based adapter functions
 
 static void addStartedThreadAdapter(pthread_t tid)
@@ -202,6 +204,7 @@ static int stopNextThreadAdapter()
    }
    return 0;
 }
+#endif
 
 static pthread_mutex_t sdMtx=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  sdCnd=PTHREAD_COND_INITIALIZER;
@@ -394,6 +397,8 @@ static void handleSigAbort(int sig)
 }
 */
 
+
+#ifdef USE_THREADS
 void* startHttpThread(void* params) {
   struct adapterThreadParams* p = (struct adapterThreadParams*)params;
   currentProc=getpid();
@@ -403,6 +408,7 @@ void* startHttpThread(void* params) {
   closeSocket(&resultSockets,cAll,"startHttpd");
 
 }
+#endif
 
 static int startHttpd(int argc, char *argv[], int sslMode)
 {

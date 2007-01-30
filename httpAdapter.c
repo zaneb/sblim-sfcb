@@ -876,6 +876,8 @@ static int doHttpRequest(CommHndl conn_fd)
    _SFCB_RETURN(0);
 }
 
+
+#ifdef USE_THREADS
 /**
  * from handleHttpRequest()
  *
@@ -974,6 +976,7 @@ void* processThreadFunc(void* params) {
 
 return;
 }
+#endif
 
 /**
  * called by httpDaemon

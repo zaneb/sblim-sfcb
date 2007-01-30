@@ -72,6 +72,37 @@ static int cpy2lower(char *in, char *out)
 }
 */
 
+
+static CMPIInstance *instifyBlob(void * blob) {
+	CMPIInstance *inst;
+	
+	if (blob==NULL) {
+		return NULL;
+	}   
+	else {
+		inst=relocateSerializedInstance(blob);
+		inst = inst->ft->clone(inst, NULL);	
+		memLinkInstance(inst);
+		free(blob);
+		return inst;
+	}	
+}
+
+static CMPIInstance* ipGetBlob(char *ns, char *cls, char *id, int *len) {
+	void *blob=getBlob(ns, cls, id, len);
+   	return instifyBlob(blob);
+}
+
+static CMPIInstance* ipGetFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl) {
+	void *blob=getFirst(bi, len, keyb, keybl);
+	return instifyBlob(blob);
+}
+
+static CMPIInstance* ipGetNext(BlobIndex *bi, int *len, char** keyb, size_t *keybl) {
+	void *blob=getNext(bi, len, keyb, keybl);
+	return instifyBlob(blob);	
+}
+
 const char **getKeyList(const CMPIObjectPath *cop)
 {
 	CMPIString * s;
@@ -176,7 +207,6 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    CMPIObjectPath *op;
    CMPIArray *ar;
    CMPIData rv;
-   void *dummy;
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderEnumInstanceNames");
    _SFCB_TRACE(1,("%s %s",nss,cns));
@@ -191,8 +221,7 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    
    for (i=0; cns; i++) {
       if ((bi=_getIndex(bnss,cns))!=NULL) {
-	if ((dummy = getFirst(bi,NULL,&kp,&ekl))) {
-	  free(dummy);
+	if (ipGetFirst(bi,NULL,&kp,&ekl)) {
 	  while(1) {
             strcpy(copKey,nss);
             strcat(copKey,":");
@@ -206,8 +235,7 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
 	      CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
 	      return st;
             }
-	    if (bi->next < bi->dSize && (dummy = getNext(bi,NULL,&kp,&ekl))) {
-	      free(dummy);
+	    if (bi->next < bi->dSize && ipGetNext(bi,NULL,&kp,&ekl)) {
 	      continue;
 	    }
 	    break;
@@ -239,7 +267,6 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
    char *cns=cn->ft->getCharPtr(cn,NULL);
    char *bnss=repositoryNs(nss);
    int len,i,ac=0;
-   void *blob;
    CMPIInstance *ci;
    CMPIArgs *in,*out;
    CMPIObjectPath *op;
@@ -266,14 +293,12 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
    for (i=0; cns; i++) {
        _SFCB_TRACE(1,("--- looking for %s",cns));
       if ((bi=_getIndex(bnss,cns))!=NULL) {
-	for (blob=getFirst(bi,&len,NULL,0); blob; blob=getNext(bi,&len,NULL,0)) {
-            ci=relocateSerializedInstance(blob);
+	for (ci=ipGetFirst(bi,&len,NULL,0); ci; ci=ipGetNext(bi,&len,NULL,0)) {
             if(properties) {
                ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
             }
             _SFCB_TRACE(1,("--- returning instance %p",ci));
             retFnc(rslt,ci);
-   //         CMReturnInstance(rslt, ci);
          }
       } 
       freeBlobIndex(&bi,1);
@@ -288,7 +313,6 @@ static void return2result(void *ret, CMPIInstance *ci)
 {
    CMPIResult * rslt=(CMPIResult*)ret; 
    CMReturnInstance(rslt, ci);
-   free((void*)ci);   
 }
 
 static void return2lst(void *ret, CMPIInstance *ci)
@@ -334,7 +358,6 @@ CMPIInstance *internalProviderGetInstance(const CMPIObjectPath * cop, CMPIStatus
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *key = normalizeObjectPath(cop);
    CMPIInstance *ci=NULL;
-   void *blob;
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
    char *bnss=repositoryNs(nss);
@@ -348,13 +371,12 @@ CMPIInstance *internalProviderGetInstance(const CMPIObjectPath * cop, CMPIStatus
       _SFCB_RETURN(NULL);
    }
 
-   blob=getBlob(bnss,cns,key,&len);
+   ci=ipGetBlob(bnss,cns,key,&len);
    
-   if (blob==NULL) {
+   if (ci==NULL) {
       _SFCB_TRACE(1,("--- Instance not found"));
       st.rc=CMPI_RC_ERR_NOT_FOUND;
    }   
-   else ci=relocateSerializedInstance(blob);
 
    *rc=st;
    _SFCB_RETURN(ci);
@@ -378,7 +400,6 @@ CMPIStatus InternalProviderGetInstance(CMPIInstanceMI * mi,
    
    if (st.rc==CMPI_RC_OK) {
       CMReturnInstance(rslt, ci);
-      free(ci);
    }
    
    _SFCB_RETURN(st);    

@@ -17,6 +17,7 @@ Bugs fixed:
 - 1379327 Fixed lifecycle indication provider registration faulty
 - 1636805 Fixed ain does not work for indication subscriptions
 - 1638073 Fixed missing unescape code in XML parser
+- 1644223 Fixed internalProdiver segfaults with a propertyFilter
 
 Changes in 1.2.0
 ================

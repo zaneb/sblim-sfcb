@@ -356,6 +356,13 @@ CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
 	      char *chars = (char *) ClObjectGetClString(hdr, (ClString *) & av[i + 1].value.chars);
 	      value.ref = getObjectPath(chars,&msg);	      
 	      arraySetElementNotTrackedAt((CMPIArray *) array, i, &value, CMPI_ref);
+	  } else if (av[i + 1].type == CMPI_instance) {
+	      CMPIValue value;
+              value.inst = (void *)ClObjectGetClObject(hdr, (ClString *) & av[i + 1].value.inst);
+              if(value.inst) {
+              	 relocateSerializedInstance(value.inst);
+              }
+              arraySetElementNotTrackedAt((CMPIArray *) array, i, &value, CMPI_instance);
 	  } else {
 	      arraySetElementNotTrackedAt((CMPIArray *) array, i, &av[i + 1].value,
 					  av[i + 1].type);

@@ -823,6 +823,31 @@ static int procValue(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
+static int procCdata(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {NULL}
+   };
+   XmlAttr attr[1];
+   
+   if (tagEquals(parm->xmb, "![CDATA[")) {
+      parm->xmb->cur[0] = '>';   	
+      char *v;
+      if (attrsOk(parm->xmb, elm, attr, "![CDATA[", ZTOK_CDATA)) {
+      	 
+      	 v=strstr(parm->xmb->cur, "]]>");
+      	 if(v) {
+      	 	v[0] = '<';
+      	 	v[1] = '/';
+      	 } else {
+      	 	return 0;
+      	 }
+         return XTOK_CDATA;
+      }
+   }
+   return 0;
+}
+
 static int procValueArray(YYSTYPE * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
@@ -1343,6 +1368,8 @@ static Tags tags[] = {
    {"METHOD", procMethod, ZTOK_METHOD},
    {"CLASS", procClass, ZTOK_CLASS},
    {"?xml", procXml, ZTOK_XML},
+   {"![CDATA[", procCdata, ZTOK_CDATA},
+   {"", procCdata, ZTOK_CDATA},      
 };
 
 int yylex(YYSTYPE * lvalp, ParserControl * parm)
@@ -1427,13 +1454,6 @@ RequestHdr scanCimXmlRequest(char *xmlData)
 
 static void freeReference(XtokValueReference *op);
 
-static void freePropertyList(char **op)
-{
-  if (op) {
-    free(op);
-  }
-}
-
 static void freeNameSpacePath(XtokNameSpacePath *op)
 {
   if (op->nameSpacePath) {
@@ -1504,9 +1524,26 @@ static void freeRefArray(XtokValueRefArray *op)
   }
 }
 
+static void freeInstance(XtokInstance *op);
+
+static void freeValue(XtokValue *op) {
+  if(op->type == typeValue_Instance && op->instance) {
+    freeInstance(op->instance);
+    free(op->instance);
+  }
+  /*else if(op->type == typeValue_Class && op->class) {
+    freeClass(op->class);
+    free(op->class);
+  }*/ 
+}
+
 static void freeArray(XtokValueArray *op)
 {
+  int i;
   if (op->values) {
+    for(i=0; i<op->next; i++) {
+      freeValue(op->values+i);
+    }
     free(op->values);
   }
 }
@@ -1519,6 +1556,9 @@ static void freeParamValue(XtokParamValue *op)
     freeArray(&op->valueArray);
   } else if ((op->type & CMPI_ref) == CMPI_ref) {
     freeReference(&op->valueRef);
+  } else if ((op->type & CMPI_instance) == CMPI_instance 
+             || (op->type & CMPI_class) == CMPI_class) {
+    freeValue(&op->value);
   }
 }
 
@@ -1551,12 +1591,18 @@ static void freeQualifiers(XtokQualifiers* op)
   }
 }
 
+static void freeInstance(XtokInstance *op);
+
 static void freeProperty(XtokProperty *op)
 {
   if (op->valueType & CMPI_ARRAY) {    
-    freeArray(&op->val.list.list);
+    freeArray(&op->val.list);
   } else if ((op->valueType & CMPI_ref) == CMPI_ref) {
     freeReference(&op->val.ref);
+  }
+  if(op->val.val.type==typeValue_Instance) {
+    freeInstance(op->val.val.instance);
+    free(op->val.val.instance);
   }
   freeQualifiers(&op->val.qualifiers);
 }
@@ -1619,7 +1665,7 @@ static void freeMethodCall(XtokMethodCall* op)
 
 static void freeGetClass(XtokGetClass* op)
 {
-  freePropertyList(op->propertyList);
+  freeArray(&op->propertyList);
 }
 
 static void freeCreateClass(XtokCreateClass* op)
@@ -1632,7 +1678,7 @@ static void freeCreateClass(XtokCreateClass* op)
 static void freeGetInstance(XtokGetInstance* op)
 {
   freeInstanceName(&op->instanceName);
-  freePropertyList(op->propertyList);
+  freeArray(&op->propertyList);
 }
 
 static void freeCreateInstance(XtokCreateInstance* op)
@@ -1644,7 +1690,7 @@ static void freeModifyInstance(XtokModifyInstance* op)
 {
   freeInstance(&op->namedInstance.instance);
   freeInstanceName(&op->namedInstance.path);
-  freePropertyList(op->propertyList);
+  freeArray(&op->propertyList);
 }
 
 static void freeDeleteInstance(XtokDeleteInstance* op)
@@ -1654,7 +1700,7 @@ static void freeDeleteInstance(XtokDeleteInstance* op)
 
 static void freeEnumInstances(XtokEnumInstances* op)
 {
-  freePropertyList(op->propertyList);
+  freeArray(&op->propertyList);
 }
 
 static void freeAssociatorNames(XtokAssociatorNames* op)
@@ -1670,13 +1716,13 @@ static void freeReferenceNames(XtokReferenceNames* op)
 static void freeAssociators(XtokAssociators* op)
 {
   freeInstanceName(&op->objectName);
-  freePropertyList(op->propertyList);
+  freeArray(&op->propertyList);
 }
 
 static void freeReferences(XtokReferences* op)
 {
   freeInstanceName(&op->objectName);
-  freePropertyList(op->propertyList);
+  freeArray(&op->propertyList);
 }
 
 static void freeSetQualifier(XtokSetQualifier* op)

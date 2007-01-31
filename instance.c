@@ -342,7 +342,8 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
       newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);
       for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
 	 data = __ift_getPropertyAt(instance, j, &name, &st);
-	 if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
+	 //if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
+	 if(__contained_list((char**)propertyList, name->hdl)) {
 	    newInstance->ft->setProperty(newInstance, name->hdl, &data.value, data.type);
 	 }
       }

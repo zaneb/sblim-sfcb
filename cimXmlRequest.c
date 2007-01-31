@@ -627,7 +627,7 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
-      sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
+      sreq->properties[i]=setCharsMsgSegment(req->propertyList.values[i].value);
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq->hdr;
@@ -761,12 +761,12 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    qs=&c->qualifiers;
    for (q=qs->first; q; q=q->next) {
-     if (q->value == NULL) {
+     if (q->value.value == NULL) {
        d.state=CMPI_nullValue;
        d.value.uint64=0;
      } else {
        d.state=CMPI_goodValue;
-       d.value=str2CMPIValue(q->type,q->value,NULL);
+       d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
      }
      d.type=q->type;
      ClClassAddQualifier(&cl->hdr, &cl->qualifiers, q->name, d);
@@ -776,12 +776,12 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    for (p=ps->first; p; p=p->next) {
       ClProperty *prop;
       int propId;
-      if (p->val.value == NULL) {
+      if (p->val.val.value == NULL) {
 	d.state=CMPI_nullValue;
 	d.value.uint64=0;
       } else {
 	d.state=CMPI_goodValue;
-	d.value=str2CMPIValue(p->valueType,p->val.value,&p->val.ref);
+	d.value=str2CMPIValue(p->valueType,p->val.val,&p->val.ref,req->op.nameSpace.data);
       }       
       d.type=p->valueType;
       propId=ClClassAddProperty(cl, p->name, d);
@@ -789,12 +789,12 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
       qs=&p->val.qualifiers;
       prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;
       for (q=qs->first; q; q=q->next) {
-	if (q->value == NULL) {
+	if (q->value.value == NULL) {
 	  d.state=CMPI_nullValue;
 	  d.value.uint64=0;
 	} else {
 	  d.state=CMPI_goodValue;
-	  d.value=str2CMPIValue(q->type,q->value,NULL);
+	  d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
 	}
 	d.type=q->type;
 	ClClassAddPropertyQualifier(&cl->hdr, prop, q->name, d);
@@ -812,12 +812,12 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
       
       qs=&m->qualifiers;
       for (q=qs->first; q; q=q->next) {
-	if (q->value == NULL) {
+	if (q->value.value == NULL) {
 	  d.state=CMPI_nullValue;
 	  d.value.uint64=0;
 	} else {
 	  d.state=CMPI_goodValue;
-	  d.value=str2CMPIValue(q->type,q->value,NULL);
+	  d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
 	}
 	d.type=q->type;
 	ClClassAddMethodQualifier(&cl->hdr, meth, q->name, d);
@@ -833,12 +833,12 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
          qs=&r->qualifiers;
          for (q=qs->first; q; q=q->next) {
-	   if (q->value == NULL) {
+	   if (q->value.value == NULL) {
 	     d.state=CMPI_nullValue;
 	     d.value.uint64=0;
 	   } else {
 	     d.state=CMPI_goodValue;
-	     d.value=str2CMPIValue(q->type,q->value,NULL);
+	     d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
 	   }
 	   d.type=q->type;
 	   ClClassAddMethParamQualifier(&cl->hdr, parm, q->name, d);
@@ -1049,7 +1049,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
-      sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
+      sreq->properties[i]=setCharsMsgSegment(req->propertyList.values[i].value);
 
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq->hdr;
@@ -1173,10 +1173,10 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    inst = TrackedCMPIInstance(path, NULL);
-               
+   
    for (p = req->instance.properties.first; p; p = p->next) {
-     if (p->val.value) {
-       val = str2CMPIValue(p->valueType, p->val.value, &p->val.ref);
+     if (p->val.val.value){
+       val = str2CMPIValue(p->valueType, p->val.val, &p->val.ref,req->op.nameSpace.data);       
        CMSetProperty(inst, p->name, &val, p->valueType);
      }
    }
@@ -1249,7 +1249,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->hdr.count=req->properties+3;
 
    for (i=0; i<req->properties; i++){
-      sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
+      sreq->properties[i]=setCharsMsgSegment(req->propertyList.values[i].value);
    }
    xci = &req->namedInstance.instance;
    xco = &req->namedInstance.path;
@@ -1266,8 +1266,8 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    inst = TrackedCMPIInstance(path, NULL);
    for (p = xci->properties.first; p; p = p->next) {
-     if (p->val.value) {
-       val = str2CMPIValue(p->valueType, p->val.value, &p->val.ref);
+     if (p->val.val.value) {
+       val = str2CMPIValue(p->valueType, p->val.val, &p->val.ref,req->op.nameSpace.data);
        CMSetProperty(inst, p->name, &val, p->valueType);
      }
    }
@@ -1394,7 +1394,7 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++) {
-      sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
+      sreq->properties[i]=setCharsMsgSegment(req->propertyList.values[i].value);
    }   
 
    binCtx.oHdr = (OperationHdr *) req;
@@ -1659,7 +1659,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
-      sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
+      sreq->properties[i]=setCharsMsgSegment(req->propertyList.values[i].value);
 
    req->op.className = req->op.assocClass;
 
@@ -1836,7 +1836,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
-      sreq->properties[i]=setCharsMsgSegment(req->propertyList[i]);
+      sreq->properties[i]=setCharsMsgSegment(req->propertyList.values[i].value);
 
    req->op.className = req->op.resultClass;
 
@@ -1929,7 +1929,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
       // this is a problem: - paramvalue without type
       if (p->type==0) p->type=CMPI_string;
       if (p->value.value) {
-	CMPIValue val = str2CMPIValue(p->type, p->value.value, &p->valueRef);
+	CMPIValue val = str2CMPIValue(p->type, p->value, &p->valueRef, req->op.nameSpace.data);
 	CMAddArg(in, p->name, &val, p->type);
       }
    }   
@@ -2186,7 +2186,7 @@ static RespSegments setQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
 	if(req->qualifierdeclaration.scope.indication) q->scope |= ClQual_S_Indication;
     q->arraySize = req->qualifierdeclaration.arraySize;
 
-	if (req->qualifierdeclaration.data.value) {//default value is set
+	if (req->qualifierdeclaration.data.value.value) {//default value is set
 		d.state=CMPI_goodValue;
 		d.type=q->type; //"specified" type
 		d.type|=req->qualifierdeclaration.data.type; //actual type
@@ -2198,7 +2198,7 @@ static RespSegments setQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
            		"ISARRAY attribute and default value conflict")));   			
 		
 		d.value=str2CMPIValue(d.type, req->qualifierdeclaration.data.value,
-			(XtokValueReference *)&req->qualifierdeclaration.data.valueArray);		
+			(XtokValueReference *)&req->qualifierdeclaration.data.valueArray, NULL);		
 		ClQualifierAddQualifier(&q->hdr, &q->qualifierData, req->qualifierdeclaration.name, d);		
      } else { //no default value - rely on ISARRAY attr, check if it's set
      	/*if(!req->qualifierdeclaration.isarrayIsSet)

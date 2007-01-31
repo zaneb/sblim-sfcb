@@ -257,14 +257,38 @@ static CMPIType guessType(char *val)
    return CMPI_string;
 }
 
-CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
+CMPIValue makeFromEmbeddedObject(XtokValue value, char *ns)
+{
+	XtokProperty *p = NULL;
+	CMPIValue val;
+	CMPIObjectPath *path;
+	
+	if(value.type == typeValue_Instance) {
+		CMPIInstance *inst;
+		XtokInstance *xtokInstance = value.instance;
+		path = TrackedCMPIObjectPath(ns, xtokInstance->className, NULL);
+		inst = TrackedCMPIInstance(path, NULL);
+		
+		for (p = xtokInstance->properties.first; p; p = p->next) {
+			if (p->val.val.value) {
+			val = str2CMPIValue(p->valueType, p->val.val, &p->val.ref, NULL);
+			CMSetProperty(inst, p->name, &val, p->valueType);
+			}
+		}
+		val.inst = inst;
+	} else if(value.type == typeValue_Class) {
+		//not yet supported
+	}
+	return val;
+}
+
+CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, char* ns)
 {
    CMPIValue value,*valp;
- //  char *val=p->value;
    CMPIType t;
 
    if (type==0) {
-      type=guessType(val);
+      type=guessType(val.value);
    }
 
    if (type & CMPI_ARRAY) {
@@ -280,13 +304,15 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
        t = type & ~CMPI_ARRAY;
      } else {
        /* the guess type can go wrong */
-       t = guessType(arr->values[0]);
+       if (max > 0) {
+          t = guessType(arr->values[0].value);
+       }
      }
      /* build an array by looping thru the elements */
      value.array = TrackedCMPIArray(max,t,NULL);
      if (value.array != NULL) {
        for (i=0; i<max; i++) {
-	 v = str2CMPIValue(t, arr->values[i], refarr->values+i);
+	 v = str2CMPIValue(t, arr->values[i], refarr->values+i,NULL);
 	 CMSetArrayElementAt(value.array, i, &v, t); 
        }
        return value;
@@ -295,52 +321,55 @@ CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref)
    
    switch (type) {
    case CMPI_char16:
-      value.char16 = *val;
+      value.char16 = *val.value;
       break;
    case CMPI_string:
-      value.string = sfcb_native_new_CMPIString(val, NULL);
+      value.string = sfcb_native_new_CMPIString(val.value, NULL);
       break;
    case CMPI_sint64:
-      sscanf(val, "%lld", &value.sint64);
+      sscanf(val.value, "%lld", &value.sint64);
       break;
    case CMPI_uint64:
-      sscanf(val, "%llu", &value.uint64);
+      sscanf(val.value, "%llu", &value.uint64);
       break;
    case CMPI_sint32:
-      sscanf(val, "%d", &value.sint32);
+      sscanf(val.value, "%d", &value.sint32);
       break;
    case CMPI_uint32:
-      sscanf(val, "%u", &value.uint32);
+      sscanf(val.value, "%u", &value.uint32);
       break;
    case CMPI_sint16:
-      sscanf(val, "%hd", &value.sint16);
+      sscanf(val.value, "%hd", &value.sint16);
       break;
    case CMPI_uint16:
-      sscanf(val, "%hu", &value.uint16);
+      sscanf(val.value, "%hu", &value.uint16);
       break;
    case CMPI_uint8:
-      sscanf(val, "%u", &value.uint32);
+      sscanf(val.value, "%u", &value.uint32);
       value.uint8 = value.uint32;
       break;
    case CMPI_sint8:
-      sscanf(val, "%d", &value.sint32);
+      sscanf(val.value, "%d", &value.sint32);
       value.sint8 = value.sint32;
       break;
    case CMPI_boolean:
-      value.boolean = strcasecmp(val, "false");
+      value.boolean = strcasecmp(val.value, "false");
       if (value.boolean) value.boolean = 1;
       break;
    case CMPI_real32:
-      sscanf(val, "%f", &value.real32);
+      sscanf(val.value, "%f", &value.real32);
       break;
    case CMPI_real64:
-      sscanf(val, "%lf", &value.real64);
+      sscanf(val.value, "%lf", &value.real64);
       break;
    case CMPI_dateTime:
-      value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(val, NULL);
+      value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(val.value, NULL);
       break;
    case CMPI_ref:
       valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t);
+      break;
+   case CMPI_instance:
+      value=makeFromEmbeddedObject(val, ns);
       break;
   default:
       mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value %d-%p\n", __FILE__, __LINE__, (int) type, val);
@@ -426,6 +455,12 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
             sp = (char *) sdf->hdl;
          }
          else sp = "";
+      }
+      else if(d.type == CMPI_instance) {
+         sb->ft->appendChars(sb, "<![CDATA[");
+         instance2xml(d.value.inst, sb, 0);
+         sb->ft->appendChars(sb, "]]>");
+         sp = "";    	
       }
       else {
          mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value2xml %d-%x\n", __FILE__, __LINE__,
@@ -545,7 +580,11 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
       sb->ft->appendChars(sb, (char *) name->hdl);
       if (param) sb->ft->appendChars(sb, "\" PARAMTYPE=\"");
       else sb->ft->appendChars(sb, "\" TYPE=\"");
-      sb->ft->appendChars(sb, dataType(data->type));
+      if(data->type & CMPI_instance || data->type & CMPI_class) {
+         sb->ft->appendChars(sb, "string");
+      } else {
+         sb->ft->appendChars(sb, dataType(data->type));
+      }
       sb->ft->appendChars(sb, "\">\n");
       if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
       if (data->state == 0) {
@@ -562,7 +601,6 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          }
          sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");
       }
-//      sb->ft->appendChars(sb, eTag);
    }
    
    else {
@@ -581,14 +619,9 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          if (inst && data->value.ref) {
 	   refValue2xml(data->value.ref,sb);
          }
-//         sb->ft->appendChars(sb, eTag);
       }
       
-      else if (*type == '%') {         
-         //const char *eo=ClGetStringData((CMPIInstance*)obj,data->value.dataPtr.length);
-         //char *sp;
-         //int freesp = 0;
-         
+      else if (*type == '%') {                  
          sb->ft->appendChars(sb, bTag);
          sb->ft->appendChars(sb, (char *) name->hdl);
          if (param) sb->ft->appendChars(sb, "\" PARAMTYPE=\"string\">\n");
@@ -597,15 +630,11 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
               "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
          if(data->value.inst) {
 	         sb->ft->appendChars(sb, "<VALUE>");
-	         //sp = XMLEscape((char*)eo);
-	         //if (sp) freesp = 1; 
 	         sb->ft->appendChars(sb, "<![CDATA[");
-	         //sb->ft->appendChars(sb, sp);
 	         instance2xml(data->value.inst, sb, 0);
 	         sb->ft->appendChars(sb, "]]>");
 	         sb->ft->appendChars(sb, "</VALUE>\n");
          }
-         //if (freesp) free(sp);
      }
       
       else {
@@ -617,7 +646,6 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (data->state == 0) value2xml(*data, sb, 1);
-//         sb->ft->appendChars(sb, eTag);
       }
    }
    sb->ft->appendChars(sb, eTag);

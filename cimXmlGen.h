@@ -38,7 +38,7 @@
 
 extern CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
                               CMPIValue * val, CMPIType * typ);
-extern CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref);
+extern CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, char *ns);
 extern int value2xml(CMPIData d, UtilStringBuffer * sb, int wv);
 extern int instanceName2xml(CMPIObjectPath * cop, UtilStringBuffer * sb);
 extern int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags);

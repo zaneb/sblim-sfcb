@@ -46,6 +46,12 @@ typedef enum typeValRef {
    typeValRef_LocalInstancePath
 } TypeValRef;
 
+typedef enum typeValue {
+   typeValue_Instance,
+   typeValue_Class,
+   typeValue_charP
+} TypeValue;
+
 typedef enum typeProperty {
    typeProperty_Missing,
    typeProperty_Value,
@@ -101,13 +107,22 @@ typedef struct xtokMessage {
    char *id;
 } XtokMessage;
 
+
+struct xtokInstance;
+struct xtokClass;
+
 typedef struct xtokValue {
-   char *value;
+   union {
+      char *value;
+      struct xtokInstance *instance;
+      struct xtokClass *class;
+   };
+   TypeValue type;
 } XtokValue;
 
 typedef struct xtokValueArray {
    int max,next;
-   char **values;
+   XtokValue *values;
 } XtokValueArray;
 
 typedef struct xtokHost {
@@ -182,7 +197,7 @@ typedef struct xtokScope {
 typedef struct xtokQualifierDeclarationData {
    CMPIType type;   
    union {
-     char *value;
+     XtokValue value;
      XtokValueArray valueArray;
    };   
 } XtokQualifierDeclarationData;
@@ -201,7 +216,7 @@ typedef struct xtokQualifier {
    char *name;
    CMPIType type;
    union {
-     char *value;
+     XtokValue value;
      XtokValueArray valueArray;
    };
    char propagated, overridable, tosubclass, toinstance, translatable;
@@ -211,37 +226,23 @@ typedef struct xtokQualifiers {
    XtokQualifier *last, *first; // must be free'd
 } XtokQualifiers;
 
-
-typedef struct xtokPropertyList {
-   XtokValueArray list;
-} XtokPropertyList;
-
 typedef struct xtokPropertyData {
    union {
-      char *value;
+      XtokValue val;
       XtokValueReference ref;
-      struct xtokPropertyList list;
-   };   
+      XtokValueArray list;
+   };
    XtokQualifiers qualifiers;
 } XtokPropertyData;
 
 typedef struct xtokProperty {
    struct xtokProperty *next;
- //  XtokQualifiers qualifiers;
    char *name;
    char *classOrigin;
    char propagated;
    char *referenceClass;
    CMPIType valueType;
-   XtokPropertyData val;
-/*   union {
-      struct {
-         char *value;
-      };
-      struct {
-         XtokValueReference ref;
-      };
-   }; */      
+   XtokPropertyData val; 
    TypeProperty propType;
 } XtokProperty;
 
@@ -362,7 +363,7 @@ typedef struct xtokGetClassParmsList {
    unsigned int flagsSet;
    char *className;
    int clsNameSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokGetClassParmsList;
 
 typedef struct xtokGetClassParms {
@@ -370,14 +371,14 @@ typedef struct xtokGetClassParms {
    unsigned int flagsSet;
    char *className;
    int clsNameSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokGetClassParms;
 
 typedef struct xtokGetClass {
    OperationHdr op;
    unsigned int flags;
    int clsNameSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokGetClass;
 
 
@@ -434,7 +435,7 @@ typedef struct xtokGetInstanceParmsList {
    unsigned int flagsSet;
    XtokInstanceName instanceName;
    int instNameSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokGetInstanceParmsList;
 
 typedef struct xtokGetInstanceParms {
@@ -442,7 +443,7 @@ typedef struct xtokGetInstanceParms {
    unsigned int flagsSet;
    XtokInstanceName instanceName;
    int instNameSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokGetInstanceParms;
 
 typedef struct xtokGetInstance {
@@ -450,7 +451,7 @@ typedef struct xtokGetInstance {
    XtokInstanceName instanceName;
    unsigned int flags;
    int instNameSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokGetInstance;
 
 
@@ -494,7 +495,7 @@ typedef struct xtokModifyInstanceParmsList {
    unsigned int flagsSet;
    XtokNamedInstance namedInstance;
    int namedInstSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokModifyInstanceParmsList;
 
 typedef struct xtokModifyInstanceParms {
@@ -502,7 +503,7 @@ typedef struct xtokModifyInstanceParms {
    unsigned int flagsSet;
    XtokNamedInstance namedInstance;
    int namedInstSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokModifyInstanceParms;
 
 typedef struct xtokModifyInstance {
@@ -511,7 +512,7 @@ typedef struct xtokModifyInstance {
    unsigned int flags;
    char *className;
    int namedInstSet,properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokModifyInstance;
 
 
@@ -562,7 +563,7 @@ typedef struct xtokEnumInstancesParmsList {
    unsigned int flagsSet;
    char *className;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokEnumInstancesParmsList;
 
 typedef struct xtokEnumInstancesParms {
@@ -570,14 +571,14 @@ typedef struct xtokEnumInstancesParms {
    unsigned int flagsSet;
    char *className;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokEnumInstancesParms;
 
 typedef struct xtokEnumInstances {
    OperationHdr op;
    unsigned int flags;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokEnumInstances;
 
 
@@ -640,7 +641,7 @@ typedef struct xtokAssociatorsParmsList {
    XtokInstanceName objectName;
    char *assocClass, *resultClass, *role, *resultRole;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokAssociatorsParmsList;
 
 typedef struct xtokAssociatorsParms {
@@ -650,7 +651,7 @@ typedef struct xtokAssociatorsParms {
    XtokInstanceName objectName;
    char *assocClass, *resultClass, *role, *resultRole;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokAssociatorsParms;
 
 typedef struct xtokAssociators {
@@ -659,7 +660,7 @@ typedef struct xtokAssociators {
    unsigned int flags;
    int objNameSet;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokAssociators;
 
 
@@ -675,7 +676,7 @@ typedef struct xtokReferencesParmsList {
    XtokInstanceName objectName;
    char *resultClass, *role;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokReferencesParmsList;
 
 typedef struct xtokReferencesParms {
@@ -685,7 +686,7 @@ typedef struct xtokReferencesParms {
    XtokInstanceName objectName;
    char *resultClass, *role;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokReferencesParms;
 
 typedef struct xtokReferences {
@@ -694,7 +695,7 @@ typedef struct xtokReferences {
    unsigned int flags;
    int objNameSet;
    int properties;
-   char **propertyList;
+   XtokValueArray propertyList;
 } XtokReferences;
 
 /*

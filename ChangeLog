@@ -1,3 +1,9 @@
+2007-01-31  Sven Schuetz
+
+	* cimXmlRequest.c, cimXmlOps.y, objectImpl.c, instance.c, cimXmlGen.h,
+	cimXmlParser.h, cimXmlGen.c, array.c, cimXmlParser.c:
+	Fixed 1637947: embedded Objects as method args
+
 2007-01-30  Sven Schuetz
 
 	* internalProvider.c:

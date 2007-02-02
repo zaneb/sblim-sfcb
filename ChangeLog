@@ -1,3 +1,9 @@
+2007-02-02  Sven Schuetz
+
+	* cimXmlOps.y:
+	Added some comsmetic changes to the way paramvalues are handled
+	in the parser, addition to 1637947
+
 2007-01-31  Sven Schuetz
 
 	* cimXmlRequest.c, cimXmlOps.y, objectImpl.c, instance.c, cimXmlGen.h,

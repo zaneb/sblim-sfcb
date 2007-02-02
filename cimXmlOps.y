@@ -172,7 +172,8 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokQualifierDeclaration      xtokQualifierDeclaration;
    XtokQualifierDeclarationData  xtokQualifierDeclarationData;
    XtokQualifiers                xtokQualifiers;
-   
+
+   XtokParamValues               xtokParamValues;
    XtokParamValue                xtokParamValue;
    XtokParam                     xtokParam;
    XtokMethodCall                xtokMethodCall;
@@ -486,6 +487,7 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %type  <xtokInstance>            instance
 %type  <xtokInstanceData>        instanceData
 
+%type  <xtokParamValues>         paramValues
 %type  <xtokParamValue>          paramValue
 %token <xtokParamValue>          XTOK_PARAMVALUE
 %token <intValue>                ZTOK_PARAMVALUE
@@ -615,7 +617,8 @@ methodCall
        $$.op.nameSpace=setCharsMsgSegment($1.path);
        $$.op.className=setCharsMsgSegment($1.className);
        $$.instName=0;
-       $$.paramValues=((ParserControl*)parm)->paramValues;
+       $$.paramValues.first=NULL;
+       $$.paramValues.last=NULL;
        
        setRequest(parm,&$$,sizeof(XtokMethodCall),OPS_InvokeMethod);
     }   
@@ -626,7 +629,7 @@ methodCall
        $$.op.nameSpace=setCharsMsgSegment($1.path);
        $$.op.className=setCharsMsgSegment($1.className);
        $$.instName=0;
-       $$.paramValues=((ParserControl*)parm)->paramValues;
+       $$.paramValues=$2;
        
        setRequest(parm,&$$,sizeof(XtokMethodCall),OPS_InvokeMethod);
     }   
@@ -638,7 +641,8 @@ methodCall
        $$.op.className=setCharsMsgSegment($1.instanceName.className);
        $$.instanceName=$1.instanceName;
        $$.instName=1;
-       $$.paramValues=((ParserControl*)parm)->paramValues;
+       $$.paramValues.first=NULL;
+       $$.paramValues.last=NULL;
        
        setRequest(parm,&$$,sizeof(XtokMethodCall),OPS_InvokeMethod);
     }   
@@ -650,59 +654,61 @@ methodCall
        $$.op.className=setCharsMsgSegment($1.instanceName.className);
        $$.instanceName=$1.instanceName;
        $$.instName=1;
-       $$.paramValues=((ParserControl*)parm)->paramValues;
-       
+       $$.paramValues=$2;
+              
        setRequest(parm,&$$,sizeof(XtokMethodCall),OPS_InvokeMethod);
     }   
 ;    
 
 paramValues
     : paramValue
+    {
+      $$.first = NULL;
+      $$.last = NULL;
+      addParamValue(&$$,&$1);
+    }
     | paramValues paramValue
+    {
+      addParamValue(&$$,&$2);
+    }
 ;
 
 paramValue
     : XTOK_PARAMVALUE ZTOK_PARAMVALUE
     {
        $1.value.value=NULL;
-       addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
     | XTOK_PARAMVALUE value ZTOK_PARAMVALUE
     {
-       $1.value=$2;
-       if($1.value.type == typeValue_Instance) {
-          $1.type = CMPI_instance;
+       $$.value=$2;
+       if($$.value.type == typeValue_Instance) {
+          $$.type = CMPI_instance;
        } else 
-       if($1.value.type == typeValue_Class) {
-          $1.type = CMPI_class;
+       if($$.value.type == typeValue_Class) {
+          $$.type = CMPI_class;
        }
-       addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
     | XTOK_PARAMVALUE valueArray ZTOK_PARAMVALUE
     {
-       $1.valueArray=$2;
-       $1.type|=CMPI_ARRAY;
+       $$.valueArray=$2;
+       $$.type|=CMPI_ARRAY;
        
-       if($1.valueArray.values) {
-          if($1.valueArray.values[0].type == typeValue_Instance)
-          	$1.type = CMPI_instance | CMPI_ARRAY;
-          else if($1.valueArray.values[0].type == typeValue_Class)
-          	$1.type = CMPI_class | CMPI_ARRAY;          	
-       }       
-       
-       addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
+       if($$.valueArray.values) {
+          if($$.valueArray.values[0].type == typeValue_Instance)
+          	$$.type = CMPI_instance | CMPI_ARRAY;
+          else if($$.valueArray.values[0].type == typeValue_Class)
+          	$$.type = CMPI_class | CMPI_ARRAY;          	
+       }
     }   
     | XTOK_PARAMVALUE valueReference ZTOK_PARAMVALUE
     {
        $1.valueRef=$2;
        $1.type=CMPI_ref;
-       addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
     | XTOK_PARAMVALUE valueRefArray ZTOK_PARAMVALUE
     {
        $1.valueRefArray=$2;
        $1.type=CMPI_ARRAY | CMPI_ref;
-       addParamValue(&(((ParserControl*)parm)->paramValues),&$1);
     }   
 ;
 

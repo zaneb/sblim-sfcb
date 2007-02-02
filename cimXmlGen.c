@@ -626,8 +626,6 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, (char *) name->hdl);
          if (param) sb->ft->appendChars(sb, "\" PARAMTYPE=\"string\">\n");
          else sb->ft->appendChars(sb, "\" TYPE=\"string\">\n");
-         sb->ft->appendChars(sb,"<QUALIFIER NAME=\"EmbeddedObject\" TYPE=\"boolean\">\n"
-              "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
          if(data->value.inst) {
 	         sb->ft->appendChars(sb, "<VALUE>");
 	         sb->ft->appendChars(sb, "<![CDATA[");

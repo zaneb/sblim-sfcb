@@ -1388,11 +1388,15 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    }
 //   memInit();
     currentProc=getpid();
+
+/* don't want these if we're using threads */
+#ifndef USE_THREADS
     setSignal(SIGCHLD, handleSigChld,0);
     setSignal(SIGUSR1, handleSigUsr1,0);
     setSignal(SIGINT, SIG_IGN,0);
     setSignal(SIGTERM, SIG_IGN,0);
     setSignal(SIGHUP, SIG_IGN,0);
+#endif
 
     commInit();
 

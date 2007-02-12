@@ -225,8 +225,9 @@ ProviderRegister *newProviderRegister(char *fn)
       	 addProviderToHT(info, bb->ht);
       }
    }
-
-   fclose(in);
+   if (in) {
+     fclose(in);
+   }
    
    if (classProvInfoPtr==NULL) {
       mlogf(M_ERROR,M_SHOW,"--- Class provider definition not found - sfcbd will terminate\n");

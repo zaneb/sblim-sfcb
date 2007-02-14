@@ -312,7 +312,7 @@ static struct native_array *__new_empty_array(int mm_add,
    tArray->data = (struct native_array_item *)
       malloc ( tArray->max * sizeof ( struct native_array_item ) );
 
-   __make_NULL(tArray, 0, size - 1, 0);
+   __make_NULL(tArray, 0, tArray->max - 1, 0);
 
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    return (struct native_array*)tArray;

@@ -271,8 +271,131 @@ static void cpyResponse(BinResponseHdr *resp, CMPIArray *ar, int *c, CMPIType ty
    }
 }   
 
+/*
+ *  Operations requests handler for generic enumeration calls
+ *  should apply to enumInstances/InstanceNames
+ *                  emunClasses/ClassNames
+ *                  associators/associatorNames
+ *                  references/referenceNames 
+ */
 
+static CMPIEnumeration *genericEnumRequest(const CMPIBroker * broker,
+                                      const CMPIContext * context,
+                                      const CMPIObjectPath * cop,
+                                      const char **props,
+                                      const char *assocclass,
+                                      const char *resultclass,
+                                      const char *role,
+                                      const char *resultrole,                                      
+                                      const int optype,
+                                      BinRequestHdr *bhdr,
+                                      OperationHdr *oHdr,
+                                      int sreqSize,
+                                      const int retType,
+                                      CMPIStatus * rc)
+{
+   BinRequestContext binCtx;
+   
+   CMPIStatus st = { CMPI_RC_OK, NULL },rci = {CMPI_RC_OK, NULL};
+   CMPIEnumeration *enm = NULL;
+   CMPIArray *ar = NULL;
+   CMPIData data;
+   BinRequestHdr *bhdrTmp=NULL;
+   int irc, c, i=-1;
 
+   _SFCB_ENTER(TRACE_UPCALLS, "genericEnumRequest");
+   
+   if (cop && cop->hdl) {
+   
+      lockUpCall(broker);
+      
+      if(props) {
+      	 while(props[++i]);
+      	 bhdrTmp=calloc(1,sreqSize+i*sizeof(MsgSegment));
+      	 memcpy(bhdrTmp, bhdr, sreqSize);
+      	 bhdr=bhdrTmp;
+      	 sreqSize+=i*sizeof(MsgSegment);
+      	 i=-1;
+      	 while(props[++i]) {
+      	    bhdr->object[i+2] = setCharsMsgSegment(props[i]);
+      	 }
+      	 bhdr->count+=i;      	 
+      }
+      setContext(&binCtx, oHdr, bhdr, sreqSize, context, cop);
+
+      data = context->ft->getEntry(context, "rerouteToProvider", &st);
+      if(st.rc == CMPI_RC_OK) {
+      	  oHdr->className = setCharsMsgSegment(data.value.string->hdl);
+      }
+
+      irc = getProviderContext(&binCtx, oHdr);
+
+      if (irc == MSG_X_PROVIDER) {
+         BinResponseHdr *resp;
+         ProviderInfo *pInfo;
+         int local;
+         ar = TrackedCMPIArray(0, retType, NULL);
+         for (resp=NULL, c=0, i = 0; i < binCtx.pCount; i++,binCtx.pDone++) {
+            local=0;
+            binCtx.provA = binCtx.pAs[i];
+            for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
+               if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
+                  CMPIResult *result = native_new_CMPIResult(0,1,NULL);
+                  local=1;
+                  unlockUpCall(broker);
+		  if (pInfo->initialized == 0) {
+		    initProvider(pInfo,binCtx.bHdr->sessionId);
+		  }
+		  switch(optype) {
+		    case OPS_Associators:
+		      rci = pInfo->associationMI->ft->associators(pInfo->associationMI,
+		                      context, result, cop, assocclass,
+		                      resultclass, role, resultrole, props);
+		      break;
+		    case OPS_AssociatorNames:
+		      rci = pInfo->associationMI->ft->associatorNames(pInfo->associationMI,
+		                      context, result, cop, assocclass,
+		                      resultclass, role, resultrole);
+		      break;		      
+		    case OPS_EnumerateInstances:
+		      rci = pInfo->instanceMI->ft->enumInstances(pInfo->instanceMI,
+		                      context, result, cop, props);
+		      break;
+		    case OPS_EnumerateInstanceNames:
+		      rci = pInfo->instanceMI->ft->enumInstanceNames(pInfo->instanceMI,
+		                      context, result, cop);		                      
+		      break;
+		  }
+                  lockUpCall(broker);
+                  if (rci.rc == CMPI_RC_OK) cpyResult(result, ar, &c);  
+                  else st=rci; 
+                  break;
+               }
+            } 
+            if (local) continue;
+            resp = invokeProvider(&binCtx);
+            
+            resp->rc--;
+            rci.rc = resp->rc;
+            if (resp->rc == CMPI_RC_OK) cpyResponse(resp, ar, &c, retType);
+            else st=rci; 
+            free (resp);
+         }
+         closeProviderContext(&binCtx);
+         enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
+      }  
+      else st = setErrorStatus(irc);
+      
+      unlockUpCall(broker);
+   }
+   else st.rc = CMPI_RC_ERR_FAILED;
+
+   if(bhdrTmp) free(bhdrTmp);
+   if (rc) *rc = st;
+   
+   _SFCB_TRACE(1,("--- rc: %d",st.rc));
+   _SFCB_RETURN(enm);
+}
 
 //---------------------------------------------------
 //---
@@ -620,142 +743,25 @@ static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
                                       const CMPIObjectPath * cop,
                                       const char **props, CMPIStatus * rc)
 {
-   BinRequestContext binCtx;
    EnumInstancesReq sreq = BINREQ(OPS_EnumerateInstances, 2);
    OperationHdr oHdr = { OPS_EnumerateInstances, 2 };
-   CMPIStatus st = { CMPI_RC_OK, NULL },rci = {CMPI_RC_OK, NULL};
-   CMPIEnumeration *enm = NULL;
-   CMPIArray *ar = NULL;
-   int irc, c, i;
-
-   _SFCB_ENTER(TRACE_UPCALLS, "enumInstances");
    
-   if (cop && cop->hdl) {
-   
-      lockUpCall(broker);
-      
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), context, cop);
-
-      irc = getProviderContext(&binCtx, &oHdr);
-
-      if (irc == MSG_X_PROVIDER) {
-         BinResponseHdr *resp;
-         ProviderInfo *pInfo;
-         int local;
-         ar = TrackedCMPIArray(0, CMPI_instance, NULL);
-         for (resp=NULL, c=0, i = 0; i < binCtx.pCount; i++,binCtx.pDone++) {
-            local=0;
-            binCtx.provA = binCtx.pAs[i];
-            for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
-               if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
-                  CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-                  local=1;
-                  unlockUpCall(broker);
-		  if (pInfo->initialized == 0) {
-		    initProvider(pInfo,binCtx.bHdr->sessionId);
-		  }
-                  rci = pInfo->instanceMI->ft->enumInstances(
-                     pInfo->instanceMI, context, result, cop, props);
-                  lockUpCall(broker);
-                  if (rci.rc == CMPI_RC_OK) cpyResult(result, ar, &c);  
-                  else st=rci; 
-                  break;
-               }
-            } 
-            if (local) continue;  
-            
-            resp = invokeProvider(&binCtx);
-            
-            resp->rc--;
-            rci.rc = resp->rc;
-            if (resp->rc == CMPI_RC_OK) cpyResponse(resp, ar, &c, CMPI_instance);
-            else st=rci; 
-            free (resp);
-         }
-         closeProviderContext(&binCtx);
-         enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
-      }  
-      else st = setErrorStatus(irc);
-      
-      unlockUpCall(broker);
-   }
-   else st.rc = CMPI_RC_ERR_FAILED;
-
-   if (rc) *rc = st;
-   
-   _SFCB_TRACE(1,("--- rc: %d",st.rc));
-   _SFCB_RETURN(enm);
+   return genericEnumRequest(broker, context, cop, props, NULL, NULL, NULL,
+                             NULL, OPS_EnumerateInstances, &sreq.hdr, &oHdr,
+                             sizeof(sreq), CMPI_instance, rc);
 }
 
 static CMPIEnumeration *enumInstanceNames(const CMPIBroker * broker,
-                                          const CMPIContext * context,
-                                          const CMPIObjectPath * cop, CMPIStatus * rc)
+                                      const CMPIContext * context,
+                                      const CMPIObjectPath * cop, CMPIStatus * rc)
 {
-   BinRequestContext binCtx;
    EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, 2);
    OperationHdr oHdr = { OPS_EnumerateInstanceNames, 2 };
-   CMPIStatus st = { CMPI_RC_OK, NULL },rci;
-   CMPIEnumeration *enm = NULL;
-   CMPIArray *ar = NULL;
-   int irc, c, i;
-
-   _SFCB_ENTER(TRACE_UPCALLS, "enumInstanceNames");
    
-   if (cop && cop->hdl) {
-   
-      lockUpCall(broker);
-      
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), context, cop);
-
-      irc = getProviderContext(&binCtx, &oHdr);
-
-      if (irc == MSG_X_PROVIDER) {
-         BinResponseHdr *resp;
-         ProviderInfo *pInfo;
-         int local;
-         ar = TrackedCMPIArray(0, CMPI_ref, NULL);
-         for (resp=NULL, c=0, i = 0; i < binCtx.pCount; i++,binCtx.pDone++) {
-            local=0;
-            binCtx.provA = binCtx.pAs[i];
-            for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
-               if (pInfo->provIds.ids == binCtx.provA.ids.ids) {
-                  CMPIResult *result = native_new_CMPIResult(0,1,NULL);
-                  local=1;
-                  unlockUpCall(broker);
-		  if (pInfo->initialized == 0) {
-		    initProvider(pInfo,binCtx.bHdr->sessionId);
-		  }
-                  rci = pInfo->instanceMI->ft->enumInstanceNames(
-                     pInfo->instanceMI, context, result, cop);
-                  lockUpCall(broker);
-                  if (rci.rc == CMPI_RC_OK) cpyResult(result, ar, &c);  
-                  else st=rci; 
-                  break;
-               }
-            } 
-            if (local) continue;  
-            
-            resp = invokeProvider(&binCtx);
-            
-            resp->rc--;
-            rci.rc = resp->rc;
-            if (resp->rc == CMPI_RC_OK) cpyResponse(resp, ar, &c, CMPI_ref);
-            else st=rci; 
-            free (resp);
-         }
-         closeProviderContext(&binCtx);
-         enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
-      }   
-      else st = setErrorStatus(irc);
-      unlockUpCall(broker);
-   }
-   else st.rc = CMPI_RC_ERR_FAILED;
-
-   _SFCB_TRACE(1,("--- rc: %d",st.rc));
-   _SFCB_RETURN(enm);
+   return genericEnumRequest(broker, context, cop, NULL, NULL, NULL, NULL,
+                             NULL, OPS_EnumerateInstanceNames, &sreq.hdr, &oHdr,
+                             sizeof(sreq), CMPI_ref, rc);
 }
-
-
 
 //---------------------------------------------------
 //---
@@ -774,10 +780,18 @@ static CMPIEnumeration *associators(const CMPIBroker * broker,
                                     const char *resultrole, const char **props,
                                     CMPIStatus * rc)
 {
-   CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   if (rc)
-      *rc = rci;
-   return NULL;
+   AssociatorsReq sreq = BINREQ(OPS_Associators, 6);
+   OperationHdr oHdr = { OPS_Associators, 6 };
+   
+   sreq.resultClass = setCharsMsgSegment(resultclass);
+   sreq.role = setCharsMsgSegment(role);
+   sreq.assocClass = setCharsMsgSegment(assocclass);
+   sreq.resultRole = setCharsMsgSegment(resultrole);
+   
+   return genericEnumRequest(broker, context, cop, props, assocclass,
+                             resultclass, role, resultrole, OPS_Associators,
+                             &sreq.hdr, &oHdr, sizeof(sreq), CMPI_instance, rc);
+   
 }
 
 static CMPIEnumeration *associatorNames(const CMPIBroker * broker,
@@ -788,10 +802,17 @@ static CMPIEnumeration *associatorNames(const CMPIBroker * broker,
                                         const char *role,
                                         const char *resultrole, CMPIStatus * rc)
 {
-   CMPIStatus rci = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   if (rc)
-      *rc = rci;
-   return NULL;
+   AssociatorNamesReq sreq = BINREQ(OPS_AssociatorNames, 6);
+   OperationHdr oHdr = { OPS_AssociatorNames, 6 };
+   
+   sreq.resultClass = setCharsMsgSegment(resultclass);
+   sreq.role = setCharsMsgSegment(role);
+   sreq.assocClass = setCharsMsgSegment(assocclass);
+   sreq.resultRole = setCharsMsgSegment(resultrole);
+   
+   return genericEnumRequest(broker, context, cop, NULL, assocclass, resultclass,
+                             role, resultrole, OPS_AssociatorNames, &sreq.hdr, &oHdr,
+                             sizeof(sreq), CMPI_ref, rc);
 }
 
 static CMPIEnumeration *references(const CMPIBroker * broker,

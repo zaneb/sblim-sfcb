@@ -21,6 +21,7 @@ Bugs fixed:
 - 1644223 Fixed internalProdiver segfaults with a propertyFilter
 - 1650708 Fixed embeddedObject qualifier in wrong place
 - 1656317 Fixed segfault with non-existing providerRegister
+- 1652255 Restructured broker upcalls
 
 Changes in 1.2.0
 ================

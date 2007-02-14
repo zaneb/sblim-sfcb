@@ -98,6 +98,20 @@ static int interOpNameSpace(
    
 /* ------------------------------------------------------------------------- */
 
+static CMPIContext* prepareUpcall(CMPIContext *ctx)
+{
+    /* used to invoke the internal provider in upcalls, otherwise we will
+     * be routed here (interOpProvider) again*/
+    CMPIContext *ctxLocal;
+    ctxLocal = native_clone_CMPIContext(ctx);
+    CMPIValue val;
+    val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL);
+    ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
+    return ctxLocal;
+}
+
+/* ------------------------------------------------------------------------- */
+
 static Subscription *addSubscription(
 	const CMPIInstance * ci,
 	const char * key,
@@ -644,10 +658,11 @@ void initInterOp(
 	const CMPIContext *ctx)
 {
    CMPIObjectPath *op;
-   UtilList *ul;
+   CMPIEnumeration *enm;
    CMPIInstance *ci;
    CMPIStatus st;
    CMPIObjectPath *cop;
+   CMPIContext *ctxLocal;
    char *key,*query,*lng,*sns;
    QLStatement *qs=NULL;
    int rc;
@@ -658,11 +673,12 @@ void initInterOp(
     
    _SFCB_TRACE(1,("--- checking for cim_indicationfilter"));
    op=CMNewObjectPath(broker,"root/interop","cim_indicationfilter",&st);
-   ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,0);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->enumInstances(_broker, ctxLocal, op, NULL, &st);
+   CMRelease(ctxLocal);
    
-   if (ul) {
-      for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
-                  ci=(CMPIInstance*)ul->ft->getNext(ul)) {
+   if(enm) {
+      while(enm->ft->hasNext(enm, &st) && (ci=(enm->ft->getNext(enm, &st)).value.inst)) {
          cop=CMGetObjectPath(ci,&st);
          query=(char*)CMGetProperty(ci,"query",&st).value.string->hdl;
          lng=(char*)CMGetProperty(ci,"querylanguage",&st).value.string->hdl;
@@ -670,38 +686,35 @@ void initInterOp(
          qs=parseQuery(MEM_NOT_TRACKED,query,lng,sns,&rc);
          key=internalProviderNormalizeObjectPath(cop);
          addFilter(ci,key,qs,query,lng,sns);
-         free(ci);
       }
-      ul->ft->release(ul);
-   }   
+      CMRelease(enm);
+   }  
 
    _SFCB_TRACE(1,("--- checking for cim_listenerdestination"));
    op=CMNewObjectPath(broker,"root/interop","cim_listenerdestination",&st);
-   ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,1);
+   enm = _broker->bft->enumInstances(_broker, ctx, op, NULL, &st);
    
-   if (ul) { 
-      for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
-             ci=(CMPIInstance*) ul->ft->getNext(ul)) {
+   if(enm) {
+      while(enm->ft->hasNext(enm, &st) && (ci=(enm->ft->getNext(enm, &st)).value.inst)) {
          cop=CMGetObjectPath(ci,&st); 
          addHandler(ci,cop);
-         free(ci);
       }
-      ul->ft->release(ul);   
+      CMRelease(enm);
    } 
    _SFCB_TRACE(1,("--- checking for cim_indicationsubscription"));
    op=CMNewObjectPath(broker,"root/interop","cim_indicationsubscription",&st);
-   ul=SafeInternalProviderEnumInstances(NULL,ctx,op,NULL,&st,0);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->enumInstances(_broker, ctxLocal, op, NULL, &st);
+   CMRelease(ctxLocal);
    
-   if (ul) {
-      for (ci = (CMPIInstance*)ul->ft->getFirst(ul); ci;
-             ci=(CMPIInstance*)ul->ft->getNext(ul)) {
+   if(enm) {
+      while(enm->ft->hasNext(enm, &st) && (ci=(enm->ft->getNext(enm, &st)).value.inst)) {      
          CMPIObjectPath *hop;    
          cop=CMGetObjectPath(ci,&st);
          hop=CMGetKey(cop,"handler",NULL).value.ref;
          processSubscription(broker,ctx,ci,cop);
-         free(ci);
       }
-      ul->ft->release(ul);    
+      CMRelease(enm);   
    }
       
    _SFCB_EXIT(); 
@@ -729,12 +742,20 @@ CMPIStatus InteropProviderEnumInstanceNames(
 	const CMPIObjectPath * ref)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderEnumInstanceNames");
 
-   if (interOpNameSpace(ref,&st) != 1) _SFCB_RETURN(st);
-   st=InternalProviderEnumInstanceNames(NULL, ctx, rslt, ref);
-
-   _SFCB_RETURN(st);
+   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->enumInstanceNames(_broker, ctxLocal, ref, &st);
+   CMRelease(ctxLocal);
+                                      
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);   
+   }   
+   if(enm) CMRelease(enm);
+   _SFCB_RETURN(st);   
 }
 
 /* ------------------------------------------------------------------------- */
@@ -747,11 +768,19 @@ CMPIStatus InteropProviderEnumInstances(
 	const char ** properties)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderEnumInstances");
 
-//   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
-   st=InternalProviderEnumInstances(NULL, ctx, rslt, ref, properties);
-
+   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->enumInstances(_broker, ctxLocal, ref, properties, &st);
+   CMRelease(ctxLocal);
+                                      
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);   
+   }   
+   if(enm) CMRelease(enm);
    _SFCB_RETURN(st);
 }
 
@@ -923,7 +952,6 @@ CMPIStatus InteropProviderDeleteInstance(
    char *key = internalProviderNormalizeObjectPath(cop);
    Filter *fi;
    Subscription *su;
-   //char *ns = (char*)CMGetNameSpace(cop,NULL)->hdl;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderDeleteInstance");
    
@@ -1067,7 +1095,7 @@ CMPIStatus InteropProviderInvokeMethod(
    }
 
    else if (strcasecmp(methodName, "_startup") == 0) {
-      initInterOp(_broker,ctx);  
+      initInterOp(_broker,ctx);
    }
 
    else {
@@ -1106,11 +1134,24 @@ CMPIStatus InteropProviderAssociators(
 	const char ** propertyList)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;
+   
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderAssociators");
    
    if (interOpNameSpace(cop,&st)!=1) _SFCB_RETURN(st);
-   st=InternalProviderAssociators(NULL, ctx, rslt, cop, assocClass,
-   			resultClass, role, resultRole, propertyList);   
+
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->associators(_broker, ctxLocal, cop, assocClass, resultClass,
+                                   role, resultRole, propertyList, &st);
+   CMRelease(ctxLocal);
+                                   
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);   
+   }
+   
+   if(enm) CMRelease(enm);
+   
    _SFCB_RETURN(st);
 }
 
@@ -1127,11 +1168,23 @@ CMPIStatus InteropProviderAssociatorNames(
 	const char * resultRole)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;
+   
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderAssociatorNames");
 
    if (interOpNameSpace(cop,&st)!=1) _SFCB_RETURN(st);
-   st=InternalProviderAssociatorNames(NULL, ctx, rslt, cop, assocClass,
-   					resultClass, role, resultRole);
+
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->associatorNames(_broker, ctxLocal, cop, assocClass, resultClass,
+                                   role, resultRole, &st);
+   CMRelease(ctxLocal);
+                                   
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
+   }
+   
+   if(enm) CMRelease(enm);
    _SFCB_RETURN(st);
 }
 

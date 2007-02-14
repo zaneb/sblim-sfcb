@@ -1463,7 +1463,7 @@ static void freeNameSpacePath(XtokNameSpacePath *op)
 
 static void freeKeyBinding(XtokKeyBinding *op)
 {
-  if (strcmp(op->type,"ref")==0) {
+  if (op->type && strcmp(op->type,"ref")==0) {
     freeReference(&op->ref);
   }
 }

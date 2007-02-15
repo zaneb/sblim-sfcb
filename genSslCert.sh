@@ -1,38 +1,57 @@
-echo " Generating SSL certificates... "
-CN="Common Name"
-EMAIL="test@email.address"
+#!/bin/sh
+TARGETDIR=${1:-.}
 HOSTNAME=`uname -n`
-sed -e "s/$CN/$HOSTNAME/"  \
-    -e "s/$EMAIL/root@$HOSTNAME/" ssl.orig \
-    > ssl.cnf
-chmod 644 ssl.cnf
-chown bin ssl.cnf
-chgrp bin ssl.cnf
+DO_SERVER=yes
+DO_CLIENT=yes
 
-openssl req -x509 -days 365 -newkey rsa:2048 \
-   -nodes -config ssl.cnf   \
-   -keyout key.pem -out cert.pem
+trap "rm -f /var/tmp/key.pem /var/tmp/cert.pem /var/tmp/ssl.cnf" exit
 
-cat key.pem > file_2048.pem
-cat cert.pem > server_2048.pem
-cat cert.pem > client_2048.pem
-chmod 700 *.pem
+echo "Generating SSL certificates in $TARGETDIR"
 
-rm -f key.pem cert.pem
-
-if [ -f server.pem ]
+if [ -f $TARGETDIR/server.pem ]
 then
     echo "WARNING: server.pem SSL Certificate file already exists."
-else
-    cp server_2048.pem server.pem
-    cp file_2048.pem file.pem
-    chmod 400 server.pem file.pem
+    echo "         old file will be kept intact."
+    DO_SERVER=no
 fi
 
-if [ -f client.pem ]
+if [ -f $TARGETDIR/client.pem ]
 then
     echo "WARNING: client.pem SSL Certificate trust store already exists."
-else
-    cp client_2048.pem client.pem
-    chmod 400 client.pem
+    echo "         old file will be kept intact."
+    DO_CLIENT=no
+fi
+
+if [ $DO_SERVER = no -a $DO_CLIENT = no ]
+then
+    exit 0
+fi
+
+cat > /var/tmp/ssl.cnf <<EOF
+[req]
+distinguished_name=user_dn
+prompt=no
+
+[user_dn]
+CN=$HOSTNAME
+emailAddress=root@$HOSTNAME
+EOF
+
+openssl req -x509 -days 365 -newkey rsa:2048 \
+   -nodes -config /var/tmp/ssl.cnf   \
+   -keyout /var/tmp/key.pem -out /var/tmp/cert.pem
+
+chmod 700 /var/tmp/*.pem
+
+if [ $DO_SERVER = yes ]
+then
+    cp /var/tmp/cert.pem $TARGETDIR/server.pem
+    cp /var/tmp/key.pem $TARGETDIR/file.pem
+    chmod 400 $TARGETDIR/server.pem $TARGETDIR/file.pem
+fi
+
+if [ $DO_CLIENT = yes ]
+then
+    cp /var/tmp/cert.pem $TARGETDIR/client.pem
+    chmod 400 $TARGETDIR/client.pem
 fi

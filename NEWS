@@ -6,6 +6,7 @@ New features:
 - 1639670 Enabled classSchema2c to support cross-builds
 - 1643934 Incoming http connections can now be handled by a thread
 - 1637947 embedded instances supported as method args and properties
+- 1660634 Added PAM authentication and enhanced default configuration
 
 Bugs fixed:
 - 1620730 Fixed mismatch in C++ wrapper definition in cmpimacs.h

@@ -1,14 +1,16 @@
+# $Id$
+# Sample Configuration for Small Footprint CIM Broker
 httpPort:       5988
-enableHttp:     true
+enableHttp:     @SFCB_CONF_HTTP@
 httpProcs:      8
 httpsPort:      5989
-enableHttps:    false
+enableHttps:    @SFCB_CONF_HTTPS@
 httpsProcs:     8
 provProcs:      32
-doBasicAuth:    false
-basicAuthLib:   sfcBasicAuthentication
+doBasicAuth:    true
+basicAuthLib:   @SFCB_CONF_BASICAUTH@
 useChunking:    true
-keepaliveTimeout: 0
+keepaliveTimeout: 1
 keepaliveMaxRequest: 10
 sslKeyFilePath: @sysconfdir@/sfcb/file.pem
 sslCertificateFilePath: @sysconfdir@/sfcb/server.pem

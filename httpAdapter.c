@@ -2,7 +2,7 @@
 /*
  * httpAdapter.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -76,7 +76,7 @@ static long numRequest;
 
 #if defined USE_SSL
 static SSL_CTX *ctx;
-static X509    *x509;
+static X509    *x509 = NULL;
 #define CC_VERIFY_IGNORE  0
 #define CC_VERIFY_ACCEPT  1
 #define CC_VERIFY_REQUIRE 2
@@ -762,21 +762,20 @@ static int doHttpRequest(CommHndl conn_fd)
 
 #if defined USE_SSL
    if (doBa && sfcbSSLMode) {
-     if (x509) {
-       if (ccVerifyMode == CC_VERIFY_ACCEPT || 
-	   ccVerifyMode == CC_VERIFY_REQUIRE) {
+     if (ccVerifyMode != CC_VERIFY_IGNORE ) {
+       if (x509) {
 	 inBuf.certificate = x509;
 	 if (ccValidate(inBuf.certificate,&inBuf.principal,0)) {
 	   /* successful certificate validation overrides basic auth */
 	   doBa = 0;
 	 }
+       } else if (ccVerifyMode == CC_VERIFY_REQUIRE) {
+	 /* this should never happen ;-) famous last words */
+	 mlogf(M_ERROR,M_SHOW,
+	       "\n--- Client certificate not accessible - closing connection\n");
+	 commClose(conn_fd);
+	 exit(1);
        }
-     } else {
-       /* this should never happen ;-) famous last words */
-       mlogf(M_ERROR,M_SHOW,
-	     "\n--- Client certificate not accessible - closing connection\n");
-       commClose(conn_fd);
-       exit(1);
      }     
    }
 #endif
@@ -790,7 +789,7 @@ static int doHttpRequest(CommHndl conn_fd)
        discardInput=1;
      }
 #if defined USE_SSL
-     else if (sfcbSSLMode) {
+     else if (sfcbSSLMode && ccVerifyMode != CC_VERIFY_IGNORE) {
        /* associate certificate with principal for next request */
        ccValidate(inBuf.certificate,&inBuf.principal,1);
      }

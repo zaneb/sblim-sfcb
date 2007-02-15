@@ -2,7 +2,7 @@
 #
 #  Makefile.am
 # 
-#  (C) Copyright IBM Corp. 2005
+#   © Copyright IBM Corp. 2005, 2007
 # 
 #  THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
 #  ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -26,6 +26,7 @@ sfcbdatadir=$(datadir)/sfcb
 sfcbconfdir=$(sysconfdir)/sfcb
 sfcbstatedir=$(localstatedir)/lib/sfcb
 initdir=$(sysconfdir)/init.d
+pamdir=$(sysconfdir)/pam.d
 
 MANFILES=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
 	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 man/sfcbuuid.1 \
@@ -81,6 +82,12 @@ else
 JDBC_FILES =
 endif
 
+if PAM
+    PAM_LIBS = libsfcBasicPAMAuthentication.la 
+else
+    PAM_LIBS =
+endif
+
 lib_LTLIBRARIES = \
    libsfcUtil.la \
    libsfcBrokerCore.la \
@@ -99,7 +106,8 @@ lib_LTLIBRARIES = \
    libcimcClientSfcbLocal.la \
    $(QUALREP_LIBS) \
    $(SLP_LIBS) \
-   $(INDICATION_LIBS)
+   $(INDICATION_LIBS) \
+   $(PAM_LIBS)
 
 if SLP_ALONE
 SLP_PROGRAMFILES = cimslp
@@ -212,6 +220,12 @@ libsfcHttpAdapter_la_DEPENDENCIES=libsfcBrokerCore.la libsfcCimXmlCodec.la
 libsfcBasicAuthentication_la_SOURCES = \
    sfcBasicAuthentication.c
 
+if PAM
+libsfcBasicPAMAuthentication_la_SOURCES = \
+   sfcBasicPAMAuthentication.c
+libsfcBasicPAMAuthentication_la_LIBADD=-lpam
+endif
+
 libsfcCertificateAuthentication_la_SOURCES = \
    sfcCertificateAuthentication.c
 
@@ -311,8 +325,6 @@ EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcbunstage.sh.in sfcbuuid.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
 	sfcb.init-none.in cimXmlParser.c
 
-sfcbconf_DATA=sfcb.cfg
-
 dist_sfcbdata_SCRIPTS=genSslCert.sh getSchema.sh
 
 dist_sfcbdata_DATA=default.reg interop.mof indication.mof
@@ -324,6 +336,12 @@ dist_bin_SCRIPTS=wbemcat xmltest
 init_SCRIPTS=sfcb
 
 sfcbdoc_DATA=README AUTHORS COPYING
+
+sfcbconf_DATA=sfcb.cfg
+
+if PAM
+dist_pam_DATA=pam/sfcb
+endif
 
 SUFFIXES = .1 .1.pre
 
@@ -394,5 +412,10 @@ install-cimschema: getSchema.sh
 	test -d $(DESTDIR)$(sfcbdatadir) || $(mkdir_p) $(DESTDIR)$(sfcbdatadir)
 	sh getSchema.sh -f $(DESTDIR)$(sfcbdatadir)
 
-postinstall: install-cimschema
+create-sslkeys:
+if SSL
+	$(sfcbdatadir)/genSslCert.sh $(sfcbconfdir)
+endif
+
+postinstall: install-cimschema create-sslkeys
 	test -f $(DESTDIR)$(sfcbstatedir)/registration/providerRegister || $(INSTALL_DATA) $(DESTDIR)$(sfcbstatedir)/stage/default.reg $(DESTDIR)$(sfcbstatedir)/registration/providerRegister 

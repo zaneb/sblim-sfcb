@@ -11,24 +11,35 @@ Name: @PACKAGE_TARNAME@
 Version: @PACKAGE_VERSION@
 Release: 0
 Group: Systems Management/Base
-License: CPL
+License: EPL
 URL: http://www.sblim.org
-
 Source0: ftp://dl.sourceforge.net/pub/s/sb/sblim/%{name}-%{version}.tar.bz2
-
 Provides: cimserver
+BuildRequires: curl-devel
+BuildRequires: zlib-devel
+BuildRequires: openssl-devel
+Requires: curl
+Requires: zlib
+Requires: openssl
 
 %Description
-Small Footprint CIM Broker.
+Small Footprint CIM Broker (sfcb) is a CIM server conforming to the
+CIM Operations over HTTP protocol.
+It is robust, with low resource consumption and therefore specifically 
+suited for embedded and resource constrained environments.
+sfcb supports providers written against the Common Manageability
+Programming Interface (CMPI).
 
 %Package schema
 Summary: CIM Schema Files
-Copyright: (C) Distributed Management Task Force
+License: Distributed Management Task Force
 Group: Systems Management/Base
 Requires: %{name}
+URL: http://www.dmtf.org
 
 %Description schema
-DMTF CIM Schema files that can be used with the Small Footprint CIM Broker.
+Distributed Management Task Force (DMTF) Common Information Model (CIM)
+Schema files that can be used with the Small Footprint CIM Broker.
 
 %prep
 
@@ -39,7 +50,7 @@ export PATCH_GET=0
 
 %build
 
-%configure --enable-debug --disable-indications
+%configure --enable-debug --enable-ssl --enable-pam
 make
 
 %install
@@ -61,7 +72,8 @@ echo "%defattr(-,root,root)" > _pkg_list
 find $RPM_BUILD_ROOT/%{_datadir}/sfcb -type f | grep -v $RPM_BUILD_ROOT/%{_datadir}/sfcb/CIM >> _pkg_list
 sed s?$RPM_BUILD_ROOT??g _pkg_list > _pkg_list_2
 mv -f _pkg_list_2 _pkg_list
-echo "%config %{_sysconfdir}/sfcb" >> _pkg_list
+echo "%config %{_sysconfdir}/sfcb/*" >> _pkg_list
+echo "%config %{_sysconfdir}/pam.d/*" >> _pkg_list
 echo "%doc %{_datadir}/doc/*" >> _pkg_list
 echo "%doc %{_datadir}/man/man1/*" >> _pkg_list
 echo "%{_sysconfdir}/init.d/sfcb" >> _pkg_list
@@ -80,7 +92,10 @@ then
 	rm -rf $RPM_BUILD_ROOT 
 fi
 
-%post -p /sbin/ldconfig
+%post 
+%{_datadir}/sfcb/genSslCert.sh %{_sysconfdir}/sfcb
+/sbin/ldconfig
+exit 0
 
 %postun -p /sbin/ldconfig
 
@@ -95,6 +110,9 @@ exit 0
 %files -f _pkg_list
 
 %changelog
+
+* Fri Feb 09 2007  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com> - 1.2.1-0
+- Updated for 1.2.1 content, enabled SSL, indications
 
 * Wed Aug 31 2005  <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com> - 0.9.0b-0
 - Support for man pages added

@@ -1,3 +1,11 @@
+2007-02-15  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* Makefile.am, configure.ac, genSslCert.sh, httpAdapter.c, 
+	sfcCertificateAuthentication.c, sfcb.cfg.pre.in, sfcb.spec.in: 
+	Fixed 1660634: Added PAM authentication. Enhanced default configuration
+	to use HTTPS if SSL support is enabled. Enhanced the SSL key generation
+	script.
+
 2007-02-14  Sven Schuetz
 
 	* brokerUpc.c, array.c, interopProvider.c, cimXmlParser.c:

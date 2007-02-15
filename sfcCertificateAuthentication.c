@@ -2,7 +2,7 @@
 /*
  * sfcBasicAuthentication.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -63,17 +63,23 @@ int _sfcCertificateAuthenticate(X509 *cert, char ** principal, int mode)
   unsigned char  der_buf[MAX_CERTIFICATE];
   unsigned char *der_bufp = der_buf;
 
+#ifdef DEBUG
   fprintf(stderr, "_sfcCertificateAuthenticate: mode = %d\n",mode);
+#endif
   if (cert && principal) {
     der_buflen = i2d_X509(cert,&der_bufp);
     if (der_buflen > 0 && der_buflen <= MAX_CERTIFICATE && aquireSem()) {
+#ifdef DEBUG
       fprintf(stderr, "_sfcCertificateAuthenticate: cert len = %d\n",der_buflen);
+#endif
       for (i=0; i < CertStore->maxcert; i++) {
 	if (CertStore->certs[i].cert_length == der_buflen &&
 	    memcmp(CertStore->certs[i].cert_der,der_buf,der_buflen) == 0) {
 	  if (mode == 0) {
 	    *principal = CertStore->certs[i].cert_principal;
+#ifdef DEBUG
 	    fprintf(stderr, "_sfcCertificateAuthenticate: found cert\n");
+#endif
 	    return 1;
 	  } else {
 	    break;
@@ -86,13 +92,17 @@ int _sfcCertificateAuthenticate(X509 *cert, char ** principal, int mode)
 	memcpy(CertStore->certs[i].cert_der,der_buf,der_buflen);
 	strcpy(CertStore->certs[i].cert_principal,*principal);
 	CertStore->maxcert = i+1;
+#ifdef DEBUG
 	fprintf(stderr, "_sfcCertificateAuthenticate: inserted cert\n");
+#endif
 	return 1;
       }
     } 
     releaseSem();
   }
+#ifdef DEBUG
   fprintf(stderr, "_sfcCertificateAuthenticate: failed\n");
+#endif
   return 0;
 }
 
@@ -112,13 +122,17 @@ static int aquireSem()
     semkey = ftok(SFCB_BINARY,'C');
     semId = semget(semkey,1,IPC_CREAT|IPC_EXCL|0600);
     if (semId >= 0) {
+#ifdef DEBUG
       fprintf(stderr,"sem value %d = %d\n",semId,semctl(semId,0,GETVAL));
+#endif
       /* successfully created semaphore - must create shared memory now */
       memid = shmget(semkey,sizeof(CertStore_t),IPC_CREAT|IPC_EXCL|0600);
       if (memid < 0 || (CertStore=shmat(memid,NULL,0))==NULL) {
 	/* problem: got semaphore, won't get shared mem */
+#ifdef DEBUG
 	fprintf(stderr,"failed to allocate/attach shared memory 0: %s\n",
 		strerror(errno));
+#endif
 	semctl(semId,0,IPC_RMID);
 	semId = -1;
 	return 0;
@@ -131,20 +145,28 @@ static int aquireSem()
 	semop(semId,&sembVInitial,1);
       }
     } else {
+#ifdef DEBUG
       fprintf(stderr,"failed to aquire semaphore 0: %s(%d)\n",
 	      strerror(errno), semId);
+#endif
       semId = semget(semkey,1,0);
       if (semId < 0) {
+#ifdef DEBUG
 	fprintf(stderr,"failed to aquire semaphore 1: %s (%d)\n",
 		strerror(errno),semId);
+#endif
 	return 0;
       } else {
+#ifdef DEBUG
 	fprintf(stderr,"sem value %d = %d\n",semId,semctl(semId,0,GETVAL));
+#endif
 	memid = shmget(semkey,sizeof(CertStore_t),0);
 	if (memid < 0 || (CertStore=shmat(memid,NULL,0))==NULL) {
 	  /* problem: got semaphore, won't get shared mem */
+#ifdef DEBUG
 	  fprintf(stderr,"failed to allocate/attach shared memory 1: %s\n",
 		  strerror(errno));
+#endif
 	  semctl(semId,0,IPC_RMID);
 	  semId = -1;
 	  return 0;
@@ -153,10 +175,14 @@ static int aquireSem()
     }
   }
   
+#ifdef DEBUG
   fprintf(stderr,"aquire sem (%d)\n",semId);
+#endif
   if (semop(semId,&sembP,1)) {
+#ifdef DEBUG
     fprintf(stderr,"failed to aquire semaphore 2: %s (%d)\n",
 	    strerror(errno),semId);
+#endif
     return 0;
   }
   return 1;

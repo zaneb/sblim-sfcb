@@ -2,7 +2,7 @@
 # 
 # configure.ac
 #
-# (C) Copyright IBM Corp. 2005
+# © Copyright IBM Corp. 2005, 2007
 #
 # THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
 # ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -22,7 +22,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 1.2.0a, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 1.2.1, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE
@@ -72,6 +72,11 @@ AC_ARG_ENABLE(optimized-enumeration,
 	[AC_HELP_STRING([--enable-optimized-enumeration],
 		[Enable enumeration call optimization for polymorphic invocations.])],
 	)
+
+AC_ARG_ENABLE(pam,
+	[AC_HELP_STRING([--enable-pam],
+		[Enable PAM Basic authentication support for SFCB.])])
+
 
 # Size checks
 AC_CHECK_SIZEOF(void*)
@@ -137,6 +142,15 @@ if test "$enable_optimized_enumeration" == "yes"; then
    AC_DEFINE(HAVE_OPTIMIZED_ENUMERATION,1,[Enumeration optimization enabled.])
 fi
 
+if test "$enable_pam" == "yes"; then
+   AC_DEFINE(HAVE_PAM,,[PAM support enabled.])
+   SFCB_CONF_BASICAUTH=sfcBasicPAMAuthentication   
+else
+   SFCB_CONF_BASICAUTH=sfcBasicAuthentication   
+fi
+AC_SUBST(SFCB_CONF_BASICAUTH)
+
+
 AC_CANONICAL_HOST
 case $host_os in
      openedition*)	SFCB_CMPI_PLATFORM="-D CMPI_PLATFORM_LINUX_GENERIC_GNU"
@@ -157,7 +171,6 @@ case $host_os in
 			      ;;
 		esac
 		;;
-     **)	AC_MSG_ERROR([$ac_cv_host is not a supported platform, sorry.])
 esac
 
 
@@ -196,7 +209,14 @@ fi
 
 if test "$enable_ssl" = "yes"; then
    AC_CHECK_LIB(ssl,main)
+   SFCB_CONF_HTTPS=true
+   SFCB_CONF_HTTP=false
+else
+   SFCB_CONF_HTTPS=false	   
+   SFCB_CONF_HTTP=true
 fi
+AC_SUBST(SFCB_CONF_HTTPS)
+AC_SUBST(SFCB_CONF_HTTP)
 
 if test "$enable_slp"; then
 	#defined in acinclude.m4
@@ -224,7 +244,6 @@ AC_STRUCT_TM
 AC_FUNC_ALLOCA
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
-#AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
@@ -260,9 +279,11 @@ fi
 
 AM_CONDITIONAL(INDICATIONS,[test "$enable_indications" == "yes"]) 
 AM_CONDITIONAL(JDBC,[test "$enable_jdbc" == "yes"]) 
+AM_CONDITIONAL(SSL,[test "$enable_ssl" == "yes"]) 
 AM_CONDITIONAL(SLP,[test "$enable_slp" == "yes"]) 
 AM_CONDITIONAL(SLP_ALONE,[test "$enable_slp" == "standalone"]) 
 AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"]) 
+AM_CONDITIONAL(PAM,[test "$enable_pam" == "yes"]) 
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
@@ -283,4 +304,5 @@ echo -e "jdbc"\\t"${enable_jdbc:-no}"
 echo -e "slp"\\t"${enable_slp:-no}"
 echo -e "qualifierrep"\\t"${enable_qualifierrep:-no}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
+echo -e "PAM authentication"\\t"${enable_pam:-no}"
 echo ======================================================

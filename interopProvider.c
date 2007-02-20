@@ -333,10 +333,6 @@ static int isa(const char *sns, const char *child, const char *parent)
 
 /* ------------------------------------------------------------------------- */
 
-#define CREATE_INST 1
-#define DELETE_INST 2
-#define MODIFY_INST 3
-
 extern CMPISelectExp *TempCMPISelectExp(QLStatement *qs);
 
 /*
@@ -428,67 +424,6 @@ CMPIStatus genericSubscriptionRequest(
 
 /* ------------------------------------------------------------------------- */
 
-CMPIStatus activateLifeCycleSubscription(
-	char * principal,
-	const char * cn,
-	Filter * fi,
-	int type,
-	int optype)
-{
-   CMPIStatus st={CMPI_RC_OK,NULL};
-   CMPISelectExp *exp=TempCMPISelectExp(fi->qs);
-   CMPISelectCond *cond=CMGetDoc(exp,NULL);
-   CMPISubCond *sc;
-   CMPIPredicate *pr;
-   CMPICount c,cm,s,sm;
-   CMPIString *lhs,*rhs;
-   CMPIPredOp predOp;
-   int irc;
-   int has_isa=0;
-
-   _SFCB_ENTER(TRACE_INDPROVIDER, "activateLifeCycleSubscription");
-   
-   if (cond) { 
-     _SFCB_TRACE(1,("condition %p",cond));
-      cm=CMGetSubCondCountAndType(cond,NULL,NULL);
-      _SFCB_TRACE(1,("subcondition count %d",cm));
-      if (cm) for (c=0; c<cm; c++) {
-         _SFCB_TRACE(1,("subcondition %d",c));
-         sc=CMGetSubCondAt(cond,c,NULL);
-         if (sc) {
-            for (s=0, sm=CMGetPredicateCount(sc,NULL); s<sm; s++) {
-               pr=CMGetPredicateAt(sc,s,NULL);
-               if (pr) {
-                  CMGetPredicateData(pr,NULL,&predOp,&lhs,&rhs);
-                  if (predOp==CMPI_PredOp_Isa) {
-                     has_isa=1;
-                     _SFCB_TRACE(1,("lhs: %s",(char*)lhs->hdl)); 
-                     _SFCB_TRACE(1,("rhs: %s\n",(char*)rhs->hdl));
-                     st=genericSubscriptionRequest(principal,(char*)rhs->hdl,cn,fi,optype,&irc);
-                     if (irc==MSG_X_INVALID_CLASS) 
-                        st.rc=CMPI_RC_ERR_INVALID_CLASS;
-                     break;
-		  }
-               }
-            }
-            if (st.rc!=CMPI_RC_OK) break;
-         }
-      }
-      if (has_isa==0) {
-	/* no ISA predicate -- need to process indication class provider */
-	st=genericSubscriptionRequest(principal,cn,cn,fi,optype,&irc);
-	if (irc==MSG_X_INVALID_CLASS) 
-	  st.rc=CMPI_RC_ERR_INVALID_CLASS;
-      }
-   }
-   else setStatus(&st,CMPI_RC_ERR_INVALID_QUERY,"CMGetDoc failed"); 
-     
-   free(exp);
-   _SFCB_RETURN(st);
-}
-
-/* ------------------------------------------------------------------------- */
-
 int fowardSubscription(
 	const CMPIContext * ctx,
 	Filter * fi,
@@ -514,27 +449,12 @@ int fowardSubscription(
       _SFCB_TRACE(1,("--- indication class=\"%s\" namespace=\"%s\"", *fClasses, fi->sns));
 
       /* Check if this is a process indication */
-      if (isa(fi->sns, *fClasses, "CIM_ProcessIndication")) {
+      if (isa(fi->sns, *fClasses, "CIM_ProcessIndication") ||
+          isa(fi->sns, *fClasses, "CIM_InstCreation") ||
+          isa(fi->sns, *fClasses, "CIM_InstDeletion") ||
+          isa(fi->sns, *fClasses, "CIM_InstModification")) {
          *st = genericSubscriptionRequest(principal, *fClasses, *fClasses, fi, optype, &irc);
          if (st->rc == CMPI_RC_OK) activated++; 
-      }
-
-      /* Check if this is a lifecycle instance creation indication */
-      else if (isa("root/interop", *fClasses, "CIM_InstCreation")) {
-         *st = activateLifeCycleSubscription(principal, *fClasses, fi, CREATE_INST, optype);
-         if (st->rc == CMPI_RC_OK) activated++;
-      }
-
-      /* Check if this is a lifecycle instance deletion indication */
-      else if (isa("root/interop", *fClasses, "CIM_InstDeletion")) {
-         *st = activateLifeCycleSubscription(principal, *fClasses, fi, DELETE_INST, optype);
-         if (st->rc == CMPI_RC_OK) activated++;
-      }
-
-      /* Check if this is a lifecycle instance modification indication */
-      else if (isa("root/interop", *fClasses, "CIM_InstModification")) {
-         *st = activateLifeCycleSubscription(principal, *fClasses, fi, MODIFY_INST, optype);
-         if (st->rc == CMPI_RC_OK) activated++;
       }
 
       /* Warn if this indication class is unknown and continue processing the rest, if any */ 
@@ -545,9 +465,11 @@ int fowardSubscription(
 
    /* Make sure at least one of the indication classes were successfully activated */
    if (!activated) {
-      setStatus(st, CMPI_RC_ERR_NOT_SUPPORTED, "No supported indication classes in filter query");
-     _SFCB_RETURN(-1);
-   }
+      setStatus(st, CMPI_RC_ERR_NOT_SUPPORTED, 
+                    "No supported indication classes in filter query"\
+                     " or no provider found");
+      _SFCB_RETURN(-1);
+   } 
      
    setStatus(st, CMPI_RC_OK, NULL);
    _SFCB_RETURN(0);

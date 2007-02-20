@@ -24,6 +24,7 @@ Bugs fixed:
 - 1656317 Fixed segfault with non-existing providerRegister
 - 1652255 Restructured broker upcalls
 - 1663390 Fixed problem with where clause in indicationfilter
+- 1664273 Fixed creation of a subscription can fail
 
 Changes in 1.2.0
 ================

@@ -1,6 +1,10 @@
 2007-02-20  Sven Schuetz
+
 	* queryOperation.c, array.c, value.c:
 	Fixed 1663390: problem with where clause in indicationfilter
+	
+	* README, default.reg, interopProvider.c, providerMgr.c:
+	Fixed 1664273: creating a subscription can fail
 
 2007-02-15  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 

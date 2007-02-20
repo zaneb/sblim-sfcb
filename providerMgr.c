@@ -200,43 +200,41 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
 
    info = (ProviderInfo*) (*ht)->ft->get(*ht, className);
    st->rc=0;
-
-   if (info && nameSpaceOk(info,nameSpace)) {
-      _SFCB_TRACE(1,("Provider found for %s",className));
-      _SFCB_RETURN(info);
-   }
-
    
-   /*if (interOpProvInfoPtr != forceNoProvInfoPtr && 
-      (strcasecmp(className,"cim_indicationfilter")==0 ||
-       strcasecmp(className,"cim_indicationsubscription")==0)) {
-      _SFCB_TRACE(1,("interopProvider for %s",className));
-      _SFCB_RETURN(interOpProvInfoPtr);
-   }*/   
+   while(info) {
+      if (info && nameSpaceOk(info,nameSpace)) {
+         _SFCB_TRACE(1,("Provider found for %s",className));
+         _SFCB_RETURN(info);
+      }
+      info = info->nextInRegister;
+   }
    
    cls = className ? strdup(className) : NULL;
    while (cls != NULL) {
       info = pReg->ft->getProvider(pReg, cls, type);
-      if (info && nameSpaceOk(info,nameSpace)) {
-         if ((*ht)->ft->get(*ht, cls)==NULL)
-	   (*ht)->ft->put(*ht, strdup(cls), info);
-	 free(cls);
-         _SFCB_RETURN(info);
-      }
-      else {
-         _SFCB_TRACE(1,("Getting class %s",cls));
-         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, st);
-	 free(cls);
-         if (cc == NULL) {
-            _SFCB_TRACE(1,("Returning NULL for %s",className));
-           _SFCB_RETURN(NULL);
+      while(info) {
+         if (info && nameSpaceOk(info,nameSpace)) {
+            if ((*ht)->ft->get(*ht, cls)==NULL) {
+               (*ht)->ft->put(*ht, strdup(cls), info);
+            }
+            free(cls);
+            _SFCB_RETURN(info);
          }
-         cls = (char*) cc->ft->getCharSuperClassName(cc);
-         if (cls) {
-	   cls = strdup(cls);
-	 }
-	 CMRelease(cc);
+         info = info->nextInRegister;
       }
+      /* not found in provReg, try parent classes*/
+      _SFCB_TRACE(1,("Getting class %s",cls));
+      CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, st);
+      free(cls);
+      if (cc == NULL) {
+         _SFCB_TRACE(1,("Returning NULL for %s",className));
+        _SFCB_RETURN(NULL);
+      }
+      cls = (char*) cc->ft->getCharSuperClassName(cc);
+      if (cls) {
+         cls = strdup(cls);
+      }
+      CMRelease(cc);
    }
     
    _SFCB_TRACE(1,("Default provider for %s",className));
@@ -277,7 +275,7 @@ static int addProviders(long type, char *className, char *nameSpace,
    if (ip == NULL) _SFCB_RETURN(st.rc);
 
    while(ip) {
-      if (ip->providerName && 
+      if (ip->providerName && nameSpaceOk(ip,nameSpace) &&
 #ifdef HAVE_OPTIMIZED_ENUMERATION
           !optimized_provider_list_contains(providerList,ip)
 #else

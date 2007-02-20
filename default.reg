@@ -3,24 +3,28 @@
    location: sfcClassProviderGz
    type: class method
    unload: never
+   namespace: *
 #
 [$DefaultProvider$]
    provider: InternalProvider
    location: sfcInternalProvider
    type: instance association method
    unload: never
+   namespace: *
 #
 [$InterOpProvider$]
    provider: InteropProvider
    location: sfcInteropProvider
    type: instance association method
    unload: never
+   namespace: root/interop
 #
 [$QualifierProvider$]
    provider: QualifierProvider
    location: sfcQualifierProvider
    type: qualifier
    unload: never
+   namespace: *
 #
 [CIM_IndicationHandlerCIMXML]
    provider: IndCIMXMLHandler

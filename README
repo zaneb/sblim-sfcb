@@ -1033,6 +1033,59 @@ in the staging area.
 after which you must still rebuild the class repository and restart sfcb as
 before.
 
+19. Indications
+===============
+Indications are enabled via the configure script. They are enabled by default.
+For indication providers, it is possible and necessary  to register the same
+classname for different providers. A sample providerRegister file could look
+like this:
+
+[CIM_InstModification]
+   provider: SAM_DeviceProvider
+   location: SAM_Device
+   type: indication
+   namespace: root/cimv2
+#
+[CIM_InstModification]
+   provider: OSBase_OperatingSystemProvider
+   location: cmpiOSBase_OperatingSystemProvider
+   type: indication
+   namespace: root/cimv2
+#
+
+[CIM_OperatingSystem]
+   provider: OSBase_OperatingSystemProvider
+   location: cmpiOSBase_OperatingSystemProvider
+   type: instance
+   namespace: root/cimv2
+#
+
+Now you would create a handler, a filter and a subscription instance. Sample
+xml files for this can be found in the SBLIM cmpi-base package in the directory
+test/indication.
+For the example above a query property of the filter could look like this:
+"SELECT * FROM CIM_InstModification WHERE SourceInstance ISA
+CIM_OperatingSystem"
+Now all providers registered for CIM_InstModification and located in the
+namespace as specified by the SourceNamespace property of the filter are
+invoked.
+You do not have to separate the indication and instance provider. An
+implementation like the following is perfectly ok:
+
+[CIM_InstModification]
+   provider: OSBase_OperatingSystemProvider
+   location: cmpiOSBase_OperatingSystemProvider
+   type: indication instance
+   namespace: root/cimv2
+#
+
+[CIM_OperatingSystem]
+   provider: OSBase_OperatingSystemProvider
+   location: cmpiOSBase_OperatingSystemProvider
+   type: indication instance
+   namespace: root/cimv2
+#
+
 20. Alternative Class Providers
 ===============================
 As the class repository is implemented via a provider, it can easily be

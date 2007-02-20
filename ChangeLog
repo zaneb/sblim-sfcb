@@ -5,6 +5,9 @@
 	
 	* README, default.reg, interopProvider.c, providerMgr.c:
 	Fixed 1664273: creating a subscription can fail
+	
+	* brokerUpc.c:
+	Fixed 1664453: indications are delivered unfiltered
 
 2007-02-15  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 

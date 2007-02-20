@@ -128,6 +128,10 @@ static CMPIStatus deliverIndication(const CMPIBroker* mb, const CMPIContext* ctx
    while (se) {
      if (se->exp.ft->evaluate(&se->exp,ind,&st)) {
          if (in==NULL) {
+            /*apply a propertyfilter in case the query is not "SELECT * FROM ..." */
+            if(se->qs->spNames && se->qs->spNames[0]) {
+               ind->ft->setPropertyFilter((CMPIInstance*)ind, (const char**)se->qs->spNames, NULL);
+            }
             op=CMNewObjectPath(mb,"root/interop","cim_indicationsubscription",NULL);
             in=CMNewArgs(mb,NULL);
             CMAddArg(in,"nameSpace",ns,CMPI_chars);

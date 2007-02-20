@@ -25,6 +25,7 @@ Bugs fixed:
 - 1652255 Restructured broker upcalls
 - 1663390 Fixed problem with where clause in indicationfilter
 - 1664273 Fixed creation of a subscription can fail
+- 1664453 Fixed indications are delivered unfiltered
 
 Changes in 1.2.0
 ================

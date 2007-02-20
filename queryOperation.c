@@ -251,7 +251,7 @@ static int propCompare(QLOperand* self, QLOperand* op,
    }
    
    rc=nop->ft->compare(nop,op,src);
-   QL_TRACE(fprintf(stderr,"propCompare(%s) %d\n",self->propertyName->part[0],rc));
+   QL_TRACE(fprintf(stderr,"propCompare(%s) %d\n",self->propertyName->propName,rc));
    return rc;
 }
 
@@ -414,7 +414,7 @@ QLOperand* newInstQueryOperand(QLStatement *qs, CMPIInstance* ci)
 QLOperand* newFncQueryOperand(QLStatement *qs, QLFnc fnc, QLOpd argType, void* argVal) 
 {
    QLOperand *op=qsAllocNew(qs,QLOperand);
-   QL_TRACE(fprintf(stderr,"--- newFncQueryOperand %p\n",val));
+   QL_TRACE(fprintf(stderr,"--- newFncQueryOperand %p\n",argVal));
 //   op->propertyName=val;
    op->type=QL_PropertyName;
    op->fnc=fnc;

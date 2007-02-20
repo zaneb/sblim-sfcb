@@ -133,6 +133,10 @@ CMPIValue sfcb_native_clone_CMPIValue(const CMPIType type,
       case CMPI_dateTime:
          v.dateTime = CMClone(val->dateTime, rc);
          break;
+         
+      case CMPI_ptr:
+         v = *val;
+         break;         
       }
 
    }

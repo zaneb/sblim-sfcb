@@ -172,8 +172,10 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, const CMPIV
          }
 
 	 if (opt) a->data[index].value = *val;
-	 else a->data[index].value =  ( a->mem_state == MEM_TRACKED )?  *val:
-		 sfcb_native_clone_CMPIValue ( type, val, &rc );
+   	 else a->data[index].value =  ( a->mem_state == MEM_TRACKED )?  *val:
+   		 sfcb_native_clone_CMPIValue ( type, val, &rc );
+	 /*else a->data[index].value =  ( a->mem_state == MEM_NOT_TRACKED ) ?
+	 	 sfcb_native_clone_CMPIValue ( type, val, &rc ) : *val;*/
 	 if (localClientMode) switch (a->type) {
 	 case CMPI_instance:
 	 case CMPI_ref:

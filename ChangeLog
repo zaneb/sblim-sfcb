@@ -1,3 +1,7 @@
+2007-02-20  Sven Schuetz
+	* queryOperation.c, array.c, value.c:
+	Fixed 1663390: problem with where clause in indicationfilter
+
 2007-02-15  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* Makefile.am, configure.ac, genSslCert.sh, httpAdapter.c, 

@@ -1,3 +1,8 @@
+2007-02-21  Tyrel Datwyler <tyreld@us.ibm.com>
+
+	* providerDrv.c
+	Fixed 1653919: sfcb provider process doesn't die if dlopen fails
+
 2007-02-20  Sven Schuetz
 
 	* queryOperation.c, array.c, value.c:

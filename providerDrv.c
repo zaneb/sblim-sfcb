@@ -2424,6 +2424,8 @@ static void *processProviderInvocationRequestsThread(void *prms)
         _SFCB_TRACE(1, ("--- response suppressed"));
       }
       else sendResponse(parms->requestor, resp);
+      if (resp->rc == 2)
+	exit(-1);
    }  
     
    tool_mm_flush();

@@ -26,6 +26,7 @@ Bugs fixed:
 - 1663390 Fixed problem with where clause in indicationfilter
 - 1664273 Fixed creation of a subscription can fail
 - 1664453 Fixed indications are delivered unfiltered
+- 1653919 Fixed sfcb provider doesn't die if dlopen fails
 
 Changes in 1.2.0
 ================

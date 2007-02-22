@@ -280,6 +280,11 @@ Options:
 		but may break providers expecting to be called for leaf classes
 		only (and then multiple times). Default=no
 
+        --enable-pam=[yes|no]
+                Enable building a basic authentication module based on PAM.
+		Default=no
+
+
 9. Downloading the CIM Schema
 =============================
 When building sfcb and mofc, running the 'make postinstall' step will
@@ -1193,6 +1198,11 @@ from the HTTP header in order to authenticate the client request.
 The default implementation in libsfcBasicAuthentication.so is always failing
 the authentication request. Users of sfcb are encouraged to write their
 own basic authentication support.
+
+For systems supporting the Pluggable Authentication Modules (PAM) approach
+there's a basic authentication library called libsfcBasicPAMAuthentication.so.
+This library will be built when the configure script is invoked with
+--enable-pam. 
 
 Client certificate based authentication is available if SSL support for sfcb
 is enabled (via ./configure --enable-ssl). If the clientCertificate 

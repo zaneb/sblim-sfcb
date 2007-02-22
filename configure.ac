@@ -144,11 +144,14 @@ fi
 
 if test "$enable_pam" == "yes"; then
    AC_DEFINE(HAVE_PAM,,[PAM support enabled.])
-   SFCB_CONF_BASICAUTH=sfcBasicPAMAuthentication   
+   SFCB_CONF_BASICAUTHLIB=sfcBasicPAMAuthentication   
+   SFCB_CONF_DOBASICAUTH=true
 else
-   SFCB_CONF_BASICAUTH=sfcBasicAuthentication   
+   SFCB_CONF_BASICAUTHLIB=sfcBasicAuthentication   
+   SFCB_CONF_DOBASICAUTH=false
 fi
-AC_SUBST(SFCB_CONF_BASICAUTH)
+AC_SUBST(SFCB_CONF_DOBASICAUTH)
+AC_SUBST(SFCB_CONF_BASICAUTHLIB)
 
 
 AC_CANONICAL_HOST

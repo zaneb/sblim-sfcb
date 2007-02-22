@@ -7,8 +7,8 @@ httpsPort:      5989
 enableHttps:    @SFCB_CONF_HTTPS@
 httpsProcs:     8
 provProcs:      32
-doBasicAuth:    true
-basicAuthLib:   @SFCB_CONF_BASICAUTH@
+doBasicAuth:    @SFCB_CONF_DOBASICAUTH@
+basicAuthLib:   @SFCB_CONF_BASICAUTHLIB@
 useChunking:    true
 keepaliveTimeout: 1
 keepaliveMaxRequest: 10

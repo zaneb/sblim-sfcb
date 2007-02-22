@@ -7,6 +7,9 @@
 	could not be found - in which case unlinking wouldn't make much
 	sense either. 
 
+	* configure.ac, README, sfcb.cfg.pre.in:
+	Amended 1660634: added README section and enhanced config defaults.
+	
 2007-02-22  Sven Schuetz
 
 	* internalProvider.c, objectpath.c, Makefile.am, brokerUpc.c,

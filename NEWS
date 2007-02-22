@@ -30,6 +30,7 @@ Bugs fixed:
 - 1653919 Fixed sfcb provider doesn't die if dlopen fails
 - 1665255 Fixed providergrouping may fail, separated InternalProvider and
 InteropProvider
+- 1666311 Fixed missing support for old-style indication providers
 
 Changes in 1.2.0
 ================

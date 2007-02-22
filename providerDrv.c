@@ -156,6 +156,24 @@ typedef struct parms {
 } Parms;
 static Parms *activeThreadsFirst=NULL,*activeThreadsLast=NULL;
 
+/* old version support */
+typedef CMPIStatus (*authorizeFilterPreV1)
+  (CMPIIndicationMI* mi, const CMPIContext* ctx, CMPIResult *result,
+   const CMPISelectExp* se, const char *ns, const CMPIObjectPath* op, const char *user);
+
+typedef CMPIStatus (*mustPollPreV1)
+  (CMPIIndicationMI* mi, const CMPIContext* ctx,  CMPIResult *result,
+   const CMPISelectExp* se, const char *ns, const CMPIObjectPath* op);
+
+typedef CMPIStatus (*activateFilterPreV1)
+  (CMPIIndicationMI* mi, const CMPIContext* ctx,  CMPIResult *result,
+   const CMPISelectExp* se, const char *ns, const CMPIObjectPath* op, CMPIBoolean first);
+
+typedef CMPIStatus (*deActivateFilterPreV1)
+  (CMPIIndicationMI* mi, const CMPIContext* ctx,  CMPIResult *result,
+   const CMPISelectExp* se, const  char *ns, const CMPIObjectPath* op, CMPIBoolean last);
+
+
 void libraryName(const char *dir, const char *location, char *fullName)
 {
 #if defined(CMPI_PLATFORM_WIN32_IX86_MSVC)
@@ -1865,6 +1883,7 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    NativeSelectExp *se=NULL,*prev=NULL;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
    CMPIFlags flgs=0;
    int makeActive=0;
    char *type = NULL;
@@ -1901,24 +1920,46 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
 
    _SFCB_TRACE(1, ("--- Calling authorizeFilter %s",info->providerName));
    TIMING_START(hdr,info)
-   rci = info->indicationMI->ft->authorizeFilter(info->indicationMI, ctx,
-                                               (CMPISelectExp*)se, type, path,
-                                               PROVCHARS(req->principal.data));
+   if (info->indicationMI->ft->ftVersion < 100) {
+     authorizeFilterPreV1 fptr = 
+       (authorizeFilterPreV1)info->indicationMI->ft->authorizeFilter;
+     rci = fptr(info->indicationMI, ctx, result,
+		(CMPISelectExp*)se, type, path,
+		PROVCHARS(req->principal.data));
+   } else {
+     rci = info->indicationMI->ft->authorizeFilter(info->indicationMI, ctx,
+						   (CMPISelectExp*)se, type, path,
+						   PROVCHARS(req->principal.data));
+   }
    TIMING_STOP(hdr,info)
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
    if (rci.rc==CMPI_RC_OK) {
       _SFCB_TRACE(1, ("--- Calling mustPoll %s",info->providerName));
       TIMING_START(hdr,info)
-      rci = info->indicationMI->ft->mustPoll(info->indicationMI, ctx, 
+      if (info->indicationMI->ft->ftVersion < 100) {
+	mustPollPreV1 fptr =
+	  (mustPollPreV1)info->indicationMI->ft->mustPoll;
+	rci = fptr(info->indicationMI, ctx, result,
+		   (CMPISelectExp*)se, type, path);
+      } else {
+	rci = info->indicationMI->ft->mustPoll(info->indicationMI, ctx, 
                                                (CMPISelectExp*)se, type, path);
+      }
       TIMING_STOP(hdr,info)
       _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
       _SFCB_TRACE(1, ("--- Calling activateFilter %s",info->providerName));
       TIMING_START(hdr,info)
-      rci = info->indicationMI->ft->activateFilter(info->indicationMI, ctx,
-            (CMPISelectExp*)se, type, path, 1);
+      if (info->indicationMI->ft->ftVersion < 100) {
+	activateFilterPreV1 fptr =
+	  (activateFilterPreV1) info->indicationMI->ft->activateFilter;
+	rci = fptr(info->indicationMI, ctx, result,
+	       (CMPISelectExp*)se, type, path, 1);
+      } else {
+	rci = info->indicationMI->ft->activateFilter(info->indicationMI, ctx,
+						     (CMPISelectExp*)se, type, path, 1);
+      }
       TIMING_STOP(hdr,info)
       _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
@@ -1960,6 +2001,7 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    NativeSelectExp *se=NULL,**sef=&activFilters;
    CMPIObjectPath *path = relocateSerializedObjectPath(req->objectPath.data);
    CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
+   CMPIResult *result = native_new_CMPIResult(0,1,NULL);
    CMPIFlags flgs=0;
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
@@ -1985,8 +2027,15 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
 
          _SFCB_TRACE(1, ("--- Calling deactivateFilter %s",info->providerName));
 	 TIMING_START(hdr,info)
-         rci = info->indicationMI->ft->deActivateFilter(info->indicationMI, ctx,
-                                               (CMPISelectExp*)se, "", path, 1);
+	 if (info->indicationMI->ft->ftVersion < 100) {
+	   deActivateFilterPreV1 fptr = 
+	     (deActivateFilterPreV1) info->indicationMI->ft->deActivateFilter;
+	   rci = fptr(info->indicationMI, ctx, result,
+		  (CMPISelectExp*)se, "", path, 1);
+	 } else {
+	   rci = info->indicationMI->ft->deActivateFilter(info->indicationMI, ctx,
+							  (CMPISelectExp*)se, "", path, 1);
+	 }
 	 TIMING_STOP(hdr,info)
          if (rci.rc==CMPI_RC_OK) {
             resp->rc=1;

@@ -1,3 +1,12 @@
+2007-02-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* support.c: 
+	Fixed 1666258: Memory corruption in thread cleanup fixed.
+	The memUnlinkEncObj function is skipping the actual unlinking step
+	if the thread specific data containing the managed_thread structure
+	could not be found - in which case unlinking wouldn't make much
+	sense either. 
+
 2007-02-22  Sven Schuetz
 
 	* internalProvider.c, objectpath.c, Makefile.am, brokerUpc.c,

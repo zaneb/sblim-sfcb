@@ -1,8 +1,8 @@
 
 /*
- * support.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ *  © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -342,6 +342,10 @@ static void __flush_mt(managed_thread * mt)
       --mt->hc.memEncUsed;
       _SFCB_TRACE(1,("memEnc %d %d %p\n", currentProc,mt->hc.memEncUsed,mt->hc.memEncObjs[mt->hc.memEncUsed]))
       if (mt->hc.memEncObjs[mt->hc.memEncUsed]) {
+	if (mt->hc.memEncObjs[mt->hc.memEncUsed]->ft == NULL) {
+	  fprintf(stderr,"***** NULL ft in enc obj record *****\n");
+	  abort();
+	}
          mt->hc.memEncObjs[mt->hc.memEncUsed]->ft->release(mt->hc.memEncObjs[mt->hc.memEncUsed]);
       }   
       mt->hc.memEncObjs[mt->hc.memEncUsed] = NULL;
@@ -357,7 +361,9 @@ static void __cleanup_mt(void *ptr)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "__cleanup_mt");
    managed_thread *mt = (managed_thread *) ptr;
-
+   
+   //   fprintf(stderr,"---- %d/%d cleanup_mt %x, %x\n", getpid(), pthread_self(), mt , (mt?mt->hc.memEncObjs:NULL));
+   
    if (mt && mt->cleanupDone == 0) {
      mt->cleanupDone = 1;
      __flush_mt(mt);
@@ -393,8 +399,11 @@ static managed_thread *__init_mt()
    _SFCB_ENTER(TRACE_MEMORYMGR, "managed_thread");
    managed_thread *mt = (managed_thread *) calloc(1, sizeof(managed_thread)+8);
 
+   //   fprintf(stderr,"---- %d/%d init_mt \n", getpid(), pthread_self());
+
    __ALLOC_ERROR(!mt);
 
+   mt->hc.memEncUsed = mt->hc.memUsed = 0;
    mt->hc.memEncSize = mt->hc.memSize = MT_SIZE_STEP;
    mt->hc.memObjs = (void **) malloc(MT_SIZE_STEP * sizeof(void *));
    mt->hc.memEncObjs = (Object **) malloc(MT_SIZE_STEP * sizeof(void *));
@@ -412,12 +421,16 @@ static managed_thread *__init_mt()
  
 static void __init_mm()
 {
+  //   fprintf(stderr,"---- %d/%d initmm\n", getpid(), pthread_self());
    _SFCB_ENTER(TRACE_MEMORYMGR, "__init_mm");
    CMPI_BrokerExt_Ftab->createThreadKey(&__mm_key, __cleanup_mt);
    _SFCB_EXIT();
 }
 
-static managed_thread *__memInit()
+/** 
+ * dontforce = 1: don't create new thread memory if none found
+ */
+static managed_thread *__memInit(int dontforce)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "__memInit");
    managed_thread *mt;
@@ -426,7 +439,7 @@ static managed_thread *__memInit()
 
    mt = (managed_thread *)
        CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
-   if (mt==NULL) mt=__init_mt();
+   if (mt==NULL && dontforce==0) mt=__init_mt();
    return mt;
 }
 
@@ -475,7 +488,7 @@ int memAdd(void *ptr, int *memId)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "memAdd");
    if (localClientMode) return(1);
-   managed_thread *mt=__memInit();
+   managed_thread *mt=__memInit(0);
 
    mt->hc.memObjs[mt->hc.memUsed++] = ptr;
    *memId=mt->hc.memUsed;
@@ -501,10 +514,14 @@ void *memAddEncObj(int mode, void *ptr, size_t size, int *memId)
       _SFCB_RETURN(object);
    }   
    
-   managed_thread *mt=__memInit();
+   managed_thread *mt=__memInit(0);
 
    mt->hc.memEncObjs[mt->hc.memEncUsed++] = (Object *) object;
    *memId=mt->hc.memEncUsed;
+
+   if (mt->hc.memEncObjs[*memId - 1]->ft == NULL) {
+     abort();
+   }
    
    if (mt->hc.memEncUsed == mt->hc.memEncSize) {
       mt->hc.memEncSize += MT_SIZE_STEP;
@@ -520,7 +537,7 @@ void memLinkEncObj(void *object, int *memId)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "memLinkEncObj");
    if (localClientMode) return;
-   managed_thread *mt=__memInit();
+   managed_thread *mt=__memInit(0);
 
    mt->hc.memEncObjs[mt->hc.memEncUsed++] = (Object *) object;
    *memId=mt->hc.memEncUsed;
@@ -538,9 +555,9 @@ void memLinkEncObj(void *object, int *memId)
 void memUnlinkEncObj(int memId)
 {
    if (localClientMode) return;
-   managed_thread *mt=__memInit();
+   managed_thread *mt=__memInit(1); /* if none found we shouldn't delete */
    
-   if (memId!=MEM_RELEASED && memId!=MEM_NOT_TRACKED)
+   if (mt && memId!=MEM_RELEASED && memId!=MEM_NOT_TRACKED)
       mt->hc.memEncObjs[memId-1] = NULL;
 }
 
@@ -569,7 +586,7 @@ void tool_mm_flush()
 void tool_mm_set_broker(void *broker, void *ctx)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_set_broker");
-   managed_thread *mt=__memInit();
+   managed_thread *mt=__memInit(0);
 
    mt->broker = broker;
    mt->ctx = ctx;
@@ -579,7 +596,7 @@ void tool_mm_set_broker(void *broker, void *ctx)
 void *tool_mm_get_broker(void **ctx)
 {
    _SFCB_ENTER(TRACE_MEMORYMGR, "tool_mm_get_broker");
-   managed_thread *mt=__memInit();
+   managed_thread *mt=__memInit(0);
 
    if (ctx)
       *ctx = mt->ctx;
@@ -589,7 +606,7 @@ void *tool_mm_get_broker(void **ctx)
 
 void *getThreadDataSlot()
 {
-   managed_thread *mt=__memInit();
+   managed_thread *mt=__memInit(0);
    return &mt->data;
 }
 
@@ -601,7 +618,7 @@ void *markHeap()
    HeapControl *hc=(HeapControl*)calloc(1,sizeof(HeapControl)+8);
    _SFCB_ENTER(TRACE_MEMORYMGR, "markHeap");
    
-   mt=__memInit();
+   mt=__memInit(0);
    
    memcpy(hc,&mt->hc,sizeof(HeapControl));
    
@@ -621,7 +638,7 @@ void releaseHeap(void *hc)
    mt = (managed_thread *) CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
    _SFCB_ENTER(TRACE_MEMORYMGR, "releaseHeap");
    
-   mt=__memInit();
+   mt=__memInit(0);
    
    __flush_mt(mt);
    

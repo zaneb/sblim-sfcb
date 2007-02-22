@@ -27,6 +27,8 @@ Bugs fixed:
 - 1664273 Fixed creation of a subscription can fail
 - 1664453 Fixed indications are delivered unfiltered
 - 1653919 Fixed sfcb provider doesn't die if dlopen fails
+- 1665255 Fixed providergrouping may fail, separated InternalProvider and
+InteropProvider
 
 Changes in 1.2.0
 ================

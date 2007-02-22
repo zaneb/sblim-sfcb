@@ -30,6 +30,9 @@
 
 #include "native.h"
 #include "msgqueue.h"
+#include "utilft.h"
+
+extern UtilStringBuffer *newStringBuffer(int s);
 
 extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,ClObjectHdr * hdr);
 extern CMPIObjectPath *interal_new_CMPIObjectPath(int mode, const char *,
@@ -620,4 +623,92 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
    return op;
 }
 
+typedef struct keyIds {
+   CMPIString *key;
+   CMPIData data;
+} KeyIds;
 
+static int qCompare(const void *arg1, const void *arg2)
+{
+   return strcasecmp((char *) ((KeyIds *) arg1)->key->hdl,
+                     (char *) ((KeyIds *) arg2)->key->hdl);
+}
+
+static char copKey[8192];
+
+UtilStringBuffer *normalizeObjectPathStrBuf(const CMPIObjectPath * cop)
+{
+   int c = CMGetKeyCount(cop, NULL);
+   int i;
+   char pc = 0,*cp;
+   UtilStringBuffer *sb=newStringBuffer(512);
+
+   KeyIds *ids = (KeyIds *) malloc(sizeof(KeyIds) * c);
+   
+   for (i = 0; i < c; i++) {
+      ids[i].data = CMGetKeyAt(cop, i, &ids[i].key, NULL);
+      cp=ids[i].key->hdl;
+      while (*cp) {
+         *cp=tolower(*cp);
+         cp++; 
+      }
+   }
+   qsort(ids, c, sizeof(KeyIds), qCompare);
+
+   for (i = 0; i < c; i++) {
+      if (pc) sb->ft->appendChars(sb,",");
+      sb->ft->appendChars(sb,(char*)ids[i].key->hdl);
+      sb->ft->appendChars(sb,"=");
+      if (ids[i].data.type==CMPI_ref) {
+         CMPIString *cn=CMGetClassName(ids[i].data.value.ref,NULL);
+	 CMPIString *ns=CMGetNameSpace(ids[i].data.value.ref,NULL);
+         UtilStringBuffer *sbt= normalizeObjectPathStrBuf(ids[i].data.value.ref);
+	 char *nss;
+         cp=(char*)cn->hdl;
+         while (*cp) {
+            *cp=tolower(*cp);
+            cp++; 
+         }
+	 if (ns==NULL) {
+	   nss = CMGetCharPtr(CMGetNameSpace(cop,NULL));
+	 } else {
+	   nss = CMGetCharPtr(ns);
+	 }
+	 if (nss) {
+	   sb->ft->appendChars(sb,nss);
+	   sb->ft->appendChars(sb,":");
+	 }
+         sb->ft->appendChars(sb,(char*)cn->hdl);
+         sb->ft->appendChars(sb,".");
+         sb->ft->appendChars(sb,sbt->ft->getCharPtr(sbt));
+         sbt->ft->release(sbt);
+      }
+      else {
+         char *v = sfcb_value2Chars(ids[i].data.type, &ids[i].data.value);
+         sb->ft->appendChars(sb,v);
+         free(v);
+      }   
+      pc = ',';
+   }
+   free(ids);
+   
+
+   return(sb);
+}
+
+char *normalizeObjectPathChars(const CMPIObjectPath *cop)
+{
+   UtilStringBuffer *sb=normalizeObjectPathStrBuf(cop);  
+   strcpy(copKey,sb->ft->getCharPtr(sb));
+   sb->ft->release(sb);
+   return copKey;
+}
+
+char *normalizeObjectPathCharsDup(const CMPIObjectPath *cop)
+{
+   char *n;
+   UtilStringBuffer *sb=normalizeObjectPathStrBuf(cop);  
+   n=strdup(sb->ft->getCharPtr(sb));
+   sb->ft->release(sb);
+   return n;
+}

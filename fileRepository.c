@@ -34,7 +34,6 @@
 #include <errno.h>
 
 #include "trace.h"
-#include "utilft.h"
 #include "cmpimacs.h"
 #include "cmpidt.h"
 #include "cmpift.h"
@@ -42,8 +41,6 @@
 #include "mlog.h"
 #include "control.h"
 
-extern UtilStringBuffer *newStringBuffer(int s);
-extern char *sfcb_value2Chars(CMPIType type, CMPIValue * value);
 
 #define BASE "repository"
 
@@ -540,89 +537,6 @@ int existingNameSpace(char *ns)
    return 1;
 }
 
-typedef struct keyIds {
-   CMPIString *key;
-   CMPIData data;
-} KeyIds;
-
-static int qCompare(const void *arg1, const void *arg2)
-{
-   return strcasecmp((char *) ((KeyIds *) arg1)->key->hdl,
-                     (char *) ((KeyIds *) arg2)->key->hdl);
-}
-
-static char copKey[8192];
-
-UtilStringBuffer *normalize_ObjectPath(const CMPIObjectPath * cop)
-{
-   int c = CMGetKeyCount(cop, NULL);
-   int i;
-   char pc = 0,*cp;
-   UtilStringBuffer *sb=newStringBuffer(512);
-      
-   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "normalize_ObjectPath");
-
-   KeyIds *ids = (KeyIds *) malloc(sizeof(KeyIds) * c);
-   
-   for (i = 0; i < c; i++) {
-      ids[i].data = CMGetKeyAt(cop, i, &ids[i].key, NULL);
-      cp=ids[i].key->hdl;
-      while (*cp) {
-         *cp=tolower(*cp);
-         cp++; 
-      }
-   }
-   qsort(ids, c, sizeof(KeyIds), qCompare);
-
-   for (i = 0; i < c; i++) {
-      if (pc) sb->ft->appendChars(sb,",");
-      sb->ft->appendChars(sb,(char*)ids[i].key->hdl);
-      sb->ft->appendChars(sb,"=");
-      if (ids[i].data.type==CMPI_ref) {
-         CMPIString *cn=CMGetClassName(ids[i].data.value.ref,NULL);
-	 CMPIString *ns=CMGetNameSpace(ids[i].data.value.ref,NULL);
-         UtilStringBuffer *sbt= normalize_ObjectPath(ids[i].data.value.ref);
-	 char *nss;
-         cp=(char*)cn->hdl;
-         while (*cp) {
-            *cp=tolower(*cp);
-            cp++; 
-         }
-	 if (ns==NULL) {
-	   nss = CMGetCharPtr(CMGetNameSpace(cop,NULL));
-	 } else {
-	   nss = CMGetCharPtr(ns);
-	 }
-	 if (nss) {
-	   sb->ft->appendChars(sb,nss);
-	   sb->ft->appendChars(sb,":");
-	 }
-         sb->ft->appendChars(sb,(char*)cn->hdl);
-         sb->ft->appendChars(sb,".");
-         sb->ft->appendChars(sb,sbt->ft->getCharPtr(sbt));
-         sbt->ft->release(sbt);
-      }
-      else {
-         char *v = sfcb_value2Chars(ids[i].data.type, &ids[i].data.value);
-         sb->ft->appendChars(sb,v);
-         free(v);
-      }   
-      pc = ',';
-   }
-   free(ids);
-   
-   _SFCB_TRACE(1,("--- key: >%s<",sb->ft->getCharPtr(sb)));
-
-   _SFCB_RETURN(sb);
-}
-
-char *normalizeObjectPath(const CMPIObjectPath *cop)
-{
-   UtilStringBuffer *sb=normalize_ObjectPath(cop);  
-   strcpy(copKey,sb->ft->getCharPtr(sb));
-   sb->ft->release(sb);
-   return copKey;
-}
 
 #ifdef __MAIN__
 

@@ -36,6 +36,7 @@
 #include "constClass.h"
 #include "internalProvider.h"
 #include "native.h"
+#include "objectpath.h"
 
 #define LOCALCLASSNAME "InternalProvider"
 
@@ -118,14 +119,6 @@ const char **getKeyList(const CMPIObjectPath *cop)
 	return list;
 }
 
-char *internalProviderNormalizeObjectPath(const CMPIObjectPath *cop)
-{
-   char *n;
-   UtilStringBuffer *sb=normalize_ObjectPath(cop);  
-   n=strdup(sb->ft->getCharPtr(sb));
-   sb->ft->release(sb);
-   return n;
-}
 
 static char **nsTab=NULL;
 static int nsTabLen=0;
@@ -356,7 +349,7 @@ CMPIInstance *internalProviderGetInstance(const CMPIObjectPath * cop, CMPIStatus
    int len;
    CMPIString *cn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
-   char *key = normalizeObjectPath(cop);
+   char *key = normalizeObjectPathChars(cop);
    CMPIInstance *ci=NULL;
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
@@ -416,7 +409,7 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    void *blob;
    CMPIString *cn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
-   char *key = normalizeObjectPath(cop);
+   char *key = normalizeObjectPathChars(cop);
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
    char *bnss=repositoryNs(nss);
@@ -460,7 +453,7 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
    void *blob;
    CMPIString *cn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
-   char *key = normalizeObjectPath(cop);
+   char *key = normalizeObjectPathChars(cop);
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
    char *bnss=repositoryNs(nss);
@@ -497,7 +490,7 @@ CMPIStatus InternalProviderDeleteInstance(CMPIInstanceMI * mi,
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
-   char *key = normalizeObjectPath(cop);
+   char *key = normalizeObjectPathChars(cop);
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
    char *bnss=repositoryNs(nss);
@@ -559,7 +552,7 @@ static CMPIConstClass *assocForName(const char *nameSpace, const char *assocClas
 static int objectPathEquals(UtilStringBuffer *pn, CMPIObjectPath *op, UtilStringBuffer **retName, int eq)
 {
    int rc=0;
-   UtilStringBuffer *opn=normalize_ObjectPath(op);
+   UtilStringBuffer *opn=normalizeObjectPathStrBuf(op);
    if (strcmp(pn->ft->getCharPtr(pn),opn->ft->getCharPtr(opn))==0) rc=1;
    if (retName && rc==eq) *retName=opn;
    else opn->ft->release(opn);
@@ -618,7 +611,7 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
    if (role) {
             // filter out the associations not matching the role property
       CMPIInstance *ci;      
-      UtilStringBuffer *pn=normalize_ObjectPath(cop);
+      UtilStringBuffer *pn=normalizeObjectPathStrBuf(cop);
       for (ci=refs->ft->getFirst(refs); ci; ci=refs->ft->getNext(refs)) {
          CMPIData data=CMGetProperty(ci,role,NULL);
          if ((data.state & CMPI_notFound) || 
@@ -634,7 +627,7 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
             // filter out associations not referencing pathName
       CMPIInstance *ci;
       int matched,i,m;      
-      UtilStringBuffer *pn=normalize_ObjectPath(cop);
+      UtilStringBuffer *pn=normalizeObjectPathStrBuf(cop);
       for (ci=refs->ft->getFirst(refs); ci; ci=refs->ft->getNext(refs)) {
          for (matched=0,i=0,m=CMGetPropertyCount(ci,NULL); i<m; i++) {
             CMPIData data=CMGetPropertyAt(ci,i,NULL,NULL);
@@ -670,7 +663,7 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
             // Use hashtable to avoid dup'd associators
       CMPIInstance *ci;
       UtilHashTable *assocs = UtilFactory->newHashTable(61,UtilHashTable_charKey);
-      UtilStringBuffer *pn=normalize_ObjectPath(cop);
+      UtilStringBuffer *pn=normalizeObjectPathStrBuf(cop);
       for (ci=refs->ft->getFirst(refs); ci; ci=refs->ft->getNext(refs)) {
                 // Q: for ASSOC_NAME we should not require the
                 // object exist if we go by the book, should we?

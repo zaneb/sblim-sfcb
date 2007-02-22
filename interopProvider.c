@@ -34,6 +34,7 @@
 #include "providerMgr.h"
 #include "internalProvider.h"
 #include "native.h"
+#include "objectpath.h"
 #include <time.h>
 
 #define LOCALCLASSNAME "InteropProvider"
@@ -210,7 +211,6 @@ static Filter *addFilter(
    fi->lang=strdup(lang);
    fi->sns=strdup(sns);
    filterHt->ft->put(filterHt,key,fi);
-   
    _SFCB_RETURN(fi);
 }
 
@@ -222,7 +222,8 @@ static Filter *getFilter(
    Filter * fi;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "getFilter");
-
+   _SFCB_TRACE(1,("--- Filter: >%s<",key));
+   
    if (filterHt==NULL) return NULL;
    fi = filterHt->ft->get(filterHt,key);
 
@@ -266,7 +267,7 @@ static Handler *addHandler(
    if (handlerHt==NULL)
       handlerHt=UtilFactory->newHashTable(61,UtilHashTable_charKey);
       
-   key=internalProviderNormalizeObjectPath(op);
+   key=normalizeObjectPathCharsDup(op);
       
    _SFCB_TRACE(1,("--- Handler: %s",key));
    
@@ -491,7 +492,7 @@ CMPIStatus switchIndications(const CMPIContext *ctx,
 	_SFCB_ENTER(TRACE_INDPROVIDER, "enableIndications()");
 	
 	op = CMGetProperty(ci, "filter", &st).value.ref;
-	key = internalProviderNormalizeObjectPath(op);
+	key = normalizeObjectPathCharsDup(op);
 	fi = getFilter(key);
 	free(key);
 	
@@ -517,7 +518,7 @@ static CMPIStatus processSubscription(
    _SFCB_ENTER(TRACE_INDPROVIDER, "processSubscription()");
    
    _SFCB_TRACE(1,("--- checking for existing subscription"));
-   skey = internalProviderNormalizeObjectPath(cop);
+   skey = normalizeObjectPathCharsDup(cop);
    if (getSubscription(skey)) {
       _SFCB_TRACE(1,("--- subscription already exists"));
       free(skey);
@@ -527,7 +528,7 @@ static CMPIStatus processSubscription(
       
    _SFCB_TRACE(1,("--- getting new subscription filter"));
    op = CMGetProperty(ci, "filter", &st).value.ref;
-   key = internalProviderNormalizeObjectPath(op);
+   key = normalizeObjectPathCharsDup(op);
    fi = getFilter(key);
    free(key);
    
@@ -539,7 +540,7 @@ static CMPIStatus processSubscription(
    
    _SFCB_TRACE(1,("--- getting new subscription handle"));
    op = CMGetProperty(ci, "handler", &st).value.ref;
-   key = internalProviderNormalizeObjectPath(op);
+   key = normalizeObjectPathCharsDup(op);
    ha = getHandler(key);
    free(key);
       
@@ -606,7 +607,7 @@ void initInterOp(
          lng=(char*)CMGetProperty(ci,"querylanguage",&st).value.string->hdl;
          sns=(char*)CMGetProperty(ci,"SourceNamespace",&st).value.string->hdl;
          qs=parseQuery(MEM_NOT_TRACKED,query,lng,sns,&rc);
-         key=internalProviderNormalizeObjectPath(cop);
+         key=normalizeObjectPathCharsDup(cop);
          addFilter(ci,key,qs,query,lng,sns);
       }
       CMRelease(enm);
@@ -675,7 +676,7 @@ CMPIStatus InteropProviderEnumInstanceNames(
                                       
    while(enm && enm->ft->hasNext(enm, &st)) {
        CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);   
-   }   
+   }
    if(enm) CMRelease(enm);
    _SFCB_RETURN(st);   
 }
@@ -716,9 +717,12 @@ CMPIStatus InteropProviderGetInstance(
 	const char ** properties)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIContext *ctxLocal;
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderGetInstance");
 
-   st = InternalProviderGetInstance(NULL, ctx, rslt, cop, properties);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   CMReturnInstance(rslt, _broker->bft->getInstance(_broker, ctxLocal, cop, properties, &st));
+   CMRelease(ctxLocal);
 
    _SFCB_RETURN(st);
 }
@@ -737,6 +741,7 @@ CMPIStatus InteropProviderCreateInstance(
    char *cns = cn->ft->getCharPtr(cn,NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *nss = ns->ft->getCharPtr(ns,NULL);
+   CMPIContext *ctxLocal;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderCreateInstance");
   
@@ -775,7 +780,7 @@ CMPIStatus InteropProviderCreateInstance(
          _SFCB_RETURN(st);  
       }   
               
-      key=internalProviderNormalizeObjectPath(cop);
+      key=normalizeObjectPathCharsDup(cop);
       if (getFilter(key)) {
          free(key);
          setStatus(&st,CMPI_RC_ERR_ALREADY_EXISTS,NULL);
@@ -797,8 +802,11 @@ CMPIStatus InteropProviderCreateInstance(
       _SFCB_RETURN(st);         
    }
     
-   if (st.rc==CMPI_RC_OK) 
-      st=InternalProviderCreateInstance(NULL,ctx,rslt,cop,ci);
+   if (st.rc==CMPI_RC_OK) {
+      ctxLocal = prepareUpcall((CMPIContext *)ctx);
+      CMReturnObjectPath(rslt, _broker->bft->createInstance(_broker, ctxLocal, cop, ci, &st));
+      CMRelease(ctxLocal);
+   }
     
    _SFCB_RETURN(st);
 }
@@ -816,17 +824,18 @@ CMPIStatus InteropProviderModifyInstance(
 	CMPIStatus st = { CMPI_RC_OK, NULL };
 	CMPIString *cn = CMGetClassName(cop, NULL);
 	char *cns = cn->ft->getCharPtr(cn,NULL);
+	CMPIContext *ctxLocal;
 	
 	_SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderModifyInstance");
    
    	if(isa("root/interop", cns, "cim_indicationsubscription")) {
-		char *key = internalProviderNormalizeObjectPath(cop);
+		char *key = normalizeObjectPathCharsDup(cop);
 		_SFCB_TRACE(1,("--- modify cim_indicationsubscription %s",key));
 		Subscription *su;
 		CMPIInstance *oldInst;
 		 
-		//check if SubscriptionState changed
-		//enable/disableIndication
+		/*check if SubscriptionState changed
+		  enable/disableIndication */
 		su=getSubscription(key);
 		free(key);
 		if(!su) {
@@ -846,15 +855,18 @@ CMPIStatus InteropProviderModifyInstance(
 				switchIndications(ctx, ci, OPS_DisableIndications);
 			}
 		}
-		//replace the instance in the hashtable
+		/*replace the instance in the hashtable*/
 		CMRelease(su->sci);
 		su->sci=CMClone(ci,NULL);
    	  
 	}
 	else setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"Class not supported");
 	
-	if (st.rc==CMPI_RC_OK)
-		st=InternalProviderModifyInstance(NULL,ctx,rslt,cop,ci,properties);
+	if (st.rc==CMPI_RC_OK) {
+		ctxLocal = prepareUpcall((CMPIContext *)ctx);
+		st = _broker->bft->modifyInstance(_broker, ctxLocal, cop, ci, properties);
+		CMRelease(ctxLocal);		
+	}
 	_SFCB_RETURN(st);   
 }
 
@@ -871,9 +883,10 @@ CMPIStatus InteropProviderDeleteInstance(
    char *cns = cn->ft->getCharPtr(cn,NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *nss = ns->ft->getCharPtr(ns,NULL);
-   char *key = internalProviderNormalizeObjectPath(cop);
+   char *key = normalizeObjectPathCharsDup(cop);
    Filter *fi;
    Subscription *su;
+   CMPIContext *ctxLocal;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderDeleteInstance");
    
@@ -905,8 +918,11 @@ CMPIStatus InteropProviderDeleteInstance(
    
    else setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"Class not supported");
       
-   if (st.rc==CMPI_RC_OK)
-      st=InternalProviderDeleteInstance(NULL,ctx,rslt,cop);
+   if (st.rc==CMPI_RC_OK) {
+      ctxLocal = prepareUpcall((CMPIContext *)ctx);
+      st = _broker->bft->deleteInstance(_broker, ctxLocal, cop);
+      CMRelease(ctxLocal);
+   }
    
    if (key) free(key);
    
@@ -1003,7 +1019,7 @@ CMPIStatus InteropProviderInvokeMethod(
    
    else if (strcasecmp(methodName, "_removeHandler") == 0) {
       CMPIObjectPath *op=in->ft->getArg(in,"key",&st).value.ref;
-      char *key=internalProviderNormalizeObjectPath(op);
+      char *key=normalizeObjectPathCharsDup(op);
       Handler *ha=getHandler(key);
       if (ha) {
          if (ha->useCount) {
@@ -1117,13 +1133,24 @@ CMPIStatus InteropProviderReferences(
 	const CMPIContext * ctx,
 	const CMPIResult * rslt,
 	const CMPIObjectPath * cop,
-	const char * assocClass,
+	const char * resultClass,
 	const char * role,
 	const char ** propertyList)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;   
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderReferences");
-   InternalProviderReferences(NULL, ctx, rslt, cop, assocClass, role, propertyList);
+
+   if (interOpNameSpace(cop,NULL)!=1) _SFCB_RETURN(st);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->references(_broker, ctxLocal, cop, resultClass, role, propertyList, &st);
+   CMRelease(ctxLocal);
+                                      
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);   
+   }   
+   if(enm) CMRelease(enm);   
    _SFCB_RETURN(st);
 }
 
@@ -1134,12 +1161,23 @@ CMPIStatus InteropProviderReferenceNames(
 	const CMPIContext * ctx,
 	const CMPIResult * rslt,
 	const CMPIObjectPath * cop,
-	const char * assocClass,
+	const char * resultClass,
 	const char * role)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;   
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderReferenceNames");
-   InternalProviderReferenceNames(NULL, ctx, rslt, cop, assocClass, role);
+   
+   if (interOpNameSpace(cop,NULL)!=1) _SFCB_RETURN(st);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->referenceNames(_broker, ctxLocal, cop, resultClass, role, &st);
+   CMRelease(ctxLocal);
+                                      
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);   
+   }
+   if(enm) CMRelease(enm);
    _SFCB_RETURN(st);
 }
 

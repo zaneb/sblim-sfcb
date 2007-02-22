@@ -241,8 +241,8 @@ libsfcObjectImplSwapI32toP32_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcInteropProvider_la_SOURCES = \
    interopProvider.c 
-libsfcInteropProvider_la_LIBADD=-lsfcBrokerCore -lsfcInternalProvider
-libsfcInteropProvider_la_DEPENDENCIES=libsfcBrokerCore.la libsfcInternalProvider.la
+libsfcInteropProvider_la_LIBADD=-lsfcBrokerCore
+libsfcInteropProvider_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcInteropServerProvider_la_SOURCES = \
    interopServerProvider.c 

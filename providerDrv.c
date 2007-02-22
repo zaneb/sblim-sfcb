@@ -2423,9 +2423,11 @@ static void *processProviderInvocationRequestsThread(void *prms)
       if (req->options & BRH_NoResp) {
         _SFCB_TRACE(1, ("--- response suppressed"));
       }
-      else sendResponse(parms->requestor, resp);
-      if (resp->rc == 2)
-	exit(-1);
+      else {
+	sendResponse(parms->requestor, resp);
+	if (req->operation == OPS_LoadProvider && resp->rc == 2)
+	  exit(-1);
+      }
    }  
     
    tool_mm_flush();

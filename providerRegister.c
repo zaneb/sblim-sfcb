@@ -107,6 +107,7 @@ static void addProviderToHT(ProviderInfo *info, ProviderRegister *br, UtilHashTa
 	checkDummy = provNameHT->ft->get(provNameHT, info->providerName);
 	if(checkDummy) {
 		info->master = checkDummy;
+		checkDummy->type |= info->type;
 	} else {
 		provNameHT->ft->put(provNameHT, info->providerName, info);
 	}

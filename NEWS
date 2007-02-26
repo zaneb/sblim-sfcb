@@ -32,6 +32,7 @@ Bugs fixed:
 InteropProvider
 - 1666311 Fixed missing support for old-style indication providers
 - 1664992 Fixed interopProvider segfaults with provider-grouping
+- 1669192 Fixed new providerregistration causes problems
 
 Changes in 1.2.0
 ================

@@ -2,7 +2,7 @@
 /*
  * providerDrv.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -575,6 +575,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
             processName=info->providerName;
             providerProcess=1;
             info->proc=*proc;
+            info->pid=currentProc; 
                          
             semSetValue(sfcbSem,((*proc)->id*3)+provProcGuardId+provProcBaseId,0);
             semSetValue(sfcbSem,((*proc)->id*3)+provProcInuseId+provProcBaseId,0);

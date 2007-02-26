@@ -2,7 +2,7 @@
 /*
  * providerRegister.h
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -57,8 +57,11 @@ typedef struct _ProviderInfo {
    time_t lastActivity;
    int startSeq;
    struct _ProviderInfo *next;
-   struct _ProviderInfo *nextInRegister; //not actually next in Register,but
-   //pointer to the next provider serving the same class (for indications)   									
+   struct _ProviderInfo *nextInRegister; /*not actually next in Register,but
+   pointer to the next provider serving the same class (for indications)*/
+   struct _ProviderInfo *master; /* will either be a pointer to itself if the
+   provider serves just one class or to the "master" pointer of this provider
+   when serving multiple classes*/	
    struct providerProcess *proc;         
    CMPIInstanceMI *instanceMI;
    CMPIAssociationMI *associationMI;

@@ -2,7 +2,7 @@
 /*
  * providerRegister.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -74,20 +74,42 @@ static ProviderRegister *pClone(ProviderRegister * br)
    return NULL;
 }
 
-static void addProviderToHT(ProviderInfo *info, UtilHashTable *ht)
+static void addProviderToHT(ProviderInfo *info, ProviderRegister *br, UtilHashTable *provNameHT)
 {
 	ProviderInfo *checkDummy;
-	//check if we already have a provider for that classname
+	UtilHashTable *ht = ((ProviderBase *) br->hdl)->ht;
+	
+	/* let the "master" be itself by default - the master is the first
+	 * provider entry in the providerRegister which serves the same class.
+	 * When we find that there is already the same provider in the register for
+	 * another class, the master pointer needs to be changed to that one*/
+	info->master = info;
+	
+	
+	/* first we add the provider to the providerRegister with the classname
+	 * as a key*/
+	
 	checkDummy = ht->ft->get(ht, info->className);
 	if(checkDummy) {
-		//if yes, build provider chain, attach newly found to last one
-		while(checkDummy->next) {
-			checkDummy = checkDummy->next;
-		}
-		checkDummy->nextInRegister = info;
-	} else {                  
+		/* Another provider is in the register, but the newly found
+		 * wants to serve the same class - so we do not add it to the
+		 * register but append it to the one already found or to its master*/
+		 (checkDummy->master)->nextInRegister = info;
+	} else {
 		ht->ft->put(ht, info->className, info);
-	}	
+	}
+	
+	/* The second step is to add the provider to a temporary ht which has
+	 * the providername as a key. If we find a provider, the found one
+	 * becomes the master of the new one. With this establish that always 
+	 * the same info-ptr is returned, even if a provider serves multiple
+	 * classes*/ 
+	checkDummy = provNameHT->ft->get(provNameHT, info->providerName);
+	if(checkDummy) {
+		info->master = checkDummy;
+	} else {
+		provNameHT->ft->put(provNameHT, info->providerName, info);
+	}
 }
 
 ProviderRegister *newProviderRegister(char *fn)
@@ -100,6 +122,8 @@ ProviderRegister *newProviderRegister(char *fn)
    CntlVals rv;
    int id=0;
    int interopFound=0;
+   UtilHashTable *provNameHT = UtilFactory->newHashTable(61,
+                  UtilHashTable_charKey | UtilHashTable_ignoreKeyCase);
    ProviderRegister *br = (ProviderRegister *) malloc(sizeof(ProviderRegister) +
                                                       sizeof(ProviderBase));
    ProviderBase *bb = (ProviderBase *) br + 1;
@@ -150,7 +174,7 @@ ProviderRegister *newProviderRegister(char *fn)
                else if (qualiProvInfoPtr==NULL) {
                   if (strcmp(info->className,"$QualifierProvider$")==0) qualiProvInfoPtr=info;
                }
-               addProviderToHT(info, bb->ht);
+               addProviderToHT(info, br, provNameHT);
             }
             info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
             info->className = strdup(rv.id);
@@ -222,7 +246,7 @@ ProviderRegister *newProviderRegister(char *fn)
       }
 
       if (info) {
-      	 addProviderToHT(info, bb->ht);
+      	 addProviderToHT(info, br, provNameHT);
       }
    }
    if (in) {
@@ -253,6 +277,7 @@ ProviderRegister *newProviderRegister(char *fn)
       exit(5);
    }
    if (stmt) free(stmt);
+   CMRelease(provNameHT);
    return br;
 }
 
@@ -268,8 +293,9 @@ static ProviderInfo *getProvider(ProviderRegister * br,
 {
    ProviderBase *bb = (ProviderBase *) br->hdl;
    ProviderInfo *info = bb->ht->ft->get(bb->ht, clsName);
-   if (info && info->type & type)
-      return info;
+   if (info && info->type & type) {
+      return info->master;
+   }
    return NULL;
 }
 

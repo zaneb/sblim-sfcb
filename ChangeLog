@@ -1,3 +1,8 @@
+2007-02-26  Sven Schuetz
+
+	* providerDrv.c, providerRegister.c, providerRegister.h:
+	Fixed 1664992: interopProvider segfaults with provider-grouping
+
 2007-02-22  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* providerDrv.c: 

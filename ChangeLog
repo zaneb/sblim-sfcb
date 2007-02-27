@@ -1,3 +1,8 @@
+2007-02-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* Makefile.am: 
+	Post-Fix for 1665255: added objectpath.h to source file list.
+
 2007-02-26  Sven Schuetz
 
 	* providerDrv.c, providerRegister.c, providerRegister.h:

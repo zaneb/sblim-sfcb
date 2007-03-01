@@ -125,6 +125,7 @@ static Subscription *addSubscription(
    
    if (subscriptionHt == NULL) {
       subscriptionHt=UtilFactory->newHashTable(61,UtilHashTable_charKey);
+      subscriptionHt->ft->setReleaseFunctions(subscriptionHt, free, NULL);
    }
 
    _SFCB_TRACE(1,("-- Subscription: %s\n",key));
@@ -174,6 +175,7 @@ static void removeSubscription(
       }
    }
    if (su) {
+      CMRelease(su->sci);
       free (su);
    }
 
@@ -197,8 +199,10 @@ static Filter *addFilter(
    _SFCB_TRACE(1,("--- Filter: >%s<",key));
    _SFCB_TRACE(1,("--- query: >%s<",query));
    
-   if (filterHt==NULL)
+   if (filterHt==NULL) {
       filterHt=UtilFactory->newHashTable(61,UtilHashTable_charKey);
+      filterHt->ft->setReleaseFunctions(filterHt, free, NULL);
+   }
       
    fi=filterHt->ft->get(filterHt,key);
    if (fi) _SFCB_RETURN(NULL);
@@ -210,6 +214,7 @@ static Filter *addFilter(
    fi->query=strdup(query);
    fi->lang=strdup(lang);
    fi->sns=strdup(sns);
+   fi->type=NULL;
    filterHt->ft->put(filterHt,key,fi);
    _SFCB_RETURN(fi);
 }
@@ -242,7 +247,7 @@ static void removeFilter(
       filterHt->ft->remove(filterHt,key);
    }
    if (fi) {
-//      CMRelease(fi->fci);
+      CMRelease(fi->fci);
       CMRelease(fi->qs);
       free(fi->query);
       free(fi->lang);
@@ -264,8 +269,10 @@ static Handler *addHandler(
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "addHandler");
    
-   if (handlerHt==NULL)
+   if (handlerHt==NULL) {
       handlerHt=UtilFactory->newHashTable(61,UtilHashTable_charKey);
+       handlerHt->ft->setReleaseFunctions(handlerHt, free, NULL);
+   }
       
    key=normalizeObjectPathCharsDup(op);
       
@@ -273,6 +280,7 @@ static Handler *addHandler(
    
    if ((ha=handlerHt->ft->get(handlerHt,key))!=NULL) {
       _SFCB_TRACE(1,("--- Handler already registered %p",ha));
+      if(key) free(key);
       _SFCB_RETURN(NULL);
    }
 
@@ -312,6 +320,8 @@ static void removeHandler(
       handlerHt->ft->remove(handlerHt,key);
    }
    if (ha) {
+      CMRelease(ha->hci);
+      CMRelease(ha->hop);
       free (ha);
    }
 
@@ -416,9 +426,18 @@ CMPIStatus genericSubscriptionRequest(
    }   
    
    if (resp) {
+      cnt = binCtx.pCount;
+      while (cnt--) {
+        if (resp[cnt]) {
+	  free(resp[cnt]);
+        }
+      }
       free(resp);
       closeProviderContext(&binCtx);
-   }   
+  }
+   if(fi->type) {
+      free(fi->type);
+   }
  
    _SFCB_RETURN(st);
 }
@@ -494,7 +513,7 @@ CMPIStatus switchIndications(const CMPIContext *ctx,
 	op = CMGetProperty(ci, "filter", &st).value.ref;
 	key = normalizeObjectPathCharsDup(op);
 	fi = getFilter(key);
-	free(key);
+	if(key) free(key);
 	
 	fowardSubscription(ctx, fi, optype, &st);
 
@@ -521,7 +540,7 @@ static CMPIStatus processSubscription(
    skey = normalizeObjectPathCharsDup(cop);
    if (getSubscription(skey)) {
       _SFCB_TRACE(1,("--- subscription already exists"));
-      free(skey);
+      if(skey) free(skey);
       setStatus(&st, CMPI_RC_ERR_ALREADY_EXISTS, NULL);
       _SFCB_RETURN(st); 
    }      
@@ -530,7 +549,7 @@ static CMPIStatus processSubscription(
    op = CMGetProperty(ci, "filter", &st).value.ref;
    key = normalizeObjectPathCharsDup(op);
    fi = getFilter(key);
-   free(key);
+   if(key) free(key);
    
    if (fi == NULL) {
       _SFCB_TRACE(1,("--- cannot find specified subscription filter"));
@@ -542,7 +561,7 @@ static CMPIStatus processSubscription(
    op = CMGetProperty(ci, "handler", &st).value.ref;
    key = normalizeObjectPathCharsDup(op);
    ha = getHandler(key);
-   free(key);
+   if(key) free(key);
       
    if (ha == NULL) {
       _SFCB_TRACE(1,("--- cannot find specified subscription handler"));
@@ -742,24 +761,28 @@ CMPIStatus InteropProviderCreateInstance(
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *nss = ns->ft->getCharPtr(ns,NULL);
    CMPIContext *ctxLocal;
+   CMPIInstance *ciLocal;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderCreateInstance");
   
    if (interOpNameSpace(cop,&st)!=1) _SFCB_RETURN(st);
    
+   ciLocal = ci->ft->clone(ci, NULL);
+   memLinkInstance(ciLocal);
+   
    if(isa(nss, cns, "cim_indicationsubscription")) {
    
       _SFCB_TRACE(1,("--- create cim_indicationsubscription"));
       
-      st=processSubscription(_broker,ctx,ci,cop);
+      st=processSubscription(_broker,ctx,ciLocal,cop);
    }
    else if (isa(nss, cns, "cim_indicationfilter")) {
       QLStatement *qs=NULL;
       int rc,i,n,m;
       char *key=NULL,*ql,lng[16];
-      CMPIString *lang=ci->ft->getProperty(ci,"querylanguage",&st).value.string;
-      CMPIString *query=ci->ft->getProperty(ci,"query",&st).value.string;
-      CMPIString *sns=ci->ft->getProperty(ci,"SourceNamespace",&st).value.string;
+      CMPIString *lang=ciLocal->ft->getProperty(ciLocal,"querylanguage",&st).value.string;
+      CMPIString *query=ciLocal->ft->getProperty(ciLocal,"query",&st).value.string;
+      CMPIString *sns=ciLocal->ft->getProperty(ciLocal,"SourceNamespace",&st).value.string;
       
       _SFCB_TRACE(1,("--- create cim_indicationfilter"));
    
@@ -791,10 +814,11 @@ CMPIStatus InteropProviderCreateInstance(
       if (rc) {
          free(key);
          setStatus(&st,CMPI_RC_ERR_INVALID_QUERY,"Query parse error");
+         CMRelease(qs);
          _SFCB_RETURN(st);         
       }
 
-      addFilter(ci,key,qs,(char*)query->hdl,lng,(char*)sns->hdl);
+      addFilter(ciLocal,key,qs,(char*)query->hdl,lng,(char*)sns->hdl);
    }
    
    else {
@@ -804,7 +828,7 @@ CMPIStatus InteropProviderCreateInstance(
     
    if (st.rc==CMPI_RC_OK) {
       ctxLocal = prepareUpcall((CMPIContext *)ctx);
-      CMReturnObjectPath(rslt, _broker->bft->createInstance(_broker, ctxLocal, cop, ci, &st));
+      CMReturnObjectPath(rslt, _broker->bft->createInstance(_broker, ctxLocal, cop, ciLocal, &st));
       CMRelease(ctxLocal);
    }
     
@@ -1029,7 +1053,8 @@ CMPIStatus InteropProviderInvokeMethod(
       }
       else {
          setStatus(&st, CMPI_RC_ERR_NOT_FOUND, "Handler objectnot found");
-      }   
+      }
+      if(key) free(key);
    }
 
    else if (strcasecmp(methodName, "_startup") == 0) {

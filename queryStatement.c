@@ -149,9 +149,24 @@ static int qsTestPropertyClass(QLStatement *st, char *cl)
    return 0;
 }
 
+static void freeCharArray(char ** arr)
+{
+   int i=0;
+   if(arr) {
+      while(arr[i]) {
+         free(arr[i++]);
+      }
+      free(arr);
+   }
+}
+
 static void qsRelease(QLStatement *st)
 {
+   freeCharArray(st->fClasses);
+   freeCharArray(st->spNames);
+   if (st->allocList) free(st->allocList);
    if (st->sns) free(st->sns);
+   if (st) free(st);
 }
 
 static CMPIInstance* qsCloneAndFilter(QLStatement *st, CMPIInstance *ci, CMPIObjectPath *cop, 

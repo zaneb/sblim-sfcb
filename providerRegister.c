@@ -43,25 +43,35 @@ ProviderInfo *defaultProvInfoPtr = NULL;
 ProviderInfo *interOpProvInfoPtr = NULL;
 ProviderInfo *forceNoProvInfoPtr = &forceNotFound;
 
+
+
+static void freeInfoPtr(ProviderInfo *info)
+{
+   int n=0;
+   if(info->nextInRegister) {
+      freeInfoPtr(info->nextInRegister);
+   }
+   free(info->className); 
+   free(info->providerName); 
+   free(info->location);
+   free(info->group);
+   n=0;
+   if (info->ns) while (info->ns[n]) free(info->ns[n++]); 
+   free(info->ns);
+   free(info);
+}
+
 static void pRelease(ProviderRegister * br)
 {
    ProviderBase *bb = (ProviderBase *) br->hdl;
    char *key = NULL;
    ProviderInfo *info = NULL;
    HashTableIterator *it;
-   int n=0;
    
    for (it = bb->ht->ft->getFirst(bb->ht, (void **) &key, (void **) &info);
         key && it && info;
         it = bb->ht->ft->getNext(bb->ht, it, (void **) &key, (void **) &info)) {
-      free(info->className); 
-      free(info->providerName); 
-      free(info->location);
-      free(info->group);
-      n=0;
-      if (info->ns) while (info->ns[n]) free(info->ns[n++]); 
-      free(info->ns);
-      free(info);
+      freeInfoPtr(info);
    }
    
    free(bb->fn);
@@ -94,7 +104,13 @@ static void addProviderToHT(ProviderInfo *info, ProviderRegister *br, UtilHashTa
 		/* Another provider is in the register, but the newly found
 		 * wants to serve the same class - so we do not add it to the
 		 * register but append it to the one already found or to its master*/
-		 (checkDummy->master)->nextInRegister = info;
+		 if(strcmp(checkDummy->providerName, info->providerName) == 0) {
+		 	/* double registration - discard */
+		 	freeInfoPtr(info);
+		 	return;
+		 } else {
+		 	(checkDummy->master)->nextInRegister = info;
+		 }
 	} else {
 		ht->ft->put(ht, info->className, info);
 	}

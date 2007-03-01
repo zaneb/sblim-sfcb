@@ -306,8 +306,15 @@ static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
 
       if ((kl = klt->ft->get(klt, cn)) == NULL) {	 
 	 CMPIConstClass * cc = getConstClass(ns,cn);
-	 kl = cc->ft->getKeyList(cc);
-         klt->ft->put(klt, strdup(cn), kl);
+	 if(cc) {
+	    kl = cc->ft->getKeyList(cc);
+            klt->ft->put(klt, strdup(cn), kl);
+	 } else {
+	    if(rc) {
+	       CMSetStatus(rc, CMPI_RC_ERR_INVALID_CLASS);
+	    }
+	    return NULL;
+	 }
       }
       Broker->xft->unlockMutex(*mtx);
       m = kl->ft->getSize(kl, NULL);

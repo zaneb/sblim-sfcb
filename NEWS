@@ -34,6 +34,7 @@ InteropProvider
 - 1664992 Fixed interopProvider segfaults with provider-grouping
 - 1669192 Fixed new providerregistration causes problems
 - 1668852 Fixed memory leak in interop provider
+- 1654313 Fixed http adapter segfaults on createinstance
 
 Changes in 1.2.0
 ================

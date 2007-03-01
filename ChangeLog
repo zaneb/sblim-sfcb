@@ -2,6 +2,9 @@
 
 	* instance.c, providerRegister.c, interopProvider.c, queryStatement.c:
 	Fixed 1668852: memory leak in interop provider
+	
+	* cimXmlRequest.c, instance.c:
+	Fixed 1654313: http adapter segfaults on createinstance
 
 2007-02-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 

@@ -1160,6 +1160,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    CMPIObjectPath *path;
    CMPIInstance *inst;
    CMPIValue val;
+   CMPIStatus st = { CMPI_RC_OK, NULL };
    UtilStringBuffer *sb;
    int irc;
    BinRequestContext binCtx;
@@ -1185,9 +1186,13 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq.principal = setCharsMsgSegment(ctx->principal);
    sreq.hdr.sessionId=ctx->sessionId;
 
-   path = inst->ft->getObjectPath(inst,NULL);
-   sreq.path = setObjectPathMsgSegment(path);
-
+   path = inst->ft->getObjectPath(inst,&st);
+   /* if st.rc is set the class was probably not found and the path is NULL,
+    * so we don't set it. Let the provider manager handle unknown class. */
+   if(!st.rc) {
+      sreq.path = setObjectPathMsgSegment(path);
+   }
+   
    binCtx.oHdr = (OperationHdr *) req;
    binCtx.bHdr = &sreq.hdr;
    binCtx.rHdr = hdr;

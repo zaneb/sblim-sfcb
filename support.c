@@ -14,12 +14,18 @@
  * Author:        Frank Scheffler
  * Contributions: Adrian Schuur <schuur@de.ibm.com>
  *
- * Description:
+ * Description: Various memory management and support routines.
  *
- * Various support routines
- *
-*/
+ */
 
+/** @file support.c
+ *  @brief Memory Managment system for providers (header file).
+ *
+ *  @author Frank Scheffler
+ *
+ *  @sa support.h
+ *  @sa native.h
+ */
 
 #include <stdio.h>
 #include <dlfcn.h>
@@ -38,9 +44,9 @@
 #define SFCB_ASM(x)
 #endif
 
-int collectStat=0;
-unsigned long exFlags = 0;
-int localClientMode=0;
+int collectStat=0;            /**< flag determining whether statistic collection is enabled */
+unsigned long exFlags = 0;    /**< flag determining whether extra options are enabled (currently only determines interop support) */
+int localClientMode=0;        /**< flag determining whether local client connections are enabled */
 
 void *loadLibib(const char *libname)
 {
@@ -293,9 +299,8 @@ CMPIQualifierDeclMI *loadQualifierDeclMI(const char *provider,
 
 
 
-/**
- * Exits the program with an error message in case the given condition
- * holds.
+/** Exits the program with a memory allocation error message in case the given 
+ *  condition holds.
  */
 #define __ALLOC_ERROR(cond) \
   if ( cond ) { \

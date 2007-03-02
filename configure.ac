@@ -77,6 +77,9 @@ AC_ARG_ENABLE(pam,
 	[AC_HELP_STRING([--enable-pam],
 		[Enable PAM Basic authentication support for SFCB.])])
 
+AC_ARG_ENABLE(docs,
+	[AC_HELP_STRING([--enable-docs],
+		[Enable generation of API documentation.])])
 
 # Size checks
 AC_CHECK_SIZEOF(void*)
@@ -197,8 +200,9 @@ AC_PROG_LEX
 AC_CHECK_PROG(YACC,bison,[bison -y])
 if test -z "${YACC}"
 then
-	AC_MSG_WARN([GNU bison is required (only for rebuilding the sfcb parser code).])
+   AC_MSG_WARN([GNU bison is required (only for rebuilding the sfcb parser code).])
 fi
+
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
@@ -271,6 +275,15 @@ if test -d $srcdir/test; then
    AC_CONFIG_SUBDIRS([test])
 fi
 
+# Check for doxygen for generating documentation
+if test "$enable_docs" = "yes"; then
+   AC_CHECK_PROG(DOXYGEN,doxygen,[doxygen])
+   if test -z "${DOXYGEN}"
+   then
+      AC_MSG_WARN([doxygen is required to build API documentation.])
+   fi
+fi
+
 if test -d $srcdir/mofc; then
    MOFC_DIR=mofc
    export sfcb_recursed=yes
@@ -287,6 +300,7 @@ AM_CONDITIONAL(SLP,[test "$enable_slp" == "yes"])
 AM_CONDITIONAL(SLP_ALONE,[test "$enable_slp" == "standalone"]) 
 AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"]) 
 AM_CONDITIONAL(PAM,[test "$enable_pam" == "yes"]) 
+AM_CONDITIONAL(DOCS,[test "$enable_docs" == "yes"])
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
@@ -294,7 +308,8 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
 		 man/genSslCert.1.pre  man/sfcbmof.1.pre 
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
 		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
-		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre ])
+		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre 
+		 sfcb-dox.conf])
 AC_OUTPUT
 
 echo ======================================================
@@ -308,4 +323,5 @@ echo -e "slp"\\t"${enable_slp:-no}"
 echo -e "qualifierrep"\\t"${enable_qualifierrep:-no}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
 echo -e "PAM authentication"\\t"${enable_pam:-no}"
+echo -e "Documentation"\\t"${enable_docs:-no}"
 echo ======================================================

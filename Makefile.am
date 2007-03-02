@@ -343,6 +343,13 @@ if PAM
 dist_pam_DATA=pam/sfcb
 endif
 
+if DOCS
+noinst_DATA=doc/html/index.html
+
+doc/html/index.html: sfcb-dox.conf
+	$(DOXYGEN) sfcb-dox.conf
+endif
+
 SUFFIXES = .1 .1.pre
 
 .1.pre.1:
@@ -392,6 +399,10 @@ install-data-local:
 if INDICATIONS
 	$(INSTALL_DATA) $(srcdir)/indication.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs
 endif
+if DOCS
+	test -d $(DESTDIR)$(sfcbdocdir)/html || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)/html
+	$(INSTALL) -m 644 $(srcdir)/doc/html/* $(DESTDIR)$(sfcbdocdir)/html
+endif 
 
 uninstall-local:
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
@@ -399,11 +410,15 @@ uninstall-local:
 if INDICATIONS
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/mofs/indication.mof
 endif
+if DOCS
+	rm -rf $(DESTDIR)$(sfcbdocdir)/html
+endif
 
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcbunstage sfcbuuid sfcb.cfg getSchema.sh sfcb \
-		sfcb.init-redhat sfcb.init-suse sfcb.init-none \
+		sfcb.init-redhat sfcb.init-suse sfcb.init-none sfcb-dox.conf \
 		$(MANFILES)
+	rm -rf doc/*
 
 dist-hook:
 	test -d "$(distdir)" &&	rm -rf `find $(distdir) -type d -name CVS`

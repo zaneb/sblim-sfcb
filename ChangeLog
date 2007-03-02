@@ -1,3 +1,9 @@
+2007-03-01  Tyrel Datwyler <tyreld@us.ibm.com>
+
+	* sfcb-dox.conf.in, configure.ac, Makefile.am, support.h, support.c
+	Partially fixed 1672034: Added support for documentation generation, 
+	and initial documentation of memory managment facilities. 
+
 2007-03-01  Sven Schuetz
 
 	* instance.c, providerRegister.c, interopProvider.c, queryStatement.c:

@@ -121,6 +121,7 @@ typedef struct _buffer {
 #endif
 } Buffer;
 
+//#define INET6
 //#define USE_THREADS
 //for use by the process thread in handleHttpRequest()
 struct processThreadParams {
@@ -1259,7 +1260,11 @@ static void handleHttpRequest(int connFd)
 
 int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 {
+#ifdef INET6
+   struct sockaddr_in6 sin;
+#else
    struct sockaddr_in sin;
+#endif
    socklen_t sz,sin_len;
    int i,ru;
    char *cp;
@@ -1356,7 +1361,12 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
      mlogf(M_INFO,M_SHOW,"--- Maximum requests per connection: %ld\n",keepaliveMaxRequest);
    }
 
+#ifdef INET6
+   listenFd = socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+#else 
    listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+#endif
+
    sin_len = sizeof(sin);
 
    ru = 1;
@@ -1364,9 +1374,15 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
    bzero(&sin, sin_len);
 
+#ifdef INET6
+   sin.sin6_family = AF_INET6;
+   sin.sin6_addr = in6addr_any;
+   sin.sin6_port = htons(port);
+#else
    sin.sin_family = AF_INET;
    sin.sin_addr.s_addr = INADDR_ANY;
    sin.sin_port = htons(port);
+#endif
 
    if (bind(listenFd, (struct sockaddr *) &sin, sin_len) ||
        listen(listenFd, 0)) {

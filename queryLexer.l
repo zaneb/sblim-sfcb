@@ -145,6 +145,21 @@ IDENT_CHAR [A-Za-z_]
     return TOK_DOUBLE;
 }
 
+\'[^\'\n]*\' {
+
+    {
+       size_t n = strlen(yytext) - 2;
+       yylval.strValue=yyStrcpy(yytext+1,n);
+    }
+
+    return TOK_STRING;
+}
+
+\'[^\'\n]*$ {
+
+    yyErr("Unterminated string");
+}
+
 \"[^\"\n]*\" {
 
     {

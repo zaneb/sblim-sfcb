@@ -1,5 +1,8 @@
 2007-03-05  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* queryLexer.l:
+	Fixed 1370752: added single quotes to lexer definition.
+
 	* predicate.c, providerDrv.c, queryOperation.c, selectexp.c,
 	subcond.c:
 	Fixed 1370764: parser unstable after syntax error.

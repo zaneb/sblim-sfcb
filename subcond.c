@@ -1,8 +1,8 @@
 
 /*
- * subcond.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "mlog.h"
 #include "native.h"
 #include "queryOperation.h"
 
@@ -88,8 +89,7 @@ static CMPIPredicate* __eft_getPredicateAt
       if (index<count) pvp=CMGetArrayElementAt(conds,index,&irc).value.dataPtr;
    }
    else {
-      printf("-#- no conds\n");
-      abort();
+      mlogf(M_ERROR,M_SHOW,"### getPredicateAt, no conds\n");
    }
    if (rc) *rc=irc;
    

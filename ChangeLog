@@ -1,3 +1,9 @@
+2007-03-05  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* predicate.c, providerDrv.c, queryOperation.c, selectexp.c,
+	subcond.c:
+	Fixed 1370764: parser unstable after syntax error.
+
 2007-03-01  Tyrel Datwyler <tyreld@us.ibm.com>
 
 	* sfcb-dox.conf.in, configure.ac, Makefile.am, support.h, support.c

@@ -1,8 +1,8 @@
 
 /*
- * queryOperation.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -235,17 +235,20 @@ static int propCompare(QLOperand* self, QLOperand* op,
    case QL_PropertyName:
    case QL_Name:
       mlogf(M_ERROR,M_SHOW,"### propCompare(): (QL_PropertyName QL_Name) got a problem\n");
-      abort();
+      return -2;
+      /*      abort();*/
       break;
    case QL_Invalid:
       mlogf(M_ERROR,M_SHOW,"### propCompare(): got a problem\n");
-      abort();
+      return -2;
+      /* abort();*/
       break;
    case QL_NotFound:
       str=propToString(self);
       mlogf(M_ERROR,M_SHOW,"### propCompare(): %s not found\n",str);
       free(str);
-      abort();
+      return -2;
+      /*abort();*/
    default:
       ; // what should we do here ?  
    }
@@ -279,7 +282,7 @@ static char* instToString(QLOperand* op)
 static int  nameCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
 {
    mlogf(M_ERROR,M_SHOW,"--- nameCompare\n");
-   abort();
+   /*abort();*/
    return -2;
 }
 

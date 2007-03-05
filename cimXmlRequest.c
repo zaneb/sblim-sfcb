@@ -1475,9 +1475,14 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
       (char*)req->op.queryLang.data,NULL,&irc);   
    
    fCls=qs->ft->getFromClassList(qs);
+   if (irc) {
+     _SFCB_RETURN(iMethodErrResponse(hdr,
+				     getErrSegment(CMPI_RC_ERR_INVALID_QUERY, 
+						   "syntax error in query.")));
+   }
    if (fCls==NULL || *fCls==NULL) {
-     mlogf(M_ERROR,M_SHOW,"--- from clause missing\n");
-     abort();
+     _SFCB_RETURN(iMethodErrResponse(hdr,
+				     getErrSegment(CMPI_RC_ERR_INVALID_QUERY, "required from clause is missing.")));
    }
    req->op.className = setCharsMsgSegment(*fCls);
    

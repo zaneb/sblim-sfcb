@@ -1,6 +1,6 @@
 
 /*
- * providerDrv.c
+ * $Id$
  *
  * © Copyright IBM Corp. 2005, 2007
  *
@@ -1668,7 +1668,8 @@ static BinResponseHdr *execQuery(BinRequestHdr * hdr, ProviderInfo * info, int r
 
       qs->propSrc.getValue=queryGetValue;
       qs->propSrc.sns=qs->sns;
-      qs->cop=CMNewObjectPath(Broker,"*",qs->fClasses[0],NULL);
+      //      qs->cop=CMNewObjectPath(Broker,"*",qs->fClasses[0],NULL);
+      qs->cop=path;
 
       if (qs->allProps) {	
          CMPIConstClass *cc = getConstClass(CMGetNameSpace(qs->cop,NULL)->hdl,

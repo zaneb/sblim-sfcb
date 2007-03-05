@@ -1,3 +1,11 @@
+Changes in 1.2.2
+================
+
+Bugs fixed:
+- 1370764 Fixed query parser left unstable by mal-formed statement
+- 1668852 Fixed memory leak in interop provider
+- 1654313 Fixed http adapter segfaults on createinstance
+
 Changes in 1.2.1
 ================
 
@@ -33,8 +41,6 @@ InteropProvider
 - 1666311 Fixed missing support for old-style indication providers
 - 1664992 Fixed interopProvider segfaults with provider-grouping
 - 1669192 Fixed new providerregistration causes problems
-- 1668852 Fixed memory leak in interop provider
-- 1654313 Fixed http adapter segfaults on createinstance
 
 Changes in 1.2.0
 ================

@@ -1,8 +1,8 @@
 
 /*
- * queryStatement.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -54,7 +54,9 @@ int queryInput(char* buffer, int* done, int requested)
 
 char * sfcQueryStrcpy(char *txt, int n)
 {
+   int dummy;
    char* str=(char*)malloc(n+1);
+   memAdd(str,&dummy);
    memcpy(str,txt,n);
    str[n]=0;
    return str;
@@ -162,11 +164,13 @@ static void freeCharArray(char ** arr)
 
 static void qsRelease(QLStatement *st)
 {
-   freeCharArray(st->fClasses);
-   freeCharArray(st->spNames);
-   if (st->allocList) free(st->allocList);
-   if (st->sns) free(st->sns);
-   if (st) free(st);
+  if (st->allocMode != MEM_TRACKED) {
+    freeCharArray(st->fClasses);
+    freeCharArray(st->spNames);
+    if (st->allocList) free(st->allocList);
+    if (st->sns) free(st->sns);
+    if (st) free(st);
+  }
 }
 
 static CMPIInstance* qsCloneAndFilter(QLStatement *st, CMPIInstance *ci, CMPIObjectPath *cop, 
@@ -215,20 +219,18 @@ static void qcAddPropIdentifier(QLCollector *qc, QLStatement *qs, char *cls, cha
 
 void *qsAlloc(QLStatement *qs, unsigned int size)
 {
-   if (qs) {
-      if (qs->allocMode!=MEM_TRACKED) {
-         void *ptr=calloc(1,size);
-         qs->allocList[qs->allocNext++]=ptr;
-         if (qs->allocNext==qs->allocMax) {
-            qs->allocMax*=2;
-            qs->allocList=(void**)realloc(qs->allocList,qs->allocMax*sizeof(void*));
-         }
-         return ptr;
-      } 
-   }
-//   return tool_mm_alloc(MEM_TRACKED,size);
-   int x;
-   return memAlloc(MEM_TRACKED, size, &x);
+  void *ptr=calloc(1,size);
+  if (qs && qs->allocMode!=MEM_TRACKED) {
+    qs->allocList[qs->allocNext++]=ptr;
+    if (qs->allocNext==qs->allocMax) {
+      qs->allocMax*=2;
+      qs->allocList=(void**)realloc(qs->allocList,qs->allocMax*sizeof(void*));
+    }
+  } else {
+    int x;
+    memAdd(ptr, &x);
+  }
+  return ptr;
 }
 
 static QLStatementFt stmtFt={

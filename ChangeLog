@@ -1,3 +1,8 @@
+2007-03-06  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* queryStatement.c, queryParser.y: 
+	Fixed 1674999: fixed memory corruption and leak in query statement.
+
 2007-03-05  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* queryLexer.l:

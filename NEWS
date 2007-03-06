@@ -6,6 +6,7 @@ Bugs fixed:
 - 1654313 Fixed http adapter segfaults on createinstance
 - 1370764 Fixed query parser left unstable by mal-formed statement
 - 1370752 Fixed query parser fails to recogonize single quotations
+- 1674999 Fixed query statement memory problem
 
 Changes in 1.2.1
 ================

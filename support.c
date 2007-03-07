@@ -19,7 +19,7 @@
  */
 
 /** @file support.c
- *  @brief Memory Managment system for providers (header file).
+ *  @brief Memory managment system and support routines for providers
  *
  *  @author Frank Scheffler
  *

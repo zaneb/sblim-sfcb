@@ -1,7 +1,5 @@
 
 /*
- * $Id$
- *
  * objectimpl.h
  *
  * (C) Copyright IBM Corp. 2005
@@ -15,21 +13,11 @@
  *
  * Author:     Adrian Schuur <schuur@de.ibm.com>
  *
- * Description: Internal implementation support for cim objects.
+ * Description:
  *
- */
-
-/** @file objectImpl.h
- *  @brief Internal binary object implementation.
+ * Internal implementation support for cim objects.
  *
- *  @author Adrian Schuur
- *
- *  @sa objectImpl.c
- *  @sa cmpidt.h
- *  @sa cmpift.h
- *  @sa cmpimacs.h
- *  @sa native.h
- */
+*/
 
 #ifdef SETCLPFX
  #ifdef CLOBJECTS_H
@@ -88,90 +76,26 @@
 #endif
 
 #define _XPFX(p,x) p ## x
-#define PFX(p,x) _XPFX(p,x)
-
-
-/** @struct ClVersionRecord
- *  @brief Repository version record.
- *
- *  Record containing class repository version information.
- */
-
-/** @struct stringControl */
-
-/** @struct ClSection 
- *  @brief Array of hetrogeneous object data.
- */
-
-/** @struct ClStrBuf
- *  @brief String buffer
- */
-
-/** @struct ClArrayBuf
- *  @brief Array buffer
- */
-
-/** @struct ClObjectHdr
- *  @brief Binary object header.
- *
- *  This structure is the object header containing object information such as
- *  type, flags, and references to data buffers.
- */
-
-/** @struct ClString
- *  @brief String index
- *
- *  Structure contains index for string in the objects string buffer.
- */
-
-/** @struct ClArray
- *  @brief Array index
- *
- *  Structure contains index for data value in the objects array buffer.
- */
-
-/** @struct ClClass
- *  @brief Class object
- *
- *  This structure is used for representing class objects.
- */
-
-/** @struct ClObjectPath
- *  @brief An object path object
- *
- *  This structure is used for representing an object path
- */
-
-/** @struct ClArgs
- *  @brief Arguments object
- *
- *  This structure is used for representing request/response arguments
- */
-
-/** @struct ClInstance
- *  @brief Instance object
- *
- *  This structure is used for representing class instances.
- */
+#define PFX(p,x) _XPFX(p,x) 
 
 typedef struct {
    union {
       struct {
          union {
- 	    unsigned int size;          /**< version record size. should always be 96 bytes. */
-	    unsigned char sByte[4];     /**< used to determine endianess - byte order in designated host order */
+            unsigned int size;  // used to determine endianes - byter order in designated host order
+            unsigned char sByte[4];
          };
-	 unsigned short zeros;          /**< all remaining integer fields in network order */
-  	 unsigned short type;           /**< version record type. @sa HDR_Version */
-	 char id[10];                   /**< filled with "sfcb-rep\0", and used to determine asci/ebcdic char encoding */
+         unsigned short zeros;   // all remaining integer fields in network order 
+         unsigned short type;
+         char id[10];            // "sfcb-rep\0" used to determine asci/ebcdic char encoding  
          unsigned short version;
          unsigned short level;
          unsigned short objImplLevel;
          unsigned short options;
          unsigned short flags;
-	 char creationDate[32];
+         char creationDate[32];
       };
-      struct {                          // used to force 96 bytes record length
+      struct {                   // used to force 96 bytes record length
          unsigned int fixedSize[23];  
          unsigned int lastInt;
       };
@@ -186,27 +110,23 @@ typedef struct {
 
 typedef struct {
    union {
-     long sectionOffset;           /**< memory offset to beginning of section array when object is serialized */
-     void *sectionPtr;             /**< pointer to section array when object is not serialized */
-   };                            
-   unsigned short used;            /**< number of used section blocks */
-   unsigned short max;             /**< maximum number of section blocks */
+      long sectionOffset;
+      void *sectionPtr;
+   };
+   unsigned short used, max;
 } PFX(CLPFX,ClSection);
 
 typedef struct {
-   unsigned short iUsed;           /**< number of string indices being used */
-   unsigned short iMax;            /**< maximum number of string indices */
-   int indexOffset;                /**< memory offset to the beginning of the array of index offsets when the object is serialized */
-   int *indexPtr;                  /**< pointer to the array of index offsets when the object is not serialized */
-   unsigned int bUsed;             /**< number of chars used in the buffer */
-   unsinged int bMax;              /**< total chars allocated in the buffer */
+   unsigned short iUsed,iMax;
+   int indexOffset;
+   int *indexPtr;
+   unsigned int bUsed, bMax;
    char buf[1];
 } PFX(CLPFX,ClStrBuf);
 
-#ifndef CLP32                      // different layout for power 32
+#ifndef CLP32   // different layout for power 32
 typedef struct {
-   unsigned short iUsed;           /**< number of */
-   unsigned short iMax;            /**< maximum number of */
+   unsigned short iUsed,iMax;
    int indexOffset;
    int *indexPtr;
    unsigned int bUsed, bMax;
@@ -214,98 +134,17 @@ typedef struct {
 } PFX(CLPFX,ClArrayBuf);
 #endif
 
-/** @def HDR_Rebuild 
- *
- *
- *
- *  @sa ClObjectHdr.flags
- */
-
-/** @def HDR_RebuildStrings 
- *
- *
- *
- *  @sa ClObjectHdr.flags
- */
-
-/** @def HDR_ContainsEmbeddedObject 
- *
- *
- *
- *  @sa ClObjectHdr.flags
- */
-
-/** @def HDR_StrBufferMalloced
- *
- *  Header flag that indicates a string buffer has been malloced for the object.
- *
- *  @sa ClObjectHdr.flags
- */
-
-/** @def HDR_ArrayBufferMalloced
- *
- *  Header flag that indicates that an array buffer has been malloced for the object.
- *
- *  @sa ClObjectHdr.flags
- */
-
-/** @def HDR_Class 
- *
- *  Header flag that indicates the object is a class.
- *
- *  @sa ClObjectHdr.type
- */
-
-/** @def HDR_Instance 
- *
- *  Header flag that indicates the object is an instance.
- *
- *  @sa ClObjectHdr.type
- */
-
-/** @def HDR_ObjectPath 
- *
- *  Header flag that indicates the object is an object path.
- *
- *  @sa ClObjectHdr.type
- */
-
-/** @def HDR_Args 
- *
- *  Header flag that indicates the object is arguments.
- *
- *  @sa ClObjectHdr.type
- */
-
-/** @def HDR_Qualifier 
- *
- *  Header flag that indicates the object is a qualifier.
- *
- *  @sa ClObjectHdr.type
- */
-
-/** @def HDR_Version 
- *
- *  Header flag that indicates a version record object.
- *
- *  @sa ClVersionRecord.type
- */
-
 typedef struct {
-   unsigned int size;              /**< size of serialized object in memory */
-   unsigned short flags;           /**< object flags 
-			            *   @sa HDR_Rebuild @sa HDR_RebuildStrings @sa HDR_ContainsEmbeddedObject 
-				    *   @sa HDR_StrBufferMalloced @sa HDR_ArrayBufferMalloced */
+   unsigned int size;
+   unsigned short flags;
    #ifndef SETCLPFX
     #define HDR_Rebuild 1
     #define HDR_RebuildStrings 2
     #define HDR_ContainsEmbeddedObject 4
     #define HDR_StrBufferMalloced 16
-    #define HDR_ArrayBufferMalloced 32
+    #define HDR_ArrayBufferMalloced 32 
    #endif
-   unsigned short type;            /**< object type
-			            *   @sa HDR_Class @sa HDR_Instance @sa HDR_ObjectPath
-			            *   @sa HDR_Args @sa HDR_Qualifier @sa HDR_Version */
+   unsigned short type;
    #ifndef SETCLPFX
     #define HDR_Class 1
     #define HDR_Instance 2
@@ -315,62 +154,26 @@ typedef struct {
     #define HDR_Version 0x1010
    #endif
    union {
-      long strBufOffset;           /**< memory offset to object string buffer */
-      ClStrBuf *strBuffer;         /**< pointer to object string buffer */
+      long strBufOffset;
+      ClStrBuf *strBuffer;
    };
    union {
-      long arrayBufOffset;         /**< memory offset to object array buffer when object is serialized */
-      ClArrayBuf *arrayBuffer;     /**< pointer to object array buffer when object is not serialized */
+      long arrayBufOffset;
+      ClArrayBuf *arrayBuffer;
    };   
 } PFX(CLPFX,ClObjectHdr);
 
 typedef struct {
-   long id;                        /**< index of string in the objects string buffer */
+   long id;
 } PFX(CLPFX,ClString);
 
 typedef struct {
-   long id;                        /**< index of data in the objects array buffer */
+   long id;
 } PFX(CLPFX,ClArray);
 
-/** @def ClClass_Q_Abstract 
- *  
- *  Class qualifier flag indicating an abstract class.
- *
- *  @sa ClClass.quals
- */
-
-/** @def ClClass_Q_Association 
- *
- *  Class qualifier flag indicating that the class is an association.
- *
- *  @sa ClClass.quals
- */
-
-/** @def ClClass_Q_Indication 
- *
- *  Class qualifier flag indicating that the class is an indication.
- *
- *  @sa ClClass.quals
- */
-
-/** @def ClInst_Q_Association 
- *
- *  Instance qualifier flag indicating that the instance is an association 
- *
- *  @sa ClInstance.quals
- */
-
-/** @def ClInst_Q_Indication 
- *
- *  Instance qualifier flag indicating that the instance is an indication
- *
- *  @sa ClInstance.quals
- */
-
 typedef struct {
-   PFX(CLPFX,ClObjectHdr) hdr;          /**< The object header associated with this class */
-   unsigned char quals;                 /**< flags indicating qualifiers associated with this class @sa ClClass_Q_Abstract 
-				         *   @sa ClClass_Q_Association @sa ClClass_Q_Indication */
+   PFX(CLPFX,ClObjectHdr) hdr;
+   unsigned char quals;
    #ifndef SETCLPFX
     #define ClClass_Q_Abstract 1
     #define ClClass_Q_Association 2
@@ -378,29 +181,29 @@ typedef struct {
    #endif
    unsigned char parents;
    unsigned short reserved;
-   PFX(CLPFX,ClString) name;            /**< index of class name in the string buffer */
-   PFX(CLPFX,ClString) parent;          /**< index of class parent name in the string buffer */
-   PFX(CLPFX,ClSection) qualifiers;     /**< section array of qualifiers associated with this class */
-   PFX(CLPFX,ClSection) properties;     /**< section array of properties associated with this class */
-   PFX(CLPFX,ClSection) methods;        /**< section array of methods associated with this class */
+   PFX(CLPFX,ClString) name;
+   PFX(CLPFX,ClString) parent;
+   PFX(CLPFX,ClSection) qualifiers;
+   PFX(CLPFX,ClSection) properties;
+   PFX(CLPFX,ClSection) methods;
 } PFX(CLPFX,ClClass);
 
 typedef struct {
-   ClObjectHdr hdr;                     /**< the object header associated with this object path */
-   PFX(CLPFX,ClString) hostName;        /**< index of the hostname in the string buffer */
-   PFX(CLPFX,ClString) nameSpace;       /**< index of the namespace in the string buffer */
-   PFX(CLPFX,ClString) className;       /**< index of the class name in the string buffer */
-   PFX(CLPFX,ClSection) properties;     /**< section array of properties associated with this object path */
+   ClObjectHdr hdr;
+   PFX(CLPFX,ClString) hostName;
+   PFX(CLPFX,ClString) nameSpace;
+   PFX(CLPFX,ClString) className;
+   PFX(CLPFX,ClSection) properties;
 } PFX(CLPFX,ClObjectPath);
 
 typedef struct {
-   PFX(CLPFX,ClObjectHdr) hdr;          /**< the object header associated with these arguments */
-   PFX(CLPFX,ClSection) properties;     /**< section array of properties associated with these arguments */
+   PFX(CLPFX,ClObjectHdr) hdr;
+   PFX(CLPFX,ClSection) properties;
 } PFX(CLPFX,ClArgs);
 
 typedef struct {
-   PFX(CLPFX,ClObjectHdr) hdr;          /**< the object header associated with this class instance */
-   unsigned char quals;                 /**< flags indicating qualifiers associated with this class instance */
+   PFX(CLPFX,ClObjectHdr) hdr;
+   unsigned char quals;
    #ifndef SETCLPFX
     #define ClInst_Q_Association 2
     #define ClInst_Q_Indication 4

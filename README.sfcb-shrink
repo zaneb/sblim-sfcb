@@ -63,6 +63,13 @@ If only the caching class provider is being used, the following
 files can be removed from an installed sfcb:
 $libdir/libsfcClassProvider.*
 
+I.7 Compile with Size Optimization Flag
+When using gcc to compile the sfcb source code, passing the -Os flag
+will result in the output of smaller object files, particularly
+libsfcBrokerCore.so.  Total size reduction is about 100K.  You can
+enable this flag by executing 'export CFLAGS=-Os' before running 
+the configure script.
+
 II. Reducing Memory Footprint
 
 II.1 Provider Process Grouping

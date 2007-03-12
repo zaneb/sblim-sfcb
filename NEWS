@@ -7,6 +7,7 @@ Bugs fixed:
 - 1370764 Fixed query parser left unstable by mal-formed statement
 - 1370752 Fixed query parser fails to recogonize single quotations
 - 1674999 Fixed query statement memory problem
+- 1672704 Added IPv6 support
 
 Changes in 1.2.1
 ================

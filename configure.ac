@@ -81,6 +81,10 @@ AC_ARG_ENABLE(docs,
 	[AC_HELP_STRING([--enable-docs],
 		[Enable generation of API documentation.])])
 
+AC_ARG_ENABLE(ipv6,
+	[AC_HELP_STRING([--enable-ipv6],
+		[include ipv6 support for SFCB.])])
+
 # Size checks
 AC_CHECK_SIZEOF(void*)
 AC_CHECK_SIZEOF(int)
@@ -156,6 +160,9 @@ fi
 AC_SUBST(SFCB_CONF_DOBASICAUTH)
 AC_SUBST(SFCB_CONF_BASICAUTHLIB)
 
+if test "$enable_ipv6" == "yes"; then
+   AC_DEFINE(HAVE_IPV6,,[IPv6 support enabled.])
+fi
 
 AC_CANONICAL_HOST
 case $host_os in
@@ -301,6 +308,7 @@ AM_CONDITIONAL(SLP_ALONE,[test "$enable_slp" == "standalone"])
 AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"]) 
 AM_CONDITIONAL(PAM,[test "$enable_pam" == "yes"]) 
 AM_CONDITIONAL(DOCS,[test "$enable_docs" == "yes"])
+AM_CONDITIONAL(IPV6,[test "$enable_ipv6" == "yes"])
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
@@ -324,4 +332,5 @@ echo -e "qualifierrep"\\t"${enable_qualifierrep:-no}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
 echo -e "PAM authentication"\\t"${enable_pam:-no}"
 echo -e "Documentation"\\t"${enable_docs:-no}"
+echo -e "IPv6"\\t"${enable_ipv6:-no}"
 echo ======================================================

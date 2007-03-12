@@ -284,6 +284,11 @@ Options:
                 Enable building a basic authentication module based on PAM.
 		Default=no
 
+        --enable-ipv6=[yes|no]
+                Enable IPv6 address support.  This does not disable connections
+		on IPv4 addresses.
+		Default=no
+
 
 9. Downloading the CIM Schema
 =============================

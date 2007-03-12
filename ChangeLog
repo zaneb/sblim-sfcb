@@ -1,3 +1,8 @@
+2007-03-09  Sven Schuetz
+
+	* cimXmlOps.y:
+	Fixed 1677445: Problems with instance references as method parameter
+
 2007-03-09  Chris Buccella  
 
 	* httpAdapter.c, configure.ac, README

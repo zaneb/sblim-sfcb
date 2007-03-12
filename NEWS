@@ -1,13 +1,16 @@
 Changes in 1.2.2
 ================
 
+New features:
+- 1672704 Added IPv6 support
+
 Bugs fixed:
 - 1668852 Fixed memory leak in interop provider
 - 1654313 Fixed http adapter segfaults on createinstance
 - 1370764 Fixed query parser left unstable by mal-formed statement
 - 1370752 Fixed query parser fails to recogonize single quotations
 - 1674999 Fixed query statement memory problem
-- 1672704 Added IPv6 support
+- 1677445 Fixed Problems with instance references as method parameter
 
 Changes in 1.2.1
 ================

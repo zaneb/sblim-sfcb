@@ -702,13 +702,13 @@ paramValue
     }   
     | XTOK_PARAMVALUE valueReference ZTOK_PARAMVALUE
     {
-       $1.valueRef=$2;
-       $1.type=CMPI_ref;
+       $$.valueRef=$2;
+       $$.type=CMPI_ref;
     }   
     | XTOK_PARAMVALUE valueRefArray ZTOK_PARAMVALUE
     {
-       $1.valueRefArray=$2;
-       $1.type=CMPI_ARRAY | CMPI_ref;
+       $$.valueRefArray=$2;
+       $$.type=CMPI_ARRAY | CMPI_ref;
     }   
 ;
 

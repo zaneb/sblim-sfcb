@@ -41,11 +41,10 @@ typedef struct _CMPIConstClass CMPIConstClass;
 
 struct _CMPIConstClass_FT { 
    int version;
+  /* functions defined in cimcift.h */
    CMPIStatus(*release) (CMPIConstClass * cc);
    CMPIConstClass *(*clone) (CMPIConstClass * cc, CMPIStatus * rc); 
    CMPIString *(*getClassName)(CMPIConstClass* cc, CMPIStatus * rc);
-   CMPIString *(*getSuperClassName)(CMPIConstClass* cc, CMPIStatus * rc);
-   
    CMPIData (*getProperty) (CMPIConstClass * cc, const char *prop, CMPIStatus * rc);
    CMPIData (*getPropertyAt) (CMPIConstClass * cc, CMPICount i,
                              CMPIString ** name,  CMPIStatus * rc);
@@ -63,6 +62,8 @@ struct _CMPIConstClass_FT {
                                    CMPIStatus * rc);
    CMPICount (*getPropQualifierCount) (CMPIConstClass * cc, const char * prop, CMPIStatus * rc);
    
+  /* local functions for sfcb */
+   CMPIString *(*getSuperClassName)(CMPIConstClass* cc, CMPIStatus * rc);   
    CMPIArray *(*getKeyList) (CMPIConstClass * cc);
    char *(*toString) (CMPIConstClass * cc);     
    void (*relocate) (CMPIConstClass * cc);

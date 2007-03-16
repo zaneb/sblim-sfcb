@@ -3,6 +3,7 @@ Changes in 1.2.2
 
 New features:
 - 1672704 Added IPv6 support
+- 1443861 Support for local clients
 
 Bugs fixed:
 - 1668852 Fixed memory leak in interop provider

@@ -1,9 +1,8 @@
 
 /*
- * cmpic.h
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
- * (C) Copyright Intel Corp. 2005
+ * © Copyright IBM Corp. 2006, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -16,7 +15,7 @@
  *
  * Description:
  *
- * CMPI Client function tables.
+ * sfcb's implementation of the sfcc CIMC API
  *
  */
 
@@ -29,7 +28,7 @@
 #include "queryOperation.h"
 
  
-#define CMCISetStatusWithChars(st,rcp,chars) \
+#define CIMCSetStatusWithChars(st,rcp,chars) \
       { if (st) { (st)->rc=(rcp); \
         (st)->msg=NewCMPIString((chars),NULL); }}
         
@@ -39,10 +38,12 @@ extern unsigned long _sfcb_trace_mask;
 
 extern void closeProviderContext(BinRequestContext* binCtx);
 extern MsgSegment setObjectPathMsgSegment(const CMPIObjectPath * op);
+extern MsgSegment setArgsMsgSegment(CMPIArgs * args);
 extern MsgSegment setInstanceMsgSegment(const CMPIInstance * inst);
 extern CMPIConstClass *relocateSerializedConstClass(void *area);
 extern CMPIObjectPath *relocateSerializedObjectPath(void *area);
 extern CMPIInstance *relocateSerializedInstance(void *area);
+extern CMPIArgs *relocateSerializedArgs(void *area);
 
 extern CMPIString *NewCMPIString(const char*, CMPIStatus*);
 extern CMPIObjectPath *NewCMPIObjectPath(const char*ns, const char* cn, CMPIStatus*);
@@ -56,6 +57,8 @@ extern CMPIArgs* NewCMPIArgs(CMPIStatus* rc);
 extern CMPIDateTime *NewCMPIDateTime(CMPIStatus *rc);
 extern CMPIDateTime *NewCMPIDateTimeFromBinary(CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus *rc);
 extern CMPIDateTime *NewCMPIDateTimeFromChars(const char *utcTime, CMPIStatus *rc);
+
+extern void setInstanceLocalMode(int mode);
 
 extern int localClientMode;
 
@@ -102,7 +105,7 @@ struct _ClientEnc {
 };
 
 struct _ClientConnection {
-    ClientConnectionFT *ft;        // The handle to the curl object
+    ClientConnectionFT *ft;        
 };
 
 char *getResponse(ClientConnection *con, CMPIObjectPath *cop);
@@ -138,7 +141,7 @@ ClientConnection *initConnection(ClientData *cld)
 static Client * cloneClient ( Client * cl, CMPIStatus * st )
 {
   CMPIStatus rc;
-  CMCISetStatusWithChars(&rc, CMPI_RC_ERR_NOT_SUPPORTED, "Clone function not supported");
+  CIMCSetStatusWithChars(&rc, CMPI_RC_ERR_NOT_SUPPORTED, "Clone function not supported");
   if (st) *st=rc;
   return NULL;
 }  
@@ -258,7 +261,7 @@ static void ctxErrResponse( BinRequestContext * ctx, CMPIStatus *rc)
       m = msg;
    }
    
-   if (rc) CMCISetStatusWithChars(rc,r,m);
+   if (rc) CIMCSetStatusWithChars(rc,r,m);
 }
 
 static CMPIEnumeration * enumInstanceNames(
@@ -313,7 +316,7 @@ static CMPIEnumeration * enumInstanceNames(
          freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       if (resp) freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
@@ -333,7 +336,7 @@ static CMPIEnumeration * enumInstances(
 	CMPIStatus * rc)
 {
    EnumInstancesReq *sreq;
-   int pCount=0, irc, l = 0, err = 0,sreqSize=sizeof(EnumInstancesReq)-sizeof(MsgSegment);
+   int pCount=0, irc, l = 0, err = 0,sreqSize=sizeof(EnumInstancesReq);
    BinResponseHdr **resp;
    BinRequestContext binCtx;
    OperationHdr oHdr={OPS_EnumerateInstances,0,2};
@@ -369,6 +372,7 @@ static CMPIEnumeration * enumInstances(
    binCtx.bHdr->flags = flags;
    binCtx.type=CMPI_instance;
    binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sreqSize;
    binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
    binCtx.pAs=NULL;
 
@@ -389,7 +393,7 @@ static CMPIEnumeration * enumInstances(
          free(sreq);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       if (resp) freeResps(resp,binCtx.pCount);
          free(sreq);
@@ -476,7 +480,7 @@ static CMPIInstance * getInstance(
          _SFCB_RETURN(inst);
       }
       free(sreq);
-      if (rc) CMCISetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
+      if (rc) CIMCSetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
       free(resp);
       _SFCB_RETURN(NULL);
    }
@@ -543,7 +547,7 @@ static CMPIObjectPath * createInstance(
          free(resp);
          _SFCB_RETURN(path);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
+      if (rc) CIMCSetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
       free(resp);
       _SFCB_RETURN(NULL);
    }
@@ -622,7 +626,7 @@ static CMPIStatus modifyInstance(
          _SFCB_RETURN(rc);
       }
       free(sreq);
-      CMCISetStatusWithChars(&rc, resp->rc, (char*)resp->object[0].data);
+      CIMCSetStatusWithChars(&rc, resp->rc, (char*)resp->object[0].data);
       free(resp);
       _SFCB_RETURN(rc);
    }
@@ -679,7 +683,7 @@ static CMPIStatus deleteInstance(
          free(resp);
          _SFCB_RETURN(rc);
       }
-      CMCISetStatusWithChars(&rc, resp->rc, (char*)resp->object[0].data);
+      CIMCSetStatusWithChars(&rc, resp->rc, (char*)resp->object[0].data);
       free(resp);
       _SFCB_RETURN(rc);
    }
@@ -709,6 +713,8 @@ static CMPIEnumeration * execQuery(
     
    _SFCB_ENTER(TRACE_CIMXMLPROC, "execQuery");
 
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
    CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
    
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
@@ -722,7 +728,6 @@ static CMPIEnumeration * execQuery(
    oHdr.className = setCharsMsgSegment(*fCls);
 
    path = NewCMPIObjectPath((char*)ns->hdl, *fCls, NULL);
-   CMRelease(ns);
    
    memset(&binCtx,0,sizeof(BinRequestContext));
 
@@ -742,7 +747,7 @@ static CMPIEnumeration * execQuery(
    
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
-
+   CMRelease(ns);
    
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
@@ -754,7 +759,7 @@ static CMPIEnumeration * execQuery(
          freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
@@ -847,7 +852,7 @@ static CMPIEnumeration * associators(
 	      free(sreq);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       if (resp) freeResps(resp,binCtx.pCount);
 	   free(sreq);
@@ -937,7 +942,7 @@ static CMPIEnumeration * references(
 	      free(sreq);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       if (resp) freeResps(resp,binCtx.pCount);
 	   free(sreq);
@@ -969,6 +974,10 @@ static CMPIEnumeration * associatorNames(
    
    _SFCB_ENTER(TRACE_CIMXMLPROC, "associatorNames");
 
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+
    memset(&binCtx,0,sizeof(BinRequestContext));
    
    sreq.objectPath = setObjectPathMsgSegment(cop);
@@ -979,6 +988,7 @@ static CMPIEnumeration * associatorNames(
    sreq.resultRole = setCharsMsgSegment(resultRole);
    sreq.principal = setCharsMsgSegment("principal");
 
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className = sreq.assocClass;
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
@@ -993,16 +1003,19 @@ static CMPIEnumeration * associatorNames(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
+      closeProviderContext(&binCtx);
       
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
          freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
@@ -1031,6 +1044,10 @@ static CMPIEnumeration * referenceNames(
    
    _SFCB_ENTER(TRACE_CIMXMLPROC, "referenceNames");
 
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+
    memset(&binCtx,0,sizeof(BinRequestContext));
    
    sreq.objectPath = setObjectPathMsgSegment(cop);
@@ -1039,6 +1056,7 @@ static CMPIEnumeration * referenceNames(
    sreq.principal = setCharsMsgSegment("principal");
 
    oHdr.className = sreq.resultClass;
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -1052,6 +1070,8 @@ static CMPIEnumeration * referenceNames(
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
 
+   CMRelease(ns);
+
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
@@ -1062,7 +1082,7 @@ static CMPIEnumeration * referenceNames(
          freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
@@ -1081,9 +1101,70 @@ static CMPIData invokeMethod(
 	CMPIArgs * out,
 	CMPIStatus * rc)
 {
+   InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, 5);
+   int irc, i, outc;
+   BinResponseHdr *resp;
+   BinRequestContext binCtx;
+   OperationHdr oHdr={OPS_InvokeMethod,0,5};
+   CMPIArgs   *argsout;
    CMPIData retval={0,CMPI_notFound,{0l}};
-   if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_SUPPORTED);
-   return retval;
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+   
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "referenceNames");
+
+   
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+   CMPIString *cn=cop->ft->getClassName(cop,NULL);
+   
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
+   oHdr.className=setCharsMsgSegment((char*)cn->hdl);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+
+   sreq.objectPath = setObjectPathMsgSegment(cop);
+   sreq.principal = setCharsMsgSegment("principal");
+   sreq.in = setArgsMsgSegment(in);
+   sreq.out = setArgsMsgSegment(NULL);
+   sreq.method = setCharsMsgSegment(method);
+
+   binCtx.oHdr = (OperationHdr *) &oHdr;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
+
+   CMRelease(ns);
+   CMRelease(cn);
+
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Calling Provider"));
+      resp = invokeProvider(&binCtx);
+      closeProviderContext(&binCtx);
+      resp->rc--;
+      if (resp->rc == CMPI_RC_OK) {
+         argsout = relocateSerializedArgs(resp->object[0].data);
+	 outc = CMGetArgCount(argsout, NULL);
+	 for (i=0; i < outc; i++) {
+	   CMPIString *name;
+	   CMPIData data = CMGetArgAt(argsout,i, &name,NULL);
+	   CMAddArg(out,(char*)name->hdl,&data.value,data.type);
+	 }
+	 retval = resp->rv;
+         free(resp);
+         _SFCB_RETURN(retval);
+      }
+      if (rc) CIMCSetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
+      free(resp);
+      _SFCB_RETURN(retval);
+   }
+   else ctxErrResponse(&binCtx,rc);
+   closeProviderContext(&binCtx);
+   
+   _SFCB_RETURN(retval);
 }
 
 static CMPIStatus setProperty(
@@ -1095,6 +1176,8 @@ static CMPIStatus setProperty(
 {
    CMPIStatus rc;
    CMSetStatus(&rc, CMPI_RC_ERR_NOT_SUPPORTED);
+
+   
    return rc;
 }
 
@@ -1109,370 +1192,6 @@ static CMPIData getProperty(
    return retval;
 }
 
-#ifdef mmmmmmmmm
-
-
-------------------------------------------------------------------------*/
-
-/* almost finished (need to add output arg support) but scanCimXmlResponse segv's parsing results */
-static CMPIData invokeMethod(
-	Client * mb,
-	CMPIObjectPath * cop,
-	const char * method,
-	CMPIArgs * in,
-	CMPIArgs * out,
-	CMPIStatus * rc)
-/*
-<?xml version="1.0" encoding="utf-8"?>
-<CIM CIMVERSION="2.0" DTDVERSION="2.0">
-  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
-    <SIMPLEREQ>
-      <METHODCALL NAME="IsAuthorized">
-        <LOCALINSTANCEPATH>
-          <LOCALNAMESPACEPATH>
-            <NAMESPACE NAME="root"/>
-            <NAMESPACE NAME="cimv2"/>
-          </LOCALNAMESPACEPATH>
-          <INSTANCENAME CLASSNAME="CWS_Authorization">
-            <KEYBINDING NAME="Username">
-              <KEYVALUE VALUETYPE="string">schuur</KEYVALUE>
-            </KEYBINDING>
-            <KEYBINDING NAME="Classname">
-              <KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE>
-            </KEYBINDING>
-          </INSTANCENAME>
-        </LOCALINSTANCEPATH>
-        <PARAMVALUE NAME="operation">
-          <VALUE>Query</VALUE>
-        </PARAMVALUE>
-      </METHODCALL>
-    </SIMPLEREQ>
-  </MESSAGE>
-</CIM>
-*/
-{
-   ClientEnc		*cl = (ClientEnc*)mb;
-   ClientConnection	*con = cl->connection;
-   UtilStringBuffer	*sb=newStringBuffer(2048);
-   char			*error;
-   ResponseHdr		rh;
-   CMPIString		*cn;
-   CMPIData		retval;
-   int			i, numinargs = 0, numoutargs = 0;
-   char                 *cv;
-
-#if DEBUG
-   set_debug();
-#endif
-
-   if (in)
-      numinargs = in->ft->getArgCount(in, NULL);
-   if (out)
-      numoutargs = out->ft->getArgCount(out, NULL);
-
-   con->ft->genRequest(cl, (const char *)method, cop, 1);
-
-   addXmlHeader(sb);
-
-   /* Add the extrinsic method name */
-   sb->ft->append3Chars(sb,"<METHODCALL NAME=\"", method, "\">");
-
-   sb->ft->appendChars(sb,"<LOCALINSTANCEPATH>");
-
-   addXmlNamespace(sb, cop);
-
-   /* Add the objectpath */
-   cn = cop->ft->getClassName(cop,NULL);
-   sb->ft->append3Chars(sb, "<INSTANCENAME CLASSNAME=\"",
-					  (char*)cn->hdl,"\">\n");
-   pathToXml(sb, cop);
-   sb->ft->appendChars(sb,"</INSTANCENAME>\n");
-   CMRelease(cn);
-
-   sb->ft->appendChars(sb,"</LOCALINSTANCEPATH>");
-
-   /* Add the input parameters */
-   for (i = 0; i < numinargs; i++) {
-      CMPIString * argname;
-      CMPIData argdata = in->ft->getArgAt(in, i, &argname, NULL);
-      sb->ft->append3Chars(sb,"<PARAMVALUE NAME=\"", argname->hdl, "\">\n");
-      sb->ft->append3Chars(sb,"<VALUE>", cv=sfcb_value2Chars(argdata.type,&(argdata.value)), "</VALUE>\n");
-      sb->ft->appendChars(sb,"</PARAMVALUE>\n");
-      if(cv) free(cv);
-      if(argname) CMRelease(argname);
-   }
-
-   sb->ft->appendChars(sb,"</METHODCALL>\n");
-   addXmlFooter(sb);
-
-   error = con->ft->addPayload(con,sb);
-
-   if (error || (error = con->ft->getResponse(con, cop))) {
-      CMCISetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
-      free(error);
-      retval.state = CMPI_notFound | CMPI_nullValue;
-      CMRelease(sb);
-      return retval;
-   }
-
-   CMRelease(sb);
-
-   rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse),cop);
-
-   if (rh.errCode != 0) {
-      CMCISetStatusWithChars(rc, rh.errCode, rh.description);
-      free(rh.description);
-      CMRelease(rh.rvArray);
-      retval.state = CMPI_notFound | CMPI_nullValue;
-      return retval;
-   }
-
-   /* TODO: process output args */
-#if DEBUG
-   if (do_debug && numoutargs > 0)
-	printf("TODO: invokeMethod() with output args\n");
-#endif
-
-   /* Set good status and return */
-#if DEBUG
-   if (do_debug)
-       printf ("\treturn type %d\n",
-		 rh.rvArray->ft->getSimpleType(rh.rvArray, NULL));
-#endif
-
-   CMSetStatus(rc, CMPI_RC_OK);
-   retval=rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
-   retval.value=sfcb_native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
-   CMRelease(rh.rvArray);
-   return retval;
-}
-
-/* --------------------------------------------------------------------------*/
-
-/* finished and working */
-static CMPIStatus setProperty(
-	Client * mb,
-	CMPIObjectPath * cop,
-	const char * name,
-	CMPIValue * value,
-	CMPIType type)
-/*
-<?xml version="1.0" encoding="utf-8"?>
-<CIM CIMVERSION="2.0" DTDVERSION="2.0">
-  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
-    <SIMPLEREQ>
-      <IMETHODCALL NAME="SetProperty">
-        <LOCALNAMESPACEPATH>
-          <NAMESPACE NAME="root"/>
-          <NAMESPACE NAME="cimv2"/>
-        </LOCALNAMESPACEPATH>
-        <IPARAMVALUE NAME="PropertyName">
-          <VALUE>CurrentTimeZone</VALUE>
-        </IPARAMVALUE>
-        <IPARAMVALUE NAME="NewValue">
-          <VALUE>123</VALUE>
-        </IPARAMVALUE>
-        <IPARAMVALUE NAME="InstanceName">
-          <INSTANCENAME CLASSNAME="Linux_OperatingSystem">
-            <KEYBINDING NAME="CSCreationClassName">
-              <KEYVALUE VALUETYPE="string">Linux_ComputerSystem</KEYVALUE>
-            </KEYBINDING>
-            <KEYBINDING NAME="CSName">
-              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
-            </KEYBINDING>
-            <KEYBINDING NAME="CreationClassName">
-              <KEYVALUE VALUETYPE="string">Linux_OperatingSystem</KEYVALUE>
-            </KEYBINDING>
-            <KEYBINDING NAME="Name">
-              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
-            </KEYBINDING>
-          </INSTANCENAME>
-        </IPARAMVALUE>
-      </IMETHODCALL>
-    </SIMPLEREQ>
-  </MESSAGE>
-</CIM>
-*/
-{
-   ClientEnc        *cl = (ClientEnc*)mb;
-   ClientConnection   *con = cl->connection;
-   UtilStringBuffer *sb=newStringBuffer(2048);
-   char		    *error;
-   ResponseHdr      rh;
-   CMPIString	    *cn;
-   CMPIStatus	    rc = {CMPI_RC_OK, NULL};
-   char             *cv;
-
-#if DEBUG
-   set_debug();
-#endif
-
-   con->ft->genRequest(cl, "SetProperty", cop, 0);
-
-   addXmlHeader(sb);
-   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"SetProperty\">");
-
-   addXmlNamespace(sb, cop);
-
-   /* Add the property */
-   sb->ft->append3Chars(sb,
-        "<IPARAMVALUE NAME=\"PropertyName\">\n<VALUE>",
-        name, "</VALUE>\n</IPARAMVALUE>");
-
-   /* Add the new value */
-   sb->ft->append3Chars(sb,
-        "<IPARAMVALUE NAME=\"NewValue\">\n<VALUE>",
-        cv=sfcb_value2Chars(type,value), "</VALUE>\n</IPARAMVALUE>");
-   if(cv) free(cv);
-
-   /* Add the objectpath */
-   cn = cop->ft->getClassName(cop,NULL);
-   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"InstanceName\">\n"
-          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
-   pathToXml(sb, cop);
-   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
-   CMRelease(cn);
-
-   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
-   addXmlFooter(sb);
-
-   error = con->ft->addPayload(con,sb);
-
-   if (error || (error = con->ft->getResponse(con, cop))) {
-      CMCISetStatusWithChars(&rc,CMPI_RC_ERR_FAILED,error);
-      free(error);
-      CMRelease(sb);
-      return rc;
-   }
-
-   CMRelease(sb);
-
-   rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse),cop);
-
-   if (rh.errCode != 0) {
-      CMCISetStatusWithChars(&rc, rh.errCode, rh.description);
-      free(rh.description);
-   }
-   
-   CMRelease(rh.rvArray);
-   return rc;
-}
-
-/* --------------------------------------------------------------------------*/
-
-/* finished and working */
-static CMPIData getProperty(
-	Client * mb,
-	CMPIObjectPath * cop,
-	const char * name,
-	CMPIStatus * rc)
-/*
-<?xml version="1.0" encoding="utf-8"?>
-<CIM CIMVERSION="2.0" DTDVERSION="2.0">
-  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
-    <SIMPLEREQ>
-      <IMETHODCALL NAME="GetProperty">
-        <LOCALNAMESPACEPATH>
-          <NAMESPACE NAME="root"/>
-          <NAMESPACE NAME="cimv2"/>
-        </LOCALNAMESPACEPATH>
-        <IPARAMVALUE NAME="PropertyName">
-          <VALUE>CurrentTimeZone</VALUE>
-        </IPARAMVALUE>
-        <IPARAMVALUE NAME="InstanceName">
-          <INSTANCENAME CLASSNAME="Linux_OperatingSystem">
-            <KEYBINDING NAME="CSCreationClassName">
-              <KEYVALUE VALUETYPE="string">Linux_ComputerSystem</KEYVALUE>
-            </KEYBINDING>
-            <KEYBINDING NAME="CSName">
-              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
-            </KEYBINDING>
-            <KEYBINDING NAME="CreationClassName">
-              <KEYVALUE VALUETYPE="string">Linux_OperatingSystem</KEYVALUE>
-            </KEYBINDING>
-            <KEYBINDING NAME="Name">
-              <KEYVALUE VALUETYPE="string">bestorga.ibm.com</KEYVALUE>
-            </KEYBINDING>
-          </INSTANCENAME>
-        </IPARAMVALUE>
-      </IMETHODCALL>
-    </SIMPLEREQ>
-  </MESSAGE>
-</CIM>
-*/
-{
-   ClientEnc		*cl = (ClientEnc*)mb;
-   ClientConnection	*con = cl->connection;
-   UtilStringBuffer	*sb=newStringBuffer(2048);
-   char			*error;
-   ResponseHdr		rh;
-   CMPIString		*cn;
-   CMPIData		retval;
-
-#if DEBUG
-   set_debug();
-#endif
-
-   con->ft->genRequest(cl, "GetProperty", cop, 0);
-
-   addXmlHeader(sb);
-   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"GetProperty\">");
-
-   addXmlNamespace(sb, cop);
-
-   /* Add the property */
-   sb->ft->append3Chars(sb,
-        "<IPARAMVALUE NAME=\"PropertyName\">\n<VALUE>",
-        name, "</VALUE>\n</IPARAMVALUE>");
-
-   /* Add the objectpath */
-   cn = cop->ft->getClassName(cop,NULL);
-   sb->ft->append3Chars(sb,"<IPARAMVALUE NAME=\"InstanceName\">\n"
-          "<INSTANCENAME CLASSNAME=\"",(char*)cn->hdl,"\">\n");
-   pathToXml(sb, cop);
-   sb->ft->appendChars(sb,"</INSTANCENAME>\n</IPARAMVALUE>\n");
-   CMRelease(cn);
-
-   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
-   addXmlFooter(sb);
-
-   error = con->ft->addPayload(con,sb);
-
-   if (error || (error = con->ft->getResponse(con, cop))) {
-      CMCISetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
-      free(error);
-      retval.state = CMPI_notFound | CMPI_nullValue;
-      CMRelease(sb);
-      return retval;
-   }
-
-   CMRelease(sb);
-
-   rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse),cop);
-
-   if (rh.errCode != 0) {
-      CMCISetStatusWithChars(rc, rh.errCode, rh.description);
-      free(rh.description);
-      CMRelease(rh.rvArray);
-      retval.state = CMPI_notFound | CMPI_nullValue;
-      return retval;
-   }
-
-   /* Set good return status and return */
-#if DEBUG
-   if (do_debug)
-       printf ("\treturn type %d\n",
-	    rh.rvArray->ft->getSimpleType(rh.rvArray, NULL));
-#endif
-
-   CMSetStatus(rc, CMPI_RC_OK);
-   retval=rh.rvArray->ft->getElementAt(rh.rvArray, 0, NULL);
-   retval.value=sfcb_native_clone_CMPIValue(rh.rvArray->ft->getSimpleType(rh.rvArray, NULL),&retval.value,NULL);
-   CMRelease(rh.rvArray);
-   return retval;
-}
-
-#endif
 
 /* --------------------------------------------------------------------------*/
 static CMPIConstClass * getClass(
@@ -1542,7 +1261,7 @@ static CMPIConstClass * getClass(
          _SFCB_RETURN(cls);
       }
       free(sreq);
-      if (rc) CMCISetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
+      if (rc) CIMCSetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
@@ -1607,7 +1326,7 @@ static CMPIEnumeration* enumClassNames(
          freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
@@ -1672,7 +1391,7 @@ static CMPIEnumeration * enumClasses(
          freeResps(resp,binCtx.pCount);
          _SFCB_RETURN(enm);
       }
-      if (rc) CMCISetStatusWithChars(rc, resp[err-1]->rc, 
+      if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
       freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
@@ -1685,157 +1404,6 @@ static CMPIEnumeration * enumClasses(
 }
 
 
-#ifdef mmmmmmmmmm
-/* --------------------------------------------------------------------------*/
-
-/* finished & working */
-static CMPIEnumeration* enumClassNames(
-	Client * mb,
-	CMPIObjectPath * cop,
-	CMPIFlags flags,
-	CMPIStatus * rc)
-{
-   ClientEnc *cl=(ClientEnc*)mb;
-   ClientConnection *con=cl->connection;
-   UtilStringBuffer *sb=newStringBuffer(2048);
-   char *error;
-   ResponseHdr       rh;
-
-#if DEBUG
-   set_debug();
-#endif
-
-   con->ft->genRequest(cl, "EnumerateClassNames", cop, 0);
-
-   /* Construct the CIM-XML request */
-   addXmlHeader(sb);
-   sb->ft->appendChars(sb,"<IMETHODCALL NAME=\"EnumerateClassNames\">");
-
-   addXmlNamespace(sb, cop);
-   emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
-   addXmlClassnameParam(sb, cop);
-
-   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
-   addXmlFooter(sb);
-
-   error = con->ft->addPayload(con,sb);
-
-   if (error || (error = con->ft->getResponse(con,cop))) {
-      CMCISetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
-      free(error);
-      CMRelease(sb);
-      return NULL;
-   }
-
-   CMRelease(sb);
-
-   rh=scanCimXmlResponse(CMGetCharPtr(con->mResponse),cop);
-
-   if (rh.errCode!=0) {
-      CMCISetStatusWithChars(rc,rh.errCode,rh.description);
-      free(rh.description);
-      CMRelease(rh.rvArray);
-      return NULL;
-   }
-
-#if DEBUG
-#ifdef CHECK_RETURN_TYPES
-    if (CMGetArrayCount(rh.rvArray,NULL)==0 ||
-	rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) != CMPI_ref) {
-	/* Should not happen in production builds */
-	CMCISetStatusWithChars(rc, CMPI_RC_ERR_FAILED,
-				 strdup("Unexpected return value"));
-	return NULL;
-    }
-#else
-   if (do_debug)
-       printf ("\treturn enumeration array type %d expected CMPI_ref %d\n",
-	    rh.rvArray->ft->getSimpleType(rh.rvArray, NULL), CMPI_ref);
-#endif
-#endif
-
-   CMSetStatus(rc,CMPI_RC_OK);
-   return newCMPIEnumeration(rh.rvArray,NULL);
-}
-
-/* --------------------------------------------------------------------------*/
-
-/* finished and working */
-static CMPIEnumeration * enumClasses(
-	Client * mb,
-	CMPIObjectPath * cop,
-	CMPIFlags flags,
-	CMPIStatus * rc)
-{
-   ClientEnc	     *cl  = (ClientEnc *)mb;
-   ClientConnection   *con = cl->connection;
-   UtilStringBuffer *sb  = newStringBuffer(2048);
-   char             *error;
-   ResponseHdr	     rh;
-
-#if DEBUG
-   set_debug();
-#endif
-
-   con->ft->genRequest(cl, "EnumerateClasses", cop, 0);
-
-   /* Construct the CIM-XML request */
-   addXmlHeader(sb);
-   sb->ft->appendChars(sb, "<IMETHODCALL NAME=\"EnumerateClasses\">");
-
-   addXmlNamespace(sb, cop);
-   emitdeep(sb,flags & CMPI_FLAG_DeepInheritance);
-   emitlocal(sb,flags & CMPI_FLAG_LocalOnly);
-   emitqual(sb,flags & CMPI_FLAG_IncludeQualifiers);
-   emitorigin(sb,flags & CMPI_FLAG_IncludeClassOrigin);
-   addXmlClassnameParam(sb, cop);
-
-   sb->ft->appendChars(sb,"</IMETHODCALL>\n");
-   addXmlFooter(sb);
-
-   error = con->ft->addPayload(con,sb);
-
-   if (error || (error = con->ft->getResponse(con, cop))) {
-      CMCISetStatusWithChars(rc,CMPI_RC_ERR_FAILED,error);
-      free(error);
-      CMRelease(sb);
-      return NULL;
-   }
-
-   CMRelease(sb);
-
-   rh = scanCimXmlResponse(CMGetCharPtr(con->mResponse), cop);
-
-   if (rh.errCode != 0) {
-      CMCISetStatusWithChars(rc, rh.errCode, rh.description);
-      free(rh.description);
-      CMRelease(rh.rvArray);
-      return NULL;
-   }
-
-#if DEBUG
-#ifdef CHECK_RETURN_TYPES
-    if (CMGetArrayCount(rh.rvArray,NULL)==0 ||
-	rh.rvArray->ft->getSimpleType(rh.rvArray,NULL) != CMPI_class) {
-	/* Should not happen in production builds */
-	CMCISetStatusWithChars(rc, CMPI_RC_ERR_FAILED,
-				 strdup("Unexpected return value"));
-	return NULL;
-    }
-#else
-   if (do_debug)
-       printf ("\treturn enumeration array type %d expected CMPI_class %d\n",
-	    rh.rvArray->ft->getSimpleType(rh.rvArray, NULL), CMPI_class);
-#endif
-#endif
-
-   CMSetStatus(rc, CMPI_RC_OK);
-   return newCMPIEnumeration(rh.rvArray,NULL);
-}
-
-/* --------------------------------------------------------------------------*/
-
-#endif
 
 
 static ClientFT clientFt = {
@@ -1936,6 +1504,7 @@ static void* release(ClientEnv* ce)
 {
    void *lib=ce->hdl;
    free(ce);
+   uninitGarbageCollector();
    return lib;
 }
 
@@ -2045,7 +1614,8 @@ ClientEnv* _Create_SfcbLocal_Env(char *id)
       newString,
     };
    
-    localClientMode=1;
+   //    localClientMode=1;
+    setInstanceLocalMode(1);
     
     ClientEnv *env = (ClientEnv*)malloc(sizeof(ClientEnv));
     env->hdl=NULL;

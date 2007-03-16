@@ -1,3 +1,14 @@
+2007-03-16  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* cimcClientSfcbLocal.c, constClass.c, constClass.h, instance.c: 
+	Implemented 1443861: support for local clients.
+	It was necessary to implement invokeMethod and
+	cleanup the cimcClientSfcbLocal.c file. Further, the function table
+	of constClass needed to be adjusted and some qualifier related
+	functions needed to be implemented.
+	As the instance function table was incompatible with the cimc
+	definition, it needs to be switched during run time.
+
 2007-03-09  Sven Schuetz
 
 	* cimXmlOps.y:

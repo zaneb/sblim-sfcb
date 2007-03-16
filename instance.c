@@ -373,6 +373,53 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
    CMReturn(CMPI_RC_OK);
 }
 
+static CMPIData 
+__ift_getQualifier(CMPIInstance* inst, const char *name, CMPIStatus* rc)
+{
+   CMPIData data = { 0, CMPI_notFound, {0} };
+   if (rc) CMSetStatus(rc,CMPI_RC_ERR_NOT_FOUND);
+   return data;
+}
+
+static CMPIData 
+__ift_getQualifierAt(CMPIInstance* inst, unsigned int index, CMPIString** name,CMPIStatus* rc)
+{
+   CMPIData data = { 0, CMPI_notFound, {0} };
+   if (rc) CMSetStatus(rc,CMPI_RC_ERR_NOT_FOUND);
+   return data;
+}
+
+static unsigned int 
+__ift_getQualifierCount(CMPIInstance* inst, CMPIStatus* rc)
+{
+   if (rc) CMSetStatus(rc,CMPI_RC_ERR_NOT_FOUND);
+   return 0;
+}
+              
+              
+static CMPIData 
+__ift_getPropertyQualifier(CMPIInstance* inst, const char *pname, const char *qname, CMPIStatus* rc)
+{
+   CMPIData data = { 0, CMPI_notFound, {0} };
+   if (rc) CMSetStatus(rc,CMPI_RC_ERR_NOT_FOUND);
+   return data;
+}
+
+static CMPIData 
+__ift_getPropertyQualifierAt(CMPIInstance* inst, const char *pname, unsigned int index, CMPIString** name, CMPIStatus* rc)
+{
+   CMPIData data = { 0, CMPI_notFound, {0} };
+   if (rc) CMSetStatus(rc,CMPI_RC_ERR_NOT_FOUND);
+   return data;
+}
+
+static unsigned int 
+__ift_getPropertyQualifierCount(CMPIInstance* inst, const char *pname, CMPIStatus* rc)
+{
+   if (rc) CMSetStatus(rc,CMPI_RC_ERR_NOT_FOUND);
+   return 0;
+}
+ 
 void add(char **buf, unsigned int *p, unsigned int *m, char *data)
 {
    unsigned int ds = strlen(data) + 1;
@@ -446,6 +493,63 @@ static CMPIInstanceFT ift = {
    __ift_setPropertyFilter
 };
 
+static struct {
+   unsigned int ftVersion;
+   CMPIStatus (*release)
+      (CMPIInstance* inst);
+   CMPIInstance* (*clone)
+      (const CMPIInstance* inst, CMPIStatus* rc);
+   CMPIData (*getProperty)
+      (const CMPIInstance* inst, const char *name, CMPIStatus* rc);
+   CMPIData (*getPropertyAt)
+      (const CMPIInstance* inst, unsigned int index, CMPIString** name,
+       CMPIStatus* rc);
+   unsigned int (*getPropertyCount)
+      (const CMPIInstance* inst, CMPIStatus* rc);
+   CMPIStatus (*setProperty)
+      (CMPIInstance* inst, const char *name,
+       const CMPIValue* value, CMPIType type);
+   CMPIObjectPath* (*getObjectPath)
+      (const CMPIInstance* inst, CMPIStatus* rc);
+   CMPIStatus (*setPropertyFilter)
+      ( CMPIInstance* inst, const char **propertyList, const char **keys);
+   
+
+   CMPIData (*getQualifier)
+      (CMPIInstance* inst, const char *name, CMPIStatus* rc);
+   CMPIData (*getQualifierAt)
+      (CMPIInstance* inst, unsigned int index, CMPIString** name,
+       CMPIStatus* rc);
+   unsigned int (*getQualifierCount)
+      (CMPIInstance* inst, CMPIStatus* rc);
+   
+   
+   CMPIData (*getPropertyQualifier)
+      (CMPIInstance* inst, const char *pname, const char *qname, CMPIStatus* rc);
+   CMPIData (*getPropertyQualifierAt)
+      (CMPIInstance* inst, const char *pname, unsigned int index, CMPIString** name,
+       CMPIStatus* rc);
+   unsigned int (*getPropertyQualifierCount)
+      (CMPIInstance* inst, const char *pname, CMPIStatus* rc);
+   
+} iftLocal = { 
+   NATIVE_FT_VERSION,
+   __ift_release,
+   __ift_clone,
+   __ift_getProperty,
+   __ift_getPropertyAt,
+   __ift_getPropertyCount,
+   __ift_setProperty,
+   __ift_getObjectPath,
+   __ift_setPropertyFilter,
+   __ift_getQualifier,
+   __ift_getQualifierAt,
+   __ift_getQualifierCount,    
+   __ift_getPropertyQualifier,
+   __ift_getPropertyQualifierAt,
+   __ift_getPropertyQualifierCount
+};
+
 CMPIInstanceFT *CMPI_Instance_FT = &ift;
 
 unsigned long getInstanceSerializedSize(const CMPIInstance * ci)
@@ -466,7 +570,7 @@ CMPIInstance *relocateSerializedInstance(void *area)
 {
    struct native_instance *ci = (struct native_instance *) area;
    ci->instance.hdl = ci + 1;
-   ci->instance.ft = &ift;
+   ci->instance.ft = CMPI_Instance_FT;
    ci->mem_state=MEM_RELEASED;
    ci->property_list = NULL;
    ci->key_list = NULL;
@@ -486,9 +590,9 @@ MsgSegment setInstanceMsgSegment(CMPIInstance * ci)
 CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
                                         CMPIStatus * rc, int override)
 {
-   static CMPIInstance i = {
+   CMPIInstance i = {
       "CMPIInstance",
-      &ift
+      CMPI_Instance_FT
    };
 
    struct native_instance instance,*tInst;
@@ -628,6 +732,16 @@ const char *instGetClassName(CMPIInstance * ci)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
    return ClInstanceGetClassName(inst);
+}
+
+/* needed for local client support as function tables differ */
+void setInstanceLocalMode(int mode)
+{
+   if (mode) {
+      CMPI_Instance_FT = (CMPIInstanceFT*)&iftLocal;
+   } else {
+      CMPI_Instance_FT = &ift;
+   }
 }
 
 #ifdef HAVE_DEFAULT_PROPERTIES 

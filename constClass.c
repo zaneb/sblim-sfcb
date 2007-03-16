@@ -172,6 +172,39 @@ static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** na
    return getPropertyQualsAt(cc,i,name,NULL,rc);
 }
 
+static CMPIData getQualifier(CMPIConstClass * cc, const char * name,
+			     CMPIStatus * rc)
+{
+   ClClass *cls = (ClClass *) cc->hdl;
+   CMPIData rv_notfound = { 0, CMPI_notFound, {0} };
+   CMPIData rv;
+   char *qname;
+   int i;
+   CMPICount cnt = ClClassGetQualifierCount(cls);
+   
+   for (i=0; i<cnt; i++) {
+     if (ClClassGetQualifierAt(cls, i, &rv, &qname)) {
+       if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
+       return rv_notfound;
+     }
+     if (strcasecmp(name,qname) == 0) {
+       if (rv.type == CMPI_chars) {
+	 rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
+						      (&cls->hdr, (ClString *) & rv.value.chars), NULL);
+	 rv.type = CMPI_string;
+       }
+       if (rv.type & CMPI_ARRAY && rv.value.array) {
+	 rv.value.array = native_make_CMPIArray((CMPIData *) rv.value.array, 
+						NULL, &cls->hdr);
+       }
+       if (rc) CMSetStatus(rc, CMPI_RC_OK);
+       return rv;
+     };
+   }
+   if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
+   return rv_notfound;
+}
+
 static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
                         CMPIStatus * rc)
 {
@@ -197,6 +230,13 @@ static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** n
    }
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    return rv;
+}
+
+static CMPICount getQualifierCount(CMPIConstClass * cc, CMPIStatus * rc)
+{
+   ClClass *cls = (ClClass *) cc->hdl;
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+   return (CMPICount) ClClassGetQualifierCount(cls);
 }
 
 static CMPIData getPropQualifierAt(CMPIConstClass * cc, const char* cp, CMPICount i,
@@ -227,6 +267,69 @@ static CMPIData getPropQualifierAt(CMPIConstClass * cc, const char* cp, CMPICoun
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    return rv;
 }
+
+static CMPIData getPropQualifier(CMPIConstClass * cc, const char* cp, const char* cpq, CMPIStatus * rc)
+{
+   ClClass *cls = (ClClass *) cc->hdl;
+   ClSection *prps = &cls->properties;
+   char *n = NULL;
+   CMPIData rv_notFound = { 0, CMPI_notFound, {0} };
+   CMPIData rv;
+   CMPICount p = ClObjectLocateProperty(&cls->hdr, prps, cp); 
+   CMPICount num = ClClassGetPropQualifierCount(cls,p-1);
+   CMPICount i;
+
+
+   /* special qualifier handling */
+   if (strcasecmp(cpq,"key") == 0) {
+     unsigned long quals;
+     getPropertyQualsAt(cc,p-1,NULL,&quals,rc);
+     if (quals &  ClProperty_Q_Key) {
+       rv.type = CMPI_boolean;
+       rv.state = CMPI_goodValue;
+       rv.value.boolean = 1;
+       return rv;
+     } else {
+       return rv_notFound;
+     }
+   }
+
+   for (i=0; i<num;i++) {
+     if (ClClassGetPropQualifierAt(cls, p-1, i, &rv, &n) == 0 && strcasecmp(cpq,n) == 0) {
+       if (rv.type == CMPI_chars) {
+	 rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
+						      (&cls->hdr, (ClString *) & rv.value.chars), NULL);
+	 rv.type = CMPI_string;
+       } else if ((rv.type & CMPI_ARRAY) && rv.value.dataPtr.ptr ) {
+	 rv.value.array = native_make_CMPIArray((CMPIData *) rv.value.dataPtr.ptr, 
+						NULL, &cls->hdr);
+       }
+       if (n) {
+	 free(n);
+       }
+       if (rc) CMSetStatus(rc, CMPI_RC_OK);
+       return rv;
+     }
+     if (n) {
+       free(n);
+     }
+   }
+   if (rc) {
+     CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
+   }
+   return rv_notFound;
+}
+
+static CMPICount getPropQualifierCount(CMPIConstClass * cc, const char * prop,
+				       CMPIStatus * rc)
+{
+   ClClass *cls = (ClClass *) cc->hdl;
+   ClSection *prps = &cls->properties;
+   CMPICount p = ClObjectLocateProperty(&cls->hdr, prps, prop); 
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+   return ClClassGetPropQualifierCount(cls,p-1);
+}
+
 
 CMPIData getPropertyQuals(CMPIConstClass * cc, const char *id, unsigned long *quals,
                      CMPIStatus * rc)
@@ -279,16 +382,16 @@ struct _CMPIConstClass_FT ift = {
    release,
    cls_clone,
    getClassName,
-   getSuperClassName,
    getProperty,
    getPropertyAt,
    getPropertyCount,
-   NULL, // getQualifier,
+   getQualifier,
    getQualifierAt,
-   NULL, //getPropertyCount,
-   NULL, //getPropQualifier,
+   getQualifierCount,
+   getPropQualifier,
    getPropQualifierAt,
-   NULL, //getPropQualifierCount,
+   getPropQualifierCount,
+   getSuperClassName,
    getKeyList,
    toString,
    relocate,

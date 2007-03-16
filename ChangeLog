@@ -1,5 +1,8 @@
 2007-03-16  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* indCIMXMLExport.c: 
+	Fixed 1682045: compile failure with gcc 4.1.3
+
 	* providerMgr.c: 
 	Fixed 1677195: crash in provider manager trace on x86_64.
 

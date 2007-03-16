@@ -1,8 +1,8 @@
 
 /*
- * indCIMXMLExport.c
+ * $id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -100,7 +100,7 @@ static int supportsSSL(CurlData *cd)
 {
 #if LIBCURL_VERSION_NUM >= 0x071000
     if (version && (version->features & CURL_VERSION_SSL))
-        return true;
+        return 1;
     
     return 0;
 #else

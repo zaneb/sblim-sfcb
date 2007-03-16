@@ -227,7 +227,7 @@ static CMPIStatus __oft_addKey(CMPIObjectPath * op,
      }
      data.type=CMPI_chars;
    } else if (value) {
-     data.value = *value;
+     sfcb_setAlignedValue(&data.value,value,type);
    }
 
    if (((type & CMPI_ENCA) && data.value.chars == NULL) || value == NULL) {

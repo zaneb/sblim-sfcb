@@ -1,8 +1,8 @@
 
 /*
- * array.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -171,11 +171,14 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, const CMPIV
             __make_NULL ( a, index, index, a->mem_state == MEM_NOT_TRACKED );
          }
 
-	 if (opt) a->data[index].value = *val;
-   	 else a->data[index].value =  ( a->mem_state == MEM_TRACKED )?  *val:
-   		 sfcb_native_clone_CMPIValue ( type, val, &rc );
-	 /*else a->data[index].value =  ( a->mem_state == MEM_NOT_TRACKED ) ?
-	 	 sfcb_native_clone_CMPIValue ( type, val, &rc ) : *val;*/
+	 if (opt) {
+	     sfcb_setAlignedValue(&(a->data[index].value),val,type);
+	 } else if (a->mem_state == MEM_TRACKED) {
+	     sfcb_setAlignedValue(&(a->data[index].value),val,type);
+	 } else {
+	     a->data[index].value = 
+		 sfcb_native_clone_CMPIValue ( type, val, &rc );
+	 }
 	 if (localClientMode) switch (a->type) {
 	 case CMPI_instance:
 	 case CMPI_ref:
@@ -224,7 +227,7 @@ CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
       if (type == a->type) {
          CMPIStatus rc = { CMPI_RC_OK, NULL };
          a->data[index].state = 0;
-         a->data[index].value =*val;
+	 sfcb_setAlignedValue(&(a->data[index].value),val,type);
          if (localClientMode) {
             switch (a->type) {
             case CMPI_instance:

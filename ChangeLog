@@ -1,3 +1,11 @@
+2007-03-16  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* args.c, array.c, context.c, instance.c, native.h, objectpath.c,
+	value.c:
+	Fixed 1682388: sfcb too picky about CMPIValue * alignment.
+	The places were CMPIValues are copied now use a common function which
+	ensures that the data copies are performed in an aligned way.
+
 2007-03-16  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* indCIMXMLExport.c: 

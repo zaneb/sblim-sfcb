@@ -264,3 +264,43 @@ char *sfcb_value2Chars(CMPIType type, CMPIValue * value)
    return strdup(str);
 }
 
+void sfcb_setAlignedValue(CMPIValue * target, const CMPIValue *source, 
+			  CMPIType type)
+{
+  /* copies a value making sure the alignments are right */
+  if (target && source) {
+    memset(target,0,sizeof(CMPIValue));
+    switch (type) {
+    case CMPI_boolean:
+    case CMPI_uint8:
+    case CMPI_sint8:
+      target->Byte = source->Byte;
+      break;
+    case CMPI_char16:
+    case CMPI_uint16:
+    case CMPI_sint16:
+      target->Short = source->Short;
+      break;
+    case CMPI_uint32:
+    case CMPI_sint32:
+      target->Int = source->Int;
+      break;
+    case CMPI_real32:
+      target->Float = source->Float;
+      break;
+    case CMPI_uint64:
+    case CMPI_sint64:
+      target->Long = source->Long;
+      break;
+    case CMPI_real64:
+      target->Double = source->Double;
+      break;
+    default:
+      if (type == CMPI_ptr) {
+	*target = *source;
+      } else {
+	target->inst = source->inst;
+      }
+    }  
+  }
+}

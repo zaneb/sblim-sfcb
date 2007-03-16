@@ -1,8 +1,8 @@
 
 /*
- * args.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -105,7 +105,7 @@ static CMPIStatus __aft_addArg(const CMPIArgs * args, const char *name,
 	 data.value.chars=NULL;
       }
    } else if (value) {
-      data.value = *value;
+	   sfcb_setAlignedValue(&data.value,value,type);
    }
 
    if (((type & CMPI_ENCA) && data.value.chars == NULL) || value == NULL) {

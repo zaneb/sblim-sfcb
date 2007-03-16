@@ -14,6 +14,7 @@ Bugs fixed:
 - 1677445 Fixed Problems with instance references as method parameter
 - 1677195 Fixed crash in provider manager trace
 - 1682045 Fixed compile error with gcc 4.1.3
+- 1682388 Relaxed CMPIValue * alignment pickyness of sfcb
 
 Changes in 1.2.1
 ================

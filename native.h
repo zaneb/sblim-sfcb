@@ -117,6 +117,9 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn);
 CMPIObjectPath *relocateSerializedObjectPath(void *area);
 void dateTime2chars(CMPIDateTime * dt, CMPIStatus * rc, char *str_time);
 
+void sfcb_setAlignedValue(CMPIValue * target, const CMPIValue *source, 
+			  CMPIType type);
+
 
 /****************************************************************************/
 

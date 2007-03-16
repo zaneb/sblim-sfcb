@@ -1,8 +1,8 @@
 
 /*
- * context.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -286,7 +286,7 @@ static int __addProperty ( struct native_property ** prop,
 
 			if ( mm_add == MEM_TRACKED ) {
 
-				tmp->value = *value;
+			  sfcb_setAlignedValue(&tmp->value,value,type);
 			} else {
 			
 				CMPIStatus rc;
@@ -341,13 +341,11 @@ static int __setProperty ( struct native_property * prop,
 		prop->type  = type;
 
 		if ( type != CMPI_null ) {
-			prop->value =
-				( mm_add == MEM_TRACKED )?
-				*value:
-				sfcb_native_clone_CMPIValue ( type, value, &rc );
-
-			// what if clone() fails ???
-
+		  if (mm_add == MEM_TRACKED) {
+		    sfcb_setAlignedValue(&prop->value,value,type);
+		  } else {
+		    prop->value = sfcb_native_clone_CMPIValue ( type, value, &rc );
+		  }
 		} else prop->state = CMPI_nullValue;
 
 		return 0;

@@ -17,3 +17,5 @@ functions.
 The query parser syntax is partially based on the OpenPegasus WQL Parser.
 See the copyright statements in queryParser.y and queryLexer.l for
 details. 
+
+Chris Abbey has contributed the initial IPV6 support in the HTTP adapter.

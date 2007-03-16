@@ -52,7 +52,7 @@ export PATCH_GET=0
 
 %build
 
-%configure --enable-debug --enable-ssl --enable-pam
+%configure --enable-debug --enable-ssl --enable-pam --enable-ipv6
 make
 
 %install

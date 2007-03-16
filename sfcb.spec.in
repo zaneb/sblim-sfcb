@@ -18,9 +18,11 @@ Provides: cimserver
 BuildRequires: curl-devel
 BuildRequires: zlib-devel
 BuildRequires: openssl-devel
+BuildRequires: pam-devel
 Requires: curl
 Requires: zlib
 Requires: openssl
+Requires: pam
 
 %Description
 Small Footprint CIM Broker (sfcb) is a CIM server conforming to the

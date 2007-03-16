@@ -12,6 +12,7 @@ Bugs fixed:
 - 1370752 Fixed query parser fails to recogonize single quotations
 - 1674999 Fixed query statement memory problem
 - 1677445 Fixed Problems with instance references as method parameter
+- 1677195 Fixed crash in provider manager trace
 
 Changes in 1.2.1
 ================

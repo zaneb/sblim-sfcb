@@ -931,7 +931,7 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
       *as = ctx->provA;
       
       _SFCB_TRACE(1,("--- Provider socket: %d - %lu %d %lu %s",
-         ctx->provA.socket,l,currentProc,getInode(ctx->provA.socket),ohdr->className));
+         ctx->provA.socket,l,currentProc,getInode(ctx->provA.socket),ohdr->className.data));
   
       for (i = 1; l; i++) {
          rc = spRecvCtlResult(&sockets.receive, &as[i].socket,&as[i].ids.ids, &l);

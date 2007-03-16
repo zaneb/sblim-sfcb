@@ -1,5 +1,8 @@
 2007-03-16  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* providerMgr.c: 
+	Fixed 1677195: crash in provider manager trace on x86_64.
+
 	* cimcClientSfcbLocal.c, constClass.c, constClass.h, instance.c: 
 	Implemented 1443861: support for local clients.
 	It was necessary to implement invokeMethod and

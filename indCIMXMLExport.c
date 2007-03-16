@@ -1,6 +1,6 @@
 
 /*
- * $id$
+ * $Id$
  *
  * © Copyright IBM Corp. 2005, 2007
  *
@@ -38,9 +38,6 @@ static const char *headers[] = {
 };
 #define NUM_HEADERS ((sizeof(headers))/(sizeof(headers[0])))
 
-#if LIBCURL_VERSION_NUM >= 0x071000
-static const curl_version_info_data *version = curl_version_info(CURLVERSION_NOW);
-#endif
 
 //
 // NOTE:
@@ -99,9 +96,15 @@ static void uninit(CurlData *cd)
 static int supportsSSL(CurlData *cd)
 {
 #if LIBCURL_VERSION_NUM >= 0x071000
-    if (version && (version->features & CURL_VERSION_SSL))
-        return 1;
+  static curl_version_info_data *version = NULL;
     
+  if (version == NULL) {
+    version = curl_version_info(CURLVERSION_NOW);
+  }
+  
+  if (version && (version->features & CURL_VERSION_SSL))
+    return 1;
+  else 
     return 0;
 #else
     // Assume we support SSL if we don't have the curl_version_info API

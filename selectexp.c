@@ -146,7 +146,7 @@ static NativeSelectExp *__new_exp(int mode, const char *queryString,
    exp.exp = eFt;
    
    
-   fprintf(stderr,"*** new select expression: %s %s\n",queryString, language);
+   /*fprintf(stderr,"*** new select expression: %s %s\n",queryString, language);*/
    exp.qs=parseQuery(mode,(char*)queryString, (char*)language, (char*) sns, &irc);
    if (irc) {
       if (rc) CMSetStatus(rc, CMPI_RC_ERR_INVALID_QUERY);

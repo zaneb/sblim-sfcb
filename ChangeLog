@@ -1,3 +1,8 @@
+2007-03-20  Sven Schuetz
+
+	* queryParser.y, selectexp.c:
+	2nd fix for 1674999: fixed memory corruption and leak in query statement.
+
 2007-03-16  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* args.c, array.c, context.c, instance.c, native.h, objectpath.c,

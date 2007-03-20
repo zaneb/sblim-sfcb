@@ -208,11 +208,11 @@ selectList
 propertyList
     : propertyName
     {
-       QS->ft->appendSelectPropertyName(QS,$1);
+       QS->ft->appendSelectPropertyName(QS,qsStrDup(QS,$1));
     }
     | propertyList ',' propertyName
     {
-       QS->ft->appendSelectPropertyName(QS,$3);
+       QS->ft->appendSelectPropertyName(QS,qsStrDup(QS,$3));
     }
 
 selectExpression
@@ -240,11 +240,11 @@ classList
 classListEntry 
     : className classAlias
     {
-       QS->ft->addFromClass(QS,$1,$2);
+       QS->ft->addFromClass(QS,qsStrDup(QS,$1),$2);
     }
     | className
     {
-        QS->ft->addFromClass(QS,$1,NULL);
+        QS->ft->addFromClass(QS,qsStrDup(QS,$1),NULL);
     }
     
 whereClause
@@ -389,13 +389,13 @@ fullPropertyName
     : TOK_IDENTIFIER
     {
        QL_TRACE(fprintf(stderr,"-#- fullPropertyName: propertyIdentifier  %s\n",$1));
-       QC->addPropIdentifier(QC,QS,NULL,$1,-99999);
+       QC->addPropIdentifier(QC,QS,NULL,qsStrDup(QS,$1),-99999);
     }
     | TOK_IDENTIFIER TOK_SCOPE TOK_IDENTIFIER  
     {
        QL_TRACE(fprintf(stderr,"-#- fullPropertyName: propertyClassIdentifier TOK_SCOPE propertyIdentifier %s::%s\n",$1,$3));
        if (QS->lang==QL_CQL)
-          QC->addPropIdentifier(QC,QS,$1,$3,-99999);
+          QC->addPropIdentifier(QC,QS,qsStrDup(QS,$1),qsStrDup(QS,$3),-99999);
        else {
           yyErr("CQL style property not supported with language=wql","","");
           YYERROR;
@@ -422,7 +422,7 @@ classAlias : TOK_IDENTIFIER
 classId
     : className
     {
-       $$=newNameQueryOperand(QS,$1);
+       $$=newNameQueryOperand(QS,qsStrDup(QS,$1));
     }
 
 comparisonTerm

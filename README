@@ -782,6 +782,9 @@ Connection: close
 The classes listed above will vary depending on what providers are
 installed on your system.
 
+For testing against a host with an IPv6 address, substitute the wbemcat6
+utility for wbemcat.
+
 The second utility program called xmltest is another script that is also
 used to send a raw CIM-XML test file to the sfcb CIMOM (using wbemcat) and
 then compares the returned CIM-XML results against a previously determined

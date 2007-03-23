@@ -2,7 +2,7 @@
 /*
  * value.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -29,6 +29,8 @@
 #include "constClass.h"
 #include "qualifier.h"
 #include "cmpidtx.h"
+#include "instance.h"
+#include "objectpath.h"
 
 void sfcb_native_release_CMPIValue(CMPIType type, CMPIValue * val)
 {
@@ -303,4 +305,73 @@ void sfcb_setAlignedValue(CMPIValue * target, const CMPIValue *source,
       }
     }  
   }
+}
+
+int sfcb_comp_CMPIValue(CMPIValue *val1, CMPIValue *val2, CMPIType type)
+{
+   int c;
+   CMPIValue tempVal1, tempVal2;
+   CMPIString *s1, *s2;
+   
+   if(type & CMPI_ARRAY) {
+      c = (val1->array)->ft->getSize(val1->array, NULL);
+      if(c != (val2->array)->ft->getSize(val2->array, NULL)) {
+      	 /* member count not equal -> CMPIValue cannot be equal */
+         return 1;
+      }
+      while(c--) {
+         tempVal1 = ((val1->array)->ft->getElementAt(val1->array, c-1, NULL)).value;
+         tempVal2 = ((val2->array)->ft->getElementAt(val2->array, c-1, NULL)).value;
+         
+         if(sfcb_comp_CMPIValue(&tempVal1, &tempVal2, type & ~CMPI_ARRAY)) {
+            /* one element does not seem to be identical*/
+            return 1;
+         }
+      }
+      /* all tests passed - arrays identical */
+      return 0;
+   }
+   if(val1 && val2) {
+      switch(type) {
+         case CMPI_boolean:
+         case CMPI_uint8:
+         case CMPI_sint8:
+            if(val1->Byte != val2->Byte) return 1;
+            break;
+         case CMPI_char16:
+         case CMPI_uint16:
+         case CMPI_sint16:
+            if(val1->Short != val2->Short) return 1;
+            break;
+         case CMPI_uint32:
+         case CMPI_sint32:
+            if(val1->Int != val2->Int) return 1;
+            break;
+         case CMPI_real32:
+            if(val1->Float != val2->Float) return 1;
+            break;
+         case CMPI_uint64:
+         case CMPI_sint64:
+            if(val1->Long != val2->Long) return 1;
+            break;
+         case CMPI_real64:
+            if(val1->Double != val2->Double) return 1;
+            break;
+         case CMPI_instance:
+            return (instanceCompare(val1->inst, val2->inst));
+         case CMPI_ref:
+            return (objectpathCompare(val1->ref, val2->ref));
+         case CMPI_string:
+            return strcmp(val1->string->ft->getCharPtr(val1->string, NULL),
+                          val2->string->ft->getCharPtr(val2->string, NULL));
+         case CMPI_dateTime:
+            s1 = val1->dateTime->ft->getStringFormat(val1->dateTime, NULL);
+            s2 = val2->dateTime->ft->getStringFormat(val2->dateTime, NULL);
+            return strcmp(s1->ft->getCharPtr(s1, NULL),
+                          s2->ft->getCharPtr(s2, NULL));
+         default:
+            return 0;
+      }
+   }
+   return 0;
 }

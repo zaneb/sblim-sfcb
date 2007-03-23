@@ -2,7 +2,7 @@
 /*
  * objectpath.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -711,4 +711,20 @@ char *normalizeObjectPathCharsDup(const CMPIObjectPath *cop)
    n=strdup(sb->ft->getCharPtr(sb));
    sb->ft->release(sb);
    return n;
+}
+
+int objectpathCompare(const CMPIObjectPath *cop1, const CMPIObjectPath *cop2)
+{
+   UtilStringBuffer *sb1, *sb2;
+   int result;
+   
+   sb1=normalizeObjectPathStrBuf(cop1);
+   sb2=normalizeObjectPathStrBuf(cop2);
+
+   result = strcmp(sb1->ft->getCharPtr(sb1), sb2->ft->getCharPtr(sb2));
+   
+   sb1->ft->release(sb1);
+   sb2->ft->release(sb2);
+   
+   return result;
 }

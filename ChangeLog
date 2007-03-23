@@ -1,3 +1,9 @@
+2007-03-23  Sven Schuetz
+
+	* value.c, queryOperation.h, objectpath.c, instance.c,
+	queryOperation.c, objectpath.h, instance.h:
+	Fixed 1686170:instance comparision in queries do not work as expected
+
 2007-03-20  Sven Schuetz
 
 	* queryParser.y, selectexp.c:

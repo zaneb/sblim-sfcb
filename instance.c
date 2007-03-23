@@ -57,7 +57,7 @@ CMPIObjectPath *internal_new_CMPIObjectPath(int mode, const char *nameSpace,
                                             const char *className,
                                             CMPIStatus * rc);
 extern const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id);
-//extern CMPIString *__oft_toString(CMPIObjectPath * cop, CMPIStatus * rc);
+extern int sfcb_comp_CMPIValue(CMPIValue *val1, CMPIValue *val2, CMPIType type);
 
 extern CMPIBroker *Broker;
 
@@ -732,6 +732,38 @@ const char *instGetClassName(CMPIInstance * ci)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
    return ClInstanceGetClassName(inst);
+}
+
+int instanceCompare(CMPIInstance *inst1, CMPIInstance *inst2)
+{
+   int c,i;
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIData d1, d2;
+   CMPIString *propName;
+   
+   c = inst1->ft->getPropertyCount(inst1, NULL);
+   
+   if(c != inst2->ft->getPropertyCount(inst2, NULL)) {
+      /* property count not equal, instances cannot be identical */
+      return 1;
+   }
+   
+   for(i = 0; i < c; i++) {
+      /* get property at position i, store the name in propName */
+      d1 = inst1->ft->getPropertyAt(inst1, i, &propName, NULL);
+      /* try to find the property in instance2 via the name just retrieved */
+      d2 = inst2->ft->getProperty(inst2, propName->ft->getCharPtr(propName, NULL), &st);
+      
+      if(st.rc ||     /* property could not be retrieved, probably non existent*/
+         d1.type != d2.type ||                                 /* types differ */
+         sfcb_comp_CMPIValue(&d1.value, &d2.value, d1.type)) { /* values differ*/
+         
+         /* instances not equal */
+         return 1;
+      }
+   }
+   /* passed all tests - instances seem to be identical */
+   return 0;
 }
 
 /* needed for local client support as function tables differ */

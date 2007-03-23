@@ -27,6 +27,7 @@
 
 #include "queryOperation.h"
 #include "mlog.h"
+#include "instance.h"
 
 extern CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
 extern void sfcb_native_array_increase_size(CMPIArray * array, CMPICount increment);
@@ -258,25 +259,31 @@ static int propCompare(QLOperand* self, QLOperand* op,
    return rc;
 }
 
-extern const char *instGetClassName(CMPIInstance * ci);
 extern int isChild(const char *ns, const char *parent, const char* child);
 
 static int  instCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
 {
+   CMPIInstance *ov;
    char *sov;
    QLOpd type=op->type;
-  
+   
    sov=(char*)instGetClassName(self->inst);
+   if (type==QL_PropertyName) {
+      ov=getPropValue(op, src, &type).inst;
+   }
    if (type==QL_Name) {
       if (strcasecmp(sov,op->charsVal)==0) return 0;
-      return isChild(src->sns,sov,op->charsVal)!=0;
-    }
+      return isChild(src->sns,op->charsVal,sov)==0;
+   }
+   if (type==QL_Inst) {
+      return instanceCompare(self->inst, ov);
+   }
    return -2;
 }
 
 static char* instToString(QLOperand* op) 
 {
-   return qsStrDup(NULL,"*** instace ***");
+   return qsStrDup(NULL,"*** instance ***");
 }
 
 static int  nameCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)

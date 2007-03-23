@@ -14,18 +14,14 @@
  *
  * Description:
  *
- * Objectpath utility functions
+ * instance utility functions
  *
 */
 
-#ifndef _OBJECTPATH_H
-#define _OBJECTPATH_H
+#ifndef _INSTANCE_H
+#define _INSTANCE_H
 
-#include "utilft.h"
-
-UtilStringBuffer *normalizeObjectPathStrBuf(const CMPIObjectPath * cop);
-char *normalizeObjectPathChars(const CMPIObjectPath *cop);
-char *normalizeObjectPathCharsDup(const CMPIObjectPath *cop);
-int objectpathCompare(const CMPIObjectPath *cop1, const CMPIObjectPath *cop2);
+int instanceCompare(CMPIInstance *inst1, CMPIInstance *inst2);
+const char *instGetClassName(CMPIInstance * ci);
 
 #endif

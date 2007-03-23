@@ -1,8 +1,8 @@
 
 /*
- * cimXmlRequest.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -2337,13 +2337,23 @@ RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx)
    }
 #endif
 
-   hc = markHeap();
-   hdlr = handlers[hdr.opType];
-   rs = hdlr.handler(ctx, &hdr);
-   releaseHeap(hc);
-
-   ctx->className=hdr.className;
-   ctx->operation=hdr.opType;
+   if (hdr.rc) {
+     if (hdr.methodCall) {
+       rs = methodErrResponse(&hdr,getErrSegment(CMPI_RC_ERR_FAILED,
+						 "invalid methodcall XML"));
+     } else {
+       rs = iMethodErrResponse(&hdr,getErrSegment(CMPI_RC_ERR_FAILED,
+						  "invalid imethodcall XML"));
+     }
+   } else {
+     hc = markHeap();
+     hdlr = handlers[hdr.opType];
+     rs = hdlr.handler(ctx, &hdr);
+     releaseHeap(hc);
+     
+     ctx->className=hdr.className;
+     ctx->operation=hdr.opType;
+   }
    rs.buffer = hdr.xmlBuffer;
    
    freeCimXmlRequest(hdr);

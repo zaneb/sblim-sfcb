@@ -1,6 +1,6 @@
 
 /*
- * cimXmlParser.c
+ * $Id$
  *
  *  © Copyright IBM Corp. 2005, 2007
  *
@@ -1391,7 +1391,7 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
       }
 
       if (*next == '/') {
-         for (i = 0, m = sizeof(tags); i < m; i++) {
+	for (i = 0, m = sizeof(tags)/sizeof(Tags); i < m; i++) {
             if (nextEquals(next + 1, tags[i].tag) == 1) {
                skipTag(parm->xmb);
                _SFCB_RETURN(tags[i].etag);
@@ -1404,7 +1404,7 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
             parm->xmb->cur = strstr(parm->xmb->cur, "-->") + 3;
             continue;
          }
-         for (i = 0, m = sizeof(tags); i < m; i++) {
+         for (i = 0, m = sizeof(tags)/sizeof(Tags); i < m; i++) {
             if (nextEquals(next, tags[i].tag) == 1) {
    //printf("+++ %d\n",i);
                rc=tags[i].process(lvalp, parm);
@@ -1420,7 +1420,8 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
 int yyerror(char *s)
 {
    printf("*-* yyerror: %s\n", s);
-   exit(5);
+   return 5;
+   //   exit(5);
 }
 
 RequestHdr scanCimXmlRequest(char *xmlData)
@@ -1430,6 +1431,8 @@ RequestHdr scanCimXmlRequest(char *xmlData)
    XmlBuffer *xmb = newXmlBuffer(xmlData);
    control.xmb = xmb;
    control.reqHdr.xmlBuffer = xmb;
+   control.reqHdr.cimRequest = NULL;
+   control.reqHdr.iMethod = NULL;
    control.paramValues.last = control.paramValues.first = NULL;
    control.properties.last = control.properties.first = NULL;
    control.qualifiers.last = control.qualifiers.first = NULL;

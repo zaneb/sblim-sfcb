@@ -16,6 +16,7 @@ Bugs fixed:
 - 1682045 Fixed compile error with gcc 4.1.3
 - 1682388 Relaxed CMPIValue * alignment pickyness of sfcb
 - 1686170 Fixed instance comparision in queries do not work as expected
+- 1686696 Fixed sfcb XML parsing failures not indicated to client
 
 Changes in 1.2.1
 ================

@@ -1,3 +1,10 @@
+2007-03-23  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* cimXmlParser.c, cimXmlRequest.c: 
+	Fixed 1686696: sfcb XML parsing failures not indicated to client
+	Removed exit() in yyerror, generate (i)methodresponse errors
+	for XML parsing errors.
+
 2007-03-23  Sven Schuetz
 
 	* value.c, queryOperation.h, objectpath.c, instance.c,

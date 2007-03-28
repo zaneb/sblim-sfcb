@@ -27,6 +27,7 @@
 #include <slp.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "config.h"
 #include "cimslpCMPI.h"
@@ -38,6 +39,8 @@
 #include "control.h"
 #endif
 
+
+extern void addStartedAdapter(int pid);
 
 void freeCFG(cimomConfig *cfg) {
 	
@@ -70,26 +73,44 @@ void setUpTimes(int * slpLifeTime, int * sleepTime) {
 	*sleepTime = *slpLifeTime -15;		
 }
 
+static void handleSigUsr1(int sig)
+{
+	deregisterCIMService();
+	mlogf(M_INFO,M_SHOW,"--- %s terminating %d\n",processName,getpid());
+	exit(0);
+}
+
 #ifdef HAVE_SLP
 
 void forkSLPAgent(cimomConfig cfg, int slpLifeTime, int sleepTime)
 {
-	cimSLPService service;
-	int pid;
-    pid= fork();
+    cimSLPService service;
+    int pid;
+    pid = fork();
     if (pid < 0) {
       char *emsg=strerror(errno);
-      mlogf(M_ERROR,M_SHOW, "-#- http fork: %s",emsg);
+      mlogf(M_ERROR,M_SHOW, "-#- slp agent fork: %s",emsg);
       exit(2);
     }
     if (pid == 0) {
+	setSignal(SIGUSR1, handleSigUsr1,0);
+	setSignal(SIGINT, SIG_IGN,0);
+	setSignal(SIGTERM, SIG_IGN,0);
+	setSignal(SIGHUP, SIG_IGN,0);
+	if(strcasecmp(cfg.commScheme, "http") == 0) {
+		processName = "SLP Agent for HTTP Adapter";
+	} else {
+		processName = "SLP Agent for HTTPS Adapter";
+	}
     	while(1) {
     		service = getSLPData(cfg);
     		registerCIMService(service, slpLifeTime);
     		sleep(sleepTime);
     	}
-      	//if awaked-exit
+      	/*if awaked-exit*/
       	exit(0);
+    } else {
+        addStartedAdapter(pid);
     }
 }
 

@@ -1,3 +1,8 @@
+2007-03-23  Sven Schuetz <sven@de.ibm.com>
+
+	* sfcBroker.c, cimslp.c:
+	Fixed 1689953: slp agent lacks proper signal handling
+
 2007-03-23  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* cimXmlParser.c, cimXmlRequest.c: 

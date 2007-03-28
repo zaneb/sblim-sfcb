@@ -122,7 +122,7 @@ typedef struct startedThreadAdapter {
 
 StartedThreadAdapter *lastStartedThreadAdapter=NULL;
 
-static void addStartedAdapter(int pid)
+void addStartedAdapter(int pid)
 {
    StartedAdapter *sa=(StartedAdapter*)malloc(sizeof(StartedAdapter));
 

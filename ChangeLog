@@ -1,5 +1,9 @@
 2007-03-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* providerMgr.c: 
+	Fixed 1690032: sfcb doesn't fully honor disabled indication support
+	Added ifdef around the startup code for the interop provider.
+
 	* fileRepository.c: 
 	Fixed 1690029: sfcb file repository failure on long directory names,
 	Invalid buffer allocation size corrected now.

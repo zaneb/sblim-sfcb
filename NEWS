@@ -21,6 +21,8 @@ Bugs fixed:
 - 1690518 Fixed not all indication providers are invoked
 - 1690026 Fixed repository build fails if no "global" MOF found
 - 1690029 Fixed file repository failure on long directory names
+- 1690032 Removed interop provider startup when indications disabled
+
 
 Changes in 1.2.1
 ================

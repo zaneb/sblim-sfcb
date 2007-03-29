@@ -18,6 +18,7 @@ Bugs fixed:
 - 1686170 Fixed instance comparision in queries do not work as expected
 - 1686696 Fixed sfcb XML parsing failures not indicated to client
 - 1689953 Fixed slp agent lacks proper signal handling
+- 1690518 Fixed not all indication providers are invoked
 
 Changes in 1.2.1
 ================

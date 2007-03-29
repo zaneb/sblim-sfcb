@@ -285,10 +285,14 @@ static int addProviders(long type, char *className, char *nameSpace,
          _SFCB_TRACE(1,("--- adding className: %s provider: %s",className,ip->providerName));
          providerList->ft->add(providerList, ip);
       }
-      if(ip->type != INDICATION_PROVIDER) {
+      /* multiple indication providers could serve the same class,
+       * e.g. CIM_InstModification, so they might be arranged
+       * in a chain which needs to be traversed */
+      if(ip->type & INDICATION_PROVIDER) {
+         ip = ip->nextInRegister;
+      } else {
          break;
       }
-      ip = ip->nextInRegister;
    } 
       
    _SFCB_TRACE(1,("--- getting children")); 

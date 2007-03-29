@@ -1,4 +1,9 @@
-2007-03-23  Sven Schuetz <sven@de.ibm.com>
+2007-03-29  Sven Schuetz <sven@de.ibm.com>
+
+	* provMgr.c:
+	Fixed 1690518: not all indication providers are invoked
+
+2007-03-28  Sven Schuetz <sven@de.ibm.com>
 
 	* sfcBroker.c, cimslp.c:
 	Fixed 1689953: slp agent lacks proper signal handling

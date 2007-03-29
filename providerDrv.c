@@ -921,7 +921,7 @@ static BinResponseHdr *getClass(BinRequestHdr * hdr, ProviderInfo * info, int re
    if (req->hdr.flags & FL_includeQualifiers) flgs|=CMPI_FLAG_IncludeQualifiers;
    if (req->hdr.flags & FL_includeClassOrigin) flgs|=CMPI_FLAG_IncludeClassOrigin;
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    if (req->hdr.count>2) props=makePropertyList(req->hdr.count-2,req->properties);
@@ -1168,7 +1168,7 @@ static BinResponseHdr *getQualifier(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIFlags flgs=0;
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
@@ -1208,7 +1208,7 @@ static BinResponseHdr *deleteQualifier(BinRequestHdr * hdr, ProviderInfo * info,
    CMPIFlags flgs=0;
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
@@ -1316,7 +1316,7 @@ static BinResponseHdr *getInstance(BinRequestHdr * hdr, ProviderInfo * info,
    if (req->hdr.flags & FL_includeQualifiers) flgs|=CMPI_FLAG_IncludeQualifiers;
    if (req->hdr.flags & FL_includeClassOrigin) flgs|=CMPI_FLAG_IncludeClassOrigin;
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    if (req->hdr.count>2) props=makePropertyList(req->hdr.count-2,req->properties);
@@ -1443,7 +1443,7 @@ static BinResponseHdr *modifyInstance(BinRequestHdr * hdr, ProviderInfo * info,
 
    if (req->hdr.flags & FL_includeQualifiers) flgs|=CMPI_FLAG_IncludeQualifiers;
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    if (req->hdr.count>3) props=makePropertyList(req->hdr.count-3,req->properties);
@@ -1503,7 +1503,7 @@ static BinResponseHdr *enumInstances(BinRequestHdr * hdr, ProviderInfo * info,
    if (req->hdr.flags & FL_includeQualifiers) flgs|=CMPI_FLAG_IncludeQualifiers;
    if (req->hdr.flags & FL_includeClassOrigin) flgs|=CMPI_FLAG_IncludeClassOrigin;
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    if (req->hdr.count>2) props=makePropertyList(req->hdr.count-2,req->properties);
@@ -1729,7 +1729,7 @@ static BinResponseHdr *associators(BinRequestHdr * hdr, ProviderInfo * info, int
    if (req->hdr.flags & FL_includeQualifiers) flgs|=CMPI_FLAG_IncludeQualifiers;
    if (req->hdr.flags & FL_includeClassOrigin) flgs|=CMPI_FLAG_IncludeClassOrigin;
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    if (req->hdr.count>6) props=makePropertyList(req->hdr.count-6,req->properties);
@@ -1772,7 +1772,7 @@ static BinResponseHdr *references(BinRequestHdr * hdr, ProviderInfo * info, int 
    if (req->hdr.flags & FL_includeQualifiers) flgs|=CMPI_FLAG_IncludeQualifiers;
    if (req->hdr.flags & FL_includeClassOrigin) flgs|=CMPI_FLAG_IncludeClassOrigin;
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
-   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)&req->principal.data,CMPI_chars);
+   ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    if (req->hdr.count>4) props=makePropertyList(req->hdr.count-4,req->properties);

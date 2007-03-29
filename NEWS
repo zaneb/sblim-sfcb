@@ -23,6 +23,7 @@ Bugs fixed:
 - 1690029 Fixed file repository failure on long directory names
 - 1690032 Removed interop provider startup when indications disabled
 - 1686525 Fixed NULL property list filtering
+- 1690034 Finally fixed the principal passing via context
 
 Changes in 1.2.1
 ================

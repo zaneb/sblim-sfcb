@@ -1,5 +1,11 @@
 2007-03-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* providerDrv.c: 
+	Fixed 1690034: garbage principal occurrences.
+	The original patch for sfcb 1.1 hasn't fixed all the occurrences
+	of invalid CMPIPrincipal passing into the context. This is
+	corrected now.
+
 	* instance.c: 
 	Fixed 1686525: sfcb default properties not returned with NULL 
 	property list. The property filtering is not applied anymore when the

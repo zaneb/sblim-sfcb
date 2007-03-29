@@ -139,6 +139,12 @@ then
     
     # Compile all staged namespace directories
     mofsubdirs=`find $stagingdir/mofs/* -type d -print 2> /dev/null`
+    if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
+    then
+	globalmofs=$stagingdir/mofs/*.mof
+    else
+	globalmofs=""
+    fi
     for mofdir in $mofsubdirs
     do
 	if ls $mofdir/*.mof > /dev/null 2>&1
@@ -146,7 +152,7 @@ then
 	    namespace=`echo $mofdir | sed s?$stagingdir/mofs/??`
 	    repositorydir=$registrationdir/repository/
 	    [ -d $repositorydir ] || mkdir -p $repositorydir
-	    if ! sfcbmof -d $repositorydir -n $namespace -o classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $mofdir/*.mof $stagingdir/mofs/*.mof
+	    if ! sfcbmof -d $repositorydir -n $namespace -o classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $mofdir/*.mof $globalmofs
 	    then
 		echo Failed compiling the MOF files. >&2
 		exit 1

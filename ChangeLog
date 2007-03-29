@@ -1,3 +1,10 @@
+2007-03-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* sfcbrepos.sh.in: 
+	Fixed 1690026: sfcb repository build fails if no "global" MOF found.
+	The missing of all-namespace MOFs in the staging area is now
+	handled benignly.
+
 2007-03-29  Sven Schuetz <sven@de.ibm.com>
 
 	* provMgr.c:

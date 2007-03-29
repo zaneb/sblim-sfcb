@@ -19,6 +19,7 @@ Bugs fixed:
 - 1686696 Fixed sfcb XML parsing failures not indicated to client
 - 1689953 Fixed slp agent lacks proper signal handling
 - 1690518 Fixed not all indication providers are invoked
+- 1690026 Fixed repository build fails if no "global" MOF found
 
 Changes in 1.2.1
 ================

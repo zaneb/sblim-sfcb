@@ -20,6 +20,7 @@ Bugs fixed:
 - 1689953 Fixed slp agent lacks proper signal handling
 - 1690518 Fixed not all indication providers are invoked
 - 1690026 Fixed repository build fails if no "global" MOF found
+- 1690029 Fixed file repository failure on long directory names
 
 Changes in 1.2.1
 ================

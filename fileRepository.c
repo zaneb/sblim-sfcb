@@ -1,8 +1,8 @@
 
 /*
- * fileRepository.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -322,12 +322,10 @@ int getIndex(char *ns, char *cls, int elen, int mki, BlobIndex **bip)
    char *fn;
    char *p;
    char *dir;
-   int keyl;
 
    dir=getRepDir();
    
-   keyl=strlen(dir)+elen;
-   fn=alloca(elen);
+   fn=alloca(strlen(dir)+strlen(ns)+strlen(cls)+8);
    
    bi=NEW(BlobIndex);
 
@@ -337,9 +335,10 @@ int getIndex(char *ns, char *cls, int elen, int mki, BlobIndex **bip)
    strcat(fn,"/");
    while (*p) { *p=tolower(*p); p++; }
    bi->dir=strdup(fn);
+
+   p=fn+strlen(fn);   
    strcat(fn,cls);
    
-   p=fn; 
    while (*p) { *p=tolower(*p); p++; }
    
    bi->fnd=strdup(fn);

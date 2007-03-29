@@ -345,6 +345,11 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
    struct native_instance *i = (struct native_instance *) instance;
    struct native_instance *iNew,iTemp;
    
+   if (propertyList == NULL) {
+      /* NULL property list, no need to set filter */
+      CMReturn(CMPI_RC_OK);
+   }
+
    cop = instance->ft->getObjectPath(instance, NULL);
    if(cop) {
       newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);

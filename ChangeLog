@@ -1,5 +1,10 @@
 2007-03-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* instance.c: 
+	Fixed 1686525: sfcb default properties not returned with NULL 
+	property list. The property filtering is not applied anymore when the
+	propertyList is NULL.
+
 	* providerMgr.c: 
 	Fixed 1690032: sfcb doesn't fully honor disabled indication support
 	Added ifdef around the startup code for the interop provider.

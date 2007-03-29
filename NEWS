@@ -22,7 +22,7 @@ Bugs fixed:
 - 1690026 Fixed repository build fails if no "global" MOF found
 - 1690029 Fixed file repository failure on long directory names
 - 1690032 Removed interop provider startup when indications disabled
-
+- 1686525 Fixed NULL property list filtering
 
 Changes in 1.2.1
 ================

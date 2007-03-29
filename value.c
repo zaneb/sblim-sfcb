@@ -307,11 +307,25 @@ void sfcb_setAlignedValue(CMPIValue * target, const CMPIValue *source,
   }
 }
 
+static int extended_strcmp(char *s1, char *s2)
+{
+    if(s1 == NULL && s2 == NULL) return 0;
+    if(s1 == NULL) return -1;
+    if(s2 == NULL) return 1;
+    
+    return strcmp(s1, s2);
+}
+
 int sfcb_comp_CMPIValue(CMPIValue *val1, CMPIValue *val2, CMPIType type)
 {
    int c;
    CMPIValue tempVal1, tempVal2;
    CMPIString *s1, *s2;
+   
+   /* check if we have null pointers for our ENC data types, the pointers */
+   if(val1->array == NULL && val2->array == NULL) return 0; /*identical*/
+   if(val1->array == NULL) return -1; /* val1 is less than val2 */
+   if(val2->array == NULL) return 1;  /* val2 is less than val1 */
    
    if(type & CMPI_ARRAY) {
       c = (val1->array)->ft->getSize(val1->array, NULL);
@@ -336,38 +350,32 @@ int sfcb_comp_CMPIValue(CMPIValue *val1, CMPIValue *val2, CMPIType type)
          case CMPI_boolean:
          case CMPI_uint8:
          case CMPI_sint8:
-            if(val1->Byte != val2->Byte) return 1;
-            break;
+            return(val1->Byte - val2->Byte);
          case CMPI_char16:
          case CMPI_uint16:
          case CMPI_sint16:
-            if(val1->Short != val2->Short) return 1;
-            break;
+            return(val1->Short - val2->Short);
          case CMPI_uint32:
          case CMPI_sint32:
-            if(val1->Int != val2->Int) return 1;
-            break;
+            return(val1->Int - val2->Int);
          case CMPI_real32:
-            if(val1->Float != val2->Float) return 1;
-            break;
+            return(val1->Float - val2->Float);
          case CMPI_uint64:
          case CMPI_sint64:
-            if(val1->Long != val2->Long) return 1;
-            break;
+            return(val1->Long - val2->Long);
          case CMPI_real64:
-            if(val1->Double != val2->Double) return 1;
-            break;
+            return(val1->Double - val2->Double);
          case CMPI_instance:
             return (instanceCompare(val1->inst, val2->inst));
          case CMPI_ref:
             return (objectpathCompare(val1->ref, val2->ref));
          case CMPI_string:
-            return strcmp(val1->string->ft->getCharPtr(val1->string, NULL),
+            return extended_strcmp(val1->string->ft->getCharPtr(val1->string, NULL),
                           val2->string->ft->getCharPtr(val2->string, NULL));
          case CMPI_dateTime:
             s1 = val1->dateTime->ft->getStringFormat(val1->dateTime, NULL);
             s2 = val2->dateTime->ft->getStringFormat(val2->dateTime, NULL);
-            return strcmp(s1->ft->getCharPtr(s1, NULL),
+            return extended_strcmp(s1->ft->getCharPtr(s1, NULL),
                           s2->ft->getCharPtr(s2, NULL));
          default:
             return 0;

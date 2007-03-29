@@ -1,3 +1,8 @@
+2007-03-29  Sven Schuetz <sven@de.ibm.com>
+
+	* value.c:
+	Fixed 1690525: instance comparison might fail in case of NULL pointer
+
 2007-03-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* providerDrv.c: 

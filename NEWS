@@ -24,6 +24,7 @@ Bugs fixed:
 - 1690032 Removed interop provider startup when indications disabled
 - 1686525 Fixed NULL property list filtering
 - 1690034 Finally fixed the principal passing via context
+- 1690525 Fixed instance comparison failure in case of NULL pointer
 
 Changes in 1.2.1
 ================

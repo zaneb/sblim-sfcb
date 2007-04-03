@@ -1,3 +1,8 @@
+2007-04-03  Sven Schuetz <sven@de.ibm.com>
+
+	* queryOperation.c:
+	Fixed 169353: problem with certain queries
+
 2007-03-29  Sven Schuetz <sven@de.ibm.com>
 
 	* value.c:

@@ -52,18 +52,20 @@ static CMPIValue getPropValue(QLOperand* self, QLPropertySource* src, QLOpd *typ
    CMPIValue v;
    QLPropertyNameData *pd=self->propertyName;
    QLPropertySource nsrc=*src;
-   
-   if (pd->nextPart) for (;;) {
+
+   /* resolves properties of the form "instance.propName" where
+    * propName would be nextPart */
+   while(pd->nextPart) {
       v=nsrc.getValue(&nsrc,pd->propName,type);
-      if (pd->nextPart==NULL) break;
       if (*type!=QL_Inst) {
          *type=QL_Invalid;
         break;
-      }   
+      }
       nsrc.data=v.inst;
+      pd = pd->nextPart;
    }
    
-   else v=nsrc.getValue(&nsrc,pd->propName,type);
+   v=nsrc.getValue(&nsrc,pd->propName,type);
  
    return v;
 }
@@ -263,7 +265,7 @@ extern int isChild(const char *ns, const char *parent, const char* child);
 
 static int  instCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
 {
-   CMPIInstance *ov;
+   CMPIInstance *ov=NULL;
    char *sov;
    QLOpd type=op->type;
    
@@ -271,6 +273,7 @@ static int  instCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
    if (type==QL_PropertyName) {
       ov=getPropValue(op, src, &type).inst;
    }
+   
    if (type==QL_Name) {
       if (strcasecmp(sov,op->charsVal)==0) return 0;
       return isChild(src->sns,op->charsVal,sov)==0;

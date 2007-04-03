@@ -745,6 +745,11 @@ int instanceCompare(CMPIInstance *inst1, CMPIInstance *inst2)
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIData d1, d2;
    CMPIString *propName;
+
+   /* check if we have null pointers for our instances */
+   if(inst1 == NULL && inst2 == NULL) return 0; /*identical*/
+   if(inst1 == NULL) return -1; /* inst1 is less than inst2 */
+   if(inst2 == NULL) return 1;  /* inst2 is less than inst1 */
    
    c = inst1->ft->getPropertyCount(inst1, NULL);
    

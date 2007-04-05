@@ -2,7 +2,7 @@
 /*
  * indCIMXMLHandler.c
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -242,7 +242,7 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
          _SFCB_RETURN(st); 
       }
       dest=CMGetProperty(hci,"destination",NULL).value.string;
-      printf("destination: %s\n",(char*)dest->hdl);
+      _SFCB_TRACE(1,("--- destination: %s\n",(char*)dest->hdl));
       ind=CMGetArg(in,"indication",NULL).value.inst;
       sprintf(strId,"%d",id++);
       xs=exportIndicationReq(ind,strId);

@@ -1,3 +1,8 @@
+2007-04-05  Sven Schuetz <sven@de.ibm.com>
+
+	* indCIMXMLExport.c, indCIMXMLHandler.c:
+	Fixed 1693675: delivering an indication can lock sfcb
+
 2007-04-03  Sven Schuetz <sven@de.ibm.com>
 
 	* queryOperation.c:

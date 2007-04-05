@@ -165,6 +165,9 @@ static int genRequest(CurlData *cd, char *url, char **msg)
     /* Disable SSL verification */
     rv = curl_easy_setopt(cd->mHandle, CURLOPT_SSL_VERIFYHOST, 0);
     rv = curl_easy_setopt(cd->mHandle, CURLOPT_SSL_VERIFYPEER, 0);
+    
+    /* Set transfer timeout to 10 sec */
+    rv = curl_easy_setopt(cd->mHandle, CURLOPT_TIMEOUT, 10);
 
     /* Set username and password * /
     if (url.user.length() > 0 && url.password.length() > 0) {
@@ -326,8 +329,10 @@ int exportIndication(char *url, char *payload, char **resp, char **msg)
       }
    } 
    
- //  _SFCB_TRACE(1,("--- url: %s rc: %d %s",url,rc,msg));
-   printf("--- url: %s rc: %d %s\n",url,rc,*msg);
+   _SFCB_TRACE(1,("--- url: %s rc: %d %s",url,rc,msg));
+   if (rc) {
+      mlogf(M_ERROR,M_SHOW,"Problem processing indication to %s. curl rc: %d %s", url,rc,msg);
+   }
    
    uninit(&cd);
    

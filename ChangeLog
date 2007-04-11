@@ -1,3 +1,8 @@
+2007-04-11  Sven Schuetz <sven@de.ibm.com>
+
+	* providerMgr.c:
+	Fixed 1697772: provider resolution can fail for associators
+
 2007-04-05  Sven Schuetz <sven@de.ibm.com>
 
 	* indCIMXMLExport.c, indCIMXMLHandler.c:

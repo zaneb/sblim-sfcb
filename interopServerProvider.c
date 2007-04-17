@@ -48,6 +48,7 @@
 static const CMPIBroker *_broker;
 static CMPIStatus invClassSt = { CMPI_RC_ERR_INVALID_CLASS, NULL };
 static CMPIStatus notSuppSt = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
+static CMPIStatus okSt = { CMPI_RC_OK, NULL };
 
 //------------------------------------------------------------------
 
@@ -554,7 +555,7 @@ static CMPIStatus ServerProviderEnumInstanceNames(CMPIInstanceMI * mi,
    if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
       return ComMechProviderEnumInstanceNames(mi, ctx, rslt, ref);
   
-   return invClassSt;
+   return okSt;
 }                                                
 
 static CMPIStatus ServerProviderEnumInstances(CMPIInstanceMI * mi, 
@@ -574,7 +575,7 @@ static CMPIStatus ServerProviderEnumInstances(CMPIInstanceMI * mi,
    if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
       return ComMechProviderEnumInstances(mi, ctx, rslt, ref, properties);
    
-   return invClassSt;
+   return okSt;
 }                                                
 
 static CMPIStatus ServerProviderCreateInstance(CMPIInstanceMI * mi,

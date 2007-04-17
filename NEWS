@@ -5,6 +5,7 @@ Bugs fixed:
 - 1693530 Fixed problem with certain queries
 - 1693675 Fixed delivery of an indication can lock sfcb
 - 1697772 Fixed provider resolution can fail for associators
+- 1701174 Fixed Bug with ein on classes in interop namespace
 
 Changes in 1.2.2
 ================

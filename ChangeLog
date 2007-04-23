@@ -1,3 +1,8 @@
+2007-04-23  Sven Schuetz <sven@de.ibm.com>
+
+	* interopProvider.c:
+	Fixed 1702310: indProv segfaults while ci with NULL query
+
 2007-04-17  Sven Schuetz <sven@de.ibm.com>
 
 	* interopServerProvider.c:

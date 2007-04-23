@@ -762,6 +762,7 @@ CMPIStatus InteropProviderCreateInstance(
    char *nss = ns->ft->getCharPtr(ns,NULL);
    CMPIContext *ctxLocal;
    CMPIInstance *ciLocal;
+   CMPIValue valSNS;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderCreateInstance");
   
@@ -786,9 +787,19 @@ CMPIStatus InteropProviderCreateInstance(
       
       _SFCB_TRACE(1,("--- create cim_indicationfilter"));
    
-      if (lang==NULL || query==NULL) {
+      if (lang == NULL || lang->hdl == NULL
+          || query == NULL ||  query->hdl == NULL) {
          setStatus(&st,CMPI_RC_ERR_FAILED,"Query and/or Language property not found");
          _SFCB_RETURN(st);         
+      }
+      
+      if(sns == NULL || sns->hdl == NULL) {
+      	  /* if sourcenamespace is NULL, the namespace of the filter
+      	   * registration is assumed */
+          sns = sfcb_native_new_CMPIString("root/interop", NULL);
+          valSNS.string = sns;
+          ciLocal->ft->setProperty(ciLocal, "SourceNamespace", &valSNS,
+                                   CMPI_string);
       }
       
       for (ql=(char*)lang->hdl,i=0,n=0,m=strlen(ql); i<m; i++) {

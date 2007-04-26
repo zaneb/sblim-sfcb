@@ -737,10 +737,17 @@ CMPIStatus InteropProviderGetInstance(
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIContext *ctxLocal;
+   CMPIInstance *ci;
+   
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderGetInstance");
 
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
-   CMReturnInstance(rslt, _broker->bft->getInstance(_broker, ctxLocal, cop, properties, &st));
+
+   ci = _broker->bft->getInstance(_broker, ctxLocal, cop, properties, &st);
+   if (st.rc==CMPI_RC_OK) {
+      CMReturnInstance(rslt, ci);
+   }
+   
    CMRelease(ctxLocal);
 
    _SFCB_RETURN(st);

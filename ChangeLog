@@ -1,3 +1,9 @@
+2007-04-27  Adrian Schuur
+
+	* support.c, support.h, providerRegister.c, providerRegister.h,
+	providerDrv.c:
+	New feature 1708578: Execution time parameters for providers
+
 2007-04-27  Sven Schuetz <sven@de.ibm.com>
 
 	* providerRegister.c, providerRegister.h:

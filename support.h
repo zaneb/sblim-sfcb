@@ -210,6 +210,7 @@ typedef struct cntlVals {
 void cntlSkipws(char **p);
 int cntlParseStmt(char *in, CntlVals * rv);
 char *cntlGetVal(CntlVals * rv);
+char *cntlGetStr(CntlVals * rv);
 
 int uninit_sfcBroker();
 void uninitGarbageCollector();

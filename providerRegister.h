@@ -44,6 +44,7 @@ typedef struct _ProviderInfo {
    unsigned long type;
    char *providerName;
    char *location;
+   char *parms;
    char *group;
    char **ns;
    int id;

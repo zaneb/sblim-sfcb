@@ -2172,6 +2172,10 @@ int initProvider(ProviderInfo *info, unsigned int sessionId)
      ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
      ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)"$$",CMPI_chars);
      ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&sessionId,CMPI_uint32);
+     if (info->parms) {
+         ctx->ft->addEntry(ctx,"sfcbProviderParameters",(CMPIValue*)info->parms,CMPI_chars);
+     }
+     
      
      if (info->type & INSTANCE_PROVIDER) {
        rc |= (getInstanceMI(info, &mi, ctx) != 1);

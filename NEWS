@@ -1,6 +1,10 @@
 Changes in 1.2.3
 ================
 
+New features:
+- Execution time parameters for providers via the "parameters" keyword int the
+providerRegister
+
 Bugs fixed:
 - 1693530 Fixed problem with certain queries
 - 1693675 Fixed delivery of an indication can lock sfcb

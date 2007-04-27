@@ -115,7 +115,7 @@ ProviderRegister *newProviderRegister(char *fn)
    char *dir;
    char fin[1024], *stmt = NULL;
    ProviderInfo *info = NULL;
-   int err = 0, n = 0;
+   int err = 0, n = 0, i;
    CntlVals rv;
    int id=0;
    int interopFound=0;
@@ -181,6 +181,12 @@ ProviderRegister *newProviderRegister(char *fn)
                info->providerName = strdup(cntlGetVal(&rv));
             else if (strcmp(rv.id, "location") == 0)
                info->location = strdup(cntlGetVal(&rv));
+            else if (strcmp(rv.id, "parameters") == 0) {
+               info->parms = strdup(cntlGetStr(&rv));
+               for (i=strlen(info->parms); i>0 && info->parms[i]<=' '; i--) {
+                   info->parms[i]=0;
+               }
+            }
             else if (strcmp(rv.id, "group") == 0)
                info->group = strdup(cntlGetVal(&rv));
             else if (strcmp(rv.id, "unload") == 0) {

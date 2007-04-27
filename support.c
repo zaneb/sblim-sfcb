@@ -863,6 +863,17 @@ char *cntlGetVal(CntlVals * rv)
    return v;
 }
 
+char *cntlGetStr(CntlVals * rv)
+{
+   char *p, *v;
+   if (rv->val == NULL) {
+      return NULL;
+   }
+   cntlSkipws(&rv->val);
+   v = rv->val;
+   return v;
+}
+
 void dumpTiming(int pid)
 {
    char buffer[4096];

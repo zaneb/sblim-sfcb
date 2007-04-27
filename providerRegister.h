@@ -59,9 +59,6 @@ typedef struct _ProviderInfo {
    struct _ProviderInfo *next;
    struct _ProviderInfo *nextInRegister; /*not actually next in Register,but
    pointer to the next provider serving the same class (for indications)*/
-   struct _ProviderInfo *master; /* will either be a pointer to itself if the
-   provider serves just one class or to the "master" pointer of this provider
-   when serving multiple classes*/	
    struct providerProcess *proc;         
    CMPIInstanceMI *instanceMI;
    CMPIAssociationMI *associationMI;

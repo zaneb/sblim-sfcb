@@ -1,3 +1,8 @@
+2007-04-27  Sven Schuetz <sven@de.ibm.com>
+
+	* providerRegister.c, providerRegister.h:
+	Fixed 1708568: providers for multiple classes are invoked only once
+
 2007-04-26  Sven Schuetz <sven@de.ibm.com>
 
 	* interopProvider.c:

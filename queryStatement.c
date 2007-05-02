@@ -151,26 +151,21 @@ static int qsTestPropertyClass(QLStatement *st, char *cl)
    return 0;
 }
 
-static void freeCharArray(char ** arr)
-{
-   int i=0;
-   if(arr) {
-      while(arr[i]) {
-         free(arr[i++]);
-      }
-      free(arr);
-   }
-}
-
 static void qsRelease(QLStatement *st)
 {
-  if (st->allocMode != MEM_TRACKED) {
-    freeCharArray(st->fClasses);
-    freeCharArray(st->spNames);
-    if (st->allocList) free(st->allocList);
-    if (st->sns) free(st->sns);
-    if (st) free(st);
-  }
+    if (st && st->allocMode != MEM_TRACKED) {
+    	if(st->sns) {
+    	    free(st->sns);
+    	}
+    	/* free everything but the first element of allocList, which is
+    	 * the memory allocated for the QLStatement itself, see
+    	 * newQLStatement(...). The struct is then freed after the loop */
+        while(st->allocNext > 1) {
+            free(st->allocList[--st->allocNext]);
+        }
+        free(st->allocList);
+        free(st);
+    }
 }
 
 static CMPIInstance* qsCloneAndFilter(QLStatement *st, CMPIInstance *ci, CMPIObjectPath *cop, 

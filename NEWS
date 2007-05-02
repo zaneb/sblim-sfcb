@@ -13,6 +13,7 @@ Bugs fixed:
 - 1702310 Fixed indProv segfaults while ci with NULL query
 - 1708071 Fixed interopProvider choking on getinstance
 - 1708568 Fixed providers for multiple classes are invoked only once
+- 1711283 Fixed minor mem problem in qsRelease
 
 Changes in 1.2.2
 ================

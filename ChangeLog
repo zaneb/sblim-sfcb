@@ -3,6 +3,9 @@
 	* cimXmlOps.y, cimXmlParser.c, cimXmlRequest.c:
 	Fixed 1712545: wrong results in association operations
 	
+	* cimXmlParser.c:
+	Fixed 1712582: parser does not accept type attribute in KEYVALUE tag
+	
 2007-05-02  Sven Schuetz <sven@de.ibm.com>
 
 	* queryStatement.c:

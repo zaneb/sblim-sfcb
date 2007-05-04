@@ -15,6 +15,7 @@ Bugs fixed:
 - 1708568 Fixed providers for multiple classes are invoked only once
 - 1711283 Fixed minor mem problem in qsRelease
 - 1712545 Fixed wrong results in association operations
+- 1712582 Fixed parser does not accept type attribute in KEYVALUE tag
 
 Changes in 1.2.2
 ================

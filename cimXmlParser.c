@@ -1708,23 +1708,31 @@ static void freeEnumInstances(XtokEnumInstances* op)
 
 static void freeAssociatorNames(XtokAssociatorNames* op)
 {
-  freeInstanceName(&op->objectName);
+  if(op->objNameSet) {
+    freeInstanceName(&op->objectName);
+  }
 }
 
 static void freeReferenceNames(XtokReferenceNames* op)
 {
-  freeInstanceName(&op->objectName);
+  if(op->objNameSet) {
+    freeInstanceName(&op->objectName);
+  }
 }
 
 static void freeAssociators(XtokAssociators* op)
 {
-  freeInstanceName(&op->objectName);
+  if(op->objNameSet) {
+    freeInstanceName(&op->objectName);
+  }
   freeArray(&op->propertyList);
 }
 
 static void freeReferences(XtokReferences* op)
 {
-  freeInstanceName(&op->objectName);
+  if(op->objNameSet) {
+    freeInstanceName(&op->objectName);
+  }
   freeArray(&op->propertyList);
 }
 

@@ -1576,6 +1576,11 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
            "AssociatorNames operation for classes not supported")));
    }
+   if (!req->objNameSet) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment
+                   (CMPI_RC_ERR_INVALID_PARAMETER, 
+                   "ObjectName parameter required")));
+   }   
    
    sreq.objectPath = setObjectPathMsgSegment(path);
 
@@ -1657,6 +1662,11 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
            "Associator operation for classes not supported")));
    }
+   if (!req->objNameSet) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment
+                   (CMPI_RC_ERR_INVALID_PARAMETER, 
+                   "ObjectName parameter required")));
+   }   
    
    sreq->objectPath = setObjectPathMsgSegment(path);
 
@@ -1756,6 +1766,11 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
            "ReferenceNames operation for classes not supported")));
    }
+   if (!req->objNameSet) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment
+                   (CMPI_RC_ERR_INVALID_PARAMETER, 
+                   "ObjectName parameter required")));
+   }
    
    sreq.objectPath = setObjectPathMsgSegment(path);
 
@@ -1836,6 +1851,11 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
            "References operation for classes not supported")));
    }
+   if (!req->objNameSet) {
+      _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment
+                   (CMPI_RC_ERR_INVALID_PARAMETER, 
+                   "ObjectName parameter required")));
+   }   
    
    sreq->objectPath = setObjectPathMsgSegment(path);
 

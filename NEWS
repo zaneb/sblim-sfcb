@@ -14,6 +14,7 @@ Bugs fixed:
 - 1708071 Fixed interopProvider choking on getinstance
 - 1708568 Fixed providers for multiple classes are invoked only once
 - 1711283 Fixed minor mem problem in qsRelease
+- 1712545 Fixed wrong results in association operations
 
 Changes in 1.2.2
 ================

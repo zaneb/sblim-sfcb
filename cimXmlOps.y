@@ -1564,7 +1564,10 @@ associatorsParmsList
           $$.objectName=$1.objectName;
           $$.objNameSet = $1.objNameSet;
        }
-       $$.assocClass=$$.resultClass=$$.role=$$.resultRole=0;
+       $$.assocClass=$1.assocClass;
+       $$.resultClass=$1.resultClass;
+       $$.role=$1.role;
+       $$.resultRole=$1.resultRole;
        if ($1.propertyList.values) {
           $$.propertyList=$1.propertyList;
           $$.properties=$1.properties;
@@ -1709,7 +1712,8 @@ referencesParmsList
           $$.objectName=$1.objectName;
           $$.objNameSet = $1.objNameSet;
        }
-       $$.resultClass=$$.role=0;
+       $$.resultClass=$1.resultClass;
+       $$.role=$1.role;
        if ($1.propertyList.values) {
           $$.propertyList=$1.propertyList;
           $$.properties=$1.properties;
@@ -1829,7 +1833,10 @@ associatorNamesParmsList
           $$.objectName=$1.objectName;
           $$.objNameSet = $1.objNameSet;
        }
-      $$.assocClass=$$.resultClass=$$.role=$$.resultRole=0;
+      $$.assocClass=$1.assocClass;
+      $$.resultClass=$1.resultClass;
+      $$.role=$1.role;
+      $$.resultRole=$1.resultRole;
     }
     | associatorNamesParmsList associatorNamesParms
     {
@@ -1915,20 +1922,21 @@ referenceNames
 referenceNamesParmsList
     : referenceNamesParms
     {
-       if ($1.objNameSet)  {
+      if ($1.objNameSet)  {
           $$.objectName=$1.objectName;
           $$.objNameSet = $1.objNameSet;
-       }
-      $$.resultClass=$$.role=0;
+      }
+      $$.resultClass = $1.resultClass;
+      $$.role = $1.role;
     }
     | referenceNamesParmsList referenceNamesParms
     {
-       if ($2.resultClass) $$.resultClass=$2.resultClass;
-       else if ($2.role) $$.role=$2.role;
-       else if ($2.objNameSet) {
+       if($2.objNameSet) {
           $$.objectName=$2.objectName;
-          $$.objNameSet = $2.objNameSet;
+          $$.objNameSet=$2.objNameSet;
        }
+       else if($2.resultClass) $$.resultClass=$2.resultClass;
+       else if($2.role) $$.role=$2.role;              
     }
 ;
 
@@ -1942,7 +1950,7 @@ referenceNamesParms
     | XTOK_IP_RESULTCLASS className ZTOK_IPARAMVALUE
     {
        $$.resultClass = $2;
-       $$.objNameSet = 0 ;
+       $$.objNameSet = 0;
        $$.role=0;
     }
     | XTOK_IP_ROLE value ZTOK_IPARAMVALUE

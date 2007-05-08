@@ -1,3 +1,8 @@
+2007-05-08  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlOps.y, cimXmlParser.c:
+	Fixed 1663641: parser doesn't accept empty IPARAMVALUE
+
 2007-05-04  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlOps.y, cimXmlParser.c, cimXmlRequest.c:

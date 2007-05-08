@@ -16,6 +16,7 @@ Bugs fixed:
 - 1711283 Fixed minor mem problem in qsRelease
 - 1712545 Fixed wrong results in association operations
 - 1712582 Fixed parser does not accept type attribute in KEYVALUE tag
+- 1663641 Fixed parser doesn't accept empty IPARAMVALUE
 
 Changes in 1.2.2
 ================

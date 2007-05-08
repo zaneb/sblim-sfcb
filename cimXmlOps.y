@@ -867,12 +867,20 @@ getClassParms
        $$.properties=$$.clsNameSet=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_LOCALONLY ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }
     | XTOK_IP_INCLUDEQUALIFIERS boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeQualifiers : 0 ;
        $$.flagsSet = FL_includeQualifiers;
        $$.properties=$$.clsNameSet=0;
        $$.propertyList.values=0;
+    }
+    | XTOK_IP_INCLUDEQUALIFIERS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
     }
     | XTOK_IP_INCLUDECLASSORIGIN boolValue ZTOK_IPARAMVALUE
     {
@@ -881,12 +889,20 @@ getClassParms
        $$.properties=$$.clsNameSet=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_INCLUDECLASSORIGIN ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }
     | XTOK_IP_PROPERTYLIST valueArray ZTOK_IPARAMVALUE
     {
        $$.propertyList=$2;
        $$.properties=$2.next;
        $$.clsNameSet=0;
        $$.flags = $$.flagsSet = 0 ;
+    }
+    | XTOK_IP_PROPERTYLIST ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
     }
 ;
 
@@ -948,6 +964,11 @@ enumClassNamesParms
        $$.flagsSet = FL_deepInheritance;
        $$.className=0;
     }
+    | XTOK_IP_DEEPINHERITANCE ZTOK_IPARAMVALUE
+    {
+       $$.className = NULL;
+       $$.flags = $$.flagsSet = 0 ;
+    }    
 ;
 
 /*
@@ -995,25 +1016,36 @@ enumClassesParmsList
 enumClassesParms
     : XTOK_IP_CLASSNAME ZTOK_IPARAMVALUE
     {
-       $$.className = NULL;
-       $$.flags = $$.flagsSet = 0 ;
+       memset(&$$, 0, sizeof($$));
     }
     | XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
     {
        $$.className = $2;
        $$.flags = $$.flagsSet = 0 ;
     }
+    | XTOK_IP_DEEPINHERITANCE ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_DEEPINHERITANCE boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_deepInheritance : 0 ;
        $$.flagsSet = FL_deepInheritance;
        $$.className=0;
     }
+    | XTOK_IP_LOCALONLY ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_LOCALONLY boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_localOnly : 0 ;
        $$.flagsSet = FL_localOnly;
        $$.className=0;
+    }
+    | XTOK_IP_INCLUDEQUALIFIERS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
     }
     | XTOK_IP_INCLUDEQUALIFIERS boolValue ZTOK_IPARAMVALUE
     {
@@ -1021,6 +1053,10 @@ enumClassesParms
        $$.flagsSet = FL_includeQualifiers;
        $$.className=0;
     }
+    | XTOK_IP_INCLUDECLASSORIGIN ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDECLASSORIGIN boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeClassOrigin : 0 ;
@@ -1104,6 +1140,10 @@ getInstanceParms
        $$.propertyList.values=0;
        $$.properties=$$.instNameSet=0;
     }
+    | XTOK_IP_LOCALONLY ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDEQUALIFIERS boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeQualifiers : 0 ;
@@ -1111,6 +1151,10 @@ getInstanceParms
        $$.propertyList.values=0;
        $$.properties=$$.instNameSet=0;
     }
+    | XTOK_IP_INCLUDEQUALIFIERS ZTOK_IPARAMVALUE
+    {
+      memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDECLASSORIGIN boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeClassOrigin : 0 ;
@@ -1118,6 +1162,10 @@ getInstanceParms
        $$.propertyList.values=0;
        $$.properties=$$.instNameSet=0;
     }
+    | XTOK_IP_INCLUDECLASSORIGIN ZTOK_IPARAMVALUE
+    {
+      memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_PROPERTYLIST valueArray ZTOK_IPARAMVALUE
     {
        $$.propertyList=$2;
@@ -1125,6 +1173,10 @@ getInstanceParms
        $$.instNameSet=0;
        $$.flags = $$.flagsSet = 0 ;
     }
+    | XTOK_IP_PROPERTYLIST ZTOK_IPARAMVALUE
+    {
+      memset(&$$, 0, sizeof($$));
+    }    
 ;
 
 
@@ -1275,6 +1327,10 @@ modifyInstanceParms
        $$.propertyList.values=0;
        $$.properties=$$.namedInstSet=0;
     }
+    | XTOK_IP_INCLUDEQUALIFIERS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_PROPERTYLIST valueArray ZTOK_IPARAMVALUE
     {
        $$.propertyList=$2;
@@ -1282,6 +1338,10 @@ modifyInstanceParms
        $$.namedInstSet=0;
        $$.flags = $$.flagsSet = 0 ;
     }
+    | XTOK_IP_PROPERTYLIST ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
 ;
 
 
@@ -1444,6 +1504,10 @@ enumInstancesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_LOCALONLY ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDEQUALIFIERS boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeQualifiers : 0 ;
@@ -1452,6 +1516,10 @@ enumInstancesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_INCLUDEQUALIFIERS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_DEEPINHERITANCE boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_deepInheritance : 0 ;
@@ -1460,6 +1528,10 @@ enumInstancesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_DEEPINHERITANCE ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDECLASSORIGIN boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeClassOrigin : 0 ;
@@ -1468,12 +1540,20 @@ enumInstancesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_INCLUDECLASSORIGIN ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_PROPERTYLIST valueArray ZTOK_IPARAMVALUE
     {
        $$.propertyList=$2;
        $$.properties=$2.next;
        $$.className=0;
        $$.flags = $$.flagsSet = 0 ;
+    }
+    | XTOK_IP_PROPERTYLIST ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
     }
 ;
 
@@ -1610,6 +1690,10 @@ associatorsParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_ASSOCCLASS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }
     | XTOK_IP_RESULTCLASS className ZTOK_IPARAMVALUE
     {
        $$.resultClass = $2;
@@ -1618,6 +1702,10 @@ associatorsParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_RESULTCLASS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
        $$.role = $2.value;
@@ -1626,6 +1714,10 @@ associatorsParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_ROLE ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_RESULTROLE value ZTOK_IPARAMVALUE
     {
        $$.resultRole = $2.value;
@@ -1634,6 +1726,10 @@ associatorsParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_RESULTROLE ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDEQUALIFIERS boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeQualifiers : 0 ;
@@ -1643,6 +1739,10 @@ associatorsParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_INCLUDEQUALIFIERS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDECLASSORIGIN boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeClassOrigin : 0 ;
@@ -1652,6 +1752,10 @@ associatorsParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_INCLUDECLASSORIGIN ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_PROPERTYLIST valueArray ZTOK_IPARAMVALUE
     {
        $$.propertyList=$2;
@@ -1659,6 +1763,10 @@ associatorsParms
        $$.objNameSet=$$.flags = $$.flagsSet = 0 ;
        $$.assocClass=$$.resultClass=$$.role=$$.resultRole=0;
     }
+    | XTOK_IP_PROPERTYLIST ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
 ;
 
 
@@ -1754,6 +1862,10 @@ referencesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_RESULTCLASS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
        $$.role = $2.value;
@@ -1762,6 +1874,10 @@ referencesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_ROLE ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDEQUALIFIERS boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeQualifiers : 0 ;
@@ -1771,6 +1887,10 @@ referencesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_INCLUDEQUALIFIERS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_INCLUDECLASSORIGIN boolValue ZTOK_IPARAMVALUE
     {
        $$.flags = $2 ? FL_includeClassOrigin : 0 ;
@@ -1780,6 +1900,10 @@ referencesParms
        $$.properties=0;
        $$.propertyList.values=0;
     }
+    | XTOK_IP_INCLUDECLASSORIGIN ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_PROPERTYLIST valueArray ZTOK_IPARAMVALUE
     {
        $$.propertyList=$2;
@@ -1787,6 +1911,10 @@ referencesParms
        $$.objNameSet=$$.flags = $$.flagsSet = 0 ;
        $$.resultClass=$$.role=0;
     }
+    | XTOK_IP_PROPERTYLIST ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
 ;
 
 
@@ -1864,24 +1992,40 @@ associatorNamesParms
        $$.objNameSet = 0 ;
        $$.resultClass=$$.role=$$.resultRole=0;
     }
+    | XTOK_IP_ASSOCCLASS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_RESULTCLASS className ZTOK_IPARAMVALUE
     {
        $$.resultClass = $2;
        $$.objNameSet = 0 ;
        $$.assocClass=$$.role=$$.resultRole=0;
     }
+    | XTOK_IP_RESULTCLASS ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
        $$.role = $2.value;
        $$.objNameSet = 0 ;
        $$.assocClass=$$.resultClass=$$.resultRole=0;
     }
+    | XTOK_IP_ROLE ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_RESULTROLE value ZTOK_IPARAMVALUE
     {
        $$.resultRole = $2.value;
        $$.objNameSet= 0 ;
        $$.assocClass=$$.resultClass=$$.role=0;
     }
+    | XTOK_IP_RESULTROLE ZTOK_IPARAMVALUE
+    {
+       memset(&$$, 0, sizeof($$));
+    }    
 ;
 
 
@@ -1953,12 +2097,20 @@ referenceNamesParms
        $$.objNameSet = 0;
        $$.role=0;
     }
+    | XTOK_IP_RESULTCLASS ZTOK_IPARAMVALUE
+    {
+      memset(&$$, 0, sizeof($$));
+    }    
     | XTOK_IP_ROLE value ZTOK_IPARAMVALUE
     {
        $$.role = $2.value;
        $$.objNameSet = 0 ;
        $$.resultClass=0;
     }
+    | XTOK_IP_ROLE ZTOK_IPARAMVALUE
+    {
+      memset(&$$, 0, sizeof($$));
+    }    
 ;
 
 
@@ -2188,6 +2340,7 @@ propertyData
     {
        $$.val.value = NULL;
        $$.list.values = NULL;
+       $$.val.type = 0;
     }   
     | value
     {

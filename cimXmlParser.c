@@ -1604,7 +1604,7 @@ static void freeProperty(XtokProperty *op)
   } else if ((op->valueType & CMPI_ref) == CMPI_ref) {
     freeReference(&op->val.ref);
   }
-  if(op->val.val.type==typeValue_Instance) {
+  if(op->val.val.type==typeValue_Instance && op->val.val.instance) {
     freeInstance(op->val.val.instance);
     free(op->val.val.instance);
   }

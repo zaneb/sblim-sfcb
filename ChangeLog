@@ -1,3 +1,8 @@
+2007-05-11  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlGen.c:
+	Fixed 1717262: sfcb might not properly return the hostname for some calls
+
 2007-05-08  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlOps.y, cimXmlParser.c:

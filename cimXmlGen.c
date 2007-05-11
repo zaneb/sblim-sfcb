@@ -952,6 +952,7 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
    CMPIInstance *ci;
    CMPIConstClass *cl;
    CMPIString *hs;
+   static char hss[HOST_NAME_MAX+1];
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "enum2xml");
    
@@ -971,8 +972,12 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
 	 hs = CMGetHostname(cop,NULL);
 	 if (hs == NULL || CMGetCharPtr(hs)==NULL) {
 	   /* required for value.objectwithpath */
-	   CMSetHostname(cop,"localhost");
-	 } 
+	   if(!hss[0] && gethostname(hss, HOST_NAME_MAX)) {
+          CMSetHostname(cop,"localhost");
+       } else {
+          CMSetHostname(cop,hss);
+       }
+	 }
          if (xmlAs==XML_asObj) {
             sb->ft->appendChars(sb, "<VALUE.OBJECTWITHPATH>\n");
             sb->ft->appendChars(sb, "<INSTANCEPATH>\n");

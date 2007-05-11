@@ -17,6 +17,7 @@ Bugs fixed:
 - 1712545 Fixed wrong results in association operations
 - 1712582 Fixed parser does not accept type attribute in KEYVALUE tag
 - 1663641 Fixed parser doesn't accept empty IPARAMVALUE
+- 1717262 Fixed sfcb might not properly return the hostname for some calls
 
 Changes in 1.2.2
 ================

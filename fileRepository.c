@@ -185,6 +185,7 @@ void freeBlobIndex(BlobIndex **bip, int all)
    if (all) if (bi->index)  { free(bi->index); bi->fnd=NULL; }
    bi->freed=-1;
    if (bi->fd) fclose(bi->fd);
+   if (bi->fx) fclose(bi->fx);
    free(bi);
    *bip=NULL;
 }

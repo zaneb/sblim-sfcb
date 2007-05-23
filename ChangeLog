@@ -1,3 +1,8 @@
+2007-05-23  Sven Schuetz <sven@de.ibm.com>
+
+	* indCIMXMLExport.c, fileRepository.c:
+	Fixed 1724370: sfcb can run out of file handles
+
 2007-05-11  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlGen.c:

@@ -49,6 +49,7 @@ typedef struct _ProviderInfo {
    char **ns;
    int id;
    pid_t pid;
+   pthread_t tid;
    void *library;
    ComSockets providerSockets;
    ProvIds provIds;
@@ -61,6 +62,7 @@ typedef struct _ProviderInfo {
    struct _ProviderInfo *nextInRegister; /*not actually next in Register,but
    pointer to the next provider serving the same class (for indications)*/
    struct providerProcess *proc;         
+   struct providerThread *thread;
    CMPIInstanceMI *instanceMI;
    CMPIAssociationMI *associationMI;
    CMPIMethodMI *methodMI;
@@ -79,6 +81,16 @@ typedef struct providerProcess {
    ComSockets providerSockets;
    time_t lastActivity;
 } ProviderProcess;
+
+typedef struct providerThread {
+   char *group;
+   pthread_t tid;
+   int id;
+   int unload;
+   ProviderInfo *firstProv;
+   ComSockets providerSockets;
+   time_t lastActivity;
+} ProviderThread;
 
 #define INSTANCE_PROVIDER       1
 #define ASSOCIATION_PROVIDER    2

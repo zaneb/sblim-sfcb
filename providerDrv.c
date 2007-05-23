@@ -131,6 +131,7 @@ NativeSelectExp *activFilters=NULL;
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
 static ProviderProcess *provProc=NULL,*curProvProc=NULL;
+static ProviderThread *provThread=NULL,*curProvThread=NULL;
 static int provProcMax=0;
 static int idleThreadStartHandled=0;
 
@@ -155,6 +156,17 @@ typedef struct parms {
    struct parms  *next,*prev; 
 } Parms;
 static Parms *activeThreadsFirst=NULL,*activeThreadsLast=NULL;
+
+struct providerThreadParams {
+  ProviderInfo* info;
+  pthread_t* thread_id;
+  //  ProviderProcess* proc;
+};
+
+pthread_mutex_t prov_thread_start_mutex;
+pthread_mutex_t prov_thread_start_mutex2;
+pthread_cond_t prov_thread_start_cv;
+pthread_cond_t prov_thread_start_cv2;
 
 /* old version support */
 typedef CMPIStatus (*authorizeFilterPreV1)
@@ -601,8 +613,13 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
    _SFCB_RETURN(-1);
 }
 
+// I think we should break this function into two subfunctions:
+// something like isLoaded() and doForkProvider()
 int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
 {
+#ifdef USE_THREADS
+   return createProviderThread(info, req, msg);
+#endif
    _SFCB_ENTER(TRACE_PROVIDERDRV, "forkProvider");
    ProviderProcess *proc;
    ProviderInfo * pInfo;
@@ -633,6 +650,236 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
    _SFCB_TRACE(1, ("--- Forking provider for %s", info->providerName));
 
    if (getProcess(info, &proc) > 0) {
+
+      LoadProviderReq sreq = BINREQ(OPS_LoadProvider, 3);
+
+      BinRequestContext binCtx;
+      BinResponseHdr *resp;
+
+      memset(&binCtx,0,sizeof(BinRequestContext));
+      sreq.className = setCharsMsgSegment(info->className);
+      sreq.libName = setCharsMsgSegment(info->location);
+      sreq.provName = setCharsMsgSegment(info->providerName);
+      sreq.hdr.flags = info->type;
+      sreq.unload = info->unload;
+      sreq.hdr.provId = getProvIds(info).ids;
+
+      if (req) binCtx.oHdr = (OperationHdr *) req;
+      binCtx.bHdr = &sreq.hdr;
+      binCtx.bHdrSize = sizeof(sreq);
+      binCtx.provA.socket = info->providerSockets.send;
+      binCtx.provA.ids = getProvIds(info);
+      binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+
+      _SFCB_TRACE(1, ("--- Invoke loader"));
+
+      resp = invokeProvider(&binCtx);
+      resp->rc--;
+      if (resp->rc) {
+         *msg = strdup((char *) resp->object[0].data);
+      }
+      else *msg = NULL;
+
+      rc=resp->rc;
+      _SFCB_TRACE(1, ("--- rc: %d", resp->rc));
+      
+      free(resp);
+      _SFCB_RETURN(rc);
+   }
+   _SFCB_RETURN(CMPI_RC_ERR_FAILED);
+}
+
+void* startProviderThread(void* params) {
+
+  pthread_mutex_init(&prov_thread_start_mutex, NULL);
+  pthread_cond_init (&prov_thread_start_cv, NULL);
+
+  struct providerThreadParams* p = (struct providerThreadParams*)params;
+  ProviderInfo* info = p->info;
+  *(p->thread_id) = pthread_self();
+
+  pthread_mutex_lock(&prov_thread_start_mutex);
+  pthread_cond_signal(&prov_thread_start_cv);
+  pthread_mutex_unlock(&prov_thread_start_mutex);
+
+  //now wait for getThread to finish
+  pthread_mutex_lock(&prov_thread_start_mutex);
+  pthread_cond_wait(&prov_thread_start_cv2, &prov_thread_start_mutex);
+  pthread_mutex_unlock(&prov_thread_start_mutex);
+
+  processProviderInvocationRequests(info->providerName);
+}
+
+
+// if getProcess() can be broken into smaller functions, some could
+// be shared with getThread()
+static int getThread(ProviderInfo * info, ProviderThread ** thread) {
+
+   int i, pcrc;
+   static int seq=0;
+
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "getThread");
+
+   if (provAutoGroup && info->group == NULL) {
+     /* implicitly put all providers in a module in a virtual group */
+     info->group = strdup(info->location);
+   }
+   
+   if (info->group) {
+     /* are we under the amount of maximum processes allowed? */
+     for (i = 0; i < provProcMax; i++) {
+       /* what is all this? if we use threads, do we even need process sharing? */
+       /* if ((provThread+i) && provThread[i].tid &&
+           provThread[i].group && strcmp(provThread[i].group,info->group)==0) {
+         semAcquire(sfcbSem,(provThread[i].id*3)+provProcGuardId+provProcBaseId);
+         semRelease(sfcbSem,(provThread[i].id*3)+provProcInuseId+provProcBaseId);
+         semRelease(sfcbSem,(provThread[i].id*3)+provProcGuardId+provProcBaseId);
+         info->tid=provThread[i].tid;
+         info->providerSockets=provThread[i].providerSockets;
+         _SFCB_TRACE(1,("--- Process %d shared by %s and %s",provThread[i].tid,info->providerName,
+			provThread[i].firstProv->providerName));
+         if (provThread[i].firstProv) info->next=provThread[i].firstProv;
+         else info->next = NULL;
+         provThread[i].firstProv=info;
+         info->thread=provThread+i;
+         if (info->unload<provThread[i].unload) provThread[i].unload=info->unload;
+         _SFCB_RETURN(provThread[i].tid);
+	 } */
+     }
+   }
+   for (i = 0; i < provProcMax; i++) {
+
+     // does provider #i already exist?
+     //if (pthread_equal(provThread[i].tid, 0)) {
+
+     /*
+
+     // fork() would have happened here
+
+     // all providers are in the saname thread, no need to keep calling setSignal
+         currentProc=getpid();
+         setSignal(SIGCHLD, SIG_DFL,0);
+         setSignal(SIGTERM, SIG_IGN,0);
+         setSignal(SIGHUP, SIG_IGN,0);
+         setSignal(SIGUSR1, handleSigUsr1,0);
+            
+         setSignal(SIGSEGV, handleSigSegv,SA_ONESHOT);
+     */
+            
+
+         _SFCB_TRACE(1,("--- Forked started for %s %d %d-%lu",
+                       info->providerName, curProvThread,providerSockets.receive,
+                       getInode(providerSockets.receive)));
+         processName=info->providerName;
+	 //does it matter if this is set?
+         providerProcess=1;
+         info->thread=*thread;
+         info->pid=currentProc; 
+         //the tid should probably be set as well...
+            
+         //again, is this necessary when using threads?
+         semSetValue(sfcbSem,((*thread)->id*3)+provProcGuardId+provProcBaseId,0);
+         semSetValue(sfcbSem,((*thread)->id*3)+provProcInuseId+provProcBaseId,0);
+         semSetValue(sfcbSem,((*thread)->id*3)+provProcAliveId+provProcBaseId,0);
+         semReleaseUnDo(sfcbSem,((*thread)->id*3)+provProcAliveId+provProcBaseId);
+         semReleaseUnDo(sfcbSem,((*thread)->id*3)+provProcInuseId+provProcBaseId);
+         semRelease(sfcbSem,((*thread)->id*3)+provProcGuardId+provProcBaseId);
+            
+         /* needed for thread wait */
+         pthread_mutex_init(&prov_thread_start_mutex, NULL);
+         pthread_cond_init (&prov_thread_start_cv, NULL);
+
+         pthread_t providerThread;
+	 //this could be a problem, as pthread_t != int on all systems
+	 int *thread_id;
+
+         struct providerThreadParams ptparams = {info, thread_id};
+
+         pcrc = pthread_create(&providerThread, NULL, &startProviderThread, &ptparams);
+
+	 //wait for thread to get going
+	 pthread_mutex_trylock(&prov_thread_start_mutex);
+	 pthread_cond_wait(&prov_thread_start_cv, &prov_thread_start_mutex);
+	 pthread_mutex_unlock(&prov_thread_start_mutex);
+
+         (*thread)->tid = info->tid = providerThread;
+     	 (*thread)->tid = info->tid = *thread_id;
+
+	 providerSockets=sPairs[(*thread)->id];
+
+	 (*thread)->providerSockets = info->providerSockets = providerSockets;
+	 (*thread)->group = info->group;
+	 (*thread)->unload=info->unload;
+	 (*thread)->firstProv=info;
+	 info->thread = thread;
+	 info->next = NULL;
+         curProvThread=(*thread);
+         resultSockets=sPairs[(*thread)->id+ptBase];
+
+	 pthread_cond_signal(&prov_thread_start_cv2);
+
+         // from else block of if (info->pid == 0)
+         info->startSeq=++seq;
+
+	 _SFCB_TRACE(1,("--- Create thread for provider OK %s %d %d", info->providerName,
+		         info->tid, i));
+
+	  //should there be a break somewhere around here?
+       /*
+       }
+
+       else {
+         info->startSeq=++seq;
+       } 
+       */
+         _SFCB_TRACE(1,("--- Fork provider OK %s %d %d", info->providerName,
+                      info->pid, i));
+
+	 pthread_mutex_destroy(&prov_thread_start_mutex);
+	 pthread_cond_destroy(&prov_thread_start_cv);
+
+	 //should we be returning tid?  pcrc?
+         _SFCB_RETURN(info->pid);
+      }
+
+   *thread = NULL;
+   _SFCB_RETURN(-1);
+}
+
+int createProviderThread(ProviderInfo * info, OperationHdr * req, char **msg) {
+
+   _SFCB_ENTER(TRACE_PROVIDERDRV, "createProviderThread");
+   ProviderThread *thread;
+   ProviderInfo * pInfo;
+   int val,rc;
+
+   if (info->pid ) {
+      thread=info->thread;
+   /* fror now, let's assume it needs to be reloaded
+      semAcquire(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
+      if ((val=semGetValue(sfcbSem,(proc->id*3)+provProcAliveId+provProcBaseId))) {
+         semRelease(sfcbSem,(proc->id*3)+provProcInuseId+provProcBaseId);
+         semRelease(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
+         _SFCB_TRACE(1, ("--- Provider %s still loaded",info->providerName));
+         _SFCB_RETURN(CMPI_RC_OK)
+      }
+   */
+
+      semRelease(sfcbSem,(thread->id*3)+provProcGuardId+provProcBaseId);
+      _SFCB_TRACE(1, ("--- Provider has been unloaded prevously, will reload"));
+      
+      info->tid=0;
+      for (pInfo=thread->firstProv; pInfo; pInfo=pInfo->next) {
+         pInfo->pid=0;
+      }      
+      thread->firstProv=NULL;            
+      thread->tid=0; 
+      thread->group=NULL; 
+   }
+
+   _SFCB_TRACE(1, ("--- Creating thread for provider %s", info->providerName));
+
+   if (getThread(info, &thread) > 0) {
 
       LoadProviderReq sreq = BINREQ(OPS_LoadProvider, 3);
 
@@ -2557,7 +2804,6 @@ void processProviderInvocationRequests(char *name)
    pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
 
    debugMode=pauseProvider(name);
-
    for (;;) {
       _SFCB_TRACE(1, ("--- Waiting for provider request to %d-%lu",
                    providerSockets.receive,getInode(providerSockets.receive)));

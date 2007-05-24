@@ -58,11 +58,11 @@ static CMPIStatus release(CMPIConstClass * cc)
 {
    CMPIStatus rc = { 0, NULL };
 
-   if (cc->hdl)  {
-      if (cc->hdl != (void*)(cc+1)) free(cc->hdl);
-   }
    if (cc->refCount == 0) {
-     free(cc);
+        if (cc->hdl)  {
+            if (cc->hdl != (void*)(cc+1)) ClClassFreeClass(cc->hdl);
+        }
+        free(cc);
    }
    return rc;
 }

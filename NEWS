@@ -19,6 +19,7 @@ Bugs fixed:
 - 1663641 Fixed parser doesn't accept empty IPARAMVALUE
 - 1717262 Fixed sfcb might not properly return the hostname for some calls
 - 1724370 Fixed sfcb can run out of file handles
+- 1724719 Fixed constClass leaks memory
 
 Changes in 1.2.2
 ================

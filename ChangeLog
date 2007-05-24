@@ -1,3 +1,8 @@
+2007-05-23  Tyrel Datwyler <tyreld@us.ibm.com>
+
+    * constClass.c
+    Fixed 1724719: constClass leaks memory
+    
 2007-05-23  Sven Schuetz <sven@de.ibm.com>
 
 	* indCIMXMLExport.c, fileRepository.c:

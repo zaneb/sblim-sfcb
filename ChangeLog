@@ -1,5 +1,10 @@
 2007-05-23  Tyrel Datwyler <tyreld@us.ibm.com>
 
+    * classProvider.c objectImpl.c objectImpl.h
+    Fixed 1724753: qualifier creation support for classes
+
+2007-05-23  Tyrel Datwyler <tyreld@us.ibm.com>
+
     * constClass.c
     Fixed 1724719: constClass leaks memory
     

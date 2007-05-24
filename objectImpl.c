@@ -47,10 +47,8 @@ static ClClass *rebuildClassH(ClObjectHdr * hdr, ClClass * cls, void *area);
 
 static char *addQualifierToString(stringControl * sc, ClObjectHdr * hdr,
                                   ClQualifier * q, int sb);
-static ClQualifier makeClQualifier(ClObjectHdr * hdr, const char *id,
-                                   CMPIData d);
-static int addClQualifier(ClObjectHdr * hdr, ClSection * qlfs,
-                          ClQualifier * nq);
+static int addClQualifier(ClObjectHdr * hdr, ClSection * qlfs, const char *id, 
+                          CMPIData d, ClObjectHdr * arrHdr);
 //static int insQualifier(ClObjectHdr * hdr, ClSection * qlfs,ClQualifier * nq);
 
 //static CMPIData _ClDataString(char *str, CMPIValueState s);
@@ -664,52 +662,50 @@ static int locateQualifier(ClObjectHdr * hdr, ClSection * qlfs, const char *id)
 
    q=(ClQualifier*)getSectionPtr(hdr,qlfs);
 
-   for (i = 0; i > qlfs->used; i++) {
+   for (i = 0; i < qlfs->used; i++) {
       if (strcasecmp(id, ClObjectGetClString(hdr, &(q + i)->id)) == 0)
          return i + 1;
    }
    return 0;
 }
 
-static int addClQualifier(ClObjectHdr * hdr, ClSection * qlfs, ClQualifier * nq)
+static int addClQualifier(ClObjectHdr * hdr, ClSection * qlfs, const char *id, 
+                          CMPIData d, ClObjectHdr *arrHdr)
 {
-   int i;
-   ClQualifier *q;
+    int i;
+    ClQualifier nq,*q;
+    CMPIStatus st;
+    CMPIArray *ar=NULL;
 
-   if ((i = locateQualifier(hdr, qlfs, ClObjectGetClString(hdr, &nq->id))) == 0) {
-      q = (ClQualifier *) ensureClSpace(hdr, qlfs, sizeof(*q), 4);
-      q = q + (qlfs->used++);
-      *q = *nq;
-      return qlfs->used;
-   }
-   return 0;
+    if ((i = locateQualifier(hdr, qlfs, id)) == 0) {
+        nq.id.id = addClString(hdr, id);
+        if (d.type == CMPI_chars && (d.state & CMPI_nullValue) == 0) {
+            d.value.chars = (char *) addClString(hdr, d.value.chars);
+        }
+        else if (d.type == CMPI_string && (d.state & CMPI_nullValue) == 0) {
+            d.type = CMPI_chars;
+            d.value.chars = (char *) addClString(hdr, (char *) d.value.string->hdl);
+        }
+        else if ((d.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
+            if (arrHdr) {
+                ar = d.value.array = native_make_CMPIArray((CMPIData *) d.value.inst, &st, arrHdr);
+            }
+            d.value.array = (CMPIArray *) addClArray(hdr, d);
+            if (ar) ar->ft->release(ar);
+        }
+
+        nq.data = d;
+        q = (ClQualifier*) ensureClSpace(hdr, qlfs, sizeof(*q), 4);
+        q = q + (qlfs->used++);
+        *q = nq;
+        return qlfs->used;
+    }
+    return 0;
 }
 
-static ClQualifier makeClQualifier(ClObjectHdr * hdr, const char *id,
-                                   CMPIData d)
+int ClClassAddQualifierSpecial(ClObjectHdr * hdr, ClSection * qlfs,
+                               const char *id, CMPIData d, ClObjectHdr *arrHdr)
 {
-   ClQualifier q;
-
-   q.id.id = addClString(hdr, id);
-   if (d.type == CMPI_chars && (d.state & CMPI_nullValue) == 0) {
-      d.value.chars = (char *) addClString(hdr, d.value.chars);
-   }
-   else if (d.type == CMPI_string && (d.state & CMPI_nullValue) == 0) {
-      d.type = CMPI_chars;
-      d.value.chars = (char *) addClString(hdr, (char *) d.value.string->hdl);
-   }
-   else if ((d.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
-      d.value.array = (CMPIArray *) addClArray(hdr, d);
-   }
-
-   q.data = d;
-   return q;
-}
-
-int ClClassAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
-                        const char *id, CMPIData d)
-{
-   ClQualifier q;
 
    if (hdr->type == HDR_Class) {
       ClClass *cls = (ClClass *) hdr;
@@ -720,43 +716,53 @@ int ClClassAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
       else if (strcasecmp(id, "Indication") == 0)
          cls->quals |= ClClass_Q_Indication;
       else {
-         q = makeClQualifier(hdr, id, d);
-         return addClQualifier(hdr, qlfs, &q);
+         return addClQualifier(hdr, qlfs, id, d, arrHdr);
       }
       return 0;
    }
 
-   q = makeClQualifier(hdr, id, d);
-   return addClQualifier(hdr, qlfs, &q);
+   return addClQualifier(hdr, qlfs, id, d, arrHdr);
 }
 
-int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p,
-                                const char *id, CMPIData d)
+int ClClassAddQualifier(ClObjectHdr * hdr, ClSection * qlfs, const char *id, 
+                        CMPIData d)
+{
+    return ClClassAddQualifierSpecial(hdr, qlfs, id, d, 0);
+}
+
+int ClClassAddPropertyQualifierSpecial(ClObjectHdr * hdr, ClProperty * p, const char *id, 
+                                       CMPIData d, ClObjectHdr *arrHdr)
 {
    if (strcasecmp(id, "key") == 0)
       p->quals |= ClProperty_Q_Key;
    else if (strcasecmp(id, "embeddedobject") == 0)
       p->quals |= ClProperty_Q_EmbeddedObject;
    else
-      return ClClassAddQualifier(hdr, &p->qualifiers, id, d);
+       return ClClassAddQualifierSpecial(hdr, &p->qualifiers, id, d, arrHdr);
    return 0;
+}
+
+int ClClassAddPropertyQualifier(ClObjectHdr * hdr, ClProperty * p, const char *id, 
+                                CMPIData d)
+{
+    return ClClassAddPropertyQualifierSpecial(hdr, p, id, d, NULL);
 }
 
 int ClClassAddMethodQualifier(ClObjectHdr * hdr, ClMethod * m,
                                 const char *id, CMPIData d)
 {
-   ClQualifier q;
-   q = makeClQualifier(hdr, id, d);
-   return addClQualifier(hdr, &m->qualifiers, &q);
+   // ClQualifier q;
+   // q = makeClQualifier(hdr, id, d);
+   return addClQualifier(hdr, &m->qualifiers, id, d, 0);
 
 }
 
 int ClClassAddMethParamQualifier(ClObjectHdr * hdr, ClParameter * p,
                                 const char *id, CMPIData d)
 {
-	ClQualifier q;
-	q = makeClQualifier(hdr, id, d);
-	return addClQualifier(hdr, &p->qualifiers, &q);
+	// ClQualifier q;
+	// q = makeClQualifier(hdr, id, d);
+	return addClQualifier(hdr, &p->qualifiers, id, d, 0);
 }
 
 static void freeQualifiers(ClObjectHdr * hdr, ClSection * s)
@@ -1123,8 +1129,9 @@ static void freeProperties(ClObjectHdr * hdr, ClSection * s)
 
    p = (ClProperty *) ClObjectGetClSection(hdr, s);
    
-   if (p) for (i = 0, l = p->qualifiers.used; i < l; i++)
-         freeQualifiers(hdr, &p->qualifiers);
+    if (p) for (i = 0, l = s->used; i < l; i++) {
+        freeQualifiers(hdr, &(p+i)->qualifiers);
+    }
    if (isMallocedSection(s)) free(s->sectionPtr);
    
    _SFCB_EXIT();
@@ -1166,8 +1173,17 @@ static long sizeProperties(ClObjectHdr * hdr, ClSection * s)
    ClProperty *p = (ClProperty *) ClObjectGetClSection(hdr, s);
 
    for (l = s->used; l > 0; l--, p++) {
-      if (p->qualifiers.used)
-         sz += sizeQualifiers(hdr, &p->qualifiers);
+        if (hdr->type == HDR_Instance && p->quals & ClProperty_Q_EmbeddedObject) {
+            if ((p->flags & ClProperty_EmbeddedObjectAsString)==0) {
+                p->flags|=ClProperty_EmbeddedObjectAsString;
+                UtilStringBuffer *sb = UtilFactory->newStrinBuffer(1024);
+                instance2xml(p->data.value.inst,sb,0);
+                p->data.value.dataPtr.length = addClString(hdr, sb->ft->getCharPtr(sb));
+                sb->ft->release(sb);
+            }
+        }
+        if (p->qualifiers.used)
+        sz += sizeQualifiers(hdr, &p->qualifiers);
    }      
    return ALIGN(sz,CLALIGN);
 }
@@ -2300,10 +2316,7 @@ void ClQualifierRelocateQualifier(ClQualifierDeclaration * q)
 int ClQualifierAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
                         const char *id, CMPIData d)
 {
-   ClQualifier q;
-
-   q = makeClQualifier(hdr, id, d);
-   return addClQualifier(hdr, qlfs, &q);
+   return addClQualifier(hdr, qlfs, id, d, 0);
 }
 
 static int ClGetQualifierFromQualifierDeclaration(ClQualifierDeclaration * q, ClQualifier *qData, CMPIData * data)

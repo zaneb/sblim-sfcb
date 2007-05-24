@@ -315,17 +315,18 @@ static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
    cl->quals |= ccl->quals;
    for (i=0,m=ClClassGetQualifierCount(ccl); i<m; i++) {
       ClClassGetQualifierAt(ccl,i,&d,&name);
-      ClClassAddQualifier(&cl->hdr, &cl->qualifiers, name, d);
+      ClClassAddQualifierSpecial(&cl->hdr, &cl->qualifiers, name, d, &ccl->hdr);
    }  
    
    for (i=0,m=ClClassGetPropertyCount(ccl); i<m; i++) {
       ClClassGetPropertyAt(ccl,i,&d,&name,&quals);
+      
       propId=ClClassAddProperty(cl, name, d);
       prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;
       
-      for (iq=0,mq=ClClassGetPropQualifierCount(ccl,propId-1); i<m; i++) {
-         ClClassGetPropQualifierAt(ccl,iq, propId-1, &d, &name);
-         ClClassAddPropertyQualifier(&cl->hdr, prop, name, d);
+      for (iq=0,mq=ClClassGetPropQualifierCount(ccl,i); iq<m; iq++) {
+         ClClassGetPropQualifierAt(ccl, i, iq, &d, &name);
+         ClClassAddPropertyQualifierSpecial(&cl->hdr, prop, name, d, &ccl->hdr);
       }   
    } 
    

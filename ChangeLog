@@ -1,3 +1,8 @@
+2007-05-25  Sven Schuetz <sven@de.ibm.com>
+
+	* interopProvider.c:
+	Fixed 1725608 default state of subscription state should be enabled
+
 2007-05-23  Tyrel Datwyler <tyreld@us.ibm.com>
 
     * classProvider.c objectImpl.c objectImpl.h

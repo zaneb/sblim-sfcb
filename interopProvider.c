@@ -533,6 +533,7 @@ static CMPIStatus processSubscription(
    CMPIObjectPath *op;
    char *key,*skey;
    CMPIDateTime *dt;
+   CMPIValue val;
     
    _SFCB_ENTER(TRACE_INDPROVIDER, "processSubscription()");
    
@@ -582,10 +583,15 @@ static CMPIStatus processSubscription(
    	  //check property
    	  CMPIData d = CMGetProperty(ci, "SubscriptionState", &st);
    	  if(d.state == CMPI_goodValue) {
-   	  	if(d.value.uint16 == 2) { //==enabled
-   	  	   fowardSubscription(ctx, fi, OPS_EnableIndications, &st);
-   	  	}
-   	  }
+   	     if(d.value.uint16 == 2) { //==enabled
+   	        fowardSubscription(ctx, fi, OPS_EnableIndications, &st);
+   	     }
+   	  } else {
+      /* property not set, assume "enable" by default */
+         val.uint16 = 2;
+         st = CMSetProperty((CMPIInstance*)ci, "SubscriptionState", &val, CMPI_uint16);
+         fowardSubscription(ctx, fi, OPS_EnableIndications, &st);
+      }
    }   
       
    _SFCB_RETURN(st); 

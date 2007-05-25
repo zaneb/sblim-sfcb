@@ -21,6 +21,7 @@ Bugs fixed:
 - 1724370 Fixed sfcb can run out of file handles
 - 1724719 Fixed constClass leaks memory
 - 1724753 Fixed qualifier creation support for classes
+- 1725608 Fixed default state of subscription state should be enabled
 
 Changes in 1.2.2
 ================

@@ -131,7 +131,7 @@ NativeSelectExp *activFilters=NULL;
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
 static ProviderProcess *provProc=NULL,*curProvProc=NULL;
-static ProviderThread *provThread=NULL,*curProvThread=NULL;
+static ProviderThread *curProvThread=NULL;
 static int provProcMax=0;
 static int idleThreadStartHandled=0;
 
@@ -708,6 +708,8 @@ void* startProviderThread(void* params) {
   pthread_mutex_unlock(&prov_thread_start_mutex);
 
   processProviderInvocationRequests(info->providerName);
+
+  pthread_exit(NULL);
 }
 
 
@@ -791,7 +793,7 @@ static int getThread(ProviderInfo * info, ProviderThread ** thread) {
 
          pthread_t providerThread;
 	 //this could be a problem, as pthread_t != int on all systems
-	 int *thread_id;
+	 pthread_t* thread_id = NULL;
 
          struct providerThreadParams ptparams = {info, thread_id};
 
@@ -811,7 +813,7 @@ static int getThread(ProviderInfo * info, ProviderThread ** thread) {
 	 (*thread)->group = info->group;
 	 (*thread)->unload=info->unload;
 	 (*thread)->firstProv=info;
-	 info->thread = thread;
+	 info->thread = *thread;
 	 info->next = NULL;
          curProvThread=(*thread);
          resultSockets=sPairs[(*thread)->id+ptBase];
@@ -849,9 +851,10 @@ static int getThread(ProviderInfo * info, ProviderThread ** thread) {
 int createProviderThread(ProviderInfo * info, OperationHdr * req, char **msg) {
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "createProviderThread");
-   ProviderThread *thread;
+   ProviderThread *thread = NULL;
    ProviderInfo * pInfo;
-   int val,rc;
+   //int val;
+   int rc;
 
    if (info->pid ) {
       thread=info->thread;

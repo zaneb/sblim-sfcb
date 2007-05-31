@@ -22,6 +22,7 @@ Bugs fixed:
 - 1724719 Fixed constClass leaks memory
 - 1724753 Fixed qualifier creation support for classes
 - 1725608 Fixed default state of subscription state should be enabled
+- 1728904 Fixed problem with dateTime Values
 
 Changes in 1.2.2
 ================

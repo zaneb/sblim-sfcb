@@ -1663,7 +1663,9 @@ static void freeInstance(XtokInstance *op)
 
 static void freeMethodCall(XtokMethodCall* op)
 {
-  freeInstanceName(&op->instanceName);
+  if(op->instName) {
+    freeInstanceName(&op->instanceName);
+  }
   freeParamValues(&op->paramValues);
 }
 

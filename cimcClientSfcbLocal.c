@@ -1147,13 +1147,23 @@ static CMPIData invokeMethod(
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          argsout = relocateSerializedArgs(resp->object[0].data);
-	 outc = CMGetArgCount(argsout, NULL);
-	 for (i=0; i < outc; i++) {
-	   CMPIString *name;
-	   CMPIData data = CMGetArgAt(argsout,i, &name,NULL);
-	   CMAddArg(out,(char*)name->hdl,&data.value,data.type);
-	 }
-	 retval = resp->rv;
+         outc = CMGetArgCount(argsout, NULL);
+         for (i=0; i < outc; i++) {
+            CMPIString *name;
+            CMPIData data = CMGetArgAt(argsout,i, &name,NULL);
+            CMAddArg(out,(char*)name->hdl,&data.value,data.type);
+         }
+         if (resp->rvValue) {
+            if (resp->rv.type==CMPI_chars) {
+               resp->rv.value.chars=(long)resp->rvEnc.data+(char*)resp;
+            }
+            else if (resp->rv.type==CMPI_dateTime) {
+               resp->rv.value.dateTime=
+                  NewCMPIDateTimeFromChars((long)resp->rvEnc.data
+                                          +(char*)resp,NULL);
+            }
+         }
+         retval = resp->rv;
          free(resp);
          _SFCB_RETURN(retval);
       }

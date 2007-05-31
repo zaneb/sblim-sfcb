@@ -1,3 +1,9 @@
+2007-05-31  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlRequest.c, cimcClientSfcbLocal.c, providerMgr.c, brokerUpc.c,
+	array.c, cimXmlParser.c:
+	Fixed 1728904: problem with dateTime Values
+
 2007-05-25  Sven Schuetz <sven@de.ibm.com>
 
 	* interopProvider.c:

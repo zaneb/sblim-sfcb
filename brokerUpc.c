@@ -967,6 +967,17 @@ static CMPIData invokeMethod(const CMPIBroker * broker, const CMPIContext * cont
                   out->ft->addArg(out,CMGetCharPtr(name),&data.value,data.type);
                }
             }
+            if (resp->rvValue) {
+               if (resp->rv.type==CMPI_chars) {
+                  resp->rv.value.chars=(long)resp->rvEnc.data+(char*)resp;
+               }
+               else if (resp->rv.type==CMPI_dateTime) {
+                  resp->rv.value.dateTime =
+                          sfcb_native_new_CMPIDateTime_fromChars(
+                                                   (long)resp->rvEnc.data
+                                                 + (char*)resp,NULL);
+               }
+            }
             rv=resp->rv;
             free(resp);
          }

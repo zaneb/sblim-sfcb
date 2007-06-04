@@ -1,4 +1,3 @@
-
 /*
  * classProvider.c
  *
@@ -324,7 +323,7 @@ static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
       propId=ClClassAddProperty(cl, name, d);
       prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;
       
-      for (iq=0,mq=ClClassGetPropQualifierCount(ccl,i); iq<m; iq++) {
+      for (iq=0,mq=ClClassGetPropQualifierCount(ccl,i); iq<mq; iq++) {
          ClClassGetPropQualifierAt(ccl, i, iq, &d, &name);
          ClClassAddPropertyQualifierSpecial(&cl->hdr, prop, name, d, &ccl->hdr);
       }   
@@ -357,23 +356,28 @@ static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
 static CMPIStatus mergeParents(ClassRegister * cr, ClClass *cl, char *p, CMPIConstClass *cc)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   CMPIConstClass *pcc=getClass(cr,p);
+   CMPIConstClass *pcc=NULL;
    unsigned char originId=0;
-   
+
    if (p) {
-      char* np=(char*)cc->ft->getCharSuperClassName(pcc);     
-      if (np) originId=ClClassAddGrandParent(cl,np);  
-      st=mergeParents(cr,cl,np,NULL);
+       pcc = getClass(cr, p);
+       if (pcc == NULL) {
+           st.rc = CMPI_RC_ERR_INVALID_SUPERCLASS;
+           return st;
+       }
+       cpyClass(cl,pcc,originId);
    }
-   
-   if (cc) cpyClass(cl,cc,originId);
-   else cpyClass(cl,pcc,originId);
+
+   if (cc) {
+       cpyClass(cl,cc,originId);
+   }
    
    return st;
 }
 
-static int addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
+static CMPIStatus addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
 {
+   CMPIStatus st = { CMPI_RC_OK, NULL };
    ClassBase *cb = (ClassBase *) (cr + 1);
    UtilHashTable *it=cb->it;
    UtilList *ul;
@@ -384,7 +388,11 @@ static int addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
       
    if (p) {
      mc=ClClassNew(cn,p);
-     mergeParents(cr,mc,pn,ccp);
+     st = mergeParents(cr,mc,pn,ccp);
+     if (st.rc != CMPI_RC_OK) {
+        ClClassFreeClass(mc);
+        return st;
+     }
      ccp->hdl=mc;
    }  
    cc=ccp->ft->clone(ccp,NULL);
@@ -409,7 +417,7 @@ static int addClass(ClassRegister * cr,CMPIConstClass *ccp, char *cn, char *p)
       ul->ft->prepend(ul, cn);        
    }
     
-   return 0;
+   return st;
 }
 
 static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
@@ -596,8 +604,7 @@ static CMPIStatus ClassProviderCleanup(CMPIClassMI * mi, CMPIContext * ctx)
       ct = cb->ht;
       for (ii = ct->ft->getFirst(ct, (void **) &cn, (void **) &cc); ii;
            ii = ct->ft->getNext(ct, ii, (void **) &cn, (void **) &cc)) {
-         free(cc->hdl);
-         free(cc);
+          cc->ft->release(cc);
       }  
       ct->ft->release(ct);   
       it = cb->it;
@@ -847,7 +854,7 @@ static CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
    
    cReg->ft->wLock(cReg);
    
-   addClass(cReg,cc,cn,pn);
+   st = addClass(cReg,cc,cn,pn);
    
    cReg->ft->wUnLock(cReg);
    

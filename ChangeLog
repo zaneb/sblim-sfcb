@@ -1,3 +1,8 @@
+2007-06-04  Tyrel Datwyler <tyreld@us.ibm.com>
+
+    * classProvider.c
+    Fixed 1730553: createClass fails in standard classProvider
+
 2007-05-31  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlRequest.c, cimcClientSfcbLocal.c, providerMgr.c, brokerUpc.c,

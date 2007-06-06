@@ -1,3 +1,8 @@
+2007-05-31  Sven Schuetz <sven@de.ibm.com>
+
+	* brokerUpc.c:
+	Fixed 1732080: sfcb ignores property filter in getInstance upcalls
+
 2007-06-04  Tyrel Datwyler <tyreld@us.ibm.com>
 
     * classProvider.c

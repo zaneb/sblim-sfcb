@@ -447,23 +447,35 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   GetInstanceReq sreq = BINREQ(OPS_GetInstance, 2);
+   GetInstanceReq *sreq = NULL;
    OperationHdr oHdr = { OPS_GetInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIInstance *inst = NULL,*tInst=NULL;
-   int irc;
+   int irc, ps, sreqSize=sizeof(GetInstanceReq);
    ProviderInfo *pInfo;
+   const char **p=props;
 
    _SFCB_ENTER(TRACE_UPCALLS, "getInstance");
    
    if (cop && cop->hdl) {
    
       lockUpCall(broker);
+
+      for (ps=0,p=props; p && *p; p++,ps++) {
+         sreqSize+=sizeof(MsgSegment);
+      }
+      sreq=(GetInstanceReq*)calloc(1,sreqSize);
+      sreq->hdr.count=ps+2;
+      sreq->hdr.operation=OPS_GetInstance;
    
-      setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), context, cop);
+      setContext(&binCtx, &oHdr, &sreq->hdr, sreqSize, context, cop);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data));
       
-      checkReroute(broker, context, &oHdr); 
+      checkReroute(broker, context, &oHdr);
+      
+      for (ps=0,p=props; p && *p; p++,ps++) {
+         sreq->properties[ps]=setCharsMsgSegment(*p);
+      }
 
       irc = getProviderContext(&binCtx, &oHdr);
       

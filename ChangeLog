@@ -1,3 +1,8 @@
+2007-06-08  Adrian Schuur
+
+	* cimcClientSfcbLocal.c, providerDrv.c:
+	Fixed: 1732774: random provider segfaults when using local client interface
+
 2007-05-31  Sven Schuetz <sven@de.ibm.com>
 
 	* brokerUpc.c:

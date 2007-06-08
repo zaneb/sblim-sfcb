@@ -2677,6 +2677,10 @@ static void *processProviderInvocationRequestsThread(void *prms)
             break;
          }
       }
+      if (pInfo==NULL) {
+         mlogf(M_ERROR,M_SHOW,"-#- Serious provider id / provider process mismatch --- terminating process.\n");
+         exit(-1);
+      }
       
       if (pInfo && pInfo->library==NULL) { 
          char dlName[512];

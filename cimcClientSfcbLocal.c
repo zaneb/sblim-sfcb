@@ -264,6 +264,14 @@ static void ctxErrResponse( BinRequestContext * ctx, CMPIStatus *rc)
    if (rc) CIMCSetStatusWithChars(rc,r,m);
 }
 
+static void closeSockets(BinRequestContext *binCtx)
+{
+   int c;
+   for (c=0;c<binCtx->pCount; c++) {
+      close(binCtx->pAs[c].socket);
+   }
+}
+
 static CMPIEnumeration * enumInstanceNames(
 	Client * mb,
 	CMPIObjectPath * cop,
@@ -301,7 +309,6 @@ static CMPIEnumeration * enumInstanceNames(
 
    _SFCB_TRACE(1, ("--- Getting Provider context"));
    irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
-
    CMRelease(ns);
    CMRelease(cn);
    
@@ -310,7 +317,9 @@ static CMPIEnumeration * enumInstanceNames(
       resp = invokeProviders(&binCtx, &err, &l);
       _SFCB_TRACE(1, ("--- Back from Provider"));
 
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
          freeResps(resp,binCtx.pCount);
@@ -385,6 +394,8 @@ static CMPIEnumeration * enumInstances(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
 
       if (err == 0) {
@@ -470,7 +481,10 @@ static CMPIInstance * getInstance(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
+      
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+      
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          inst = relocateSerializedInstance(resp->object[0].data);
@@ -539,7 +553,10 @@ static CMPIObjectPath * createInstance(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
+            
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+      
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          path = relocateSerializedObjectPath(resp->object[0].data);
@@ -618,7 +635,10 @@ static CMPIStatus modifyInstance(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          free(sreq);
@@ -677,7 +697,10 @@ static CMPIStatus deleteInstance(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
+      
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          free(resp);
@@ -752,6 +775,8 @@ static CMPIEnumeration * execQuery(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
 
       if (err == 0) {
@@ -844,6 +869,8 @@ static CMPIEnumeration * associators(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
       
       if (err == 0) {
@@ -934,6 +961,8 @@ static CMPIEnumeration * references(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
       
       if (err == 0) {
@@ -1008,6 +1037,8 @@ static CMPIEnumeration * associatorNames(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
       
       if (err == 0) {
@@ -1075,6 +1106,8 @@ static CMPIEnumeration * referenceNames(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
       
       if (err == 0) {
@@ -1143,7 +1176,10 @@ static CMPIData invokeMethod(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Provider"));
       resp = invokeProvider(&binCtx);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
          argsout = relocateSerializedArgs(resp->object[0].data);
@@ -1261,7 +1297,10 @@ static CMPIConstClass * getClass(
    _SFCB_TRACE(1, ("--- Provider context gotten"));
    if (irc == MSG_X_PROVIDER) {
       resp = invokeProvider(&binCtx);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) { 
          cls = relocateSerializedConstClass(resp->object[0].data);
@@ -1330,7 +1369,9 @@ static CMPIEnumeration* enumClassNames(
       resp = invokeProviders(&binCtx, &err, &l);
       _SFCB_TRACE(1, ("--- Back from Provider"));
 
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
          freeResps(resp,binCtx.pCount);
@@ -1394,6 +1435,8 @@ static CMPIEnumeration * enumClasses(
    if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Calling Providers"));
       resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
       closeProviderContext(&binCtx);
 
       if (err == 0) {

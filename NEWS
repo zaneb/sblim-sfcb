@@ -24,8 +24,9 @@ Bugs fixed:
 - 1725608 Fixed default state of subscription state should be enabled
 - 1728904 Fixed problem with dateTime Values
 - 1730553 Fixed createClass fails in standard classProvider
-- 1732080 Fixde sfcb ignores property filter in getInstance upcalls
+- 1732080 Fixed sfcb ignores property filter in getInstance upcalls
 - 1732774 Fixed random provider segfaults when using local client interface
+- 1730915 Fixed getInstance fails for associations
 
 Changes in 1.2.2
 ================

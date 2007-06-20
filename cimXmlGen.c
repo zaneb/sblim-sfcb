@@ -96,7 +96,7 @@ static char *XMLEscape(char *in)
 }
 
 CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
-                              CMPIValue * val, CMPIType * typ)
+                              CMPIValue * val, CMPIType * typ, char *scopingNS)
 {
    if (type) {
       if (strcasecmp(type, "string") == 0);
@@ -139,6 +139,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
             break;   
          case typeValRef_InstanceName: 
             in=&ref->instanceName;
+            ns=scopingNS;
             break;   
          default:
             mlogf(M_ERROR,M_SHOW,"%s(%d): unexpected reference type %d %x\n", __FILE__, __LINE__, 
@@ -155,7 +156,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
                in->bindings.keyBindings[i].type,
                in->bindings.keyBindings[i].value,
                &in->bindings.keyBindings[i].ref,
-               &v, &type);
+               &v, &type, scopingNS);
             CMAddKey(op,in->bindings.keyBindings[i].name,valp,type);
          }
          *typ = CMPI_ref;
@@ -366,7 +367,7 @@ CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, c
       value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(val.value, NULL);
       break;
    case CMPI_ref:
-      valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t);
+      valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t, ns);
       break;
    case CMPI_instance:
       value=makeFromEmbeddedObject(val, ns);

@@ -1,3 +1,8 @@
+2007-06-20  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlGen.h, cimXmlGen.c, cimXmlRequest.c:
+	Fixed 1730915 getInstance fails for associations
+
 2007-06-08  Adrian Schuur
 
 	* cimcClientSfcbLocal.c, providerDrv.c:

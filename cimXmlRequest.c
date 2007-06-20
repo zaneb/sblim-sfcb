@@ -1041,7 +1041,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
       valp = getKeyValueTypePtr(req->instanceName.bindings.keyBindings[i].type,
                                 req->instanceName.bindings.keyBindings[i].value,
                                 &req->instanceName.bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
       CMAddKey(path, req->instanceName.bindings.keyBindings[i].name, valp, type);
    }
    sreq->objectPath = setObjectPathMsgSegment(path);
@@ -1113,7 +1113,7 @@ static RespSegments deleteInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
       valp = getKeyValueTypePtr(req->instanceName.bindings.keyBindings[i].type,
                                 req->instanceName.bindings.keyBindings[i].value,
                                 &req->instanceName.bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
       CMAddKey(path, req->instanceName.bindings.keyBindings[i].name, valp,
                type);
    }
@@ -1264,7 +1264,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
       valp = getKeyValueTypePtr(xco->bindings.keyBindings[i].type,
                                 xco->bindings.keyBindings[i].value,
                                 &xco->bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
                            
       CMAddKey(path, xco->bindings.keyBindings[i].name, valp, type);
    }
@@ -1568,7 +1568,7 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
       valp = getKeyValueTypePtr(req->objectName.bindings.keyBindings[i].type,
                                 req->objectName.bindings.keyBindings[i].value,
                                 &req->objectName.bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
    
@@ -1654,7 +1654,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
       valp = getKeyValueTypePtr(req->objectName.bindings.keyBindings[i].type,
                                 req->objectName.bindings.keyBindings[i].value,
                                 &req->objectName.bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
    
@@ -1758,7 +1758,7 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
       valp = getKeyValueTypePtr(req->objectName.bindings.keyBindings[i].type,
                                 req->objectName.bindings.keyBindings[i].value,
                                 &req->objectName.bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
    
@@ -1843,7 +1843,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
       valp = getKeyValueTypePtr(req->objectName.bindings.keyBindings[i].type,
                                 req->objectName.bindings.keyBindings[i].value,
                                 &req->objectName.bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
       CMAddKey(path, req->objectName.bindings.keyBindings[i].name, valp, type);
    }
    
@@ -1948,7 +1948,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
       valp = getKeyValueTypePtr(req->instanceName.bindings.keyBindings[i].type,
                                 req->instanceName.bindings.keyBindings[i].value,
                                 &req->instanceName.bindings.keyBindings[i].ref,
-                                &val, &type);
+                                &val, &type, req->op.nameSpace.data);
       CMAddKey(path, req->instanceName.bindings.keyBindings[i].name, valp, type);
    }
    sreq.objectPath = setObjectPathMsgSegment(path);

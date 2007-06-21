@@ -513,6 +513,10 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
       unlockUpCall(broker);
    }
    else st.rc = CMPI_RC_ERR_FAILED;
+   
+   if(sreq) {
+      free(sreq);
+   }
 
    if (rc) *rc = st;
    

@@ -1,3 +1,9 @@
+2007-06-21  Sven Schuetz <sven@de.ibm.com>
+
+	* brokerUpc.c, internalProvider.c, providerMgr.c:
+	Fixed 1734174 sfcb behaves different when assocclass & resultclass
+	are unknown
+
 2007-06-20  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlGen.h, cimXmlGen.c, cimXmlRequest.c:

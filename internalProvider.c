@@ -577,9 +577,8 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
    if (assocClass != NULL) {
       CMPIObjectPath *path;
       if (assocForName(ns,assocClass,role,resultRole) == NULL) {
-	//         setStatus(&st,CMPI_RC_ERR_INVALID_PARAMETER,assocClass);
-	// for unknown class we just return nothing
-         return st;
+	 /* for an unknown class we just return nothing */
+         _SFCB_RETURN(st);
       }
       path=CMNewObjectPath(_broker,ns,assocClass,NULL);
       SafeInternalProviderAddEnumInstances(refs, NULL, ctx, path, propertyList, &st, 1);  

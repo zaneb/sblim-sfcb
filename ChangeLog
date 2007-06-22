@@ -1,3 +1,8 @@
+2007-06-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
+
+	* brokerUpc.c: 
+	Fixed 1698462: upcall with empty parameter list crash.
+
 2007-06-22  Tyrel Datwyler <tyreld@us.ibm.com>
 
     * fileRepository.c, objectImpl.c, providerMgr.c, queryLexer.l,

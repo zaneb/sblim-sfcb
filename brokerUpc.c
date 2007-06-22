@@ -1,7 +1,7 @@
 /*
- * brokerUpc.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -939,6 +939,10 @@ static CMPIData invokeMethod(const CMPIBroker * broker, const CMPIContext * cont
    CMPIData rv = { 0, CMPI_nullValue, {0} };
 
    if (cop && cop->hdl) {
+     
+      if (in == NULL) {
+	in = CMNewArgs(broker,NULL);
+      }
    
       for (i=0,s=CMGetArgCount(in,NULL); i<s; i++) {
          CMPIData d=CMGetArgAt(in,i,NULL,NULL);

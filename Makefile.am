@@ -56,9 +56,11 @@ endif
 if SLP
 SLP_LIBS = libslpAgent.la
 SLP_LIB = -lslpAgent
+SLP_HEADER = cimslpCMPI.h cimslp.h cimslpSLP.h cimslpUtil.h
 else
 SLP_LIBS =
 SLP_LIB =
+SLP_HEADER =
 endif
 
 if QUALREP
@@ -317,7 +319,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h \
         cimcClientSfcbLocal.h $(QUALREP_HEADER) cmpidtx.h classSchemaMem.h \
-        objectpath.h instance.h
+        objectpath.h instance.h $(SLP_HEADER)
 
 man_MANS=$(MANFILES)
 

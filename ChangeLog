@@ -1,5 +1,8 @@
 2007-06-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* Makefile.am: 
+	Fixed 1715519: missing SLP headers
+
 	* brokerUpc.c: 
 	Fixed 1698462: upcall with empty parameter list crash.
 

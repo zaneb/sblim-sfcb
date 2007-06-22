@@ -30,7 +30,7 @@ Bugs fixed:
 - 1734174 Fixed sfcb behaves different when assocclass & resultclass unknown
 - 1741211 Fixed cleanup compiler warnings
 - 1698462 Fixed upcall with empty parameter list crash
-
+- 1715519 Fixed missing SLP headers
 
 Changes in 1.2.2
 ================

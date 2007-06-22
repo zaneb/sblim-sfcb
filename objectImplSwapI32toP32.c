@@ -1,8 +1,8 @@
 
 /*
- * objectImplSwapI32toP32.c
+ * $Id$
  *
- * (C) Copyright IBM Corp. 2005
+ * © Copyright IBM Corp. 2005, 2007
  *
  * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
  * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
@@ -478,7 +478,7 @@ void *swapI32toP32Class(ClClass * cls, int *size)
    
    cn=(char*)ClObjectGetClString(&cls->hdr, &cls->name);
    
-   CLP32_ClClass *nc = (CLP32_ClClass *) malloc(sz);
+   CLP32_ClClass *nc = (CLP32_ClClass *) calloc(1,sz);
 
    nc->hdr.size=bswap_32(sz);
    nc->hdr.flags=bswap_16(hdr->flags);
@@ -524,7 +524,7 @@ void *swapI32toP32Instance(ClInstance * inst, int *size)
       first=0;
    }
    
-   CLP32_ClInstance *ni = (CLP32_ClInstance *) malloc(sz);
+   CLP32_ClInstance *ni = (CLP32_ClInstance *) calloc(1,sz);
 
    ni->hdr.size=bswap_32(sz);
    ni->hdr.flags=bswap_16(hdr->flags);
@@ -567,7 +567,7 @@ void *swapI32toP32QualifierDeclaration(ClQualifierDeclaration * qual, int *size)
       first=0;
    }
    
-   CLP32_ClQualifierDeclaration *nq = (CLP32_ClQualifierDeclaration *) malloc(sz);
+   CLP32_ClQualifierDeclaration *nq = (CLP32_ClQualifierDeclaration *) calloc(1,sz);
 
    nq->hdr.size=bswap_32(sz);
    nq->hdr.flags=bswap_16(hdr->flags);

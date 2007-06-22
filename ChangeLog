@@ -1,5 +1,8 @@
 2007-06-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
+	* objectImplSwapI32toP32.c: 
+	Fixed 1741435: cross-built repository corruption.	
+
 	* Makefile.am: 
 	Fixed 1715519: missing SLP headers
 

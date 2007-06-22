@@ -31,6 +31,7 @@ Bugs fixed:
 - 1741211 Fixed cleanup compiler warnings
 - 1698462 Fixed upcall with empty parameter list crash
 - 1715519 Fixed missing SLP headers
+- 1741435 Fixed cross-built repository corruption
 
 Changes in 1.2.2
 ================

@@ -28,6 +28,7 @@ Bugs fixed:
 - 1732774 Fixed random provider segfaults when using local client interface
 - 1730915 Fixed getInstance fails for associations
 - 1734174 Fixed sfcb behaves different when assocclass & resultclass unknown
+- 1741211 Fixed cleanup compiler warnings
 
 
 Changes in 1.2.2

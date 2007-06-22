@@ -70,6 +70,8 @@ DECIMAL_DIGIT [0-9]
 BLANK [ \t\n]
 IDENT_CHAR [A-Za-z_]
 
+%option nounput
+
 %%
 
 [Ss][Ee][Ll][Ee][Cc][Tt] {

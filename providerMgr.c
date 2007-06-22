@@ -580,7 +580,7 @@ static void assocProviderList(int *requestor, OperationHdr * req)
    char *className = (char *) req->className.data;
    char *nameSpace = (char *) req->nameSpace.data;
    UtilList *providers = NULL;
-   long count;
+   long count = 0;
    ProviderInfo *info;
    int dmy = 0, rc;
    char *msg=NULL;

@@ -865,7 +865,7 @@ char *cntlGetVal(CntlVals * rv)
 
 char *cntlGetStr(CntlVals * rv)
 {
-   char *p, *v;
+   char *v;
    if (rv->val == NULL) {
       return NULL;
    }

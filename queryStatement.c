@@ -169,11 +169,11 @@ static void qsRelease(QLStatement *st)
 }
 
 static CMPIInstance* qsCloneAndFilter(QLStatement *st, CMPIInstance *ci, CMPIObjectPath *cop, 
-         const char **kNames)
+         char **kNames)
 {
    CMPIInstance *nic=CMNewInstance(Broker,cop,NULL);
    CMPICount i,c=CMGetPropertyCount(ci,NULL);
-   CMSetPropertyFilter(nic,(const char**)st->spNames,kNames);
+   CMSetPropertyFilter(nic,(const char**)st->spNames, (const char**)kNames);
    for (i=0; i<c; i++) {
       CMPIString *name;
       CMPIData d=CMGetPropertyAt(ci,i,&name,NULL);

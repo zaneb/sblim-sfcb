@@ -257,7 +257,7 @@ static void copy(FILE *o, FILE *i, int len, unsigned long ofs)
 static int adjust(BlobIndex *bi, int pos, int adj)
 {
    int dp=pos,l,o,sl;
-   char *p,*r,str[32];
+   char *p,*r = NULL,str[32];
    while (dp<bi->dSize) {
       memset(str,' ',sizeof(str)-1);
       str[sizeof(str)-1]=0;

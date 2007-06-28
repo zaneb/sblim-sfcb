@@ -1,3 +1,8 @@
+2007-06-27  Tyreld Datwyler <tyreld@us.ibm.com>
+
+    * classProviderMem.c:
+    Fixed 1744540: createClass segfault in classProviderMem
+
 2007-06-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
 	* objectImplSwapI32toP32.c: 

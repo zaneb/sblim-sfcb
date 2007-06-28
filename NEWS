@@ -5,6 +5,9 @@ New features:
 - Execution time parameters for providers via the "parameters" keyword 
   in the providerRegister
 
+Bugs fixed:
+- 1744540 Fixed createClass segfault in classProviderMem
+
 Changes in 1.2.3
 ================
 

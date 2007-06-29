@@ -143,6 +143,7 @@ typedef struct binRequestContext {
 #define XML_asObj 1
 #define XML_asClassName 2
 #define XML_asClass 4
+#define XML_asObjectPath 8
 
 typedef struct chunkFunctions {
    void (*writeChunk)(BinRequestContext*,BinResponseHdr*);

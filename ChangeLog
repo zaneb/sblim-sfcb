@@ -1,7 +1,12 @@
+2007-06-29  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlGen.c, providerMgr.h, cimXmlRequest.c:
+	Fixed 1743692 sfcb does not return OBJECTPATHEs for associatorNames
+
 2007-06-27  Tyreld Datwyler <tyreld@us.ibm.com>
 
-    * classProviderMem.c:
-    Fixed 1744540: createClass segfault in classProviderMem
+	* classProviderMem.c:
+	Fixed 1744540: createClass segfault in classProviderMem
 
 2007-06-22  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-57.boeblingen.de.ibm.com>
 
@@ -16,9 +21,9 @@
 
 2007-06-22  Tyrel Datwyler <tyreld@us.ibm.com>
 
-    * fileRepository.c, objectImpl.c, providerMgr.c, queryLexer.l,
-    queryStatement.c, support.c:
-    Fixed 1741211 cleanup compiler warnings
+	* fileRepository.c, objectImpl.c, providerMgr.c, queryLexer.l,
+	queryStatement.c, support.c:
+	Fixed 1741211 cleanup compiler warnings
 
 2007-06-21  Sven Schuetz <sven@de.ibm.com>
 
@@ -43,8 +48,8 @@
 
 2007-06-04  Tyrel Datwyler <tyreld@us.ibm.com>
 
-    * classProvider.c
-    Fixed 1730553: createClass fails in standard classProvider
+	* classProvider.c
+	Fixed 1730553: createClass fails in standard classProvider
 
 2007-05-31  Sven Schuetz <sven@de.ibm.com>
 
@@ -59,13 +64,13 @@
 
 2007-05-23  Tyrel Datwyler <tyreld@us.ibm.com>
 
-    * classProvider.c objectImpl.c objectImpl.h
-    Fixed 1724753: qualifier creation support for classes
+	* classProvider.c objectImpl.c objectImpl.h
+	Fixed 1724753: qualifier creation support for classes
 
 2007-05-23  Tyrel Datwyler <tyreld@us.ibm.com>
 
-    * constClass.c
-    Fixed 1724719: constClass leaks memory
+	* constClass.c
+	Fixed 1724719: constClass leaks memory
     
 2007-05-23  Sven Schuetz <sven@de.ibm.com>
 

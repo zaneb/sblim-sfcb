@@ -1600,7 +1600,7 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
    binCtx.bHdrSize = sizeof(sreq);
    binCtx.commHndl = ctx->commHndl;
    binCtx.type=CMPI_ref;
-   binCtx.xmlAs=XML_asObj; binCtx.noResp=0;
+   binCtx.xmlAs=XML_asObjectPath; binCtx.noResp=0;
    binCtx.chunkedMode=0;
    binCtx.pAs=NULL;
 
@@ -1788,7 +1788,7 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
    binCtx.bHdrSize = sizeof(sreq);
    binCtx.commHndl = ctx->commHndl;
    binCtx.type=CMPI_ref;
-   binCtx.xmlAs=XML_asObj; binCtx.noResp=0;
+   binCtx.xmlAs=XML_asObjectPath; binCtx.noResp=0;
    binCtx.chunkedMode=0;
    binCtx.pAs=NULL;
 

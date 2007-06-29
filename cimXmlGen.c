@@ -477,17 +477,11 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
 
 static int keyBinding2xml(CMPIObjectPath * op, UtilStringBuffer * sb);
 
-static int nsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
+static int lnsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
 {
-   _SFCB_ENTER(TRACE_CIMXMLPROC, "nsPath2xml");
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "lnsPath2xml");
    char * ns = CMGetCharPtr(CMGetNameSpace(ci,NULL));
-   char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
-   if (hn && *hn) {
-     sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
-     sb->ft->appendChars(sb, "<HOST>");
-     sb->ft->appendChars(sb, hn);
-     sb->ft->appendChars(sb, "</HOST>\n");
-   }
+   
    if (ns && *ns) {
      char *nsc = strdup(ns);
      char *nsp;
@@ -506,9 +500,25 @@ static int nsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
      free(nsc);
      sb->ft->appendChars(sb, "</LOCALNAMESPACEPATH>\n");  
    }
+   _SFCB_RETURN(0);
+}
+
+static int nsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "nsPath2xml");
+   char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
+
+   sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
+   sb->ft->appendChars(sb, "<HOST>");
    if (hn && *hn) {
-     sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
+      sb->ft->appendChars(sb, hn);
+   } else {
+      sb->ft->appendChars(sb, "localhost");
    }
+   sb->ft->appendChars(sb, "</HOST>\n");
+   
+   lnsPath2xml(ci, sb);
+   sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
    _SFCB_RETURN(0);
 }
 
@@ -537,7 +547,7 @@ static int refValue2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
       nsPath2xml(ci, sb);
     } else if (ns && *ns) {
       sb->ft->appendChars(sb, "<LOCALINSTANCEPATH>\n");
-      nsPath2xml(ci, sb);
+      lnsPath2xml(ci, sb);
     }
     instanceName2xml(ci, sb);
     if (hn && *hn && ns && *ns) {
@@ -961,6 +971,14 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
       if (type == CMPI_ref) {
          cop = CMGetNext(enm, NULL).value.ref;
          if (xmlAs==XML_asClassName) className2xml(cop,sb);
+         else if (xmlAs==XML_asObjectPath) {
+            sb->ft->appendChars(sb, "<OBJECTPATH>\n");
+            sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+            nsPath2xml(cop, sb);
+            instanceName2xml(cop, sb);
+            sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
+            sb->ft->appendChars(sb, "</OBJECTPATH>\n");
+         }
          else instanceName2xml(cop, sb);
       }
       else if (type == CMPI_class) {

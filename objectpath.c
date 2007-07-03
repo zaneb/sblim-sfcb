@@ -288,12 +288,16 @@ char *sfcb_pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
       else
          strcat(str, ".");
       strcat(str, (char *) name->hdl);
+      if (name) CMRelease(name);
       strcat(str, "=");
       v = sfcb_value2Chars(data.type, &data.value);
+      if (data.type==CMPI_string) CMRelease(data.value.string);
       strcat(str, v);
       free(v);
    };
- 
+   if (ns) CMRelease(ns);
+   if (cn) CMRelease(cn);
+   if (hn) CMRelease(hn);
    return str;
 }
 

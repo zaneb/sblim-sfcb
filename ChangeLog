@@ -1,3 +1,8 @@
+2007-07-03  Adrian Schuur
+
+	* objectPath.c:
+	Fixed 1745103: bad key property when addKey done with type CMPI_chars
+
 2007-06-29  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlGen.c, providerMgr.h, cimXmlRequest.c:

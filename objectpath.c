@@ -218,7 +218,7 @@ static CMPIStatus __oft_addKey(CMPIObjectPath * op,
    CMPIData data = { type, CMPI_goodValue, {0LL} };
 
    if (type == CMPI_chars) {
-      data.value.chars = (char *) value;
+      data.value.chars = (char*) value;
    } else if (type == CMPI_string) {
      if (value && value->string) {
        data.value.chars = (char *) value->string->hdl;

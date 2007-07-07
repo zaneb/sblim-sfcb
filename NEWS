@@ -9,6 +9,7 @@ Bugs fixed:
 - 1744540 Fixed createClass segfault in classProviderMem
 - 1743692 Fixed sfcb does not return OBJECTPATHEs for associatorNames
 - 1745103 Fixed bad key property when addKey done with type CMPI_chars
+- 1725493 Fixed 401 send twice
 
 Changes in 1.2.3
 ================

@@ -671,13 +671,12 @@ static int doHttpRequest(CommHndl conn_fd)
 	 to be graceful with the client */
       discardInput=1;
    }   
-   
-   if (rc==2) {
+   else if (rc==2) {
      genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
       discardInput=2;
       _SFCB_TRACE(1, ("--- potential DOS attempt discovered."));      
    }
-   if (rc==3) {
+   else if (rc==3) {
       genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
       _SFCB_TRACE(1, ("--- exiting after request timeout."));
       commClose(conn_fd);
@@ -743,9 +742,11 @@ static int doHttpRequest(CommHndl conn_fd)
          cp += strspn(cp, " \t");
          inBuf.host = cp;
          if (strchr(inBuf.host, '/') != NULL || inBuf.host[0] == '.') {
-	   genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
-	   discardInput=2;
-	 }
+            if (!discardInput) {
+   	         genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+	            discardInput=2;
+            }
+	      }
       }
       else if (strncasecmp(hdr, "User-Agent:", 11) == 0) {
          cp = &hdr[11];
@@ -759,8 +760,10 @@ static int doHttpRequest(CommHndl conn_fd)
          inBuf.trailers=1;
       }
       else if (strncasecmp(hdr, "Expect:", 7) == 0) {
-         genError(conn_fd, &inBuf, 417, "Expectation Failed", NULL);  //more);
-	 discardInput=2;
+         if (!discardInput) {
+            genError(conn_fd, &inBuf, 417, "Expectation Failed", NULL);  //more);
+	         discardInput=2;
+         }
       }
    }
 
@@ -784,7 +787,7 @@ static int doHttpRequest(CommHndl conn_fd)
    }
 #endif
 
-   if (doBa) {
+   if (!discardInput && doBa) {
      if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principal))) {
        char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
        genError(conn_fd, &inBuf, 401, "Unauthorized", more);
@@ -802,7 +805,9 @@ static int doHttpRequest(CommHndl conn_fd)
 
    len = inBuf.content_length;
    if (len < 0) {
-     genError(conn_fd, &inBuf, 411, "Length Required", NULL);
+     if (!discardInput) {
+        genError(conn_fd, &inBuf, 411, "Length Required", NULL);
+     }
      _SFCB_TRACE(1, ("--- exiting after missing content length."));      
      commClose(conn_fd);
      exit(1);

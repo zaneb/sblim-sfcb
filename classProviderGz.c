@@ -418,7 +418,7 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
 {
    DIR *dir, *dir_test;
    struct dirent *de;
-   char *n;
+   char *n=NULL;
    int l;
    ClassRegister *cr;
    
@@ -447,7 +447,9 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
      if (cr) {
        ns->ft->put(ns, n+nsBaseLen, cr);
        gatherNameSpaces(n,ns,0);
-     }   
+     } else {
+        free(n);
+     }
    }
    else if (first) {
       mlogf(M_ERROR,M_SHOW,"--- Repository %s not found\n",dn);

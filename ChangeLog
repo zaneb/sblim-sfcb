@@ -1,5 +1,10 @@
 2007-07-07  Tyrel Datwyler <tyreld@us.ibm.com>
 
+   * classProvider.c, classProviderGz.c:
+   Fixed 1746771: Memory leak in classProviderGz.c - in gatherNameSpaces()
+
+2007-07-07  Tyrel Datwyler <tyreld@us.ibm.com>
+
    * httpAdapter.c:
    Fixed 1725493: 401 send twice
 

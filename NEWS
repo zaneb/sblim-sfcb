@@ -10,6 +10,7 @@ Bugs fixed:
 - 1743692 Fixed sfcb does not return OBJECTPATHEs for associatorNames
 - 1745103 Fixed bad key property when addKey done with type CMPI_chars
 - 1725493 Fixed 401 send twice
+- 1746771 Fixed Memory leak in classProviderGz.c - in gatherNameSpaces()
 
 Changes in 1.2.3
 ================

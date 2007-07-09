@@ -15,7 +15,7 @@
 [$InterOpProvider$]
    provider: InteropProvider
    location: sfcInteropProvider
-   type: instance association method
+   type: instance method
    unload: never
    namespace: root/interop
 #
@@ -41,13 +41,13 @@
 [CIM_IndicationSubscription]
    provider: InteropProvider
    location: sfcInteropProvider
-   type: instance association method
+   type: instance method
    namespace: root/interop
 #
 [CIM_IndicationFilter]
    provider: InteropProvider
    location: sfcInteropProvider
-   type: instance association method
+   type: instance method
    namespace: root/interop
 #
 [CIM_Namespace]

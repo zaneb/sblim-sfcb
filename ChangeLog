@@ -1,3 +1,8 @@
+2007-07-09  Sven Schuetz <sven@de.ibm.com>
+
+	* default.reg, providerMgc.c:
+	Fixed 1748392: associations in interop namespace might not work
+
 2007-07-07  Tyrel Datwyler <tyreld@us.ibm.com>
 
    * classProvider.c, classProviderGz.c:

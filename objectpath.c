@@ -276,6 +276,10 @@ char *sfcb_pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
    hn = cop->ft->getHostname(cop, rc);
    ns = cop->ft->getNameSpace(cop, rc);
    cn = cop->ft->getClassName(cop, rc);
+   if (hn && hn->hdl && *(char*)hn->hdl) {
+      strcat(str, (char*)hn->hdl);
+      strcat(str, "|");
+   }
    if (ns && ns->hdl && *(char*)ns->hdl) {
       strcat(str,(char*)ns->hdl);
       strcat(str,":");
@@ -535,17 +539,23 @@ static void addKey(CMPIObjectPath * op, char *kd, int ref)
 
 CMPIObjectPath *getObjectPath(char *path, char **msg)
 {
-   char *p, *pp, *last, *un, *cname, *nname=NULL;
-   char *origu, *u;
+   char *p, *pp, *last, *un, *cname, *nname=NULL, *hname=NULL;
+   char *u;
    int ref = 0;
    CMPIObjectPath *op;
 
    if (path == NULL) {
      return NULL;
    }
-   u = origu = strdup(path);
+   u = strdup(path);
    last = u + strlen(u);
    *msg = NULL;
+
+   p = strchr(u, '|');
+   if (p) {
+      hname=strnDup(u, p-u);
+      u=p+1;
+   }
 
    p = strchr(u, '.');
    if (!p) {
@@ -555,15 +565,16 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
             u=pp+1;
          }      
          cname = strdup(u);
-//         op = Broker->eft->newObjectPath(Broker, nname ? nname : "root/cimv2", cname, NULL);
          op = Broker->eft->newObjectPath(Broker, nname , cname, NULL);
          free(cname);
-         free(origu);
          if (nname) free(nname);
+         if(hname) {
+            op->ft->setHostname(op, hname);
+            free(hname);
+         }
          return op;
       }
       *msg = "No className found";
-      free(origu);
       if (nname) free(nname);
       return NULL;
    }
@@ -574,8 +585,11 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
    }  
      
    cname = strnDup(u, p - u);
-//   op = Broker->eft->newObjectPath(Broker, nname ? nname : "root/cimv2", cname, NULL);
    op = Broker->eft->newObjectPath(Broker, nname , cname, NULL);
+   if(hname) {
+      op->ft->setHostname(op, hname);
+      free(hname);
+   }
    free(cname);
    if (nname) free(nname);
 
@@ -596,19 +610,16 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
       if (*p == '"') {
          if (*(p - 1) != '=') {
             *msg = "Incorrectly quoted string 1";
-            free(origu);
             return NULL;
          }
          p++;
          if ((p = strchr(p, '"')) == NULL) {
             *msg = "Unbalanced quoted string";
-            free(origu);
             return NULL;
          }
          p++;
          if (*p != ',' && *p != 0) {
             *msg = "Incorrectly quoted string 2";
-            free(origu);
             return NULL;
          }
          if (*p == 0)
@@ -623,7 +634,6 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
       addKey(op, t, ref);
       free(t);
    }
-   free(origu);
    return op;
 }
 

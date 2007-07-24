@@ -1,3 +1,8 @@
+2007-07-24  Adrian Schuur
+
+        * internalProvider.c:
+        Fixed 1759208: internalProvider segfaults when object not found
+
 2007-07-10  Sven Schuetz <sven@de.ibm.com>
 
 	* objectpath.c:

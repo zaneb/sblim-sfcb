@@ -13,6 +13,7 @@ Bugs fixed:
 - 1746771 Fixed Memory leak in classProviderGz.c - in gatherNameSpaces()
 - 1748392 Fixed associations in interop namespace might not work
 - 1751084 Fixed sfcb does not support a hostname in an objectpath
+- 1759208 Fixed internalProvider segfaults when object not found
 
 Changes in 1.2.3
 ================

@@ -387,7 +387,7 @@ CMPIStatus InternalProviderGetInstance(CMPIInstanceMI * mi,
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderGetInstance");
    
    ci=internalProviderGetInstance(cop,&st);
-   if(properties) {
+   if(st.rc==CMPI_RC_OK && properties) {
       ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
    }
    

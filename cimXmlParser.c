@@ -312,6 +312,7 @@ static struct _xmlescape {
     { "&amp;", '&', 5 },
     { "&gt;", '>', 4 },
     { "&lt;", '<', 4 },
+    { "&#x20;", ' ', 6 },
 };
 
 static int xmlUnescape(char *buf, char *end)

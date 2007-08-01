@@ -16,6 +16,7 @@ Bugs fixed:
 - 1759208 Fixed internalProvider segfaults when object not found
 - 1752715 Fixed sfcb does not unescape incoming blanks
 - 1754811 Fixed sfbb misses refences/referenceNames call in certain upcalls
+- 1763178 Fixed GetClass operation failure
 
 Changes in 1.2.3
 ================

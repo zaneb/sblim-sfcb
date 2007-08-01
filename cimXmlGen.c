@@ -714,8 +714,11 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
    else if (pdata->type==CMPI_refA) {
       sb->ft->appendChars(sb, "<PARAMETER.REFARRAY NAME=\"");
       sb->ft->appendChars(sb, (char*)pname->hdl);
-      mlogf(M_ERROR,M_SHOW,"*** PARAMETER.REFARRAY not implemenetd\n");
-      abort();  
+      if (pdata->refName) {         
+         sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+         sb->ft->appendChars(sb, pdata->refName);
+      }
+      sb->ft->appendChars(sb, "\">");
       etag="</PARAMETER.REFARRAY>\n";
    }   
    else {

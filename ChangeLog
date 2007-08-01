@@ -1,5 +1,10 @@
 2007-08-01  Sven Schuetz <sven@de.ibm.com>
 
+        * cimXmlGen.c, objectImpl.c:
+        Fixed 1763178: GetClass operation failure
+
+2007-08-01  Sven Schuetz <sven@de.ibm.com>
+
 	* brokerUpc.c:
 	Fixed 1754811: sfcb misses refences/referenceNames call in certain
 	upcalls

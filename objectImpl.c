@@ -891,6 +891,9 @@ static ClParameter makeClParameter(ClObjectHdr * hdr, const char *id,
 
    memset(&p,0,sizeof(p));
    p.id.id = addClString(hdr, id);
+   if(cp.refName) {
+       cp.refName = (char *) addClString(hdr, cp.refName);
+   }
    p.parameter = cp;
    return p;
 }
@@ -1699,7 +1702,12 @@ int ClClassGetMethParameterAt(ClClass * cls, ClMethod *m, int pid, CMPIParameter
 
    p = (ClParameter *) ClObjectGetClSection(&cls->hdr, &m->parameters);
    if (pid < 0 || pid > m->parameters.used) return 1;
-   if (parm) *parm = (p + pid)->parameter;
+   if (parm) {
+       *parm = (p + pid)->parameter;
+       if(parm->refName) {
+           parm->refName = (char*) ClObjectGetClString(&cls->hdr, (ClString*)&parm->refName);
+       }
+   }
    if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(p + pid)->id));
    return 0;
 }

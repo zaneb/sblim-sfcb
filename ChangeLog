@@ -1,3 +1,8 @@
+2007-08-01  Tyrel Datwyler <tyreld@us.ibm.com>
+
+   * classProviderGz.c:
+   Fixed 1746659: SFCB segfaults when ai commands are issued simultaneously
+
 2007-08-01  Sven Schuetz <sven@de.ibm.com>
 
         * cimXmlGen.c, objectImpl.c:

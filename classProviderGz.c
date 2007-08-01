@@ -36,7 +36,7 @@
 #include "trace.h"
 #include "control.h"
 
-#define NEW(x) ((x *) malloc(sizeof(x)))
+#define NEW(x) ((x *) calloc(1,sizeof(x)))
 
 #include "cmpidt.h"
 #include "cmpift.h"
@@ -646,7 +646,7 @@ static CMPIStatus ClassProviderEnumClassNames(CMPIClassMI * mi,
    if (cni) cn=(char*)cni->hdl;
    cb = (ClassBase *) cReg->hdl;  
 
-   cReg->ft->rLock(cReg);
+   cReg->ft->wLock(cReg);
       
    if (cn && strcasecmp(cn,"$ClassProvider$")==0) cn=NULL;
    
@@ -679,7 +679,7 @@ static CMPIStatus ClassProviderEnumClassNames(CMPIClassMI * mi,
      }
    }
      
-   cReg->ft->rUnLock(cReg);
+   cReg->ft->wUnLock(cReg);
       
    _SFCB_RETURN(st);
 }
@@ -725,7 +725,7 @@ static CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
       _SFCB_RETURN(st);
    }
            
-   cReg->ft->rLock(cReg);
+   cReg->ft->wLock(cReg);
    
    flgs=ctx->ft->getEntry(ctx,CMPIInvocationFlags,NULL).value.uint32;
    cni=ref->ft->getClassName(ref,NULL);
@@ -762,7 +762,7 @@ static CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
      }
    }
      
-   cReg->ft->rUnLock(cReg);
+   cReg->ft->wUnLock(cReg);
    
    _SFCB_RETURN(st);
 }
@@ -789,7 +789,7 @@ static CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
       _SFCB_RETURN(st);
    }
 
-   cReg->ft->rLock(cReg);
+   cReg->ft->wLock(cReg);
    
    cl = getClass(cReg, (char *) cn->hdl,&cid);
    if (cl) {
@@ -800,7 +800,7 @@ static CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
       st.rc = CMPI_RC_ERR_NOT_FOUND;
    }
    
-   cReg->ft->rUnLock(cReg);
+   cReg->ft->wUnLock(cReg);
    
    _SFCB_RETURN(st);
 }
@@ -927,7 +927,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       CMPIData cn = CMGetArg(in, "class", NULL);
       _SFCB_TRACE(1,("--- getchildren %s",(char*)cn.value.string->hdl));
       
-      cReg->ft->rLock(cReg);
+      cReg->ft->wLock(cReg);
    
       if (cn.type == CMPI_string && cn.value.string && cn.value.string->hdl) {
          char *child;
@@ -944,7 +944,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       else {
       }
       
-      cReg->ft->rUnLock(cReg);
+      cReg->ft->wUnLock(cReg);
    
    }
    
@@ -953,7 +953,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       CMPIStatus st;
       CMPIData cn = CMGetArg(in, "class", &st);
       
-      cReg->ft->rLock(cReg);
+      cReg->ft->wLock(cReg);
    
       if (st.rc!=CMPI_RC_OK) {
          cn = CMGetArg(in, "classignoreprov", NULL);
@@ -974,7 +974,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       else {
       }
       
-      cReg->ft->rUnLock(cReg);   
+      cReg->ft->wUnLock(cReg);   
    }
 
    else if (strcasecmp(methodName, "getassocs") == 0) {
@@ -986,7 +986,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       ClassRecord *crec;
       int n;
 
-      cReg->ft->rLock(cReg);
+      cReg->ft->wLock(cReg);
    
        for (n = 0, i = ct->ft->getFirst(ct, (void **) &cn, (void **) &crec); i;
            i = ct->ft->getNext(ct, i, (void **) &cn, (void **) &crec)) {
@@ -997,7 +997,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       }
       CMAddArg(out, "assocs", &ar, CMPI_stringA);
       
-      cReg->ft->rUnLock(cReg);
+      cReg->ft->wUnLock(cReg);
    }
 
    else if (strcasecmp(methodName, "ischild") == 0) {
@@ -1006,7 +1006,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
       char *chldn=(char*)CMGetArg(in, "child", NULL).value.string->hdl;
       char *child;
       
-      cReg->ft->rLock(cReg);
+      cReg->ft->wLock(cReg);
    
       st.rc = CMPI_RC_ERR_FAILED;
       if (ul) for (child=(char*)ul->ft->getFirst(ul); child; 
@@ -1017,7 +1017,7 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
          }   
       }
       
-      cReg->ft->rUnLock(cReg);
+      cReg->ft->wUnLock(cReg);
    }
    
    else if (strcasecmp(methodName, "_startup") == 0) {

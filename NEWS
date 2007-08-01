@@ -15,6 +15,7 @@ Bugs fixed:
 - 1751084 Fixed sfcb does not support a hostname in an objectpath
 - 1759208 Fixed internalProvider segfaults when object not found
 - 1752715 Fixed sfcb does not unescape incoming blanks
+- 1754811 Fixed sfbb misses refences/referenceNames call in certain upcalls
 
 Changes in 1.2.3
 ================

@@ -1,12 +1,18 @@
+2007-08-01  Sven Schuetz <sven@de.ibm.com>
+
+	* brokerUpc.c:
+	Fixed 1754811: sfcb misses refences/referenceNames call in certain
+	upcalls
+
 2007-07-10  Sven Schuetz <sven@de.ibm.com>
 
-        * cimXmlParser.c:
-        Fixed 1752715: sfcb does not unescape incoming blanks
+	* cimXmlParser.c:
+	Fixed 1752715: sfcb does not unescape incoming blanks
 
 2007-07-24  Adrian Schuur
 
-        * internalProvider.c:
-        Fixed 1759208: internalProvider segfaults when object not found
+	* internalProvider.c:
+	Fixed 1759208: internalProvider segfaults when object not found
 
 2007-07-10  Sven Schuetz <sven@de.ibm.com>
 

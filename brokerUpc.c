@@ -392,7 +392,16 @@ static CMPIEnumeration *genericEnumRequest(const CMPIBroker * broker,
 		      rci = pInfo->associationMI->ft->associatorNames(pInfo->associationMI,
 		                      context, result, copLocalCall, assocclass,
 		                      resultclass, role, resultrole);
-		      break;		      
+		      break;
+            case OPS_References:
+              rci = pInfo->associationMI->ft->references(pInfo->associationMI,
+                              context, result, copLocalCall, resultclass,
+                              role, props);
+              break;
+            case OPS_ReferenceNames:
+              rci = pInfo->associationMI->ft->referenceNames(pInfo->associationMI,
+                              context, result, copLocalCall, resultclass, role);
+              break;
 		    case OPS_EnumerateInstances:
 		      rci = pInfo->instanceMI->ft->enumInstances(pInfo->instanceMI,
 		                      context, result, copLocalCall, props);

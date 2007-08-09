@@ -1,3 +1,8 @@
+2007-08-01  Adrian Schuur
+
+        * cimXmlGen.c, constClass.c, constClass.h:
+        Fixed 1764101: segfault in constClass::getPropQualifierAt()
+
 2007-08-01  Tyrel Datwyler <tyreld@us.ibm.com>
 
    * classProviderGz.c:

@@ -81,6 +81,8 @@ extern CMPIData getPropertyQuals (CMPIConstClass * cc, const char *prop,
 extern CMPIData getPropertyQualsAt (CMPIConstClass * cc, CMPICount i,
                               CMPIString ** name, unsigned long *quals,
                               CMPIStatus * rc);
+extern CMPIData internalGetPropQualAt (CMPIConstClass * cc, CMPICount p,
+                              CMPICount i, CMPIString ** name, CMPIStatus * rc);
 extern CMPIConstClass_FT *CMPIConstClassFT;
 
 //   extern CMPIConstClass* newCMPIConstClass(const char *cn, const char *pn);

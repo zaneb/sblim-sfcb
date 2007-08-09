@@ -239,16 +239,16 @@ static CMPICount getQualifierCount(CMPIConstClass * cc, CMPIStatus * rc)
    return (CMPICount) ClClassGetQualifierCount(cls);
 }
 
-static CMPIData getPropQualifierAt(CMPIConstClass * cc, const char* cp, CMPICount i,
+CMPIData internalGetPropQualAt (CMPIConstClass * cc, CMPICount p, CMPICount i,
                             CMPIString ** name, CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
    char *n;
    CMPIData rv = { 0, CMPI_notFound, {0} };
-   CMPICount p = (CMPICount)(unsigned long)cp;
    
    if (ClClassGetPropQualifierAt(cls, p, i, &rv, name ? &n : NULL)) {
-      if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
+   	  if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
+      if (name) *name=sfcb_native_new_CMPIString(NULL, NULL);
       return rv;
    }
    if (rv.type == CMPI_chars) {
@@ -257,7 +257,7 @@ static CMPIData getPropQualifierAt(CMPIConstClass * cc, const char* cp, CMPICoun
       rv.type = CMPI_string;
    }
    if (rv.type & CMPI_ARRAY && rv.value.dataPtr.ptr ) {
-      rv.value.array = native_make_CMPIArray((CMPIData *) rv.value.dataPtr.ptr, 
+      rv.value.array = native_make_CMPIArray((CMPIData *) rv.value.dataPtr.ptr,
          NULL, &cls->hdr);
    }
    if (name) {
@@ -266,6 +266,15 @@ static CMPIData getPropQualifierAt(CMPIConstClass * cc, const char* cp, CMPICoun
    }
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    return rv;
+}
+
+static CMPIData getPropQualifierAt(CMPIConstClass * cc, const char* cp, CMPICount i,
+                             CMPIString ** name, CMPIStatus * rc)
+{
+    ClClass *cls = (ClClass *) cc->hdl;
+    ClSection *prps = &cls->properties;
+    CMPICount p = ClObjectLocateProperty(&cls->hdr, prps, cp)-1;
+    return internalGetPropQualAt (cc, p, i, name, rc);
 }
 
 static CMPIData getPropQualifier(CMPIConstClass * cc, const char* cp, const char* cpq, CMPIStatus * rc)

@@ -69,7 +69,8 @@ typedef struct {
 
 typedef struct {
    CLP32_CMPIData data;
-   CLP32_ClString id; 
+   CLP32_ClString id;
+   CLP32_ClString refName;
    unsigned short flags;
    #ifndef SETCLPFX
     #define ClProperty_EmbeddedObjectAsString 1
@@ -204,6 +205,7 @@ static int copyI32toP32Properties(int ofs, char *to, CLP32_ClSection * ts,
    
    for (i = fs->used; i > 0; i--, fp++, tp++) {
       tp->id.id = bswap_32(fp->id.id);
+      tp->refName.id = bswap_32(fp->refName.id);
       tp->data = copyI32toP32Data(from, &fp->data);
       tp->flags = bswap_16(fp->flags);     
       tp->quals = fp->quals;     

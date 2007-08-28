@@ -79,7 +79,7 @@ struct _CMPIConstClass_FT {
 extern CMPIData getPropertyQuals (CMPIConstClass * cc, const char *prop,
                             unsigned long *quals, CMPIStatus * rc);
 extern CMPIData getPropertyQualsAt (CMPIConstClass * cc, CMPICount i,
-                              CMPIString ** name, unsigned long *quals,
+                              CMPIString ** name, unsigned long *quals, CMPIString ** refName,
                               CMPIStatus * rc);
 extern CMPIData internalGetPropQualAt (CMPIConstClass * cc, CMPICount p,
                               CMPICount i, CMPIString ** name, CMPIStatus * rc);

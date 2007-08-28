@@ -1,3 +1,10 @@
+2007-08-28  Sven Schuetz <sven@de.ibm.com>
+
+		* objectImpl.h, objectImplSwapI32toP32.c, constClass.c,
+		classProvider.c, objectImpl.c, classProviderMem.c,
+		constClass.h, cimXmlRequest.c, cimXmlGen.c, objectpath.c:
+		Fixed 1685254: sfcb does not return REFERENCECLASS in GetClass
+
 2007-08-01  Adrian Schuur
 
         * cimXmlGen.c, constClass.c, constClass.h:

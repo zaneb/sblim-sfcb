@@ -575,7 +575,7 @@ static void method2xml(CMPIType type, CMPIString *name, char *bTag, char *eTag,
    _SFCB_EXIT();
 }
 
-static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, char *eTag,
+static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refName, char *bTag, char *eTag,
                      UtilStringBuffer * sb, UtilStringBuffer * qsb, int inst, int param)
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "data2xml");
@@ -621,10 +621,10 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, char *bTag, 
          sb->ft->appendChars(sb, (char *) name->hdl);
 	 if (param) {
 	   sb->ft->appendChars(sb, "\" PARAMTYPE=\"reference");
-	 } else {
-	   sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
-	   sb->ft->appendChars(sb, opGetClassNameChars(data->value.ref));
-	 }
+	 } else if (refName) {
+        sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+        sb->ft->appendChars(sb, (char *) refName->hdl);
+     }
          sb->ft->appendChars(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (inst && data->value.ref) {
@@ -697,7 +697,7 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
       if (m) qsb = UtilFactory->newStrinBuffer(1024);
       for (i = 0; i < m; i++) {
          ClClassGetMethParamQualifierAt(cl, parm, i, &data, (char**)&qname.hdl);
-         data2xml(&data,cls,&qname,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+         data2xml(&data,cls,&qname,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
       }
    }
    
@@ -750,7 +750,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
    ClClass *cl = (ClClass *) cls->hdl;
    int i, m, q, qm, p, pm;
    char *type, *superCls;
-   CMPIString *name, *qname;
+   CMPIString *name, *qname, *refName;
    CMPIData data, qdata;
    CMPIType mtype;
    unsigned long quals;
@@ -771,21 +771,21 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
    if (flags & FL_includeQualifiers)
       for (i = 0, m = ClClassGetQualifierCount(cl); i < m; i++) {
          data = cls->ft->getQualifierAt(cls, i, &name, NULL);
-            data2xml(&data,cls,name,"<QUALIFIER NAME=\"","</QUALIFIER>\n",sb,NULL,0,0);
+            data2xml(&data,cls,name,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",sb,NULL,0,0);
       }
 
    for (i = 0, m = ClClassGetPropertyCount(cl); i < m; i++) {
       qsb->ft->reset(qsb);
-      data = getPropertyQualsAt(cls, i, &name, &quals, NULL);
+      data = getPropertyQualsAt(cls, i, &name, &quals, &refName, NULL);
       if (flags & FL_includeQualifiers) quals2xml(quals << 8, qsb);
       if (flags & FL_includeQualifiers)
          for (q = 0, qm = ClClassGetPropQualifierCount(cl, i); q < qm; q++) {
 	   qdata = internalGetPropQualAt(cls, i, q, &qname, NULL);
-            data2xml(&qdata,cls,qname,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+            data2xml(&qdata,cls,qname,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
             CMRelease(qname);
 	    sfcb_native_release_CMPIValue(qdata.type,&qdata.value);
          }
-      if (data.type & CMPI_ARRAY) data2xml(&data,cls,name,"<PROPERTY.ARRAY NAME=\"",
+      if (data.type & CMPI_ARRAY) data2xml(&data,cls,name,NULL,"<PROPERTY.ARRAY NAME=\"",
           "</PROPERTY.ARRAY>\n", sb, qsb, 0,0);
       else {
          type = dataType(data.type);
@@ -793,12 +793,16 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
             if (data.state &CMPI_nullValue) {
                sb->ft->appendChars(sb, "<PROPERTY.REFERENCE NAME=\"");
                sb->ft->appendChars(sb, (char*)name->hdl);
+               if(refName) {
+                  sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+                  sb->ft->appendChars(sb, (char*)refName->hdl);
+               }
                sb->ft->appendChars(sb, "\"></PROPERTY.REFERENCE>\n");
             }
-            else data2xml(&data,cls,name,"<PROPERTY.REFERENCE NAME=\"",
+            else data2xml(&data,cls,name,refName,"<PROPERTY.REFERENCE NAME=\"",
                    "</PROPERTY.REFERENCE>\n", sb, qsb, 0,0);
          }   
-         else  data2xml(&data,cls,name,"<PROPERTY NAME=\"", "</PROPERTY>\n",
+         else  data2xml(&data,cls,name,NULL,"<PROPERTY NAME=\"", "</PROPERTY>\n",
             sb, qsb, 0,0);
       }
       CMRelease(name);
@@ -819,7 +823,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
          for (q = 0, qm = ClClassGetMethQualifierCount(cl, i); q < qm; q++) {
             ClClassGetMethQualifierAt(cl, meth, q, &qdata, &sname);
 	    name=sfcb_native_new_CMPIString(sname,NULL);
-            data2xml(&qdata,cls,name,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+            data2xml(&qdata,cls,name,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
 	    CMRelease(name);
 	    free(sname);
          }
@@ -869,14 +873,14 @@ int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags)
       data = CMGetPropertyAt(ci, i, &name, NULL);
       
       if (data.type & CMPI_ARRAY) {
-         data2xml(&data,ci,name,"<PROPERTY.ARRAY NAME=\"", "</PROPERTY.ARRAY>\n",
+         data2xml(&data,ci,name,NULL,"<PROPERTY.ARRAY NAME=\"", "</PROPERTY.ARRAY>\n",
                   sb, qsb, 1,0);
       }   
       else {
          type = dataType(data.type);
-         if (*type == '*')   data2xml(&data,ci,name,"<PROPERTY.REFERENCE NAME=\"",
+         if (*type == '*')   data2xml(&data,ci,name,NULL,"<PROPERTY.REFERENCE NAME=\"",
                      "</PROPERTY.REFERENCE>\n", sb, qsb, 1,0);
-         else data2xml(&data,ci,name,"<PROPERTY NAME=\"", "</PROPERTY>\n", sb, qsb, 1,0);
+         else data2xml(&data,ci,name,NULL,"<PROPERTY NAME=\"", "</PROPERTY>\n", sb, qsb, 1,0);
       }
       
       if (data.type & (CMPI_ENC|CMPI_ARRAY)) {// don't get confused using generic release 
@@ -909,7 +913,7 @@ int args2xml(CMPIArgs * args, UtilStringBuffer * sb)
       CMPIData data;
       data = CMGetArgAt(args, i, &name, NULL);
       
-      data2xml(&data,args,name,"<PARAMVALUE NAME=\"", "</PARAMVALUE>\n", sb, NULL, 1,1);
+      data2xml(&data,args,name,NULL,"<PARAMVALUE NAME=\"", "</PARAMVALUE>\n", sb, NULL, 1,1);
       
       if ((data.type & (CMPI_ENC|CMPI_ARRAY)) && data.value.inst) {
 	// don't get confused using generic release 

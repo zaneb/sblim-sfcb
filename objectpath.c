@@ -334,7 +334,7 @@ char *oft_toCharsNormalized(const CMPIObjectPath * cop, CMPIConstClass * cls,
    strcat(str, (char *) cn->hdl);
 
    for (n = 0, i = 0, m = cls->ft->getPropertyCount(cls, rc); i < m; i++) {
-      getPropertyQualsAt(cls, i, &name, &quals, NULL);
+      getPropertyQualsAt(cls, i, &name, &quals, NULL, NULL);
       if (quals & 1) {
          data = __oft_getKey(cop, (const char *) name->hdl, &irc);
          if (irc.rc == CMPI_RC_OK) {

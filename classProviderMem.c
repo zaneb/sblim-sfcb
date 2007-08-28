@@ -262,6 +262,7 @@ static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
    CMPIParameter p;
    CMPIType t;
    char *name;
+   char *refName = NULL;
    int i,m,iq,mq,ip,mp,propId,methId,parmId;
    unsigned long quals;
    ClProperty *prop;
@@ -275,8 +276,11 @@ static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
    }  
    
    for (i=0,m=ClClassGetPropertyCount(ccl); i<m; i++) {
-      ClClassGetPropertyAt(ccl,i,&d,&name,&quals);
-      propId=ClClassAddProperty(cl, name, d);
+      ClClassGetPropertyAt(ccl,i,&d,&name,&quals,&refName);
+      propId=ClClassAddProperty(cl, name, d, refName);
+      if(refName) {
+         free(refName);
+      }
       prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;
       
       for (iq=0,mq=ClClassGetPropQualifierCount(ccl,i); iq<mq; iq++) {

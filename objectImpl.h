@@ -259,6 +259,7 @@ typedef struct {
 typedef struct {
    PFX(CLPFX,CMPIData) data;
    PFX(CLPFX,ClString) id;
+   PFX(CLPFX,ClString) refName;
    unsigned short flags;
    #ifndef SETCLPFX
     #define ClProperty_EmbeddedObjectAsString 1
@@ -441,9 +442,9 @@ extern ClClass *ClClassRebuildClass(ClClass *cls, void *area);
 extern void ClClassRelocateClass(ClClass *cls);
 extern void ClClassFreeClass(ClClass *cls);
 extern char *ClClassToString(ClClass *cls);
-extern int ClClassAddProperty(ClClass *cls, const char *id, CMPIData d);
+extern int ClClassAddProperty(ClClass *cls, const char *id, CMPIData d, char *refName);
 extern int ClClassGetPropertyCount(ClClass *cls);
-extern int ClClassGetPropertyAt(ClClass *cls, int id, CMPIData *data, char **name, unsigned long *quals);
+extern int ClClassGetPropertyAt(ClClass *cls, int id, CMPIData *data, char **name, unsigned long *quals, char **refName);
 extern int ClClassGetPropQualifierCount(ClClass *cls, int id);
 extern int ClClassGetPropQualifierAt(ClClass *cls, int id, int qid, CMPIData *data, char **name);
 extern int ClClassAddMethod(ClClass *cls, const char *id, CMPIType t);

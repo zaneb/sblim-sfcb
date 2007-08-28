@@ -33,21 +33,7 @@
 //#define DEB(x) x
 #define DEB(x)
 
-extern const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id);
-extern char *ClClassToString(ClClass * cls);
-extern int ClClassGetPropertyCount(ClClass * cls);
-extern int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data,
-                                char **name, unsigned long *quals);
-extern int ClClassGetQualifierAt(ClClass * cls, int id, CMPIData * data,
-                                 char **name);
-extern int ClClassGetPropQualifierAt(ClClass * cls, int id, int qid,
-                                     CMPIData * data, char **name);
 extern CMPIString *sfcb_native_new_CMPIString(const char *ptr, CMPIStatus * rc);
-extern int ClObjectLocateProperty(ClObjectHdr * hdr, ClSection * prps,
-                                  const char *id);
-extern unsigned long ClSizeClass(ClClass * cls);
-extern ClClass *ClClassRebuildClass(ClClass * cls, void *area);
-extern void ClClassRelocateClass(ClClass * cls);
 extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc, ClObjectHdr * hdr);
 extern CMPIObjectPath *getObjectPath(char *path, char **msg);
 
@@ -133,12 +119,13 @@ static CMPICount getPropertyCount(CMPIConstClass * cc, CMPIStatus * rc)
 }
 
 CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
-                       unsigned long *quals, CMPIStatus * rc)
+                       unsigned long *quals, CMPIString ** refName, CMPIStatus * rc)
 {
    ClClass *cls = (ClClass *) cc->hdl;
    char *n;
+   char *rName = NULL;
    CMPIData rv = { 0, CMPI_notFound, {0} };
-   if (ClClassGetPropertyAt(cls, i, &rv, name ? &n : NULL, quals)) {
+   if (ClClassGetPropertyAt(cls, i, &rv, name ? &n : NULL, quals, &rName)) {
       if (rc)
          CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
       return rv;
@@ -161,6 +148,14 @@ CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name
       *name = sfcb_native_new_CMPIString(n, NULL);
       free(n);
    }
+   if (refName && rName) {
+      *refName = sfcb_native_new_CMPIString(rName, NULL);
+      free(rName);
+   } else {
+      if(refName) {
+         *refName = NULL;
+      }
+   }
    if (rc)
       CMSetStatus(rc, CMPI_RC_OK);
    return rv;
@@ -169,7 +164,7 @@ CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name
 static CMPIData getPropertyAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name,
                        CMPIStatus * rc)
 {
-   return getPropertyQualsAt(cc,i,name,NULL,rc);
+   return getPropertyQualsAt(cc,i,name,NULL,NULL,rc);
 }
 
 static CMPIData getQualifier(CMPIConstClass * cc, const char * name,
@@ -292,7 +287,7 @@ static CMPIData getPropQualifier(CMPIConstClass * cc, const char* cp, const char
    /* special qualifier handling */
    if (strcasecmp(cpq,"key") == 0) {
      unsigned long quals;
-     getPropertyQualsAt(cc,p-1,NULL,&quals,rc);
+     getPropertyQualsAt(cc,p-1,NULL,&quals,NULL,rc);
      if (quals &  ClProperty_Q_Key) {
        rv.type = CMPI_boolean;
        rv.state = CMPI_goodValue;
@@ -349,7 +344,7 @@ CMPIData getPropertyQuals(CMPIConstClass * cc, const char *id, unsigned long *qu
    int i;
 
    if ((i = ClObjectLocateProperty(&cls->hdr, prps, id)) != 0) {
-      return getPropertyQualsAt(cc, i - 1, NULL, quals, rc);
+      return getPropertyQualsAt(cc, i - 1, NULL, quals, NULL, rc);
    }
 
    if (rc)
@@ -371,7 +366,7 @@ static CMPIArray *getKeyList(CMPIConstClass * cc)
    int idx[32];
 
    for (i = c = 0, m = getPropertyCount(cc, NULL); i < m; i++) {
-      getPropertyQualsAt(cc, i, NULL, &quals, NULL);
+      getPropertyQualsAt(cc, i, NULL, &quals, NULL, NULL);
       if (quals & ClProperty_Q_Key) {
          idx[c] = i;
          c++;
@@ -380,7 +375,7 @@ static CMPIArray *getKeyList(CMPIConstClass * cc)
    kar = NewCMPIArray(c, CMPI_string, NULL);
 
    for (i = 0; i < c; i++) {
-      getPropertyQualsAt(cc, idx[i], &name, &quals, NULL);
+      getPropertyQualsAt(cc, idx[i], &name, &quals, NULL, NULL);
       CMSetArrayElementAt(kar, i, &name, CMPI_string); 
    }
    return kar;

@@ -19,6 +19,7 @@ Bugs fixed:
 - 1763178 Fixed GetClass operation failure
 - 1746659 Fixed SFCB segfaults when ai commands are issued simultaneously
 - 1764101 Fixed segfault in constClass::getPropQualifierAt()
+- 1685254 Fixed sfcb does not return REFERENCECLASS in GetClass
 
 Changes in 1.2.3
 ================

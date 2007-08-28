@@ -1234,7 +1234,7 @@ void showClHdr(void *ihdr)
 
 
 static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
-                              const char *id, CMPIData d)
+                              const char *id, CMPIData d, char *refName)
 {
    int i;
    ClProperty *p;
@@ -1250,6 +1250,11 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       p->id.id = addClString(hdr, id);
       p->quals = p->flags = 0;
       p->originId=0;
+      if(refName) {
+         p->refName.id = addClString(hdr, refName);
+      } else {
+         p->refName.id = 0;
+      }
       
       if (d.type == CMPI_chars && (d.state & CMPI_nullValue) == 0) {
          p->data = d; 
@@ -1575,10 +1580,10 @@ char *ClClassToString(ClClass * cls)
 //--- Class Properties
 //
 
-int ClClassAddProperty(ClClass * cls, const char *id, CMPIData d)
+int ClClassAddProperty(ClClass * cls, const char *id, CMPIData d, char *refName)
 {
    ClSection *prps = &cls->properties;
-   return addObjectPropertyH(&cls->hdr, prps, id, d);
+   return addObjectPropertyH(&cls->hdr, prps, id, d, refName);
 }
 
 int ClClassGetPropertyCount(ClClass * cls)
@@ -1587,8 +1592,9 @@ int ClClassGetPropertyCount(ClClass * cls)
 }
 
 int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
-                         unsigned long *quals)
+                         unsigned long *quals, char **refName)
 {
+   char *rName;
    ClProperty *p;
    p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
    if (id < 0 || id > cls->properties.used)
@@ -1596,6 +1602,14 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    if (data) *data = (p + id)->data;
    if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(p + id)->id));
    if (quals) *quals = (p + id)->quals;
+   if (refName) {
+      rName = (char*)ClObjectGetClString(&cls->hdr, &(p + id)->refName);
+      if(rName) {
+         *refName = strdup(rName);
+      } else {
+         *refName = NULL;
+      }
+   }
    
    if ((p + id)->quals & ClProperty_Q_EmbeddedObject) {
    	     data->type = (data->type & CMPI_ARRAY ? CMPI_instance | CMPI_ARRAY : CMPI_instance); 
@@ -1893,7 +1907,7 @@ int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
 int ClInstanceAddProperty(ClInstance * inst, const char *id, CMPIData d)
 {
    ClSection *prps = &inst->properties;
-   return addObjectPropertyH(&inst->hdr, prps, id, d);
+   return addObjectPropertyH(&inst->hdr, prps, id, d, NULL);
 }
 
 const char *ClInstanceGetClassName(ClInstance * inst)
@@ -2060,7 +2074,7 @@ int ClObjectPathAddKey(ClObjectPath * op, const char *id, CMPIData d)
    _SFCB_ENTER(TRACE_OBJECTIMPL, "ClObjectPathAddKey");
 
    ClSection *prps = &op->properties;
-   _SFCB_RETURN(addObjectPropertyH(&op->hdr, prps, id, d));
+   _SFCB_RETURN(addObjectPropertyH(&op->hdr, prps, id, d, NULL));
 }
 
 void ClObjectPathSetHostName(ClObjectPath * op, const char *hn)
@@ -2234,7 +2248,7 @@ int ClArgsAddArg(ClArgs * arg, const char *id, CMPIData d)
 {
    _SFCB_ENTER(TRACE_OBJECTIMPL, "ClArgsAddArg");
    ClSection *prps = &arg->properties;
-   _SFCB_RETURN(addObjectPropertyH(&arg->hdr, prps, id, d));
+   _SFCB_RETURN(addObjectPropertyH(&arg->hdr, prps, id, d, NULL));
 }
 
 

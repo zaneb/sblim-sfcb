@@ -784,7 +784,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
 	d.value=str2CMPIValue(p->valueType,p->val.val,&p->val.ref,req->op.nameSpace.data);
       }       
       d.type=p->valueType;
-      propId=ClClassAddProperty(cl, p->name, d);
+      propId=ClClassAddProperty(cl, p->name, d, p->referenceClass);
      
       qs=&p->val.qualifiers;
       prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;

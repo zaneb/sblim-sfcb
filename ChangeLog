@@ -1,5 +1,11 @@
 2007-08-28  Sven Schuetz <sven@de.ibm.com>
 
+		* cimXmlRequest.c:
+		Fixed 1766770: sfcb segfaults when property list is specified w.
+		references
+
+2007-08-28  Sven Schuetz <sven@de.ibm.com>
+
 		* objectImpl.h, objectImplSwapI32toP32.c, constClass.c,
 		classProvider.c, objectImpl.c, classProviderMem.c,
 		constClass.h, cimXmlRequest.c, cimXmlGen.c, objectpath.c:

@@ -1822,8 +1822,8 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    _SFCB_ENTER(TRACE_CIMXMLPROC, "references");
 
    CMPIObjectPath *path;
-   AssociatorsReq *sreq; 
-   int irc, i, m, l = 0, err = 0, sreqSize=sizeof(AssociatorsReq); //-sizeof(MsgSegment);
+   ReferencesReq *sreq; 
+   int irc, i, m, l = 0, err = 0, sreqSize=sizeof(ReferencesReq); //-sizeof(MsgSegment);
    BinResponseHdr **resp;
    BinRequestContext binCtx;
    CMPIType type;

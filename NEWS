@@ -21,6 +21,7 @@ Bugs fixed:
 - 1764101 Fixed segfault in constClass::getPropQualifierAt()
 - 1685254 Fixed sfcb does not return REFERENCECLASS in GetClass
 - 1766770 Fixed sfcb segfaults when property list is specified w. references
+- 1780595 Fixed xml special chars are not escaped in error description
 
 Changes in 1.2.3
 ================

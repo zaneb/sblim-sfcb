@@ -267,12 +267,21 @@ UtilStringBuffer *segments2stringBuffer(RespSegment *rs)
 static char *getErrSegment(int rc, char *m)
 {
    char msg[1024];
+   char *escapedMsg;
    
-   if (m && *m) snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n",
-       rc, m);
-   else if (rc > 0 && rc < 18) snprintf(msg, sizeof(msg), 
-       "<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n", rc, cimMsg[rc]);
-   else  snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\"/>\n", rc);
+   if (m && *m) {
+       escapedMsg = XMLEscape(m);
+       snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n",
+                rc, escapedMsg);
+       free(escapedMsg);
+   }
+   else if (rc > 0 && rc < 18) {
+       snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n",
+                rc, cimMsg[rc]);
+   }
+   else  {
+       snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\"/>\n", rc);
+   }
    return strdup(msg);
 }
 /*

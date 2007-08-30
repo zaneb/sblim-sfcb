@@ -1,15 +1,14 @@
 2007-08-28  Sven Schuetz <sven@de.ibm.com>
 
-		* cimXmlRequest.c:
-		Fixed 1766770: sfcb segfaults when property list is specified w.
-		references
+	* cimXmlRequest.c, cimXmlGen.h, cimXmlGen.c:
+	Fixed: 1780595: xml special chars are not escaped in error description
 
 2007-08-28  Sven Schuetz <sven@de.ibm.com>
 
-		* objectImpl.h, objectImplSwapI32toP32.c, constClass.c,
-		classProvider.c, objectImpl.c, classProviderMem.c,
-		constClass.h, cimXmlRequest.c, cimXmlGen.c, objectpath.c:
-		Fixed 1685254: sfcb does not return REFERENCECLASS in GetClass
+	* objectImpl.h, objectImplSwapI32toP32.c, constClass.c,
+	classProvider.c, objectImpl.c, classProviderMem.c,
+	constClass.h, cimXmlRequest.c, cimXmlGen.c, objectpath.c:
+	Fixed 1685254: sfcb does not return REFERENCECLASS in GetClass
 
 2007-08-01  Adrian Schuur
 

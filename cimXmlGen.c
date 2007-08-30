@@ -52,7 +52,7 @@ extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
 const char *opGetClassNameChars(CMPIObjectPath * cop);
 
 
-static char *XMLEscape(char *in)
+char *XMLEscape(char *in)
 {
    int i, l;
    char *out;

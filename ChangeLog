@@ -1,5 +1,10 @@
 2007-09-06  Sven Schuetz <sven@de.ibm.com>
 
+	* brokerUpc.c:
+	Fixed 1769471: multiple handlers do not work as expected
+
+2007-09-06  Sven Schuetz <sven@de.ibm.com>
+
 	* cimXmlGen.c, instance.c, instance.h, objectImpl.c, objectImpl.h:
 	Fixed 1784913: change filter handling
 

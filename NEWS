@@ -23,6 +23,7 @@ Bugs fixed:
 - 1766770 Fixed sfcb segfaults when property list is specified w. references
 - 1780595 Fixed xml special chars are not escaped in error description
 - 1770841 Fixed one provider for multiple associations problem
+- 1784913 Fixed change filter handling
 
 Changes in 1.2.3
 ================

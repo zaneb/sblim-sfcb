@@ -1910,6 +1910,25 @@ int ClInstanceAddProperty(ClInstance * inst, const char *id, CMPIData d)
    return addObjectPropertyH(&inst->hdr, prps, id, d, NULL);
 }
 
+int ClInstanceIsPropertyAtFiltered(ClInstance * inst, int id)
+{
+    ClProperty *p;
+    p = (ClProperty *) ClObjectGetClSection(&inst->hdr, &inst->properties);
+    if((p + id)->flags & ClProperty_Filtered) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+void ClInstanceFilterFlagProperty(ClInstance * inst, int id)
+{
+   ClProperty *p;
+   p = (ClProperty *) ClObjectGetClSection(&inst->hdr, &inst->properties);
+   (p + id)->flags |= ClProperty_Filtered;
+}
+
 const char *ClInstanceGetClassName(ClInstance * inst)
 {
    return ClObjectGetClString(&inst->hdr, &inst->className);

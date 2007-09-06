@@ -264,6 +264,7 @@ typedef struct {
    #ifndef SETCLPFX
     #define ClProperty_EmbeddedObjectAsString 1
     #define ClProperty_Deleted 2
+    #define ClProperty_Filtered 4
    #endif 
    unsigned char quals;
    #ifndef SETCLPFX
@@ -463,6 +464,8 @@ extern char *ClInstanceToString(ClInstance *inst);
 extern int ClInstanceGetPropertyCount(ClInstance *inst);
 extern int ClInstanceGetPropertyAt(ClInstance *inst, int id, CMPIData *data, char **name, unsigned long *quals);
 extern int ClInstanceAddProperty(ClInstance *inst, const char *id, CMPIData d);
+extern void ClInstanceFilterFlagProperty(ClInstance * inst, int id);
+extern int ClInstanceIsPropertyAtFiltered(ClInstance * inst, int id);
 extern const char *ClInstanceGetClassName(ClInstance *inst);
 extern const char *ClInstanceGetNameSpace(ClInstance *inst);
 extern const char *ClGetStringData(CMPIInstance *ci, int id);

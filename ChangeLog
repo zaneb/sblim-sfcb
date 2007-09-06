@@ -1,5 +1,10 @@
 2007-09-06  Sven Schuetz <sven@de.ibm.com>
 
+	* cimXmlGen.c, instance.c, instance.h, objectImpl.c, objectImpl.h:
+	Fixed 1784913: change filter handling
+
+2007-09-06  Sven Schuetz <sven@de.ibm.com>
+
 	* providerMgr.c:
 	Fixed 1770841: one provider for multiple associations problem
 

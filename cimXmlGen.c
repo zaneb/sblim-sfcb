@@ -870,6 +870,9 @@ int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags)
       CMPIString *name;
       CMPIData data;
       qsb->ft->reset(qsb);
+      if(ClInstanceIsPropertyAtFiltered(inst, i)) {
+          continue;
+      }
       data = CMGetPropertyAt(ci, i, &name, NULL);
       
       if (data.type & CMPI_ARRAY) {

@@ -26,6 +26,7 @@
 
 #include "utilft.h"
 #include "native.h"
+#include "instance.h"
 
 #include "objectImpl.h"
 #include "providerMgr.h"
@@ -254,6 +255,12 @@ static CMPIStatus __ift_setProperty(CMPIInstance * instance,
        __contained_list(i->key_list, name)) {
 
       rc=ClInstanceAddProperty(inst, name, data);
+      
+      if(i->filtered && !__contained_list(i->property_list, name)
+         && __contained_list(i->key_list, name)) {
+          /* rc is the number of properties used, so we have to substract one here */
+          ClInstanceFilterFlagProperty(inst, rc - 1);
+      }
       if (rc<0) CMReturn(-rc);      
    }
    CMReturn(CMPI_RC_OK);
@@ -336,46 +343,46 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
                                           const char **propertyList, 
 					  const char **keys)
 {
-   int j,m;
-   CMPIObjectPath * cop;
-   CMPIInstance * newInstance;
-   CMPIStatus st;
-   CMPIData data;
-   CMPIString * name;
-   struct native_instance *i = (struct native_instance *) instance;
-   struct native_instance *iNew,iTemp;
-   
-   if (propertyList == NULL) {
-      /* NULL property list, no need to set filter */
-      CMReturn(CMPI_RC_OK);
-   }
+    int j,m;
+    CMPIObjectPath * cop;
+    CMPIInstance * newInstance;
+    CMPIStatus st;
+    CMPIData data;
+    CMPIString * name;
+    struct native_instance *i = (struct native_instance *) instance;
+    struct native_instance *iNew,iTemp;
+    
+    if (propertyList == NULL) {
+        /* NULL property list, no need to set filter */
+        CMReturn(CMPI_RC_OK);
+    }
 
-   cop = instance->ft->getObjectPath(instance, NULL);
-   if(cop) {
-      newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);
-      for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
-	 data = __ift_getPropertyAt(instance, j, &name, &st);
-	 //if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
-	 if(__contained_list((char**)propertyList, name->hdl)) {
-	    newInstance->ft->setProperty(newInstance, name->hdl, &data.value, data.type);
-	 }
-      }
-      iNew = (struct native_instance *) newInstance;
-      
-      iNew->filtered = 1;
-      iNew->property_list = __duplicate_list(propertyList);
-      iNew->key_list = __duplicate_list(keys);
-      
-      memcpy(&iTemp, i, sizeof(struct native_instance));
-      memcpy(i, iNew, sizeof(struct native_instance));
-      i->mem_state = iTemp.mem_state;
-      i->refCount = iTemp.refCount;
-      memcpy(iNew, &iTemp, sizeof(struct native_instance));
-      iNew->mem_state = MEM_NOT_TRACKED;
-      newInstance->ft->release(newInstance);
-   }
-   
-   CMReturn(CMPI_RC_OK);
+    cop = TrackedCMPIObjectPath(instGetNameSpace(instance), instGetClassName(instance), NULL);
+    //cop = instance->ft->getObjectPath(instance, NULL);
+    if(cop) {
+        newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);
+        iNew = (struct native_instance *) newInstance;
+        iNew->filtered = 1;
+        iNew->property_list = __duplicate_list(propertyList);
+        iNew->key_list = __duplicate_list(keys);
+        for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
+            data = __ift_getPropertyAt(instance, j, &name, &st);
+            if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
+            //if(__contained_list((char**)propertyList, name->hdl)) {
+            newInstance->ft->setProperty(newInstance, name->hdl, &data.value, data.type);
+            }
+        }
+        
+        memcpy(&iTemp, i, sizeof(struct native_instance));
+        memcpy(i, iNew, sizeof(struct native_instance));
+        i->mem_state = iTemp.mem_state;
+        i->refCount = iTemp.refCount;
+        memcpy(iNew, &iTemp, sizeof(struct native_instance));
+        iNew->mem_state = MEM_NOT_TRACKED;
+        newInstance->ft->release(newInstance);
+    }
+    
+    CMReturn(CMPI_RC_OK);
 }
 
 static CMPIData 
@@ -737,6 +744,12 @@ const char *instGetClassName(CMPIInstance * ci)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
    return ClInstanceGetClassName(inst);
+}
+
+const char *instGetNameSpace(CMPIInstance * ci)
+{
+   ClInstance *inst = (ClInstance *) ci->hdl;
+   return ClInstanceGetNameSpace(inst);
 }
 
 int instanceCompare(CMPIInstance *inst1, CMPIInstance *inst2)

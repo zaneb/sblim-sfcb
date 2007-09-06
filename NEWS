@@ -22,6 +22,7 @@ Bugs fixed:
 - 1685254 Fixed sfcb does not return REFERENCECLASS in GetClass
 - 1766770 Fixed sfcb segfaults when property list is specified w. references
 - 1780595 Fixed xml special chars are not escaped in error description
+- 1770841 Fixed one provider for multiple associations problem
 
 Changes in 1.2.3
 ================

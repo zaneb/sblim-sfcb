@@ -508,7 +508,7 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
 static int addAssocProviders(char *className, char *nameSpace, UtilList * providerList)
 {
    char *child;
-   ProviderInfo *ip;
+   ProviderInfo *ip, *ipTemp = NULL;
    UtilList *children = NULL;
    int rc = CMPI_RC_OK;
 
@@ -517,9 +517,18 @@ static int addAssocProviders(char *className, char *nameSpace, UtilList * provid
    if (strcmp(className, "$ASSOCCLASSES$") != 0) {
       ip = getAssocProvider(className,nameSpace);
       if (ip == NULL) return CMPI_RC_ERR_FAILED;
-     if (ip->providerName && !providerList->ft->contains(providerList, ip)) {
-         _SFCB_TRACE(1, ("--- Adding %s", ip->providerName));
-         providerList->ft->add(providerList, ip);
+     if (ip->providerName) {
+         for(ipTemp = providerList->ft->getFirst(providerList); ipTemp;
+             ipTemp = providerList->ft->getNext(providerList)) {
+             if( strcmp(ipTemp->providerName, ip->providerName) == 0 ) {
+                break;
+             }
+         }
+         /* we did not find a provider with the same name */
+         if(!ipTemp) {
+            _SFCB_TRACE(1, ("--- Adding %s", ip->providerName));
+            providerList->ft->add(providerList, ip);
+         }
       }
       children = _getConstClassChildren(nameSpace, className);
    }

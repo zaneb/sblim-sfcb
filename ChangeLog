@@ -1,7 +1,12 @@
+2007-09-06  Sven Schuetz <sven@de.ibm.com>
+
+	* providerMgr.c:
+	Fixed 1770841: one provider for multiple associations problem
+
 2007-08-28  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlRequest.c, cimXmlGen.h, cimXmlGen.c:
-	Fixed: 1780595: xml special chars are not escaped in error description
+	Fixed 1780595: xml special chars are not escaped in error description
 
 2007-08-28  Sven Schuetz <sven@de.ibm.com>
 

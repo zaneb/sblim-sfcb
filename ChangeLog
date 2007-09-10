@@ -1,3 +1,8 @@
+2007-08-28  Sven Schuetz <sven@de.ibm.com>
+
+	* objectImpl.h:
+	Additional patch for 1685254: added new objectImpl level
+
 2007-09-06  Sven Schuetz <sven@de.ibm.com>
 
 	* brokerUpc.c:

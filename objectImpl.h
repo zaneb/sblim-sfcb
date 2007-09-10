@@ -44,7 +44,7 @@
  #define ClCurrentLevel 0
  #define ClTypeClassRep 1
 
- #define ClCurrentObjImplLevel 2
+ #define ClCurrentObjImplLevel 3
 
  #define GetLo15b(x) (x&0x7fff)
  #define GetHi1b(x)  (x&0x8000)

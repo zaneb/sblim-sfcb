@@ -1660,11 +1660,11 @@ ClientEnv* _Create_SfcbLocal_Env(char *id)
       newInstance,      
       newObjectPath,
       newArgs,
+      newString,
       newArray,
       newDateTime,
       newDateTimeFromBinary,
       newDateTimeFromChars,
-      newString,
     };
    
    //    localClientMode=1;

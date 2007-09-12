@@ -1,4 +1,9 @@
-2007-08-28  Sven Schuetz <sven@de.ibm.com>
+2007-09-12  Sven Schuetz <sven@de.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	Fixed 1791690: segfault with local call in newCMPIString
+
+2007-09-10  Sven Schuetz <sven@de.ibm.com>
 
 	* objectImpl.h:
 	Additional patch for 1685254: added new objectImpl level

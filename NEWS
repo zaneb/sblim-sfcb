@@ -6,6 +6,7 @@ New features:
   in the providerRegister
 
 Bugs fixed:
+- 1793223 Fixed cross-built ClProperty size mismatch
 - 1744540 Fixed createClass segfault in classProviderMem
 - 1743692 Fixed sfcb does not return OBJECTPATHEs for associatorNames
 - 1745103 Fixed bad key property when addKey done with type CMPI_chars

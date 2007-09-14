@@ -61,6 +61,7 @@ typedef struct {
 typedef struct {
    CLP32_CMPIData data;
    CLP32_ClString id;
+   CLP32_ClString refName;
    unsigned short flags;
    #ifndef SETCLPFX
     #define ClProperty_EmbeddedObjectAsString 1
@@ -69,11 +70,14 @@ typedef struct {
    unsigned char quals;
    #ifndef SETCLPFX
     #define ClProperty_Q_Key 1
+    #define ClProperty_Q_Propagated 2
     #define ClProperty_Q_EmbeddedObject 8
    #endif 
    unsigned char originId;
    CLP32_ClSection qualifiers;
+   long            padP32;
 } CLP32_ClProperty;
+
 #define BINARY_NAME argv[0]
 #define SCHEMA_NAME argv[optind]
 

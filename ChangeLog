@@ -1,3 +1,9 @@
+2007-09-14  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-67.boeblingen.de.ibm.com>
+
+	* objectImplSwapI32toP32.c, sfcbdumpP32onI32.c:
+	Fixed 1793223: add padding for the cross-compile definition of
+	ClProperty.
+
 2007-09-12  Sven Schuetz <sven@de.ibm.com>
 
 	* cimcClientSfcbLocal.c:

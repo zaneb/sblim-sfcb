@@ -165,6 +165,8 @@ typedef struct _ClientEnvFT {
                (ClientEnv *ce, const char *ns, const char *cn, CMPIStatus* rc);
    CMPIArgs* (*newArgs)
                (ClientEnv *ce, CMPIStatus* rc);
+   CMPIString* (*newString)
+               (ClientEnv *ce, const char *data, CMPIStatus* rc);
    CMPIArray* (*newArray)
                (ClientEnv *ce, CMPICount max, CMPIType type, CMPIStatus* rc);
    CMPIDateTime* (*newDateTime)
@@ -173,8 +175,6 @@ typedef struct _ClientEnvFT {
                (ClientEnv *ce, CMPIUint64 binTime, CMPIBoolean interval, CMPIStatus* rc);
    CMPIDateTime* (*newDateTimeFromChars)
                (ClientEnv *ce, const char *utcTime, CMPIStatus* rc);
-   CMPIString* (*newString)
-               (ClientEnv *ce, const char *data, CMPIStatus* rc);
 } ClientEnvFT;
 
 struct _ClientEnv {

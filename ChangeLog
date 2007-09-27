@@ -1,3 +1,8 @@
+2007-09-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-67.boeblingen.de.ibm.com>
+
+	* cimcClientSfcbLocal.h: 
+	Fixed 1791690: also fix header file definition.
+
 2007-09-14  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-67.boeblingen.de.ibm.com>
 
 	* objectImplSwapI32toP32.c, sfcbdumpP32onI32.c:

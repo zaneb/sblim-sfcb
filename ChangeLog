@@ -1,3 +1,8 @@
+2007-10-02  Sven Schuetz <sven@de.ibm.com>
+
+	* objectpath.c:
+	Removed patch for bug 1751084
+
 2007-10-02  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-67.boeblingen.de.ibm.com>
 
 	* args.c,array.c,brokerEnc.c,brokerUpc.c,cimXmlGen.c,cimXmlGen.h,

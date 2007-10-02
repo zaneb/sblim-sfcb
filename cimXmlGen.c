@@ -48,15 +48,23 @@
 extern const char *instGetClassName(CMPIInstance * ci);
 extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
                                 const char **name, CMPIStatus * rc);
+extern CMPIData __ift_internal_getPropertyAt(const CMPIInstance * ci, 
+					     CMPICount i, char ** name,
+					     CMPIStatus * rc, int readonly);
+
 
 const char *opGetClassNameChars(CMPIObjectPath * cop);
 
+#define DATA2XML(data,obj,name,refname,btag,etag,sb,qsb,inst,param)    \
+  data2xml((data),(obj),(name),(refname),(btag),sizeof(btag)-1,(etag), \
+	   sizeof(etag)-1,(sb),(qsb),(inst),(param))
 
-char *XMLEscape(char *in)
+
+char *XMLEscape(char *in, int *outlen)
 {
-   int i, l;
+   int i, l, o, n;
    char *out;
-   char cs[2] = "*";
+   char *rep;
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "XMLEscape");
 
@@ -64,33 +72,42 @@ char *XMLEscape(char *in)
       return (NULL);
    l = strlen(in);
    out = (char *) malloc(l * 5);
-   *out = 0;
+   o = 0;
 
    for (i = 0; i < l; i++) {
       char ch = in[i];
       switch (ch) {
       case '>':
-         strcat(out, "&gt;");
-         break;
+	n = 4;
+	rep = "&gt;";
+	break;
       case '<':
-         strcat(out, "&lt;");
-         break;
+	n = 4;
+	rep = "&lt;";
+	break;
       case '&':
-         strcat(out, "&amp;");
-         break;
+	n = 5;
+	rep = "&amp;";
+	break;
       case '"':
-         strcat(out, "&quot;");
-         break;
+	n = 6;
+	rep = "&quot;";
+	break;
       case '\'':
-         strcat(out, "&apos;");
-         break;
+	n = 6;
+	rep = "&apos;";
+	break;
       default:
-         *cs = ch;
-         strcat(out, cs);
+	/* avoid memcopy */
+	out[o] = ch;
+	o += 1;
+	continue;
       }
+      memcpy(out+o, rep, n);
+      o += n;
    }
-   *cs = 0;
-   strcat(out, cs);
+   out[o] = '\0';
+   if (outlen) *outlen=o;
 
    _SFCB_RETURN(out);
 }
@@ -325,7 +342,7 @@ CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, c
       value.char16 = *val.value;
       break;
    case CMPI_string:
-      value.string = sfcb_native_new_CMPIString(val.value, NULL);
+      value.string = sfcb_native_new_CMPIString(val.value, NULL,0);
       break;
    case CMPI_sint64:
       sscanf(val.value, "%lld", &value.sint64);
@@ -383,6 +400,7 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
 {
    char str[256];
    char *sp = str;
+   int splen = 0;
    int freesp = 0;
 
    if (d.type & CMPI_ARRAY) {
@@ -391,7 +409,7 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
    }
    
    else {
-      if (wv) sb->ft->appendChars(sb, "<VALUE>");
+      if (wv) SFCB_APPENDCHARS_BLOCK(sb, "<VALUE>");
       if ((d.type & (CMPI_UINT|CMPI_SINT))==CMPI_UINT) {
          unsigned long long ul = 0LL;
          switch (d.type) {
@@ -408,7 +426,7 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
             ul = d.value.uint64;
             break;
          }
-         sprintf(str, "%llu", ul);
+         splen = sprintf(str, "%llu", ul);
       }
       
       else if (d.type & CMPI_SINT) {
@@ -427,49 +445,54 @@ int value2xml(CMPIData d, UtilStringBuffer * sb, int wv)
             sl = d.value.sint64;
             break;
          }
-         sprintf(str, "%lld", sl);
+         splen = sprintf(str, "%lld", sl);
       }
       
       else if (d.type==CMPI_real32) {
-         sprintf(str, "%.7e", d.value.real32);
+	splen = sprintf(str, "%.7e", d.value.real32);
       }
       
       else if (d.type==CMPI_real64) {
-         sprintf(str, "%.16e", d.value.real64);
+         splen = sprintf(str, "%.16e", d.value.real64);
       }
 
       else if (d.type == CMPI_boolean)
-         sprintf(str, "%s", d.value.boolean ? "TRUE" : "FALSE");
+         splen = sprintf(str, "%s", d.value.boolean ? "TRUE" : "FALSE");
       else if (d.type == CMPI_char16)
-         sprintf(str, "%c", d.value.char16);
+         splen = sprintf(str, "%c", d.value.char16);
       else if (d.type == CMPI_chars) {
-         sp = XMLEscape(d.value.chars);
+ 	 sp = XMLEscape(d.value.chars, &splen);
          if (sp) freesp = 1;
       }
       else if (d.type == CMPI_string) {
-         sp = XMLEscape((char *) d.value.string->hdl);
+ 	 sp = XMLEscape((char *) d.value.string->hdl, &splen);
          if (sp) freesp = 1;
       }
       else if (d.type == CMPI_dateTime) {
          if (d.value.dateTime) {
             CMPIString *sdf = CMGetStringFormat(d.value.dateTime, NULL);
             sp = (char *) sdf->hdl;
+	    splen = 25;
          }
-         else sp = "";
+         else {
+	   splen = 0;
+	 }
       }
       else if(d.type == CMPI_instance) {
-         sb->ft->appendChars(sb, "<![CDATA[");
+         SFCB_APPENDCHARS_BLOCK(sb, "<![CDATA[");
          instance2xml(d.value.inst, sb, 0);
-         sb->ft->appendChars(sb, "]]>");
-         sp = "";    	
+         SFCB_APPENDCHARS_BLOCK(sb, "]]>");
+	 splen = 0;
       }
       else {
          mlogf(M_ERROR,M_SHOW,"%s(%d): invalid value2xml %d-%x\n", __FILE__, __LINE__,
                 (int) d.type, (int) d.type);
          abort();
       }
-      sb->ft->appendChars(sb, sp);
-      if (wv) sb->ft->appendChars(sb, "</VALUE>\n");
+      if (splen) {
+	sb->ft->appendBlock(sb, sp, splen);
+      }
+      if (wv) SFCB_APPENDCHARS_BLOCK(sb, "</VALUE>\n");
    }
    if (freesp) free(sp);
    return 0;
@@ -486,19 +509,19 @@ static int lnsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
      char *nsc = strdup(ns);
      char *nsp;
      ns = nsc;
-     sb->ft->appendChars(sb, "<LOCALNAMESPACEPATH>\n");
+     SFCB_APPENDCHARS_BLOCK(sb, "<LOCALNAMESPACEPATH>\n");
      do {
        nsp = strchr(ns,'/');
        if (nsp) {
 	 *nsp = 0;
        }
-       sb->ft->appendChars(sb, "<NAMESPACE NAME=\"");
+       SFCB_APPENDCHARS_BLOCK(sb, "<NAMESPACE NAME=\"");
        sb->ft->appendChars(sb, ns);
-       sb->ft->appendChars(sb, "\"/>\n");
+       SFCB_APPENDCHARS_BLOCK(sb, "\"/>\n");
        ns = nsp + 1;
      } while (nsp);
      free(nsc);
-     sb->ft->appendChars(sb, "</LOCALNAMESPACEPATH>\n");  
+     SFCB_APPENDCHARS_BLOCK(sb, "</LOCALNAMESPACEPATH>\n");  
    }
    _SFCB_RETURN(0);
 }
@@ -508,28 +531,28 @@ static int nsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
    _SFCB_ENTER(TRACE_CIMXMLPROC, "nsPath2xml");
    char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
 
-   sb->ft->appendChars(sb, "<NAMESPACEPATH>\n");
-   sb->ft->appendChars(sb, "<HOST>");
+   SFCB_APPENDCHARS_BLOCK(sb, "<NAMESPACEPATH>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "<HOST>");
    if (hn && *hn) {
       sb->ft->appendChars(sb, hn);
    } else {
-      sb->ft->appendChars(sb, "localhost");
+      SFCB_APPENDCHARS_BLOCK(sb, "localhost");
    }
-   sb->ft->appendChars(sb, "</HOST>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "</HOST>\n");
    
    lnsPath2xml(ci, sb);
-   sb->ft->appendChars(sb, "</NAMESPACEPATH>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "</NAMESPACEPATH>\n");
    _SFCB_RETURN(0);
 }
 
 int instanceName2xml(CMPIObjectPath * cop, UtilStringBuffer * sb)
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "instanceName2xml");
-   sb->ft->appendChars(sb, "<INSTANCENAME CLASSNAME=\"");
+   SFCB_APPENDCHARS_BLOCK(sb, "<INSTANCENAME CLASSNAME=\"");
    sb->ft->appendChars(sb, opGetClassNameChars(cop));
-   sb->ft->appendChars(sb, "\">\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
    keyBinding2xml(cop, sb);
-   sb->ft->appendChars(sb, "</INSTANCENAME>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "</INSTANCENAME>\n");
 
    _SFCB_RETURN(0);
 }
@@ -538,25 +561,25 @@ static int refValue2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
 {
   _SFCB_ENTER(TRACE_CIMXMLPROC, "refValue2xml");
   
-  sb->ft->appendChars(sb, "<VALUE.REFERENCE>\n");
+  SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.REFERENCE>\n");
   if (ci && ci->hdl) {
     char * ns = CMGetCharPtr(CMGetNameSpace(ci,NULL));
     char * hn = CMGetCharPtr(CMGetHostname(ci,NULL));
     if (hn && *hn && ns && *ns) {
-      sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "<INSTANCEPATH>\n");
       nsPath2xml(ci, sb);
     } else if (ns && *ns) {
-      sb->ft->appendChars(sb, "<LOCALINSTANCEPATH>\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "<LOCALINSTANCEPATH>\n");
       lnsPath2xml(ci, sb);
     }
     instanceName2xml(ci, sb);
     if (hn && *hn && ns && *ns) {
-      sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "</INSTANCEPATH>\n");
     } else if (ns && *ns) {
-      sb->ft->appendChars(sb, "</LOCALINSTANCEPATH>\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "</LOCALINSTANCEPATH>\n");
     }
   }
-  sb->ft->appendChars(sb, "</VALUE.REFERENCE>\n");
+  SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.REFERENCE>\n");
   _SFCB_RETURN(0);
 }
 
@@ -566,16 +589,17 @@ static void method2xml(CMPIType type, CMPIString *name, char *bTag, char *eTag,
    _SFCB_ENTER(TRACE_CIMXMLPROC, "method2xml");
    sb->ft->appendChars(sb, bTag);
    sb->ft->appendChars(sb, (char *) name->hdl);
-   sb->ft->appendChars(sb, "\" TYPE=\"");
+   SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
    sb->ft->appendChars(sb, dataType(type));
-   sb->ft->appendChars(sb, "\">\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
    if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
    sb->ft->appendChars(sb, eTag);
 
    _SFCB_EXIT();
 }
 
-static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refName, char *bTag, char *eTag,
+static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refName, 
+		     char *bTag, int bTagLen, char *eTag, int eTagLen,
                      UtilStringBuffer * sb, UtilStringBuffer * qsb, int inst, int param)
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "data2xml");
@@ -587,19 +611,19 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString *
       CMPIData d;
       int j, ac = ar ? CMGetArrayCount(ar, NULL) : 0;
 
-      sb->ft->appendChars(sb, bTag);
+      sb->ft->appendBlock(sb, bTag,bTagLen);
       sb->ft->appendChars(sb, (char *) name->hdl);
-      if (param) sb->ft->appendChars(sb, "\" PARAMTYPE=\"");
-      else sb->ft->appendChars(sb, "\" TYPE=\"");
+      if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"");
+      else SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
       if(data->type & CMPI_instance || data->type & CMPI_class) {
-         sb->ft->appendChars(sb, "string");
+         SFCB_APPENDCHARS_BLOCK(sb, "string");
       } else {
          sb->ft->appendChars(sb, dataType(data->type));
       }
-      sb->ft->appendChars(sb, "\">\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
       if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
       if (data->state == 0) {
-         sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");
+         SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.ARRAY>\n");
          for (j = 0; j < ac; j++) {
             d = CMGetArrayElementAt(ar, j, NULL);
 	    if ((d.state & CMPI_nullValue)==0) {
@@ -610,22 +634,22 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString *
 	      }
 	    }
          }
-         sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");
+         SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.ARRAY>\n");
       }
    }
    
    else {
       type = dataType(data->type);
       if (*type == '*') {
-         sb->ft->appendChars(sb, bTag);
+	sb->ft->appendBlock(sb, bTag, bTagLen);
          sb->ft->appendChars(sb, (char *) name->hdl);
 	 if (param) {
-	   sb->ft->appendChars(sb, "\" PARAMTYPE=\"reference");
+	   SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"reference");
 	 } else if (refName) {
-        sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+        SFCB_APPENDCHARS_BLOCK(sb, "\" REFERENCECLASS=\"");
         sb->ft->appendChars(sb, (char *) refName->hdl);
      }
-         sb->ft->appendChars(sb, "\">\n");
+         SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (inst && data->value.ref) {
 	   refValue2xml(data->value.ref,sb);
@@ -633,52 +657,52 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString *
       }
       
       else if (*type == '%') {                  
-         sb->ft->appendChars(sb, bTag);
+	 sb->ft->appendBlock(sb, bTag, bTagLen);
          sb->ft->appendChars(sb, (char *) name->hdl);
-         sb->ft->appendChars(sb, "\" EmbeddedObject=\"object\"");
-         if (param) sb->ft->appendChars(sb, " PARAMTYPE=\"string\">\n");
-         else sb->ft->appendChars(sb, " TYPE=\"string\">\n");
+         SFCB_APPENDCHARS_BLOCK(sb, "\" EmbeddedObject=\"object\"");
+         if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"string\">\n");
+         else SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"string\">\n");
          if(data->value.inst) {
-	         sb->ft->appendChars(sb, "<VALUE>");
-	         sb->ft->appendChars(sb, "<![CDATA[");
+	         SFCB_APPENDCHARS_BLOCK(sb, "<VALUE>");
+	         SFCB_APPENDCHARS_BLOCK(sb, "<![CDATA[");
 	         instance2xml(data->value.inst, sb, 0);
-	         sb->ft->appendChars(sb, "]]>");
-	         sb->ft->appendChars(sb, "</VALUE>\n");
+	         SFCB_APPENDCHARS_BLOCK(sb, "]]>");
+	         SFCB_APPENDCHARS_BLOCK(sb, "</VALUE>\n");
          }
      }
       
       else {
-         sb->ft->appendChars(sb, bTag);
+	 sb->ft->appendBlock(sb, bTag, bTagLen);
          sb->ft->appendChars(sb, (char *) name->hdl);
-         if (param) sb->ft->appendChars(sb, "\" PARAMTYPE=\"");
-         else sb->ft->appendChars(sb, "\" TYPE=\"");
+         if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"");
+         else SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
          sb->ft->appendChars(sb, type);
-         sb->ft->appendChars(sb, "\">\n");
+         SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (data->state == 0) value2xml(*data, sb, 1);
       }
    }
-   sb->ft->appendChars(sb, eTag);
+   sb->ft->appendBlock(sb, eTag, eTagLen);
 }
 
 static void quals2xml(unsigned long quals, UtilStringBuffer * sb)
 {
    if (quals & ClClass_Q_Abstract)
-      sb->ft->appendChars(sb, "<QUALIFIER NAME=\"Abstract\" TYPE=\"boolean\">\n"
+      SFCB_APPENDCHARS_BLOCK(sb, "<QUALIFIER NAME=\"Abstract\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
    if (quals & ClClass_Q_Association)
-      sb->ft->appendChars(sb,
+      SFCB_APPENDCHARS_BLOCK(sb,
                           "<QUALIFIER NAME=\"Association\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
    if (quals & ClClass_Q_Indication)
-      sb->ft->appendChars(sb,
+      SFCB_APPENDCHARS_BLOCK(sb,
                           "<QUALIFIER NAME=\"Indication\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
    if (quals & (ClProperty_Q_Key << 8))
-      sb->ft->appendChars(sb, "<QUALIFIER NAME=\"Key\" TYPE=\"boolean\">\n"
+      SFCB_APPENDCHARS_BLOCK(sb, "<QUALIFIER NAME=\"Key\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");
    if (quals & (ClProperty_Q_EmbeddedObject << 8))
-      sb->ft->appendChars(sb,
+      SFCB_APPENDCHARS_BLOCK(sb,
                           "<QUALIFIER NAME=\"EmbeddedObject\" TYPE=\"boolean\">\n"
                           "<VALUE>TRUE</VALUE>\n</QUALIFIER>\n");                          
 }
@@ -698,34 +722,34 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
       if (m) qsb = UtilFactory->newStrinBuffer(1024);
       for (i = 0; i < m; i++) {
          ClClassGetMethParamQualifierAt(cl, parm, i, &data, (char**)&qname.hdl);
-         data2xml(&data,cls,&qname,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+         DATA2XML(&data,cls,&qname,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
       }
    }
    
    if (pdata->type==CMPI_ref) {
-      sb->ft->appendChars(sb, "<PARAMETER.REFERENCE NAME=\"");
+      SFCB_APPENDCHARS_BLOCK(sb, "<PARAMETER.REFERENCE NAME=\"");
       sb->ft->appendChars(sb, (char*)pname->hdl);
       if (pdata->refName) {         
-         sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+         SFCB_APPENDCHARS_BLOCK(sb, "\" REFERENCECLASS=\"");
          sb->ft->appendChars(sb, pdata->refName);
       }
-      sb->ft->appendChars(sb, "\">\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
       etag="</PARAMETER.REFERENCE>\n";
    }
    else if (pdata->type==CMPI_refA) {
-      sb->ft->appendChars(sb, "<PARAMETER.REFARRAY NAME=\"");
+      SFCB_APPENDCHARS_BLOCK(sb, "<PARAMETER.REFARRAY NAME=\"");
       sb->ft->appendChars(sb, (char*)pname->hdl);
       if (pdata->refName) {         
-         sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+         SFCB_APPENDCHARS_BLOCK(sb, "\" REFERENCECLASS=\"");
          sb->ft->appendChars(sb, pdata->refName);
       }
-      sb->ft->appendChars(sb, "\">");
+      SFCB_APPENDCHARS_BLOCK(sb, "\">");
       etag="</PARAMETER.REFARRAY>\n";
    }   
    else {
       if (pdata->type&CMPI_ARRAY) {
       char size[128];
-         sb->ft->appendChars(sb, "<PARAMETER.ARRAY NAME=\"");
+         SFCB_APPENDCHARS_BLOCK(sb, "<PARAMETER.ARRAY NAME=\"");
          sb->ft->appendChars(sb, (char*)pname->hdl);
          if(pdata->arraySize) {
          	sprintf(size,"\" ARRAYSIZE=\"%d",pdata->arraySize);
@@ -734,12 +758,12 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
          etag="</PARAMETER.ARRAY>\n";
       }
       else {
-         sb->ft->appendChars(sb, "<PARAMETER NAME=\"");
+         SFCB_APPENDCHARS_BLOCK(sb, "<PARAMETER NAME=\"");
          sb->ft->appendChars(sb, (char*)pname->hdl);
       }
-      sb->ft->appendChars(sb, "\" TYPE=\"");
+      SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
       sb->ft->appendChars(sb, dataType(pdata->type));
-      sb->ft->appendChars(sb, "\">\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
    } 
  
    if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
@@ -759,20 +783,20 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "cls2xml"); 
    
-   sb->ft->appendChars(sb, "<CLASS NAME=\"");
+   SFCB_APPENDCHARS_BLOCK(sb, "<CLASS NAME=\"");
    sb->ft->appendChars(sb, cls->ft->getCharClassName(cls));
    superCls = (char *) cls->ft->getCharSuperClassName(cls);
    if (superCls) {
-      sb->ft->appendChars(sb, "\" SUPERCLASS=\"");
+      SFCB_APPENDCHARS_BLOCK(sb, "\" SUPERCLASS=\"");
       sb->ft->appendChars(sb, superCls);
    }
-   sb->ft->appendChars(sb, "\">\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
    if (flags & FL_includeQualifiers) quals2xml(cl->quals, sb);
    
    if (flags & FL_includeQualifiers)
       for (i = 0, m = ClClassGetQualifierCount(cl); i < m; i++) {
          data = cls->ft->getQualifierAt(cls, i, &name, NULL);
-            data2xml(&data,cls,name,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",sb,NULL,0,0);
+            DATA2XML(&data,cls,name,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",sb,NULL,0,0);
       }
 
    for (i = 0, m = ClClassGetPropertyCount(cl); i < m; i++) {
@@ -782,28 +806,28 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       if (flags & FL_includeQualifiers)
          for (q = 0, qm = ClClassGetPropQualifierCount(cl, i); q < qm; q++) {
 	   qdata = internalGetPropQualAt(cls, i, q, &qname, NULL);
-            data2xml(&qdata,cls,qname,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
+            DATA2XML(&qdata,cls,qname,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
             CMRelease(qname);
 	    sfcb_native_release_CMPIValue(qdata.type,&qdata.value);
          }
-      if (data.type & CMPI_ARRAY) data2xml(&data,cls,name,NULL,"<PROPERTY.ARRAY NAME=\"",
+      if (data.type & CMPI_ARRAY) DATA2XML(&data,cls,name,NULL,"<PROPERTY.ARRAY NAME=\"",
           "</PROPERTY.ARRAY>\n", sb, qsb, 0,0);
       else {
          type = dataType(data.type);
          if (*type == '*') {
             if (data.state &CMPI_nullValue) {
-               sb->ft->appendChars(sb, "<PROPERTY.REFERENCE NAME=\"");
+               SFCB_APPENDCHARS_BLOCK(sb, "<PROPERTY.REFERENCE NAME=\"");
                sb->ft->appendChars(sb, (char*)name->hdl);
                if(refName) {
-                  sb->ft->appendChars(sb, "\" REFERENCECLASS=\"");
+                  SFCB_APPENDCHARS_BLOCK(sb, "\" REFERENCECLASS=\"");
                   sb->ft->appendChars(sb, (char*)refName->hdl);
                }
-               sb->ft->appendChars(sb, "\"></PROPERTY.REFERENCE>\n");
+               SFCB_APPENDCHARS_BLOCK(sb, "\"></PROPERTY.REFERENCE>\n");
             }
-            else data2xml(&data,cls,name,refName,"<PROPERTY.REFERENCE NAME=\"",
+            else DATA2XML(&data,cls,name,refName,"<PROPERTY.REFERENCE NAME=\"",
                    "</PROPERTY.REFERENCE>\n", sb, qsb, 0,0);
          }   
-         else  data2xml(&data,cls,name,NULL,"<PROPERTY NAME=\"", "</PROPERTY>\n",
+         else  DATA2XML(&data,cls,name,NULL,"<PROPERTY NAME=\"", "</PROPERTY>\n",
             sb, qsb, 0,0);
       }
       CMRelease(name);
@@ -817,35 +841,29 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       
       qsb->ft->reset(qsb);
       ClClassGetMethodAt(cl, i, &mtype, &smname, &quals);
-      mname=sfcb_native_new_CMPIString(smname,NULL);
+      mname=sfcb_native_new_CMPIString(smname,NULL,2);
       meth=((ClMethod*)ClObjectGetClSection(&cl->hdr,&cl->methods))+i;
       
       if (flags & FL_includeQualifiers) {
          for (q = 0, qm = ClClassGetMethQualifierCount(cl, i); q < qm; q++) {
             ClClassGetMethQualifierAt(cl, meth, q, &qdata, &sname);
-	    name=sfcb_native_new_CMPIString(sname,NULL);
-            data2xml(&qdata,cls,name,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
-	    CMRelease(name);
-	    free(sname);
+	    name=sfcb_native_new_CMPIString(sname,NULL,2);
+            DATA2XML(&qdata,cls,name,NULL,"<QUALIFIER NAME=\"","</QUALIFIER>\n",qsb,NULL,0,0);
          }
       }   
       
       for (p = 0, pm = ClClassGetMethParameterCount(cl, i); p < pm; p++) {
          CMPIParameter pdata;
          ClClassGetMethParameterAt(cl, meth, p, &pdata, &sname);
-	 name=sfcb_native_new_CMPIString(sname,NULL);
+	 name=sfcb_native_new_CMPIString(sname,NULL,2);
          parm=((ClParameter*)ClObjectGetClSection(&cl->hdr,&meth->parameters))+p;
          param2xml(&pdata,cls,parm,name,qsb,flags);
-	 CMRelease(name);
-	 free(sname);
       }
  
       method2xml(mtype,mname,"<METHOD NAME=\"", "</METHOD>\n",sb, qsb);
-      CMRelease(mname);
-      free(smname);
    }
    
-   sb->ft->appendChars(sb, "</CLASS>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "</CLASS>\n");
 
    qsb->ft->release(qsb);
 
@@ -861,39 +879,38 @@ int instance2xml(CMPIInstance * ci, UtilStringBuffer * sb, unsigned int flags)
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "instance2xml");
    
-   sb->ft->appendChars(sb, "<INSTANCE CLASSNAME=\"");
+   SFCB_APPENDCHARS_BLOCK(sb, "<INSTANCE CLASSNAME=\"");
    sb->ft->appendChars(sb, instGetClassName(ci));
-   sb->ft->appendChars(sb, "\">\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
    
    if (flags & FL_includeQualifiers) quals2xml(inst->quals, sb);
 
    for (i = 0; i < m; i++) {
-      CMPIString *name;
+      CMPIString name;
       CMPIData data;
       qsb->ft->reset(qsb);
       if(ClInstanceIsPropertyAtFiltered(inst, i)) {
           continue;
       }
-      data = CMGetPropertyAt(ci, i, &name, NULL);
+      data = __ift_internal_getPropertyAt(ci, i, (char**)&name.hdl, NULL, 1);
       
       if (data.type & CMPI_ARRAY) {
-         data2xml(&data,ci,name,NULL,"<PROPERTY.ARRAY NAME=\"", "</PROPERTY.ARRAY>\n",
+         DATA2XML(&data,ci,&name,NULL,"<PROPERTY.ARRAY NAME=\"", "</PROPERTY.ARRAY>\n",
                   sb, qsb, 1,0);
       }   
       else {
          type = dataType(data.type);
-         if (*type == '*')   data2xml(&data,ci,name,NULL,"<PROPERTY.REFERENCE NAME=\"",
+         if (*type == '*')   DATA2XML(&data,ci,&name,NULL,"<PROPERTY.REFERENCE NAME=\"",
                      "</PROPERTY.REFERENCE>\n", sb, qsb, 1,0);
-         else data2xml(&data,ci,name,NULL,"<PROPERTY NAME=\"", "</PROPERTY>\n", sb, qsb, 1,0);
+         else DATA2XML(&data,ci,&name,NULL,"<PROPERTY NAME=\"", "</PROPERTY>\n", sb, qsb, 1,0);
       }
       
       if (data.type & (CMPI_ENC|CMPI_ARRAY)) {// don't get confused using generic release 
          if ((data.state&~CMPI_keyValue)==0 && data.type != CMPI_instance) 
             data.value.inst->ft->release(data.value.inst);
       }   
-      CMRelease(name);
    }
-   sb->ft->appendChars(sb, "</INSTANCE>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "</INSTANCE>\n");
 
    qsb->ft->release(qsb);
    
@@ -917,7 +934,7 @@ int args2xml(CMPIArgs * args, UtilStringBuffer * sb)
       CMPIData data;
       data = CMGetArgAt(args, i, &name, NULL);
       
-      data2xml(&data,args,name,NULL,"<PARAMVALUE NAME=\"", "</PARAMVALUE>\n", sb, NULL, 1,1);
+      DATA2XML(&data,args,name,NULL,"<PARAMVALUE NAME=\"", "</PARAMVALUE>\n", sb, NULL, 1,1);
       
       if ((data.type & (CMPI_ENC|CMPI_ARRAY)) && data.value.inst) {
 	// don't get confused using generic release 
@@ -939,21 +956,21 @@ static int keyBinding2xml(CMPIObjectPath * op, UtilStringBuffer * sb)
       char *type;
       CMPIData data;
       data = opGetKeyCharsAt(op, i, &name, NULL);
-      sb->ft->appendChars(sb, "<KEYBINDING NAME=\"");
+      SFCB_APPENDCHARS_BLOCK(sb, "<KEYBINDING NAME=\"");
       sb->ft->appendChars(sb, name);
-      sb->ft->appendChars(sb, "\">\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
       type = keyType(data.type);
       if (*type == '*' && data.value.ref) {
 	refValue2xml(data.value.ref,sb);
       }
       else {
-         sb->ft->appendChars(sb, "<KEYVALUE VALUETYPE=\"");
+         SFCB_APPENDCHARS_BLOCK(sb, "<KEYVALUE VALUETYPE=\"");
          sb->ft->appendChars(sb, type);
-         sb->ft->appendChars(sb, "\">");
+         SFCB_APPENDCHARS_BLOCK(sb, "\">");
          value2xml(data, sb, 0);
-         sb->ft->appendChars(sb, "</KEYVALUE>\n");
+         SFCB_APPENDCHARS_BLOCK(sb, "</KEYVALUE>\n");
       }
-      sb->ft->appendChars(sb, "</KEYBINDING>\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "</KEYBINDING>\n");
    }
 
    _SFCB_RETURN(0);
@@ -961,9 +978,9 @@ static int keyBinding2xml(CMPIObjectPath * op, UtilStringBuffer * sb)
 
 static int className2xml(CMPIObjectPath * op, UtilStringBuffer * sb)
 {
-   sb->ft->appendChars(sb, "<CLASSNAME NAME=\"");
+   SFCB_APPENDCHARS_BLOCK(sb, "<CLASSNAME NAME=\"");
    sb->ft->appendChars(sb, opGetClassNameChars(op));
-   sb->ft->appendChars(sb, "\"/>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "\"/>\n");
    return 0;
 }
 
@@ -983,12 +1000,12 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
          cop = CMGetNext(enm, NULL).value.ref;
          if (xmlAs==XML_asClassName) className2xml(cop,sb);
          else if (xmlAs==XML_asObjectPath) {
-            sb->ft->appendChars(sb, "<OBJECTPATH>\n");
-            sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "<OBJECTPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "<INSTANCEPATH>\n");
             nsPath2xml(cop, sb);
             instanceName2xml(cop, sb);
-            sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
-            sb->ft->appendChars(sb, "</OBJECTPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "</INSTANCEPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "</OBJECTPATH>\n");
          }
          else instanceName2xml(cop, sb);
       }
@@ -1009,20 +1026,20 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
        }
 	 }
          if (xmlAs==XML_asObj) {
-            sb->ft->appendChars(sb, "<VALUE.OBJECTWITHPATH>\n");
-            sb->ft->appendChars(sb, "<INSTANCEPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.OBJECTWITHPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "<INSTANCEPATH>\n");
             nsPath2xml(cop, sb);
          }
          else
-            sb->ft->appendChars(sb, "<VALUE.NAMEDINSTANCE>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.NAMEDINSTANCE>\n");
          instanceName2xml(cop, sb);
          if (xmlAs==XML_asObj)
-            sb->ft->appendChars(sb, "</INSTANCEPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "</INSTANCEPATH>\n");
          instance2xml(ci, sb, flags);
          if (xmlAs==XML_asObj)
-            sb->ft->appendChars(sb, "</VALUE.OBJECTWITHPATH>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.OBJECTWITHPATH>\n");
          else
-            sb->ft->appendChars(sb, "</VALUE.NAMEDINSTANCE>\n");
+            SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.NAMEDINSTANCE>\n");
          cop->ft->release(cop);   
       }
    }
@@ -1045,64 +1062,64 @@ int qualifierDeclaration2xml(CMPIQualifierDecl * q, UtilStringBuffer * sb)
       data.state = CMPI_badValue;
    }
 
-   sb->ft->appendChars(sb, "<QUALIFIER.DECLARATION NAME=\"");
+   SFCB_APPENDCHARS_BLOCK(sb, "<QUALIFIER.DECLARATION NAME=\"");
    sb->ft->appendChars(sb, q->ft->getCharQualifierName(q));
-   sb->ft->appendChars(sb, "\"");
+   SFCB_APPENDCHARS_BLOCK(sb, "\"");
    if (qual->type) {
-		sb->ft->appendChars(sb," TYPE=\"");
+		SFCB_APPENDCHARS_BLOCK(sb," TYPE=\"");
 		sb->ft->appendChars(sb, dataType(qual->type));
-		sb->ft->appendChars(sb,"\"");
+		SFCB_APPENDCHARS_BLOCK(sb,"\"");
    }
    if(data.state != CMPI_goodValue) { //no default value - ISARRAY needs to be specified
 		if (qual->type & CMPI_ARRAY)
-			sb->ft->appendChars(sb," ISARRAY=\"true\"");
+			SFCB_APPENDCHARS_BLOCK(sb," ISARRAY=\"true\"");
 		else
-			sb->ft->appendChars(sb," ISARRAY=\"false\"");
+			SFCB_APPENDCHARS_BLOCK(sb," ISARRAY=\"false\"");
    }
    if (qual->arraySize) {
    		int strtmpSize = sizeof(qual->arraySize)*8 / 3.32 + 1; //estimate max. no of possible digits
    		char strtmp[strtmpSize];
    		sprintf(strtmp, "%d", qual->arraySize);
-		sb->ft->appendChars(sb," ARRAYSIZE=\"");
+		SFCB_APPENDCHARS_BLOCK(sb," ARRAYSIZE=\"");
 		sb->ft->appendChars(sb, strtmp);
-		sb->ft->appendChars(sb,"\"");
+		SFCB_APPENDCHARS_BLOCK(sb,"\"");
    }
    if (qual->flavor & ClQual_F_Overridable) //default true - so we have to mention it, if it's false
-		sb->ft->appendChars(sb," OVERRIDABLE=\"true\"");
+		SFCB_APPENDCHARS_BLOCK(sb," OVERRIDABLE=\"true\"");
    else
-		sb->ft->appendChars(sb," OVERRIDABLE=\"false\"");
+		SFCB_APPENDCHARS_BLOCK(sb," OVERRIDABLE=\"false\"");
    if (qual->flavor & ClQual_F_ToSubclass) //default true - so we have to mention it, if it's false
-		sb->ft->appendChars(sb," TOSUBCLASS=\"true\"");
+		SFCB_APPENDCHARS_BLOCK(sb," TOSUBCLASS=\"true\"");
    else
-		sb->ft->appendChars(sb," TOSUBCLASS=\"false\"");   
-   if (qual->flavor & ClQual_F_ToInstance) sb->ft->appendChars(sb," TOINSTANCE=\"true\"");
-   if (qual->flavor & ClQual_F_Translatable) sb->ft->appendChars(sb," TRANSLATABLE=\"true\"");
-   sb->ft->appendChars(sb, ">\n");
+		SFCB_APPENDCHARS_BLOCK(sb," TOSUBCLASS=\"false\"");   
+   if (qual->flavor & ClQual_F_ToInstance) SFCB_APPENDCHARS_BLOCK(sb," TOINSTANCE=\"true\"");
+   if (qual->flavor & ClQual_F_Translatable) SFCB_APPENDCHARS_BLOCK(sb," TRANSLATABLE=\"true\"");
+   SFCB_APPENDCHARS_BLOCK(sb, ">\n");
    
    if (qual->scope) {
-		sb->ft->appendChars(sb, "<SCOPE");
-		if(qual->scope & ClQual_S_Class) sb->ft->appendChars(sb," CLASS=\"true\"");
-		if(qual->scope & ClQual_S_Association) sb->ft->appendChars(sb," ASSOCIATION=\"true\"");
-		if(qual->scope & ClQual_S_Reference) sb->ft->appendChars(sb," REFERENCE=\"true\"");
-		if(qual->scope & ClQual_S_Property) sb->ft->appendChars(sb," PROPERTY=\"true\"");
-		if(qual->scope & ClQual_S_Method) sb->ft->appendChars(sb," METHOD=\"true\"");
-		if(qual->scope & ClQual_S_Parameter) sb->ft->appendChars(sb," PARAMETER=\"true\"");
-		if(qual->scope & ClQual_S_Indication) sb->ft->appendChars(sb," INDICATION=\"true\"");
-		sb->ft->appendChars(sb, "></SCOPE>\n");
+		SFCB_APPENDCHARS_BLOCK(sb, "<SCOPE");
+		if(qual->scope & ClQual_S_Class) SFCB_APPENDCHARS_BLOCK(sb," CLASS=\"true\"");
+		if(qual->scope & ClQual_S_Association) SFCB_APPENDCHARS_BLOCK(sb," ASSOCIATION=\"true\"");
+		if(qual->scope & ClQual_S_Reference) SFCB_APPENDCHARS_BLOCK(sb," REFERENCE=\"true\"");
+		if(qual->scope & ClQual_S_Property) SFCB_APPENDCHARS_BLOCK(sb," PROPERTY=\"true\"");
+		if(qual->scope & ClQual_S_Method) SFCB_APPENDCHARS_BLOCK(sb," METHOD=\"true\"");
+		if(qual->scope & ClQual_S_Parameter) SFCB_APPENDCHARS_BLOCK(sb," PARAMETER=\"true\"");
+		if(qual->scope & ClQual_S_Indication) SFCB_APPENDCHARS_BLOCK(sb," INDICATION=\"true\"");
+		SFCB_APPENDCHARS_BLOCK(sb, "></SCOPE>\n");
    }
    
 	if(data.state == CMPI_goodValue) {
 		if(data.type & CMPI_ARRAY) {
-			sb->ft->appendChars(sb, "<VALUE.ARRAY>\n");
+			SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.ARRAY>\n");
 			int i;
 			for(i=0; i< data.value.array->ft->getSize(data.value.array, NULL); i++)
 				value2xml(data.value.array->ft->getElementAt(data.value.array, i, NULL), sb, 1);
-			sb->ft->appendChars(sb, "</VALUE.ARRAY>\n");			
+			SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.ARRAY>\n");			
 		} else {
 			value2xml(data, sb, 1);
 		}
 	}
-   sb->ft->appendChars(sb, "</QUALIFIER.DECLARATION>\n");
+   SFCB_APPENDCHARS_BLOCK(sb, "</QUALIFIER.DECLARATION>\n");
 
    _SFCB_RETURN(0);
 }

@@ -97,7 +97,7 @@ static CMPIStatus __oft_setNameSpace(CMPIObjectPath * op, const char *nameSpace)
 CMPIString *__oft_getNameSpace(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
-   return sfcb_native_new_CMPIString(ClObjectPathGetNameSpace(cop), rc);
+   return sfcb_native_new_CMPIString(ClObjectPathGetNameSpace(cop), rc, 0);
 }
 
 
@@ -111,7 +111,7 @@ static CMPIStatus __oft_setHostName(CMPIObjectPath * op, const char *hostName)
 static CMPIString *__oft_getHostName(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
-   return sfcb_native_new_CMPIString(ClObjectPathGetHostName(cop), rc);
+   return sfcb_native_new_CMPIString(ClObjectPathGetHostName(cop), rc, 0);
 }
 
 
@@ -126,7 +126,7 @@ static CMPIStatus __oft_setClassName(CMPIObjectPath * op, const char *className)
 static CMPIString *__oft_getClassName(const CMPIObjectPath * op, CMPIStatus * rc)
 {
    ClObjectPath *cop = (ClObjectPath *) op->hdl;
-   return sfcb_native_new_CMPIString(ClObjectPathGetClassName(cop), rc);
+   return sfcb_native_new_CMPIString(ClObjectPathGetClassName(cop), rc, 0);
 }
 
 const char *opGetClassNameChars(const CMPIObjectPath * op)
@@ -155,7 +155,7 @@ CMPIData opGetKeyCharsAt(const CMPIObjectPath * op,
    }
  
    if (rv.type == CMPI_chars) {
-      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL);
+     rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL, 0);
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) {
@@ -181,7 +181,7 @@ static CMPIData __oft_getKeyAt(const CMPIObjectPath * op, CMPICount i, CMPIStrin
    CMPIData rv = opGetKeyCharsAt(op, i, &n, rc);
 
    if (name)
-      *name = sfcb_native_new_CMPIString(n, NULL);
+     *name = sfcb_native_new_CMPIString(n, NULL, 0);
 
    return rv; 
 }
@@ -309,7 +309,7 @@ static CMPIString *__oft_toString(const CMPIObjectPath * cop, CMPIStatus * rc)
 {
    char str[4096] = { 0 };
    sfcb_pathToChars(cop, rc, str);
-   return sfcb_native_new_CMPIString(str, rc);
+   return sfcb_native_new_CMPIString(str, rc, 0);
 }
 
 char *oft_toCharsNormalized(const CMPIObjectPath * cop, CMPIConstClass * cls,
@@ -670,9 +670,9 @@ UtilStringBuffer *normalizeObjectPathStrBuf(const CMPIObjectPath * cop)
    qsort(ids, c, sizeof(KeyIds), qCompare);
 
    for (i = 0; i < c; i++) {
-      if (pc) sb->ft->appendChars(sb,",");
+      if (pc) SFCB_APPENDCHARS_BLOCK(sb,",");
       sb->ft->appendChars(sb,(char*)ids[i].key->hdl);
-      sb->ft->appendChars(sb,"=");
+      SFCB_APPENDCHARS_BLOCK(sb,"=");
       if (ids[i].data.type==CMPI_ref) {
          CMPIString *cn=CMGetClassName(ids[i].data.value.ref,NULL);
 	 CMPIString *ns=CMGetNameSpace(ids[i].data.value.ref,NULL);
@@ -690,10 +690,10 @@ UtilStringBuffer *normalizeObjectPathStrBuf(const CMPIObjectPath * cop)
 	 }
 	 if (nss) {
 	   sb->ft->appendChars(sb,nss);
-	   sb->ft->appendChars(sb,":");
+	   SFCB_APPENDCHARS_BLOCK(sb,":");
 	 }
          sb->ft->appendChars(sb,(char*)cn->hdl);
-         sb->ft->appendChars(sb,".");
+         SFCB_APPENDCHARS_BLOCK(sb,".");
          sb->ft->appendChars(sb,sbt->ft->getCharPtr(sbt));
          sbt->ft->release(sbt);
       }

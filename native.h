@@ -66,7 +66,7 @@ typedef struct _NativeCMPIBrokerFT NativeCMPIBrokerFT;
 void sfcb_native_release_CMPIValue(CMPIType, CMPIValue * val);
 CMPIValue sfcb_native_clone_CMPIValue(CMPIType, const CMPIValue * val, CMPIStatus *);
 
-CMPIString *sfcb_native_new_CMPIString(const char *, CMPIStatus *);
+CMPIString *sfcb_native_new_CMPIString(const char *, CMPIStatus *, int reown);
 
 CMPIArray *internal_new_CMPIArray(int mode, CMPICount size, CMPIType type,
                                   CMPIStatus *);

@@ -226,7 +226,7 @@ static CMPIString *__dtft_getStringFormat(const CMPIDateTime * dt, CMPIStatus * 
    struct native_datetime *ndt = (struct native_datetime *) dt;
 
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
-   return sfcb_native_new_CMPIString(ndt->cimDt, rc);
+   return sfcb_native_new_CMPIString(ndt->cimDt, rc, 0);
 }
 
 static CMPIBoolean __dtft_isInterval(const CMPIDateTime * dt, CMPIStatus * rc)

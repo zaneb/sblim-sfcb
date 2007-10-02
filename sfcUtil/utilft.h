@@ -188,6 +188,8 @@ extern "C" {
 
    extern Util_Factory_FT *UtilFactory;
 
+#define SFCB_APPENDCHARS_BLOCK(sb,c) (sb)->ft->appendBlock((sb),c,sizeof(c)-1)
+
 
 #ifdef __cplusplus
 }

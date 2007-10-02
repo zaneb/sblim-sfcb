@@ -7,9 +7,17 @@ New features:
 
 Bugs fixed:
 - 1793223 Fixed cross-built ClProperty size mismatch
-- 1744540 Fixed createClass segfault in classProviderMem
+- 1764101 Fixed segfault in constClass::getPropQualifierAt()
+- 1685254 Fixed sfcb does not return REFERENCECLASS in GetClass
+- 1784913 Fixed change filter handling
+
+Changes in 1.2.4
+================
+
+Bugs fixed:
 - 1743692 Fixed sfcb does not return OBJECTPATHEs for associatorNames
 - 1745103 Fixed bad key property when addKey done with type CMPI_chars
+- 1744540 Fixed createClass segfault in classProviderMem
 - 1725493 Fixed 401 send twice
 - 1746771 Fixed Memory leak in classProviderGz.c - in gatherNameSpaces()
 - 1748392 Fixed associations in interop namespace might not work
@@ -19,14 +27,12 @@ Bugs fixed:
 - 1754811 Fixed sfcb misses refences/referenceNames call in certain upcalls
 - 1763178 Fixed GetClass operation failure
 - 1746659 Fixed SFCB segfaults when ai commands are issued simultaneously
-- 1764101 Fixed segfault in constClass::getPropQualifierAt()
-- 1685254 Fixed sfcb does not return REFERENCECLASS in GetClass
 - 1766770 Fixed sfcb segfaults when property list is specified w. references
 - 1780595 Fixed xml special chars are not escaped in error description
 - 1770841 Fixed one provider for multiple associations problem
-- 1784913 Fixed change filter handling
 - 1769471 Fixed multiple handlers do not work as expected
 - 1791690 Fixed segfault with local call in newCMPIString
+- 1805644 Enhanced HTTP adapter performance
 - 1759083 Fixed sfcb cannot handle the embeddedobject attribute
 
 Changes in 1.2.3

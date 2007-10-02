@@ -161,23 +161,28 @@ static CMPIInstance *__ift_clone(const CMPIInstance * instance, CMPIStatus * rc)
    return (CMPIInstance *) new;
 }
 
-
-CMPIData __ift_getPropertyAt(const CMPIInstance * ci, CMPICount i, CMPIString ** name,
-                             CMPIStatus * rc)
+CMPIData __ift_internal_getPropertyAt(const CMPIInstance * ci, CMPICount i, 
+				      char ** name,
+				      CMPIStatus * rc, int readonly)
 {
    ClInstance *inst = (ClInstance *) ci->hdl;
-   char *n;
    CMPIData rv = { 0, CMPI_notFound, {0} };
-   if (ClInstanceGetPropertyAt(inst, i, &rv, name ? &n : NULL, NULL)) {
+   if (ClInstanceGetPropertyAt(inst, i, &rv, name, NULL)) {
       if (rc)
          CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
       return rv;
    }
+
+   
    if (rv.type == CMPI_chars) {
-      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL);
+      rv.value.string = 
+	 sfcb_native_new_CMPIString(rv.value.chars, NULL, readonly ? 2 : 0);
       rv.type = CMPI_string;
-   }
-   else if (rv.type == CMPI_ref) {
+   } else if (readonly == 0 && rv.type == CMPI_string) {
+      /* Not read-only -  must make a managed copy */
+      rv.value.string = 
+	 sfcb_native_new_CMPIString(rv.value.string->hdl, NULL,0);
+   }  else if (rv.type == CMPI_ref) {
       char *msg;
       rv.value.ref = getObjectPath(
          (char*)ClObjectGetClString(&inst->hdr, (ClString*)&rv.value.chars), &msg);
@@ -187,12 +192,19 @@ CMPIData __ift_getPropertyAt(const CMPIInstance * ci, CMPICount i, CMPIString **
           native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &inst->hdr);
    }
 
-   if (name) {
-      *name = sfcb_native_new_CMPIString(n, NULL);
-      free(n);
-   }
    if (rc)
       CMSetStatus(rc, CMPI_RC_OK);
+   return rv;
+}
+
+CMPIData __ift_getPropertyAt(const CMPIInstance * ci, CMPICount i, CMPIString ** name,
+                             CMPIStatus * rc)
+{
+   char * sname;
+   CMPIData rv = __ift_internal_getPropertyAt(ci, i, &sname, rc, 0);
+   if (name) {
+      *name = sfcb_native_new_CMPIString(sname, NULL, 0);
+   }
    return rv;
 }
 
@@ -287,10 +299,10 @@ static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
    j = __ift_getPropertyCount(instance, NULL);
 
    while (j--) {
-      CMPIString *keyName;
-      CMPIData d = __ift_getPropertyAt(instance, j, &keyName, &tmp);
+      char *keyName;
+      CMPIData d = __ift_internal_getPropertyAt(instance, j, &keyName, &tmp, 1);
       if (d.state & CMPI_keyValue) {
-         CMAddKey(cop, CMGetCharsPtr(keyName, NULL), &d.value, d.type);
+         CMAddKey(cop, keyName, &d.value, d.type);
          f++;
       }
       if (d.type & CMPI_ARRAY && (d.state & CMPI_nullValue) == 0) {
@@ -348,7 +360,7 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
     CMPIInstance * newInstance;
     CMPIStatus st;
     CMPIData data;
-    CMPIString * name;
+    char * name;
     struct native_instance *i = (struct native_instance *) instance;
     struct native_instance *iNew,iTemp;
     
@@ -366,10 +378,10 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
         iNew->property_list = __duplicate_list(propertyList);
         iNew->key_list = __duplicate_list(keys);
         for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
-            data = __ift_getPropertyAt(instance, j, &name, &st);
-            if(__contained_list((char**)propertyList, name->hdl) || __contained_list((char**)keys, name->hdl)) {
+	   data = __ift_internal_getPropertyAt(instance, j, &name, &st, 1);
+            if(__contained_list((char**)propertyList, name) || __contained_list((char**)keys, name)) {
             //if(__contained_list((char**)propertyList, name->hdl)) {
-            newInstance->ft->setProperty(newInstance, name->hdl, &data.value, data.type);
+            newInstance->ft->setProperty(newInstance, name, &data.value, data.type);
             }
         }
         
@@ -464,7 +476,7 @@ CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc)
    CMPIData data;
    CMPIString *name, *ps, *rv;
    unsigned int i, m;
-   char *buf = NULL, *v;
+   char *buf = NULL, *v, *pname;
    unsigned int bp, bm;
 
    add(&buf, &bp, &bm, "Instance of ");
@@ -478,9 +490,9 @@ CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc)
    add(&buf, &bp, &bm, "\n");
 
    for (i = 0, m = __ift_getPropertyCount(inst, rc); i < m; i++) {
-      data = __ift_getPropertyAt(inst, i, &name, rc);
+      data = __ift_internal_getPropertyAt(inst, i, &pname, rc, 1);
       add(&buf, &bp, &bm, " ");
-      add(&buf, &bp, &bm, (char *) name->hdl);
+      add(&buf, &bp, &bm, pname);
       add(&buf, &bp, &bm, " = ");
       v = sfcb_value2Chars(data.type, &data.value);
       add(&buf, &bp, &bm, v);
@@ -488,8 +500,7 @@ CMPIString *instance2String(CMPIInstance * inst, CMPIStatus * rc)
       add(&buf, &bp, &bm, " ;\n");
    }
    add(&buf, &bp, &bm, "}\n");
-   rv = sfcb_native_new_CMPIString(buf, rc);
-   free(buf);
+   rv = sfcb_native_new_CMPIString(buf, rc, 1);
    return rv;
 }
 
@@ -733,9 +744,9 @@ UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props)
    for (i = 0, m = CMGetPropertyCount(ci, NULL); i < m; i++) {
       data = CMGetPropertyAt(ci, i, &name, NULL);
       sb->ft->appendChars(sb, (char*)name->hdl);
-      sb->ft->appendChars(sb, "=");
+      SFCB_APPENDCHARS_BLOCK(sb, "=");
       dataToString(data, sb);
-      sb->ft->appendChars(sb, "\n");
+      SFCB_APPENDCHARS_BLOCK(sb, "\n");
    }
    return sb;
 }

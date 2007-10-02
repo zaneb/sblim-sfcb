@@ -818,14 +818,14 @@ static int ClGetQualifierAt(ClClass * cls, ClQualifier *q, int id, CMPIData * da
    if (data->type== CMPI_chars) {
       const char *str =
           ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
       data->type = CMPI_string;
    }
    else if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&cls->hdr,
             (ClArray *) & data->value.array);
    }
-   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(q + id)->id));
+   if (name) *name = (char*)ClObjectGetClString(&cls->hdr, &(q + id)->id);
    return 0;
 }
 
@@ -1600,12 +1600,12 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    if (id < 0 || id > cls->properties.used)
       return 1;
    if (data) *data = (p + id)->data;
-   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(p + id)->id));
+   if (name) *name = (char*)ClObjectGetClString(&cls->hdr, &(p + id)->id);
    if (quals) *quals = (p + id)->quals;
    if (refName) {
       rName = (char*)ClObjectGetClString(&cls->hdr, &(p + id)->refName);
       if(rName) {
-         *refName = strdup(rName);
+         *refName = rName;
       } else {
          *refName = NULL;
       }
@@ -1621,7 +1621,7 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    else if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
       data->type = CMPI_string;
    }
    else if (data->type == CMPI_dateTime) {
@@ -1687,7 +1687,7 @@ int ClClassGetMethodAt(ClClass * cls, int id, CMPIType * data, char **name,
    m = (ClMethod *) ClObjectGetClSection(&cls->hdr, &cls->methods);
    if (id < 0 || id > cls->methods.used) return 1;
    if (data) *data = (m + id)->type;
-   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(m + id)->id));
+   if (name) *name = (char*)ClObjectGetClString(&cls->hdr, &(m + id)->id);
    if (quals) *quals = (m + id)->quals;
    return 0;
 }
@@ -1722,7 +1722,7 @@ int ClClassGetMethParameterAt(ClClass * cls, ClMethod *m, int pid, CMPIParameter
            parm->refName = (char*) ClObjectGetClString(&cls->hdr, (ClString*)&parm->refName);
        }
    }
-   if (name) *name = strdup(ClObjectGetClString(&cls->hdr, &(p + pid)->id));
+   if (name) *name = (char*)ClObjectGetClString(&cls->hdr, &(p + pid)->id);
    return 0;
 }
 
@@ -1877,12 +1877,12 @@ int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
    if (id < 0 || id > inst->properties.used)
       _SFCB_RETURN(1);
    if (data) *data = (p + id)->data;
-   if (name) *name = strdup(ClObjectGetClString(&inst->hdr, &(p + id)->id));
+   if (name) *name = (char*)ClObjectGetClString(&inst->hdr, &(p + id)->id);
    if (quals) *quals = (p + id)->quals;
    if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&inst->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL, 2);
       data->type = CMPI_string;
    }
    if (data->type == CMPI_dateTime) {
@@ -2077,7 +2077,7 @@ int ClObjectPathGetKeyAt(ClObjectPath * op, int id, CMPIData * data,
    if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
       data->type = CMPI_string;
    }
    else if (data->type == CMPI_dateTime) {
@@ -2238,10 +2238,10 @@ int ClArgsGetArgAt(ClArgs * arg, int id, CMPIData * data, char **name)
    if (id < 0 || id > arg->properties.used)
       return 1;
    if (data) *data = (p + id)->data;
-   if (name) *name = strdup(ClObjectGetClString(&arg->hdr, &(p + id)->id));
+   if (name) *name = ClObjectGetClString(&arg->hdr, &(p + id)->id);
    if (data->type == CMPI_chars) {
       const char *str = ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
       data->type = CMPI_string;
    }
    if (data->type == CMPI_dateTime) {
@@ -2368,7 +2368,7 @@ static int ClGetQualifierFromQualifierDeclaration(ClQualifierDeclaration * q, Cl
    if (data->type == CMPI_chars) {
       const char *str =
           ClObjectGetClString(&q->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL);
+      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
       data->type = CMPI_string;
    }
    else if (data->type & CMPI_ARRAY) {

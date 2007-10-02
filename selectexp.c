@@ -84,7 +84,7 @@ CMPIBoolean __eft_evaluate(const CMPISelectExp * exp,
 CMPIString *__eft_getString(const CMPISelectExp * exp, CMPIStatus * rc)
 {
    NativeSelectExp *e = (NativeSelectExp *) exp;
-   return sfcb_native_new_CMPIString(e->queryString,rc);
+   return sfcb_native_new_CMPIString(e->queryString,rc,0);
 }
 
 

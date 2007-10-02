@@ -162,7 +162,7 @@ static void buildStatus(BinResponseHdr *resp, CMPIStatus *st)
    if (st==NULL) return;
    st->rc=resp->rc;
    if (resp->rc && resp->count==1 &&  resp->object[0].type==MSG_SEG_CHARS && resp->object[0].length) {
-      st->msg=sfcb_native_new_CMPIString((char*)resp->object[0].data,NULL);
+     st->msg=sfcb_native_new_CMPIString((char*)resp->object[0].data,NULL, 0);
    }
    else st->msg=NULL;   
 }
@@ -208,7 +208,7 @@ static CMPIStatus setErrorStatus(int code)
       msg = m;
    }
    st.rc = code;
-   st.msg = sfcb_native_new_CMPIString(msg, NULL);
+   st.msg = sfcb_native_new_CMPIString(msg, NULL, 0);
    return st;
 }
 

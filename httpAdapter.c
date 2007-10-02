@@ -387,7 +387,7 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
             if (sb == NULL)
                ls[i] = 0;
             else
-               len += ls[i] = strlen(sb->ft->getCharPtr(sb));
+               len += ls[i] = sb->ft->getSize(sb);
          }
          else
             len += ls[i] = strlen(rs.segments[i].txt);
@@ -499,7 +499,7 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
             if (rs.segments[i].mode == 2) {
                UtilStringBuffer *sb = (UtilStringBuffer *) rs.segments[i].txt;
                if (sb == NULL) ls[i] = 0;
-               else len += ls[i] = strlen(sb->ft->getCharPtr(sb));
+               else len += ls[i] = sb->ft->getSize(sb);
             }
             else len += ls[i] = strlen(rs.segments[i].txt);
          }

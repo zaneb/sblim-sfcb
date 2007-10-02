@@ -44,7 +44,6 @@
 extern CMPIInstance *relocateSerializedInstance(void *area);
 extern char *sfcb_value2Chars(CMPIType type, CMPIValue * value);
 extern CMPIObjectPath *getObjectPath(char *path, char **msg);
-extern CMPIString *sfcb_native_new_CMPIString(const char *ptr, CMPIStatus * rc);
 
 
 extern void closeProviderContext(BinRequestContext* ctx);
@@ -106,7 +105,7 @@ static CMPIContext* prepareUpcall(CMPIContext *ctx)
     CMPIContext *ctxLocal;
     ctxLocal = native_clone_CMPIContext(ctx);
     CMPIValue val;
-    val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL);
+    val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
     ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
     return ctxLocal;
 }
@@ -809,7 +808,7 @@ CMPIStatus InteropProviderCreateInstance(
       if(sns == NULL || sns->hdl == NULL) {
       	  /* if sourcenamespace is NULL, the namespace of the filter
       	   * registration is assumed */
-          sns = sfcb_native_new_CMPIString("root/interop", NULL);
+	sns = sfcb_native_new_CMPIString("root/interop", NULL,0);
           valSNS.string = sns;
           ciLocal->ft->setProperty(ciLocal, "SourceNamespace", &valSNS,
                                    CMPI_string);

@@ -1,3 +1,13 @@
+2007-10-02  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-67.boeblingen.de.ibm.com>
+
+	* args.c,array.c,brokerEnc.c,brokerUpc.c,cimXmlGen.c,cimXmlGen.h,
+	cimXmlRequest.c,constClass.c,context.c,datetime.c,httpAdapter.c,
+	instance.c,internalProvider.c,Status:,interopProvider.c,native.h,
+	objectImpl.c,objectpath.c,predicate.c,qualifier.c,qualifierProvider.c,
+	selectexp.c,string.c,support.c,utilft.h:
+	Fixed 1805644: HTTP Adapter Performance Improvements. Avoid useless
+	string length measurements and double copies.
+
 2007-10-02  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlGen.c, cimXmlParser.c:

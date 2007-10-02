@@ -49,6 +49,6 @@ extern int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
 extern int qualiEnum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb);
 extern CMPIValue union2CMPIValue(CMPIType type, char *val, XtokValueArray *arr);
 extern int qualifierDeclaration2xml(CMPIQualifierDecl * q, UtilStringBuffer * sb);
-extern char *XMLEscape(char *in);
+extern char *XMLEscape(char *in, int *outlen);
 
 #endif

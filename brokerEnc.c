@@ -70,7 +70,7 @@ static CMPIString *__beft_newString(const CMPIBroker * broker,
                                     const char *str, CMPIStatus * rc)
 {
    _SFCB_ENTER(TRACE_ENCCALLS,"newString");
-   CMPIString *s=sfcb_native_new_CMPIString(str, rc);
+   CMPIString *s=sfcb_native_new_CMPIString(str, rc, 0);
    _SFCB_RETURN(s);
 }
 

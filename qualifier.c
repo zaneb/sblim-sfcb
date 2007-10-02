@@ -55,7 +55,7 @@ static CMPIData getQualifierDeclData(CMPIQualifierDecl * cq, CMPIStatus * rc)
    }
    if (rv.type == CMPI_chars) {
       rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
-         (&q->hdr, (ClString *) & rv.value.chars), NULL);
+						   (&q->hdr, (ClString *) & rv.value.chars), NULL, 0);
       rv.type = CMPI_string;
    }
    if (rv.type & CMPI_ARRAY && rv.value.array) {

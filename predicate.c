@@ -76,13 +76,13 @@ static CMPIStatus __eft_getData(const CMPIPredicate* pred, CMPIType* type,
          else  if (o->rhod && o->rhod->type!=QL_PropertyName) 
             type=o->rhod->type;     
          if (opc) *opc=o->opr;
-         if (lhs) *lhs= sfcb_native_new_CMPIString(o->lhod->ft->toString(o->lhod),NULL);  
-         if (rhs) *rhs= sfcb_native_new_CMPIString(o->rhod->ft->toString(o->rhod),NULL);  
+         if (lhs) *lhs= sfcb_native_new_CMPIString(o->lhod->ft->toString(o->lhod),NULL, 0);  
+         if (rhs) *rhs= sfcb_native_new_CMPIString(o->rhod->ft->toString(o->rhod),NULL, 0);  
       }
       else {
          printf("--- NOT QL_bin\n");
          CMSetStatusWithString(&irc,CMPI_RC_ERR_FAILED,
-			       sfcb_native_new_CMPIString("Predicate has no a binary operator.", NULL));
+			       sfcb_native_new_CMPIString("Predicate has no a binary operator.", NULL, 0));
       }
    }   
    return irc;

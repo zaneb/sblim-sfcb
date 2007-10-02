@@ -33,7 +33,6 @@
 //#define DEB(x) x
 #define DEB(x)
 
-extern CMPIString *sfcb_native_new_CMPIString(const char *ptr, CMPIStatus * rc);
 extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc, ClObjectHdr * hdr);
 extern CMPIObjectPath *getObjectPath(char *path, char **msg);
 
@@ -69,7 +68,7 @@ static const char *getCharClassName(CMPIConstClass * cc)
 static CMPIString *getClassName(CMPIConstClass * cc, CMPIStatus * rc)
 {
    const char *cn=getCharClassName(cc);
-   return sfcb_native_new_CMPIString(cn, rc); 
+   return sfcb_native_new_CMPIString(cn, rc, 0); 
 }
 
 static const char *getCharSuperClassName(CMPIConstClass * cc)
@@ -83,7 +82,7 @@ static const char *getCharSuperClassName(CMPIConstClass * cc)
 static CMPIString *getSuperClassName(CMPIConstClass * cc, CMPIStatus * rc)
 {
    const char *cn=getCharSuperClassName(cc);
-   return sfcb_native_new_CMPIString(cn, rc); 
+   return sfcb_native_new_CMPIString(cn, rc, 0); 
 }
 
 CMPIBoolean isAbstract(CMPIConstClass * cc)
@@ -131,7 +130,7 @@ CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name
       return rv;
    }
    if (rv.type == CMPI_chars) {
-      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL);
+      rv.value.string = sfcb_native_new_CMPIString(rv.value.chars, NULL, 0);
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) { 
@@ -145,12 +144,10 @@ CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name
           native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &cls->hdr);
    }
    if (name) {
-      *name = sfcb_native_new_CMPIString(n, NULL);
-      free(n);
+      *name = sfcb_native_new_CMPIString(n, NULL, 0);
    }
    if (refName && rName) {
-      *refName = sfcb_native_new_CMPIString(rName, NULL);
-      free(rName);
+      *refName = sfcb_native_new_CMPIString(rName, NULL, 0);
    } else {
       if(refName) {
          *refName = NULL;
@@ -185,7 +182,7 @@ static CMPIData getQualifier(CMPIConstClass * cc, const char * name,
      if (strcasecmp(name,qname) == 0) {
        if (rv.type == CMPI_chars) {
 	 rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
-						      (&cls->hdr, (ClString *) & rv.value.chars), NULL);
+						      (&cls->hdr, (ClString *) & rv.value.chars), NULL, 0);
 	 rv.type = CMPI_string;
        }
        if (rv.type & CMPI_ARRAY && rv.value.array) {
@@ -212,7 +209,7 @@ static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** n
    }
    if (rv.type == CMPI_chars) {
       rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
-         (&cls->hdr, (ClString *) & rv.value.chars), NULL);
+						   (&cls->hdr, (ClString *) & rv.value.chars), NULL,0);
       rv.type = CMPI_string;
    }
    if (rv.type & CMPI_ARRAY && rv.value.array) {
@@ -220,8 +217,7 @@ static CMPIData getQualifierAt(CMPIConstClass * cc, CMPICount i, CMPIString ** n
          NULL, &cls->hdr);
    }
    if (name) {
-      *name = sfcb_native_new_CMPIString(n, NULL);
-      free(n);
+     *name = sfcb_native_new_CMPIString(n, NULL,0);
    }
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    return rv;
@@ -243,12 +239,12 @@ CMPIData internalGetPropQualAt (CMPIConstClass * cc, CMPICount p, CMPICount i,
    
    if (ClClassGetPropQualifierAt(cls, p, i, &rv, name ? &n : NULL)) {
    	  if (rc) CMSetStatus(rc, CMPI_RC_ERR_NOT_FOUND);
-      if (name) *name=sfcb_native_new_CMPIString(NULL, NULL);
+	  if (name) *name=sfcb_native_new_CMPIString(NULL, NULL, 0);
       return rv;
    }
    if (rv.type == CMPI_chars) {
       rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
-         (&cls->hdr, (ClString *) & rv.value.chars), NULL);
+						   (&cls->hdr, (ClString *) & rv.value.chars), NULL,0);
       rv.type = CMPI_string;
    }
    if (rv.type & CMPI_ARRAY && rv.value.dataPtr.ptr ) {
@@ -256,8 +252,7 @@ CMPIData internalGetPropQualAt (CMPIConstClass * cc, CMPICount p, CMPICount i,
          NULL, &cls->hdr);
    }
    if (name) {
-      *name = sfcb_native_new_CMPIString(n, NULL);
-      free(n);
+     *name = sfcb_native_new_CMPIString(n, NULL, 0);
    }
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    return rv;
@@ -302,14 +297,11 @@ static CMPIData getPropQualifier(CMPIConstClass * cc, const char* cp, const char
      if (ClClassGetPropQualifierAt(cls, p-1, i, &rv, &n) == 0 && strcasecmp(cpq,n) == 0) {
        if (rv.type == CMPI_chars) {
 	 rv.value.string = sfcb_native_new_CMPIString(ClObjectGetClString
-						      (&cls->hdr, (ClString *) & rv.value.chars), NULL);
+						      (&cls->hdr, (ClString *) & rv.value.chars), NULL,0);
 	 rv.type = CMPI_string;
        } else if ((rv.type & CMPI_ARRAY) && rv.value.dataPtr.ptr ) {
 	 rv.value.array = native_make_CMPIArray((CMPIData *) rv.value.dataPtr.ptr, 
 						NULL, &cls->hdr);
-       }
-       if (n) {
-	 free(n);
        }
        if (rc) CMSetStatus(rc, CMPI_RC_OK);
        return rv;

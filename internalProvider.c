@@ -129,7 +129,7 @@ static int testNameSpace(char *ns, CMPIStatus *st)
     
     if (interOpProvInfoPtr==forceNoProvInfoPtr) {
        if (strcasecmp(ns,interopNs)==0) {
-          st->msg=sfcb_native_new_CMPIString("Interop namespace disabled",NULL);
+	 st->msg=sfcb_native_new_CMPIString("Interop namespace disabled",NULL,0);
           st->rc=CMPI_RC_ERR_FAILED;
           return 0;
        }   
@@ -431,7 +431,7 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    
    if (addBlob(bnss,cns,key,blob,(int)len)) {
       CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
-      st.msg=sfcb_native_new_CMPIString("Unable to write to repository",NULL);
+      st.msg=sfcb_native_new_CMPIString("Unable to write to repository",NULL,0);
       return st;
    }
    free(blob);

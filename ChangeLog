@@ -1,3 +1,8 @@
+2007-10-02  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlGen.c, cimXmlParser.c:
+	Fixed 1759083: sfcb cannot handle the embeddedobject attribute
+
 2007-09-27  Viktor Mihajlovski  <mihajlov@dyn-9-152-210-67.boeblingen.de.ibm.com>
 
 	* cimcClientSfcbLocal.h: 

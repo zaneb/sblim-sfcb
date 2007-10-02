@@ -600,9 +600,10 @@ static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
    static XmlElement elm[] = {
       {"NAME"},
       {"PARAMTYPE"},
+      {"EmbeddedObject"},
       {NULL}
    };
-   XmlAttr attr[2];
+   XmlAttr attr[3];
    int i, m;
 
    memset(attr, 0, sizeof(attr));
@@ -620,8 +621,16 @@ static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
             if (lvalp->xtokParamValue.type==0) {
                if (strcasecmp(attr[1].attr, "reference") == 0) 
                   lvalp->xtokParamValue.type = CMPI_ref;
-            }   
-         }   
+            }
+         }
+         if (attr[2].attr) {
+            if(strcasecmp(attr[2].attr, "instance") == 0
+               || strcasecmp(attr[2].attr, "object") == 0) {
+               lvalp->xtokParamValue.type = CMPI_instance;
+            } else {
+               Throw(NULL, "Invalid value for attribute EmbeddedObject");
+            }
+         }
          return XTOK_PARAMVALUE;
       }
    }
@@ -1092,9 +1101,10 @@ static int procProperty(YYSTYPE * lvalp, ParserControl * parm)
    {"TYPE"},
    {"CLASSORIGIN"},
    {"PROPAGATED"},
+   {"EmbeddedObject"},
    {NULL}
    };
-   XmlAttr attr[4];
+   XmlAttr attr[5];
    int i, m;
 
    memset(attr, 0, sizeof(attr));
@@ -1115,6 +1125,14 @@ static int procProperty(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokProperty.classOrigin = attr[2].attr;
          if (attr[3].attr)
             lvalp->xtokProperty.propagated = !strcasecmp(attr[3].attr, "true");
+         if (attr[4].attr) {
+            if(strcasecmp(attr[4].attr, "instance") == 0
+               || strcasecmp(attr[4].attr, "object") == 0) {
+               lvalp->xtokParamValue.type = CMPI_instance;
+            } else {
+               Throw(NULL, "Invalid value for attribute EmbeddedObject");
+            }
+         }
          return XTOK_PROPERTY;
       }
    }
@@ -1128,9 +1146,10 @@ static int procPropertyArray(YYSTYPE * lvalp, ParserControl * parm)
    {"CLASSORIGIN"},
    {"PROPAGATED"},
    {"ARRAYSIZE"},
+   {"EmbeddedObject"},
    {NULL}
    };
-   XmlAttr attr[5];
+   XmlAttr attr[6];
    int i,m;
 
    memset(attr, 0, sizeof(attr));
@@ -1149,7 +1168,15 @@ static int procPropertyArray(YYSTYPE * lvalp, ParserControl * parm)
          lvalp->xtokProperty.name = attr[0].attr;
          lvalp->xtokProperty.classOrigin = attr[2].attr;
          if (attr[3].attr)
-            lvalp->xtokProperty.propagated = !strcasecmp(attr[3].attr, "true");      	
+            lvalp->xtokProperty.propagated = !strcasecmp(attr[3].attr, "true");
+         if (attr[5].attr) {
+            if(strcasecmp(attr[5].attr, "instance") == 0
+               || strcasecmp(attr[5].attr, "object") == 0) {
+               lvalp->xtokParamValue.type = CMPI_instance;
+            } else {
+               Throw(NULL, "Invalid value for attribute EmbeddedObject");
+            }
+         }      	
          return XTOK_PROPERTYARRAY;
       }
    }

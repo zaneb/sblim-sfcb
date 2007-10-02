@@ -27,6 +27,7 @@ Bugs fixed:
 - 1784913 Fixed change filter handling
 - 1769471 Fixed multiple handlers do not work as expected
 - 1791690 Fixed segfault with local call in newCMPIString
+- 1759083 Fixed sfcb cannot handle the embeddedobject attribute
 
 Changes in 1.2.3
 ================

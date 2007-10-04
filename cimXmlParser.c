@@ -942,9 +942,10 @@ static int procXml(YYSTYPE * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = { {"version"},
    {"encoding"},
+   {"standalone"},
    {NULL}
    };
-   XmlAttr attr[2];
+   XmlAttr attr[3];
 
    memset(attr, 0, sizeof(attr));
    if (tagEquals(parm->xmb, "?xml")) {

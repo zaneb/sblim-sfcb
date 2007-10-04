@@ -33,6 +33,7 @@ Bugs fixed:
 - 1791690 Fixed segfault with local call in newCMPIString
 - 1805644 Enhanced HTTP adapter performance
 - 1759083 Fixed sfcb cannot handle the embeddedobject attribute
+- 1807363 Fixed sfcb reports an error for a valid xml declaration
 
 Changes in 1.2.3
 ================

@@ -1,5 +1,10 @@
 2007-10-02  Sven Schuetz <sven@de.ibm.com>
 
+	* cimXmlParser.c:
+	Fixed 1807363: sfcb reports an error for a valid xml declaration
+
+2007-10-02  Sven Schuetz <sven@de.ibm.com>
+
 	* objectpath.c:
 	Removed patch for bug 1751084
 

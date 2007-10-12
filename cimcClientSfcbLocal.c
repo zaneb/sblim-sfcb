@@ -296,7 +296,7 @@ static CMPIEnumeration * enumInstanceNames(
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -374,7 +374,7 @@ static CMPIEnumeration * enumInstances(
    sreq->hdr.count=pCount+2;
 
    sreq->objectPath = setObjectPathMsgSegment(cop);
-   sreq->principal = setCharsMsgSegment("principal");
+   sreq->principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq->hdr;
@@ -459,7 +459,7 @@ static CMPIInstance * getInstance(
    sreq->hdr.count=pCount+2;
 
    sreq->objectPath = setObjectPathMsgSegment(cop);
-   sreq->principal = setCharsMsgSegment("principal");
+   sreq->principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    for (i=0; i<pCount; i++)
       sreq->properties[i]=setCharsMsgSegment(properties[i]);
@@ -533,7 +533,7 @@ static CMPIObjectPath * createInstance(
 
    memset(&binCtx,0,sizeof(BinRequestContext));
                   
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.path = setObjectPathMsgSegment(cop);
    sreq.instance = setInstanceMsgSegment(inst);
 
@@ -617,7 +617,7 @@ static CMPIStatus modifyInstance(
 
    sreq->instance = setInstanceMsgSegment(inst);
    sreq->path = setObjectPathMsgSegment(cop);
-   sreq->principal = setCharsMsgSegment("principal");
+   sreq->principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq->hdr;
@@ -679,7 +679,7 @@ static CMPIStatus deleteInstance(
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -755,7 +755,7 @@ static CMPIEnumeration * execQuery(
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(path);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.query = setCharsMsgSegment(query);
    sreq.queryLang = setCharsMsgSegment(lang);
 
@@ -844,7 +844,7 @@ static CMPIEnumeration * associators(
    sreq->assocClass = setCharsMsgSegment(assocClass);
    sreq->resultRole = setCharsMsgSegment(resultRole);
    sreq->hdr.flags = flags;
-   sreq->principal = setCharsMsgSegment("principal");
+   sreq->principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    for (i=0; i<pCount; i++)
       sreq->properties[i]=setCharsMsgSegment(properties[i]);
@@ -936,7 +936,7 @@ static CMPIEnumeration * references(
    sreq->resultClass = setCharsMsgSegment(resultClass);
    sreq->role = setCharsMsgSegment(role);
    sreq->hdr.flags = flags;
-   sreq->principal = setCharsMsgSegment("principal");
+   sreq->principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    for (i=0; i<pCount; i++)
       sreq->properties[i]=setCharsMsgSegment(properties[i]);
@@ -1015,7 +1015,7 @@ static CMPIEnumeration * associatorNames(
    sreq.role = setCharsMsgSegment(role);
    sreq.assocClass = setCharsMsgSegment(assocClass);
    sreq.resultRole = setCharsMsgSegment(resultRole);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className = sreq.assocClass;
@@ -1084,7 +1084,7 @@ static CMPIEnumeration * referenceNames(
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.resultClass = setCharsMsgSegment(resultClass);
    sreq.role = setCharsMsgSegment(role);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    oHdr.className = sreq.resultClass;
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
@@ -1155,7 +1155,7 @@ static CMPIData invokeMethod(
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.in = setArgsMsgSegment(in);
    sreq.out = setArgsMsgSegment(NULL);
    sreq.method = setCharsMsgSegment(method);
@@ -1278,7 +1278,7 @@ static CMPIConstClass * getClass(
    sreq->hdr.count=pCount+2;
 
    sreq->objectPath = setObjectPathMsgSegment(cop);
-   sreq->principal = setCharsMsgSegment("principal");
+   sreq->principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
 
    for (i=0; i<pCount; i++)
       sreq->properties[i]=setCharsMsgSegment(properties[i]);
@@ -1346,7 +1346,7 @@ static CMPIEnumeration* enumClassNames(
    memset(&binCtx,0,sizeof(BinRequestContext));
    
    sreq.objectPath = setObjectPathMsgSegment(cop);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.hdr.flags = flags;
 
    binCtx.oHdr = (OperationHdr*) &oHdr;
@@ -1414,7 +1414,7 @@ static CMPIEnumeration * enumClasses(
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
-   sreq.principal = setCharsMsgSegment("principal");
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.hdr.flags = flags;
 
    binCtx.oHdr = (OperationHdr*)&oHdr;

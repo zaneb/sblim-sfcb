@@ -1,3 +1,8 @@
+2007-10-12  Sven Schuetz <sven@de.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	Fixed 1809458: sfcb local connect lib does not pass on principal info
+
 2007-10-02  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlParser.c:

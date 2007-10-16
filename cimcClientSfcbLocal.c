@@ -1549,6 +1549,7 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
   
    sfcbSockets.send=sfcbSocket;
    localMode=0;
+   close(sock);
    
    return sfcbSocket;
 }

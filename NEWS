@@ -11,6 +11,7 @@ Bugs fixed:
 - 1685254 Fixed sfcb does not return REFERENCECLASS in GetClass
 - 1784913 Fixed change filter handling
 - 1809458 Fixed sfcb local connect lib does not pass on principal info
+- 1814455 Fixed sfcb leaks fd's during local connect
 
 Changes in 1.2.4
 ================

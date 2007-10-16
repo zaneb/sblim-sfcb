@@ -1,3 +1,8 @@
+2007-10-16  Sven Schuetz <sven@de.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	Fixed 1814455: sfcb leaks fd's during local connect
+
 2007-10-12  Sven Schuetz <sven@de.ibm.com>
 
 	* cimcClientSfcbLocal.c:

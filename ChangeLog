@@ -1,5 +1,10 @@
 2007-10-16  Sven Schuetz <sven@de.ibm.com>
 
+	* cimXmlGen.c:
+	Fixed 1811090: sfcb memory corruption on property value with quote or apos
+
+2007-10-16  Sven Schuetz <sven@de.ibm.com>
+
 	* cimcClientSfcbLocal.c:
 	Fixed 1814455: sfcb leaks fd's during local connect
 

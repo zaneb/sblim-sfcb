@@ -12,6 +12,7 @@ Bugs fixed:
 - 1784913 Fixed change filter handling
 - 1809458 Fixed sfcb local connect lib does not pass on principal info
 - 1814455 Fixed sfcb leaks fd's during local connect
+- 1811090 Fixed sfcb memory corruption on property value with quote or apos
 
 Changes in 1.2.4
 ================

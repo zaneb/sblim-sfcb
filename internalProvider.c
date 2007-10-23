@@ -337,11 +337,13 @@ UtilList *SafeInternalProviderAddEnumInstances(UtilList *ul, CMPIInstanceMI * mi
    _SFCB_RETURN(ul);
 }
 
-UtilList *SafeInternalProviderEnumInstances(CMPIInstanceMI * mi, const CMPIContext * ctx, const CMPIObjectPath * ref,
-                                         const char **properties, CMPIStatus *rc, int ignprov)
+CMPIStatus SafeInternalProviderEnumInstances(CMPIInstanceMI * mi, const CMPIContext * ctx, const CMPIResult * rslt,
+                                         const CMPIObjectPath * ref, const char **properties, int ignprov)
 {
-   UtilList *ul= UtilFactory->newList();
-   return SafeInternalProviderAddEnumInstances(ul, mi, ctx, ref,properties,rc,ignprov);
+   CMPIStatus st;
+   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "SafeInternalProviderEnumInstances");
+   st=enumInstances(mi,ctx,(void*)rslt,ref,properties,return2result,ignprov);
+   _SFCB_RETURN(st);
 }
 
 CMPIInstance *internalProviderGetInstance(const CMPIObjectPath * cop, CMPIStatus *rc)

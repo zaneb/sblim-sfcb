@@ -86,11 +86,12 @@ CMPIStatus InternalProviderReferences(CMPIAssociationMI * mi,
                                       const CMPIObjectPath * cop,
                                       const char *assocClass,
                                       const char *role, const char **propertyList);                                                                                                                            
-extern UtilList *SafeInternalProviderEnumInstances(CMPIInstanceMI * mi,
-						   const CMPIContext * ctx, 
-						   const CMPIObjectPath * ref, 
-						   const char **properties, 
-						   CMPIStatus *st,int ignprov);
+CMPIStatus SafeInternalProviderEnumInstances(CMPIInstanceMI * mi,
+                                      const CMPIContext * ctx,
+                                      const CMPIResult * rslt,
+                                      const CMPIObjectPath * ref,
+                                      const char **properties,
+                                      int ignprov);
 extern char *internalProviderNormalizeObjectPath(const CMPIObjectPath *cop);
 
 #endif

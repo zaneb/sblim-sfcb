@@ -92,7 +92,7 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
 {
    CMPIStatus st;
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstances");
-   st=InternalProviderEnumInstances(NULL,ctx,rslt,ref,properties);
+   st=SafeInternalProviderEnumInstances(NULL,ctx,rslt,ref,properties,1);
    _SFCB_RETURN(st);
 }
 

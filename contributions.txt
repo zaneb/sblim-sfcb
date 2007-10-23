@@ -2,6 +2,20 @@ External Contributions to sfcb
 ******************************
 
 
+10/23/2007 by Rajib Saha, AMI
+-----------------------------
+--- cimcClientSfcbLocal.c	2007-10-10 20:36:41.000000000 +0200
++++ cimcClientSfcbLocal_new.c	2007-10-24 15:01:11.000000000 +0200
+@@ -828,8 +828,6 @@
+       for (p=properties; *p; p++) pCount++;
+    }
+    
+-   sreqSize+=pCount*sizeof(MsgSegment);
+-   sreq=calloc(1,sreqSize);
+    
+    memset(&binCtx,0,sizeof(BinRequestContext));
+
+
 10/16/2007 by Reddy Dasari, Dell
 --------------------------------
 Index: cimXmlGen.c
@@ -39,4 +53,3 @@ diff -purN sblim-sfcb-1.2.3.org/cimcClientSfcbLocal.c sblim-sfcb-1.2.3/cimcClien
 +
     return sfcbSocket;
  }
- 

@@ -1,3 +1,8 @@
+2007-10-23  Sven Schuetz <sven@de.ibm.com> (fix proposed by Rajib Saha)
+
+	* cimcClientSfcbLocal.c:
+	Fixed 1818578: sfcb local leaks memory during associator calls
+
 2007-10-23  Sven Schuetz <sven@de.ibm.com> (fix proposed by Zhen Gang Li)
 
 	* cimXmlGen.c:

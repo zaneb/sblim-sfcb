@@ -15,6 +15,7 @@ Bugs fixed:
 - 1811090 Fixed sfcb memory corruption on property value with quote or apos
 - 1817878 Fixed sfcb might not load indication providers at startup
 - 1818503 Fixed sfcb generates incorrect xml for embedded objects
+- 1818578 Fixed sfcb local leaks memory during associator calls
 
 Changes in 1.2.4
 ================

@@ -828,9 +828,6 @@ static CMPIEnumeration * associators(
       for (p=properties; *p; p++) pCount++;
    }
    
-   sreqSize+=pCount*sizeof(MsgSegment);
-   sreq=calloc(1,sreqSize);
-   
    memset(&binCtx,0,sizeof(BinRequestContext));
 
    if (pCount) sreqSize+=pCount*sizeof(MsgSegment);

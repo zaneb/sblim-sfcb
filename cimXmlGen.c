@@ -659,7 +659,7 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString *
       else if (*type == '%') {                  
 	 sb->ft->appendBlock(sb, bTag, bTagLen);
          sb->ft->appendChars(sb, (char *) name->hdl);
-         SFCB_APPENDCHARS_BLOCK(sb, "\" EmbeddedObject=\"object\"");
+         SFCB_APPENDCHARS_BLOCK(sb, "\" EmbeddedObject=\"object");
          if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"string\">\n");
          else SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"string\">\n");
          if(data->value.inst) {

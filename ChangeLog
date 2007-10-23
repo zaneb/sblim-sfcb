@@ -1,5 +1,10 @@
 2007-10-23  Sven Schuetz <sven@de.ibm.com>
 
+	* cimXmlGen.c:
+	Fixed 1818503: sfcb generates incorrect xml for embedded objects
+
+2007-10-23  Sven Schuetz <sven@de.ibm.com>
+
 	* indCIMXMLHandler.c, internalProvider.c, internalProvider.h:
 	Fixed 1817878: sfcb might not load indication providers at startup
 

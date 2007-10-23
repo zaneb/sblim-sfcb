@@ -1,4 +1,4 @@
-2007-10-23  Sven Schuetz <sven@de.ibm.com>
+2007-10-23  Sven Schuetz <sven@de.ibm.com> (fix proposed by Zhen Gang Li)
 
 	* cimXmlGen.c:
 	Fixed 1818503: sfcb generates incorrect xml for embedded objects
@@ -8,12 +8,12 @@
 	* indCIMXMLHandler.c, internalProvider.c, internalProvider.h:
 	Fixed 1817878: sfcb might not load indication providers at startup
 
-2007-10-16  Sven Schuetz <sven@de.ibm.com>
+2007-10-16  Sven Schuetz <sven@de.ibm.com> (fix proposed by Reddy Dasari)
 
 	* cimXmlGen.c:
 	Fixed 1811090: sfcb memory corruption on property value with quote or apos
 
-2007-10-16  Sven Schuetz <sven@de.ibm.com>
+2007-10-16  Sven Schuetz <sven@de.ibm.com> (fix proposed by Rajib Saha)
 
 	* cimcClientSfcbLocal.c:
 	Fixed 1814455: sfcb leaks fd's during local connect

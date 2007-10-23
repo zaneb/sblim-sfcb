@@ -1,0 +1,42 @@
+External Contributions to sfcb
+******************************
+
+
+10/16/2007 by Reddy Dasari, Dell
+--------------------------------
+Index: cimXmlGen.c
+===================================================================
+RCS file: /cvsroot/sblim/sfcb/cimXmlGen.c,v
+retrieving revision 1.51
+diff -u -r1.51 cimXmlGen.c
+--- cimXmlGen.c	2 Oct 2007 09:02:11 -0000	1.51
++++ cimXmlGen.c	16 Oct 2007 13:37:33 -0000
+@@ -71,7 +71,7 @@
+    if (in == NULL)
+       return (NULL);
+    l = strlen(in);
+-   out = (char *) malloc(l * 5);
++   out = (char *) malloc((l * 6) + 1);
+    o = 0;
+ 
+    for (i = 0; i < l; i++) {
+
+
+
+10/16/2007 by Rajib Saha, AMI
+-----------------------------
+diff -purN sblim-sfcb-1.2.3.org/cimcClientSfcbLocal.c sblim-sfcb-1.2.3/cimcClientSfcbLocal.c
+--- sblim-sfcb-1.2.3.org/cimcClientSfcbLocal.c	2007-08-22 15:11:37.000000000 +0000
++++ sblim-sfcb-1.2.3/cimcClientSfcbLocal.c	2007-08-22 15:17:22.000000000 +0000
+@@ -1549,7 +1549,10 @@ int localConnect(ClientEnv* ce, CMPIStat
+   
+    sfcbSockets.send=sfcbSocket;
+    localMode=0;
+-   
++  
++   /** added to remove fd leak **/
++   close(sock);	 
++
+    return sfcbSocket;
+ }
+ 

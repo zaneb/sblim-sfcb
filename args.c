@@ -51,7 +51,8 @@ extern CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
                                         ClObjectHdr * hdr);
 extern CMPIObjectPath *getObjectPath(char *path, char **msg);
 extern const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id);
-
+extern CMPIArray *internal_native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
+                                 ClObjectHdr * hdr, int mode);
 static struct native_args *__new_empty_args(int, CMPIStatus *);
 MsgSegment setArgsMsgSegment(CMPIArgs * args);
 
@@ -142,7 +143,7 @@ static CMPIData __aft_getArgAt(const CMPIArgs * args,
    }
    else if (rv.type & CMPI_ARRAY && rv.value.array) {
       rv.value.array =
-          native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &ca->hdr);
+          internal_native_make_CMPIArray((CMPIData *) rv.value.array, NULL, &ca->hdr, MEM_TRACKED);
    }
    if (name) {
       *name = sfcb_native_new_CMPIString(n, NULL, 0);

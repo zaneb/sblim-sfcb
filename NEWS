@@ -16,6 +16,7 @@ Bugs fixed:
 - 1817878 Fixed sfcb might not load indication providers at startup
 - 1818503 Fixed sfcb generates incorrect xml for embedded objects
 - 1818578 Fixed sfcb local leaks memory during associator calls
+- 1816606 Fixed sfcb problem with propertylist in modifyInstance
 
 Changes in 1.2.4
 ================

@@ -76,15 +76,14 @@ static int cpy2lower(char *in, char *out)
 
 static CMPIInstance *instifyBlob(void * blob) {
 	CMPIInstance *inst;
+    int id;
 	
 	if (blob==NULL) {
 		return NULL;
 	}   
 	else {
 		inst=relocateSerializedInstance(blob);
-		inst = inst->ft->clone(inst, NULL);	
-		memLinkInstance(inst);
-		free(blob);
+        memAdd(blob, &id);
 		return inst;
 	}	
 }
@@ -265,6 +264,7 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
    CMPIObjectPath *op;
    CMPIArray *ar;
    CMPIData rv;
+   const char **keyList;
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "enumInstances");
    _SFCB_TRACE(1,("--- %s %s",nss,cns));
@@ -288,7 +288,11 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
       if ((bi=_getIndex(bnss,cns))!=NULL) {
 	for (ci=ipGetFirst(bi,&len,NULL,0); ci; ci=ipGetNext(bi,&len,NULL,0)) {
             if(properties) {
-               ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
+               keyList = getKeyList(ci->ft->getObjectPath(ci, NULL));
+               ci->ft->setPropertyFilter(ci, properties, keyList);
+               if(keyList) {
+                  free(keyList);
+               }
             }
             _SFCB_TRACE(1,("--- returning instance %p",ci));
             retFnc(rslt,ci);
@@ -385,12 +389,17 @@ CMPIStatus InternalProviderGetInstance(CMPIInstanceMI * mi,
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIInstance *ci;
+   const char ** keyList;
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderGetInstance");
    
    ci=internalProviderGetInstance(cop,&st);
    if(st.rc==CMPI_RC_OK && properties) {
-      ci->ft->setPropertyFilter(ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
+      keyList = getKeyList(ci->ft->getObjectPath(ci, NULL));
+      ci->ft->setPropertyFilter(ci, properties, keyList);
+      if(keyList) {
+         free(keyList);
+      }
    }
    
    if (st.rc==CMPI_RC_OK) {
@@ -459,6 +468,7 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
    char *nss=ns->ft->getCharPtr(ns,NULL);
    char *cns=cn->ft->getCharPtr(cn,NULL);
    char *bnss=repositoryNs(nss);
+   const char **keyList;
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderSetInstance");
    
@@ -472,7 +482,11 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
    }
    
    if(properties) {
-     ci->ft->setPropertyFilter((CMPIInstance*)ci, properties, getKeyList(ci->ft->getObjectPath(ci, NULL)));
+     keyList = getKeyList(ci->ft->getObjectPath(ci, NULL));
+     ci->ft->setPropertyFilter((CMPIInstance*)ci, properties, keyList);
+     if(keyList) {
+        free(keyList);
+     }
    }   
 
    len=getInstanceSerializedSize(ci);

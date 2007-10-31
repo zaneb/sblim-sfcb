@@ -370,28 +370,38 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
     }
 
     cop = TrackedCMPIObjectPath(instGetNameSpace(instance), instGetClassName(instance), NULL);
-    //cop = instance->ft->getObjectPath(instance, NULL);
     if(cop) {
-        newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);
+        if(i->mem_state == MEM_RELEASED || i->mem_state > 0) {
+            newInstance = internal_new_CMPIInstance(MEM_TRACKED, cop, &st, 1);
+        } else {
+            newInstance = internal_new_CMPIInstance(MEM_NOT_TRACKED, cop, &st, 1);
+        }
         iNew = (struct native_instance *) newInstance;
         iNew->filtered = 1;
         iNew->property_list = __duplicate_list(propertyList);
         iNew->key_list = __duplicate_list(keys);
         for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
-	   data = __ift_internal_getPropertyAt(instance, j, &name, &st, 1);
+	    data = __ift_internal_getPropertyAt(instance, j, &name, &st, 1);
             if(__contained_list((char**)propertyList, name) || __contained_list((char**)keys, name)) {
-            //if(__contained_list((char**)propertyList, name->hdl)) {
             newInstance->ft->setProperty(newInstance, name, &data.value, data.type);
             }
         }
         
-        memcpy(&iTemp, i, sizeof(struct native_instance));
-        memcpy(i, iNew, sizeof(struct native_instance));
-        i->mem_state = iTemp.mem_state;
-        i->refCount = iTemp.refCount;
-        memcpy(iNew, &iTemp, sizeof(struct native_instance));
-        iNew->mem_state = MEM_NOT_TRACKED;
-        newInstance->ft->release(newInstance);
+        if(i->mem_state == MEM_RELEASED) {
+            memcpy(i, iNew, sizeof(struct native_instance));
+        }
+        else {
+            memcpy(&iTemp, i, sizeof(struct native_instance));
+            memcpy(i, iNew, sizeof(struct native_instance));
+            i->refCount = iTemp.refCount;
+            memcpy(iNew, &iTemp, sizeof(struct native_instance));
+            if(iNew->mem_state > 0) {
+                iNew->mem_state = i->mem_state;
+                i->mem_state = iTemp.mem_state;
+            } else {
+                newInstance->ft->release(newInstance);
+            }
+        }
     }
     
     CMReturn(CMPI_RC_OK);

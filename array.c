@@ -343,11 +343,13 @@ CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc)
    return (CMPIArray *) array;
 }
 
-CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
-                                 ClObjectHdr * hdr)
+
+
+CMPIArray *internal_native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
+                                 ClObjectHdr * hdr, int mode)
 {
    void *array =
-       __new_empty_array(MEM_NOT_TRACKED, av->value.sint32, av->type, rc);
+       __new_empty_array(mode, av->value.sint32, av->type, rc);
    int i, m;
    CMPIValue value;
 
@@ -379,6 +381,12 @@ CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
 	  }
       }           
    return (CMPIArray *) array;
+}
+
+CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
+                                 ClObjectHdr * hdr)
+{
+    return internal_native_make_CMPIArray(av, rc, hdr, MEM_NOT_TRACKED);
 }
 
 CMPIStatus sfcb_simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type)

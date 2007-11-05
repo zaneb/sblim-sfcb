@@ -74,7 +74,7 @@ static CMPI_THREAD_TYPE newThread
       pthread_create(&t, NULL, (void *(*)(void *)) start, parm);
    return (CMPI_THREAD_TYPE) t;
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -84,7 +84,7 @@ static int threadOnce(int *once, void (*init) (void))
    return pthread_once(once, init);
 
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -96,7 +96,7 @@ static int createThreadKey(CMPI_THREAD_KEY_TYPE * key, void (*cleanup) (void *))
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    return pthread_key_create((pthread_key_t *) key, cleanup);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -105,7 +105,7 @@ static int destroyThreadKey(CMPI_THREAD_KEY_TYPE key)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    return pthread_key_delete(key);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -114,7 +114,7 @@ static void *getThreadSpecific(CMPI_THREAD_KEY_TYPE key)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    return pthread_getspecific(key);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -123,7 +123,7 @@ static int setThreadSpecific(CMPI_THREAD_KEY_TYPE key, void *value)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    return pthread_setspecific(key, value);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -137,7 +137,7 @@ static CMPI_MUTEX_TYPE newMutex(int opt)
    *m = tmpl;
    return m;
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -146,7 +146,7 @@ static void destroyMutex(CMPI_MUTEX_TYPE m)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    free(m);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -155,7 +155,7 @@ static void lockMutex(CMPI_MUTEX_TYPE m)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    pthread_mutex_lock((pthread_mutex_t *) m);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -164,7 +164,7 @@ static void unlockMutex(CMPI_MUTEX_TYPE m)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    pthread_mutex_unlock((pthread_mutex_t *) m);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -178,7 +178,7 @@ static CMPI_COND_TYPE newCondition(int opt)
    *c = tmpl;
    return c;
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -187,7 +187,7 @@ static void destroyCondition(CMPI_COND_TYPE c)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    free(c);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -198,7 +198,7 @@ static int timedCondWait(CMPI_COND_TYPE c, CMPI_MUTEX_TYPE m,
    return pthread_cond_timedwait((pthread_cond_t *) c,
                                  (pthread_mutex_t *) m, wait);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 
@@ -207,7 +207,7 @@ static int condWait(CMPI_COND_TYPE c, CMPI_MUTEX_TYPE m)
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    return pthread_cond_wait((pthread_cond_t *) c, (pthread_mutex_t *) m);
 #else
-#error Platform no yet supported
+#error Platform not yet supported
 #endif
 }
 

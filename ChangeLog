@@ -1,3 +1,8 @@
+2007-11-05  Sven Schuetz <sven@de.ibm.com> (patch submitted by Tim Potter)
+
+	* brokerOs.c:
+	Fixed 1826149: bad spelling in brokerOs.c
+
 2007-11-05  Sven Schuetz <sven@de.ibm.com>
 
 	* value.c:

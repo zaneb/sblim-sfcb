@@ -1,3 +1,8 @@
+2007-11-05  Sven Schuetz <sven@de.ibm.com>
+
+	* value.c:
+	Fixed 1823565: alignment problem during clone
+
 2007-10-31  Sven Schuetz <sven@de.ibm.com>
 	* args.c, array.c, instance.c, internalProvider.c:
 	Fixed 1816606: problem with propertylist in modifyInstance

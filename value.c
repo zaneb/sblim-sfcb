@@ -148,7 +148,7 @@ CMPIValue sfcb_native_clone_CMPIValue(const CMPIType type,
    }
    else {
 
-      v = *val;
+      sfcb_setAlignedValue(&v, val, type);
       CMSetStatus(rc, CMPI_RC_OK);
    }
 

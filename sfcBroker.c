@@ -532,7 +532,7 @@ int main(int argc, char *argv[])
    int c, i;
    long tmask = 0, sslMode=0,sslOMode=0, tracelevel=0;
    char * tracefile = NULL;
-   int enableHttp=0,enableHttps=0,useChunking=0,doBa=0,enableInterOp=0;
+   int enableHttp=0,enableHttps=0,useChunking=0,doBa=0,enableInterOp=0,httpLocalOnly=0;
    long dSockets,sSockets,pSockets;
    char *pauseStr;
 
@@ -682,6 +682,11 @@ int main(int argc, char *argv[])
       sSockets = 10;
    if (getControlNum("provProcs", (long*)&pSockets))
       pSockets = 16;
+
+   if (getControlBool("httpLocalOnly", &httpLocalOnly))
+      httpLocalOnly=0;   
+   if (httpLocalOnly)
+      mlogf(M_INFO,M_SHOW,"--- External HTTP connections disabled; using loopback only\n");
 
    if (getControlNum("providerSampleInterval", (long*)&provSampleInterval))
       provSampleInterval = 30;

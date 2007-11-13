@@ -65,6 +65,7 @@ static int doBa;
 static int doFork = 0;
 int noChunking = 0;
 int sfcbSSLMode = 0;
+int httpLocalOnly = 0;  /* 1 = only listen on loopback interface */
 static int hBase;
 static int hMax;
 static int httpProcIdX;
@@ -1388,19 +1389,28 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
    bzero(&sin, sin_len);
 
+   if (getControlBool("httpLocalOnly", &httpLocalOnly))
+      httpLocalOnly=0;
+
 #ifdef USE_INET6
    sin.sin6_family = AF_INET6;
-   sin.sin6_addr = in6addr_any;
+   if (httpLocalOnly)
+     sin.sin6_addr = in6addr_loopback;
+   else
+     sin.sin6_addr = in6addr_any;
    sin.sin6_port = htons(port);
 #else
    sin.sin_family = AF_INET;
-   sin.sin_addr.s_addr = INADDR_ANY;
+   if (httpLocalOnly)
+     sin.sin_addr.s_addr = inet_aton('127.0.0.1'); /* not INADDR_LOOPBACK ? */
+   else
+     sin.sin_addr.s_addr = INADDR_ANY;
    sin.sin_port = htons(port);
 #endif 
 
    if (bind(listenFd, (struct sockaddr *) &sin, sin_len) ||
        listen(listenFd, 0)) {
-      mlogf(M_ERROR,M_SHOW,"--- Cannot listen on port %ld\n", port);
+      mlogf(M_ERROR,M_SHOW,"--- Cannot listen on port %ld (%s)\n", port, strerror(errno));
       sleep(1);
       kill(sfcbPid,3);
    }

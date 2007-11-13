@@ -19,6 +19,7 @@ Bugs fixed:
 - 1816606 Fixed sfcb problem with propertylist in modifyInstance
 - 1823565 Fixed sfcb alignment problem during clone
 - 1826149 Fixed sfcb bad spelling in brokerOs.c
+- 1830770 Fixed disallow external http connections
 
 Changes in 1.2.4
 ================

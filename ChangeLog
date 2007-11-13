@@ -1,3 +1,8 @@
+2007-11-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c, httpAdapter.c, sfcBroker.c
+	Fixed 1830770: Disallow external http connections (see README)
+
 2007-11-05  Sven Schuetz <sven@de.ibm.com> (patch submitted by Tim Potter)
 
 	* brokerOs.c:

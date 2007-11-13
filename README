@@ -476,6 +476,10 @@ httpsPort
 
 enableHttps
 	sfcb should/not accept HTTPS client connections. Default=false.
+
+httpLocalOnly
+	sfcb should only allow HTTP connections from local interface
+        (127.0.0.1 or ::1).  Default=false
 	
 httpsProcs
 	Maximum number of simultaneous HTTPS client connections before

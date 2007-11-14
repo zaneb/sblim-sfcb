@@ -1,3 +1,10 @@
+2007-11-14  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
+
+	* httpAdapter.c: 
+	Fixed 1831794: unfinished SSL handshake blocks HTTP adapter
+	A 5 second timeout for the SSL handshake has been implemented.
+
+
 2007-11-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c, httpAdapter.c, sfcBroker.c

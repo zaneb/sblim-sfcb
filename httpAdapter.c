@@ -1079,12 +1079,46 @@ static void handleHttpRequest(int connFd)
       if (sfcbSSLMode) {
 #if defined USE_SSL
 	BIO *sslb;
-	BIO *sb=BIO_new_socket(connFd,BIO_NOCLOSE);
+	BIO *sb;
+	long flags = fcntl(connFd,F_GETFL);
+	flags |= O_NONBLOCK;
+	fcntl(connFd,F_SETFL,flags);
+	sb=BIO_new_socket(connFd,BIO_NOCLOSE);
 	if (!(conn_fd.ssl = SSL_new(ctx)))
 	  intSSLerror("Error creating SSL object");
 	SSL_set_bio(conn_fd.ssl, sb, sb);
-	if (SSL_accept(conn_fd.ssl) <= 0)
-	  intSSLerror("Error accepting SSL connection");
+	while(1) {
+	  int sslacc, sslerr;
+	  sslacc = SSL_accept(conn_fd.ssl);
+	  if (sslacc == 1) {
+	    /* accepted */
+	    break;
+	  }
+	  sslerr = SSL_get_error(conn_fd.ssl,sslacc);
+	  if (sslerr == SSL_ERROR_WANT_WRITE || 
+	      sslerr == SSL_ERROR_WANT_READ) {
+	    /* still in handshake */
+	    FD_ZERO(&httpfds);
+	    FD_SET(connFd,&httpfds);
+	    httpTimeout.tv_sec=5;
+	    httpTimeout.tv_usec=0;
+	    if (sslerr == SSL_ERROR_WANT_WRITE) {
+	      isReady = select(connFd+1,NULL,&httpfds,NULL,&httpTimeout);
+	    } else {
+	      isReady = select(connFd+1,&httpfds,NULL,NULL,&httpTimeout);
+	    }
+	    if (isReady == 0) {
+	      intSSLerror("Timeout error accepting SSL connection");
+	    } else if (isReady < 0) {
+	      intSSLerror("Error accepting SSL connection");
+	    }
+	  } else {
+	    /* unexpected error */
+	    intSSLerror("Error accepting SSL connection");
+	  } 
+	}
+	flags ^= O_NONBLOCK;
+	fcntl(connFd,F_SETFL,flags);
 	sslb = BIO_new(BIO_f_ssl());
 	BIO_set_ssl(sslb,conn_fd.ssl,BIO_CLOSE);
 	conn_fd.bio=BIO_new(BIO_f_buffer());
@@ -1205,12 +1239,46 @@ static void handleHttpRequest(int connFd)
       if (sfcbSSLMode) {
 #if defined USE_SSL
 	BIO *sslb;
-	BIO *sb=BIO_new_socket(connFd,BIO_NOCLOSE);
+	BIO *sb;
+	long flags = fcntl(connFd,F_GETFL);
+	flags |= O_NONBLOCK;
+	fcntl(connFd,F_SETFL,flags);
+	sb=BIO_new_socket(connFd,BIO_NOCLOSE);
 	if (!(conn_fd.ssl = SSL_new(ctx)))
 	  intSSLerror("Error creating SSL object");
 	SSL_set_bio(conn_fd.ssl, sb, sb);
-	if (SSL_accept(conn_fd.ssl) <= 0)
-	  intSSLerror("Error accepting SSL connection");
+	while(1) {
+	  int sslacc, sslerr;
+	  sslacc = SSL_accept(conn_fd.ssl);
+	  if (sslacc == 1) {
+	    /* accepted */
+	    break;
+	  }
+	  sslerr = SSL_get_error(conn_fd.ssl,sslacc);
+	  if (sslerr == SSL_ERROR_WANT_WRITE || 
+	      sslerr == SSL_ERROR_WANT_READ) {
+	    /* still in handshake */
+	    FD_ZERO(&httpfds);
+	    FD_SET(connFd,&httpfds);
+	    httpTimeout.tv_sec=5;
+	    httpTimeout.tv_usec=0;
+	    if (sslerr == SSL_ERROR_WANT_WRITE) {
+	      isReady = select(connFd+1,NULL,&httpfds,NULL,&httpTimeout);
+	    } else {
+	      isReady = select(connFd+1,&httpfds,NULL,NULL,&httpTimeout);
+	    }
+	    if (isReady == 0) {
+	      intSSLerror("Timeout error accepting SSL connection");
+	    } else if (isReady < 0) {
+	      intSSLerror("Error accepting SSL connection");
+	    }
+	  } else {
+	    /* unexpected error */
+	    intSSLerror("Error accepting SSL connection");
+	  } 
+	}
+	flags ^= O_NONBLOCK;
+	fcntl(connFd,F_SETFL,flags);
 	sslb = BIO_new(BIO_f_ssl());
 	BIO_set_ssl(sslb,conn_fd.ssl,BIO_CLOSE);
 	conn_fd.bio=BIO_new(BIO_f_buffer());

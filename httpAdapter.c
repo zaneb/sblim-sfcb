@@ -104,6 +104,7 @@ extern RespSegments genFirstChunkErrorResponse(BinRequestContext * binCtx, int r
 extern char *getErrTrailer(int id, int rc, char *m);
 extern void dumpTiming(int pid);
 extern char * configfile;
+extern int inet_aton(const char *cp, struct in_addr *inp);
 
 int sfcBrokerPid=0;
 static unsigned int sessionId;
@@ -1469,8 +1470,10 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    sin.sin6_port = htons(port);
 #else
    sin.sin_family = AF_INET;
-   if (httpLocalOnly)
-     sin.sin_addr.s_addr = inet_aton('127.0.0.1'); /* not INADDR_LOOPBACK ? */
+   if (httpLocalOnly) {
+     char* loopback_int = "127.0.0.1";
+     inet_aton(loopback_int, &sin.sin_addr); /* not INADDR_LOOPBACK ? */
+   }
    else
      sin.sin_addr.s_addr = INADDR_ANY;
    sin.sin_port = htons(port);

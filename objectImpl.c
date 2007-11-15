@@ -2238,7 +2238,7 @@ int ClArgsGetArgAt(ClArgs * arg, int id, CMPIData * data, char **name)
    if (id < 0 || id > arg->properties.used)
       return 1;
    if (data) *data = (p + id)->data;
-   if (name) *name = ClObjectGetClString(&arg->hdr, &(p + id)->id);
+   if (name) *name = (char*)ClObjectGetClString(&arg->hdr, &(p + id)->id);
    if (data->type == CMPI_chars) {
       const char *str = ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
       data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);

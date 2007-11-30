@@ -1,3 +1,8 @@
+2007-11-05  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlOps.y, array.c, cimXmlParser.c:
+	Fixed 1828678: REFARRAY not supported
+
 2007-11-14  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
 	* httpAdapter.c: 

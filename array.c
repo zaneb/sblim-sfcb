@@ -59,7 +59,7 @@ static CMPIStatus __aft_release(CMPIArray * array)
 
    if (a->mem_state && a->mem_state != MEM_RELEASED) {
       int i = a->size;
-      if (a->mem_state!=MEM_TRACKED) while (i--) {
+      if (a->mem_state==MEM_NOT_TRACKED) while (i--) {
 	      if (!(a->data[i].state & CMPI_nullValue) && a->refCount==0) {
 		      sfcb_native_release_CMPIValue(a->type, &a->data[i].value);
 	      }
@@ -173,7 +173,7 @@ static CMPIStatus setElementAt ( CMPIArray * array, CMPICount index, const CMPIV
 
 	 if (opt) {
 	     sfcb_setAlignedValue(&(a->data[index].value),val,type);
-	 } else if (a->mem_state == MEM_TRACKED) {
+	 } else if (a->mem_state != MEM_NOT_TRACKED) {
 	     sfcb_setAlignedValue(&(a->data[index].value),val,type);
 	 } else {
 	     a->data[index].value = 

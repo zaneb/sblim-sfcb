@@ -2528,7 +2528,7 @@ valueReference
 valueRefArray
     : XTOK_VALUEREFARRAY valueRefList ZTOK_VALUEREFARRAY
     {
-       $$=$1;
+       $$=$2;
     }
 ;
 
@@ -2540,7 +2540,7 @@ valueRefList
        $$.values=(XtokValueReference*)malloc(sizeof(XtokValueReference)*64);
        $$.values[0]=$1;
     }
-    | valueRefArray valueReference
+    | valueRefList valueReference
     {
        $$.values[$$.next]=$2;
        $$.next++;

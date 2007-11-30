@@ -874,6 +874,21 @@ static int procValueArray(YYSTYPE * lvalp, ParserControl * parm)
    return 0;
 }
 
+static int procValueRefArray(YYSTYPE * lvalp, ParserControl * parm)
+{
+   static XmlElement elm[] = {
+      {NULL}
+   };
+   XmlAttr attr[1];
+   if (tagEquals(parm->xmb, "VALUE.REFARRAY")) {
+      if (attrsOk(parm->xmb, elm, attr, "VALUE.REFARRAY",
+           ZTOK_VALUEREFARRAY)) {
+         return XTOK_VALUEREFARRAY;
+      }
+   }
+   return 0;
+}
+
 static int procValueNamedInstance(YYSTYPE * lvalp, ParserControl * parm)
 {
    static XmlElement elm[] = {
@@ -1378,6 +1393,7 @@ static Tags tags[] = {
    {"VALUE.ARRAY", procValueArray, ZTOK_VALUEARRAY},
    {"VALUE.NAMEDINSTANCE", procValueNamedInstance, ZTOK_VALUENAMEDINSTANCE},
    {"VALUE.REFERENCE", procValueReference, ZTOK_VALUEREFERENCE},
+   {"VALUE.REFARRAY", procValueRefArray, ZTOK_VALUEREFARRAY},
    {"VALUE", procValue, ZTOK_VALUE},
    {"HOST", procHost, ZTOK_HOST},
    {"KEYVALUE", procKeyValue, ZTOK_KEYVALUE},

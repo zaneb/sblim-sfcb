@@ -21,6 +21,7 @@ Bugs fixed:
 - 1826149 Fixed sfcb bad spelling in brokerOs.c
 - 1830770 Fixed disallow external http connections
 - 1831794 Fixed unfinished SSL handshake blocks HTTP adapter
+- 1828678 Fixed REFARRAY not supported
 
 Changes in 1.2.4
 ================

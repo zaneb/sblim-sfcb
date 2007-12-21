@@ -329,6 +329,14 @@ typedef struct xtokClass {
    XtokMethods    methods;
 } XtokClass;
 
+typedef struct xtokNewValue {
+    union {
+        XtokValue val;
+        XtokValueArray arr;
+        XtokValueReference ref;
+    };
+    CMPIType type;
+} XtokNewValue;
 
 /*
  *    methodCall
@@ -744,6 +752,45 @@ typedef struct xtokSetQualifier {
 typedef struct xtokSetQualifierParm {
    XtokQualifierDeclaration qualifierdeclaration;
 } XtokSetQualifierParm;
+
+/*
+ *    getProperty
+*/
+
+typedef struct xtokGetPropertyParm {
+   XtokInstanceName instanceName;
+   char * name;
+} XtokGetPropertyParm;
+
+typedef struct xtokGetProperty {
+   OperationHdr op;
+   XtokInstanceName instanceName;
+   char * name;
+} XtokGetProperty;
+
+/*
+ *    setProperty
+*/
+
+typedef struct xtokSetPropertyParmsList {
+   XtokInstanceName instanceName;
+   char* propertyName;
+   XtokNewValue newVal;
+} XtokSetPropertyParmsList;
+
+typedef struct xtokSetPropertyParms {
+   XtokInstanceName instanceName;
+   char* propertyName;
+   XtokNewValue newVal;
+} XtokSetPropertyParms;
+
+typedef struct xtokSetProperty {
+   OperationHdr op;
+   XtokInstanceName instanceName;
+   char* propertyName;
+   XtokNewValue newVal;
+} XtokSetProperty;
+
 
 /*
  *    Parser control

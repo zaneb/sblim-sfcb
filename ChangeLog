@@ -1,4 +1,11 @@
-2007-11-05  Sven Schuetz <sven@de.ibm.com>
+2007-12-21  Sven Schuetz <sven@de.ibm.com>
+
+	* cimXmlRequest.c, cimXmlOps.y, internalProvider.c, providerMgr.c,
+	providerDrv.c, instance.c, cimXmlGen.h, providerMgr.h, cimXmlParser.h,
+	cimXmlGen.c, providerRegister.c, cimXmlParser.c, README
+	Fixed 1560680: sfcb property operations not supported
+
+2007-12-05  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlOps.y, array.c, cimXmlParser.c:
 	Fixed 1828678: REFARRAY not supported

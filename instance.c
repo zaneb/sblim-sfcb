@@ -648,7 +648,7 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
    
    else {
       j=0;
-      SFCB_ASM("int $3");
+      //SFCB_ASM("int $3");
       ns = "*NoNameSpace*";
       cn = "*NoClassName*";
       tmp1.rc=tmp2.rc=tmp3.rc=CMPI_RC_OK;

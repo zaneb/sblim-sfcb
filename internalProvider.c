@@ -835,6 +835,40 @@ CMPIStatus InternalProviderInvokeMethod(CMPIMethodMI * mi,
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderInvokeMethod");
    CMReturnWithChars(_broker, CMPI_RC_ERR_FAILED, "DefaultProvider does not support invokeMethod operations");
 }
+
+/* ------------------------------------------------------------------ *
+ * Property MI Functions
+ * ------------------------------------------------------------------ */
+
+CMPIStatus InternalProviderPropertyCleanup(CMPIPropertyMI * mi,
+                     const CMPIContext * ctx,
+                     CMPIBoolean terminate)
+{
+   CMPIStatus st = { CMPI_RC_OK, NULL };   
+   return st;
+}
+
+CMPIStatus InternalProviderSetProperty(CMPIPropertyMI * mi,
+                    const CMPIContext * ctx,
+                    const CMPIResult * rslt,
+                    const CMPIObjectPath * ref,
+                    const char *propName,
+                    const CMPIData data)
+{
+   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderSetProperty");
+   CMReturnWithChars(_broker, CMPI_RC_ERR_FAILED, "DefaultProvider does not support property operations");
+}
+
+CMPIStatus InternalProviderGetProperty(CMPIPropertyMI * mi,
+                    const CMPIContext * ctx,
+                    const CMPIResult * rslt,
+                    const CMPIObjectPath * ref,
+                    const char *propName)
+{
+   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderGetProperty");
+   CMReturnWithChars(_broker, CMPI_RC_ERR_FAILED, "DefaultProvider does not support property operations");
+}
+
 /* ------------------------------------------------------------------ *
  * Instance MI Factory
  *
@@ -849,3 +883,4 @@ CMAssociationMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);
 
 CMMethodMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);
 
+CMPropertyMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);

@@ -504,18 +504,16 @@ static int procImethodCall(YYSTYPE * lvalp, ParserControl * parm)
             return XTOK_REFERENCES;
          if (strcasecmp(attr[0].attr, "execQuery") == 0)
             return XTOK_EXECQUERY;
-
          if (strcasecmp(attr[0].attr, "createClass") == 0)
             return XTOK_CREATECLASS;
          if (strcasecmp(attr[0].attr, "deleteClass") == 0)
             return XTOK_DELETECLASS;
-            
          if (strcasecmp(attr[0].attr, "deleteClass") == 0)
             return unsupported(parm);
          if (strcasecmp(attr[0].attr, "getProperty") == 0)
-            return unsupported(parm);
+            return XTOK_GETPROPERTY;
          if (strcasecmp(attr[0].attr, "setProperty") == 0)
-            return unsupported(parm);
+            return XTOK_SETPROPERTY;
          if (strcasecmp(attr[0].attr, "getQualifier") == 0)
             return XTOK_GETQUALIFIER;
          if (strcasecmp(attr[0].attr, "setQualifier") == 0)
@@ -661,7 +659,9 @@ static IParm iParms[] = {
    {"query", XTOK_IP_QUERY},
    {"newclass", XTOK_IP_CLASS},
    {"qualifierdeclaration", XTOK_IP_QUALIFIERDECLARATION},
-   {"qualifiername", XTOK_IP_QUALIFIERNAME}
+   {"qualifiername", XTOK_IP_QUALIFIERNAME},
+   {"propertyname", XTOK_IP_PROPERTYNAME},
+   {"newValue", XTOK_IP_NEWVALUE}
 };
 
 static int procIParamValue(YYSTYPE * lvalp, ParserControl * parm)
@@ -1706,6 +1706,13 @@ static void freeInstance(XtokInstance *op)
   freeQualifiers(&op->qualifiers);
 }
 
+static  void freeNewValue(XtokNewValue *op)
+{
+    freeValue(&op->val);
+    freeReference(&op->ref);
+    freeArray(&op->arr);
+}
+
 static void freeMethodCall(XtokMethodCall* op)
 {
   if(op->instName) {
@@ -1791,6 +1798,17 @@ static void freeSetQualifier(XtokSetQualifier* op)
   }
 }
 
+static void freeGetProperty(XtokGetProperty* op)
+{
+  freeInstanceName(&op->instanceName);
+}
+
+static void freeSetProperty(XtokSetProperty* op)
+{
+  freeInstanceName(&op->instanceName);
+  freeNewValue(&op->newVal);
+}
+
 void freeCimXmlRequest(RequestHdr hdr)
 {
   if (hdr.cimRequest) {
@@ -1837,6 +1855,12 @@ void freeCimXmlRequest(RequestHdr hdr)
       break;
     case OPS_SetQualifier:
       freeSetQualifier((XtokSetQualifier *)hdr.cimRequest);
+      break;
+    case OPS_GetProperty:
+      freeGetProperty((XtokGetProperty *)hdr.cimRequest);
+      break;
+    case OPS_SetProperty:
+      freeSetProperty((XtokSetProperty *)hdr.cimRequest);
       break;
     }
     free (hdr.cimRequest);

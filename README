@@ -16,9 +16,9 @@ most of the functions required by CIM clients to manage such the system.
 Supported CIM operations include:
 
 	GetClass
-        ModifyClass
-        CreateClass
-        DeleteClass
+	ModifyClass
+	CreateClass
+	DeleteClass
 	EnumerateClasses
 	EnumerateClassNames
 	GetInstance
@@ -37,6 +37,8 @@ Supported CIM operations include:
 	SetQualifer
 	DeleteQualifier
 	EnumerateQualifiers
+	GetProperty
+	SetProperty
 
 CIM process and lifecycle indications (aka 'events') are also supported. 
 
@@ -73,11 +75,6 @@ classes are added/removed/modified offline and require restarting the sfcb
 daemon for the changes to take effect. However, there is nothing inherent
 in the design of sfcb preventing more sophisticated class module from being
 implemented, although probably at the expense of a larger footprint.
-sfcb does not support Property providers at this time. To summarize, the
-following CIM operations are *not* yet supported:
-
-        GetProperty
-        SetProperty
 
 sfcb only supports the Open Group standard CMPI provider interface. Several 
 CMPI providers covering commonly needed system management resources are 

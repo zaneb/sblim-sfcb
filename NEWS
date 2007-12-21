@@ -4,6 +4,7 @@ Changes in 1.3-preview
 New features:
 - Execution time parameters for providers via the "parameters" keyword 
   in the providerRegister
+- 1560680 property operations supported now
 
 Bugs fixed:
 - 1793223 Fixed cross-built ClProperty size mismatch

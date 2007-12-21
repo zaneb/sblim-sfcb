@@ -258,7 +258,7 @@ static char *keyType(CMPIType type)
    return "*??*";
 }
 
-static CMPIType guessType(char *val)
+CMPIType guessType(char *val)
 {
    if (((*val=='-' || *val=='+') && strlen(val)>1) || isdigit(*val)) {
       char *c;
@@ -598,7 +598,7 @@ static void method2xml(CMPIType type, CMPIString *name, char *bTag, char *eTag,
    _SFCB_EXIT();
 }
 
-static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refName, 
+void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refName, 
 		     char *bTag, int bTagLen, char *eTag, int eTagLen,
                      UtilStringBuffer * sb, UtilStringBuffer * qsb, int inst, int param)
 {
@@ -614,11 +614,13 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString *
       sb->ft->appendBlock(sb, bTag,bTagLen);
       sb->ft->appendChars(sb, (char *) name->hdl);
       if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"");
-      else SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
-      if(data->type & CMPI_instance || data->type & CMPI_class) {
-         SFCB_APPENDCHARS_BLOCK(sb, "string");
-      } else {
+      else if (bTag) {
+        SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
+        if(data->type & CMPI_instance || data->type & CMPI_class) {
+             SFCB_APPENDCHARS_BLOCK(sb, "string");
+        } else {
          sb->ft->appendChars(sb, dataType(data->type));
+        }
       }
       SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
       if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
@@ -675,9 +677,11 @@ static void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString *
 	 sb->ft->appendBlock(sb, bTag, bTagLen);
          sb->ft->appendChars(sb, (char *) name->hdl);
          if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"");
-         else SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
-         sb->ft->appendChars(sb, type);
-         SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
+         else  if (bTag) {
+            SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
+            sb->ft->appendChars(sb, type);
+            SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
+         }
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (data->state == 0) value2xml(*data, sb, 1);
       }

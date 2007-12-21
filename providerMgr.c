@@ -67,6 +67,7 @@ typedef struct mgrHandler {
 
 static UtilHashTable *instanceProviderHt = NULL;
 static UtilHashTable *instanceProvidersHt = NULL;
+static UtilHashTable *propertyProviderHt = NULL;
 static UtilHashTable *assocProvidersHt = NULL;
 static UtilHashTable *assocProviderHt = NULL;
 static UtilHashTable *methodProviderHt = NULL;
@@ -155,6 +156,7 @@ static UtilHashTable **provHt(long type, int list)
    case INSTANCE_PROVIDER:    
       if (list) return &instanceProvidersHt;
       return &instanceProviderHt;
+   case PROPERTY_PROVIDER:    return &propertyProviderHt;
    case INDICATION_PROVIDER:  return &indicationProviderHt;
    default:                   return NULL;
    } 
@@ -434,6 +436,13 @@ static void instProvider(int *requestor, OperationHdr *req)
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR, "instProvider");
    findProvider(INSTANCE_PROVIDER, requestor, req);
+   _SFCB_EXIT();
+}
+
+static void propProvider(int *requestor, OperationHdr *req)
+{
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "propProvider");
+   findProvider(PROPERTY_PROVIDER, requestor, req);
    _SFCB_EXIT();
 }
 
@@ -807,8 +816,8 @@ static MgrHandler mHandlers[] = {
    {assocProviderList},         //OPS_AssociatorNames 15
    {assocProviderList},         //OPS_References 16
    {assocProviderList},         //OPS_ReferenceNames 17
-   {notSupported},              //OPS_GetProperty 18
-   {notSupported},              //OPS_SetProperty 19
+   {propProvider},              //OPS_GetProperty 18
+   {propProvider},              //OPS_SetProperty 19
    {qualiProvider},             //OPS_GetQualifier 20
    {qualiProvider},             //OPS_SetQualifier 21
    {qualiProvider},             //OPS_DeleteQualifier 22

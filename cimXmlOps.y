@@ -245,6 +245,15 @@ static void addParam(XtokParams *ps, XtokParam *p)
    XtokDeleteQualifier           xtokDeleteQualifier;
    XtokDeleteQualifierParm       xtokDeleteQualifierParm;
    
+   XtokGetProperty               xtokGetProperty;
+   XtokGetPropertyParm           xtokGetPropertyParm;
+   
+   XtokSetProperty               xtokSetProperty;
+   XtokSetPropertyParms          xtokSetPropertyParms;
+   XtokSetPropertyParmsList      xtokSetPropertyParmsList;
+   
+   XtokNewValue                  xtokNewValue;
+   
    XtokScope                     xtokScope;
    
 };
@@ -338,6 +347,11 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %type  <xtokSetQualifier>        setQualifier
 %type  <xtokSetQualifierParm>    setQualifierParm
 
+%token <xtokSetProperty>           XTOK_SETPROPERTY
+%type  <xtokSetProperty>           setProperty
+%type  <xtokSetPropertyParms>      setPropertyParms
+%type  <xtokSetPropertyParmsList>  setPropertyParmsList
+
 %token <xtokEnumQualifiers>      XTOK_ENUMQUALIFIERS
 %type  <xtokEnumQualifiers>      enumQualifiers
 
@@ -348,6 +362,10 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <xtokDeleteQualifier>     XTOK_DELETEQUALIFIER
 %type  <xtokDeleteQualifier>     deleteQualifier
 %type  <xtokDeleteQualifierParm> deleteQualifierParm
+
+%token <xtokGetProperty>        XTOK_GETPROPERTY
+%type  <xtokGetProperty>        getProperty
+%type  <xtokGetPropertyParm>    getPropertyParm
 
 %token <intValue>                ZTOK_IMETHODCALL
 
@@ -429,7 +447,9 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <className>               XTOK_IP_QUERYLANG
 %token <class>                   XTOK_IP_CLASS
 %token <qualifierDeclaration>    XTOK_IP_QUALIFIERDECLARATION
-%token <qualifierName>           XTOK_IP_QUALIFIERNAME
+%token <value>                   XTOK_IP_QUALIFIERNAME
+%token <value>                   XTOK_IP_PROPERTYNAME
+%token <newValue>                XTOK_IP_NEWVALUE
 
 %token <xtokPropertyList>        XTOK_IP_PROPERTYLIST
 %type  <boolValue>               boolValue
@@ -486,6 +506,8 @@ static void addParam(XtokParams *ps, XtokParam *p)
 %token <intValue>                ZTOK_INSTANCE
 %type  <xtokInstance>            instance
 %type  <xtokInstanceData>        instanceData
+
+%type  <xtokNewValue>            newValue
 
 %type  <xtokParamValues>         paramValues
 %type  <xtokParamValue>          paramValue
@@ -601,7 +623,13 @@ iMethodCall
     } 
     | XTOK_DELETEQUALIFIER deleteQualifier ZTOK_IMETHODCALL
     {
-    }       
+    }
+    | XTOK_GETPROPERTY getProperty ZTOK_IMETHODCALL
+    {
+    }
+    | XTOK_SETPROPERTY setProperty ZTOK_IMETHODCALL
+    {
+    }
     
 ;
 
@@ -710,6 +738,130 @@ paramValue
        $$.valueRefArray=$2;
        $$.type=CMPI_ARRAY | CMPI_ref;
     }   
+;
+
+/*
+ *    getProperty
+*/
+getProperty
+    : localNameSpacePath getPropertyParm
+	{
+       $$.op.count = 3;
+       $$.op.type = OPS_GetProperty;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment($2.instanceName.className);
+       $$.name = $2.name;
+       $$.instanceName = $2.instanceName;
+       setRequest(parm,&$$,sizeof(XtokGetProperty),OPS_GetProperty);
+	}
+;
+
+getPropertyParm
+	: XTOK_IP_PROPERTYNAME value ZTOK_IPARAMVALUE XTOK_IP_INSTANCENAME instanceName ZTOK_IPARAMVALUE
+	{
+		$$.name = $2.value;
+		$$.instanceName = $5;
+	}
+	| XTOK_IP_INSTANCENAME instanceName ZTOK_IPARAMVALUE XTOK_IP_PROPERTYNAME value ZTOK_IPARAMVALUE
+	{
+		$$.name = $5.value;
+		$$.instanceName = $2;
+	}
+;
+
+
+/*
+ *    setProperty
+*/
+setProperty
+    : localNameSpacePath
+	{
+       $$.op.count = 3;
+       $$.op.type = OPS_SetProperty;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment(NULL);
+       $$.propertyName = NULL;
+
+       setRequest(parm,&$$,sizeof(XtokSetProperty),OPS_SetProperty);
+	}
+	| localNameSpacePath setPropertyParmsList
+	{
+       $$.op.count = 3;
+       $$.op.type = OPS_SetProperty;
+       $$.op.nameSpace=setCharsMsgSegment($1);
+       $$.op.className=setCharsMsgSegment($2.instanceName.className);
+       $$.newVal = $2.newVal;
+       $$.instanceName = $2.instanceName;
+       $$.propertyName = $2.propertyName;
+       
+       setRequest(parm,&$$,sizeof(XtokSetProperty),OPS_SetProperty);
+	}
+;
+
+setPropertyParmsList
+	: setPropertyParms
+	{
+       $$.newVal = $1.newVal;
+       $$.instanceName = $1.instanceName;
+       $$.propertyName = $1.propertyName;
+	}
+	| setPropertyParmsList setPropertyParms
+	{
+		if($2.propertyName) {
+			$$.propertyName = $2.propertyName;
+		}
+		else if($2.instanceName.className) {
+			$$.instanceName = $2.instanceName;
+		}
+		else {
+			$$.newVal = $2.newVal;
+		}
+	}
+;
+
+setPropertyParms
+	: XTOK_IP_INSTANCENAME instanceName ZTOK_IPARAMVALUE
+	{
+		$$.instanceName = $2;
+		$$.propertyName = NULL;
+	}
+	| XTOK_IP_PROPERTYNAME value ZTOK_IPARAMVALUE
+	{
+		$$.propertyName = $2.value;
+		$$.instanceName.className = NULL;
+	}
+	| XTOK_IP_NEWVALUE newValue ZTOK_IPARAMVALUE
+	{
+		$$.newVal = $2;
+		$$.propertyName = NULL;
+		$$.instanceName.className = NULL;
+	}
+;
+
+newValue
+	: value
+	{
+		if($1.type == typeValue_Instance) {
+			$$.type = CMPI_instance;
+		}
+		else if($1.type == typeValue_Class) {
+			$$.type = CMPI_class;
+		}
+		else {
+			$$.type = 0;
+		}
+		$$.val = $1;
+	}
+	| valueArray
+	{
+		$$.arr = $1;
+		$$.type = CMPI_ARRAY;
+	}
+	| valueReference
+	{
+		$$.ref = $1;
+		$$.type = CMPI_ref;
+	}
 ;
 
 /*

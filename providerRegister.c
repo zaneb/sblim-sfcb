@@ -216,6 +216,8 @@ ProviderRegister *newProviderRegister(char *fn)
                      info->type |= INDICATION_PROVIDER;
                   else if (strcmp(t, "class") == 0)
                      info->type |= CLASS_PROVIDER;
+                  else if (strcmp(t, "property") == 0)
+                     info->type |= PROPERTY_PROVIDER; 
                   else if (strcmp(t, "qualifier") == 0)
                      info->type |= QUALIFIER_PROVIDER;                     
                   else {

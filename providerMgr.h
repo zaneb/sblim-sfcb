@@ -322,6 +322,21 @@ typedef struct deleteQualifierReq {
    MsgSegment path;   
 } DeleteQualifierReq;
 
+typedef struct getPropertyReq {
+   BinRequestHdr hdr;
+   MsgSegment principal;
+   MsgSegment path;
+   MsgSegment name;
+} GetPropertyReq;
+
+typedef struct setPropertyReq {
+   BinRequestHdr hdr;
+   MsgSegment principal;
+   MsgSegment path;
+   MsgSegment inst; /* we abuse an instance with a single property, so we do 
+                       not have to create a property msg segment */
+} SetPropertyReq;
+
 int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr);
 BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
                                  int *count);

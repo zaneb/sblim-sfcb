@@ -78,6 +78,7 @@ extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array,
              CMPICount index, CMPIValue * val, CMPIType type);
 extern CMPIConstClass initConstClass(ClClass *cl);
 extern CMPIQualifierDecl initQualifier(ClQualifierDeclaration *qual);
+extern CMPIString *NewCMPIString(const char *ptr, CMPIStatus * rc);
 
 extern char * opsName[];
 
@@ -2030,6 +2031,145 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,1));
 }
 
+static RespSegments getProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "getProperty");
+   CMPIObjectPath *path;
+   CMPIInstance *inst;
+   CMPIData data;
+   CMPIStatus rc;
+   UtilStringBuffer *sb;
+   CMPIString *tmpString = NewCMPIString(NULL, NULL);
+   int irc;
+   BinRequestContext binCtx;
+   BinResponseHdr *resp;
+   RespSegments rsegs;
+   GetPropertyReq sreq = BINREQ(OPS_GetProperty, 3);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   XtokGetProperty *req = (XtokGetProperty *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
+
+   path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->instanceName.className, &rc);
+
+   sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.path = setObjectPathMsgSegment(path);
+   sreq.name = setCharsMsgSegment(req->name);
+   sreq.hdr.sessionId=ctx->sessionId;
+
+   binCtx.oHdr = (OperationHdr *) req;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.rHdr = hdr;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) req);
+
+   _SFCB_TRACE(1, ("--- Provider context gotten"));
+   if (irc == MSG_X_PROVIDER) {
+     RespSegments rs;
+      resp = invokeProvider(&binCtx);
+      closeProviderContext(&binCtx);
+      resp->rc--;
+      if (resp->rc == CMPI_RC_OK) {
+         inst = relocateSerializedInstance(resp->object[0].data);
+         sb = UtilFactory->newStrinBuffer(1024);
+         data = inst->ft->getProperty(inst, req->name, NULL);
+         data2xml(&data, NULL, tmpString, NULL, NULL, 0, NULL, 0, sb, NULL, 0, 0);
+         CMRelease(tmpString);
+         rsegs=iMethodResponse(hdr, sb);
+     if (resp) {
+       free(resp);
+     }
+         _SFCB_RETURN(rsegs);
+      }
+      rs=iMethodErrResponse(hdr, getErrSegment(resp->rc, 
+        (char*)resp->object[0].data));
+      if (resp) {
+    free(resp);
+      }
+      _SFCB_RETURN(rs);
+   }
+   closeProviderContext(&binCtx);
+
+   _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
+}
+
+static RespSegments setProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
+{
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "setProperty");
+   CMPIObjectPath *path;
+   CMPIInstance *inst;
+   CMPIType t;
+   CMPIStatus rc;
+   CMPIValue val;
+   int irc;
+   BinRequestContext binCtx;
+   BinResponseHdr *resp;
+   SetPropertyReq sreq = BINREQ(OPS_SetProperty, 3);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   XtokSetProperty *req = (XtokSetProperty *) hdr->cimRequest;
+   hdr->className=req->op.className.data;
+
+   path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->instanceName.className, &rc);
+
+   inst = internal_new_CMPIInstance(MEM_TRACKED, NULL, NULL, 1);
+
+   if(req->newVal.type == 0) {
+      t = guessType(req->newVal.val.value);
+   }
+   else if (req->newVal.type == CMPI_ARRAY){
+      t = guessType(req->newVal.arr.values[0].value) | CMPI_ARRAY;
+   }
+   else {
+      t = req->newVal.type;
+   }
+   val = str2CMPIValue(t, req->newVal.val, &req->newVal.ref, req->op.nameSpace.data);
+   
+   CMSetProperty(inst, req->propertyName, &val, t);
+
+   sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.path = setObjectPathMsgSegment(path);
+   sreq.inst = setInstanceMsgSegment(inst);
+   sreq.hdr.sessionId=ctx->sessionId;
+
+   binCtx.oHdr = (OperationHdr *) req;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.rHdr = hdr;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) req);
+
+   _SFCB_TRACE(1, ("--- Provider context gotten"));
+
+   if (irc == MSG_X_PROVIDER) {
+      RespSegments rs;
+      resp = invokeProvider(&binCtx);
+      closeProviderContext(&binCtx);
+      resp->rc--;
+      if (resp->rc == CMPI_RC_OK) {
+    if (resp) {
+      free(resp);
+    }
+         _SFCB_RETURN(iMethodResponse(hdr, NULL));
+      }   
+      rs=iMethodErrResponse(hdr, getErrSegment(resp->rc, 
+         (char*)resp->object[0].data));
+      if (resp) {
+    free(resp);
+      }
+      _SFCB_RETURN(rs);
+   }
+   closeProviderContext(&binCtx); 
+   _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
+}
+
 #ifdef HAVE_QUALREP
 static RespSegments enumQualifiers(CimXmlRequestContext * ctx, RequestHdr * hdr)
 {
@@ -2328,8 +2468,8 @@ static Handler handlers[] = {
    {associatorNames},           //OPS_AssociatorNames 15
    {references},                //OPS_References 16
    {referenceNames},            //OPS_ReferenceNames 17
-   {notSupported},              //OPS_GetProperty 18
-   {notSupported},              //OPS_SetProperty 19
+   {getProperty},               //OPS_GetProperty 18
+   {setProperty},               //OPS_SetProperty 19
 #ifdef HAVE_QUALREP   
    {getQualifier},              //OPS_GetQualifier 20
    {setQualifier},              //OPS_SetQualifier 21

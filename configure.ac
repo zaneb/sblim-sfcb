@@ -22,7 +22,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 1.3preview, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 1.2.5, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 AM_INIT_AUTOMAKE
@@ -56,7 +56,7 @@ AC_ARG_ENABLE(qualifierrep,
 
 AC_ARG_ENABLE(indications,
 	[AC_HELP_STRING([--disable-indications],
-		[disable indication support for SFCB - currently not working.])],
+		[disable indication support for SFCB])],
 	[enable_indications=$enableval],
 	[enable_indications="yes"]
 	)

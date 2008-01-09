@@ -1,3 +1,8 @@
+2008-01-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* instance.c:
+	Fixed 1850416: Deadlock in getObjectPath() (patch by Tim Potter)
+
 2007-12-21  Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlRequest.c, cimXmlOps.y, internalProvider.c, providerMgr.c,

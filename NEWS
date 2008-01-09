@@ -23,6 +23,7 @@ Bugs fixed:
 - 1830770 Fixed disallow external http connections
 - 1831794 Fixed unfinished SSL handshake blocks HTTP adapter
 - 1828678 Fixed REFARRAY not supported
+- 1850416 Fixed Deadlock in getObjectPath()
 
 Changes in 1.2.4
 ================

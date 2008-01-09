@@ -332,6 +332,7 @@ static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
 	    if(rc) {
 	       CMSetStatus(rc, CMPI_RC_ERR_INVALID_CLASS);
 	    }
+	    Broker->xft->unlockMutex(*mtx);
 	    return NULL;
 	 }
       }

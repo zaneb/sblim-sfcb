@@ -621,7 +621,7 @@ void initInterOp(
    _SFCB_TRACE(1,("--- checking for cim_indicationfilter"));
    op=CMNewObjectPath(broker,"root/interop","cim_indicationfilter",&st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
-   enm = _broker->bft->enumInstances(_broker, ctxLocal, op, NULL, &st);
+   enm = _broker->bft->enumerateInstances(_broker, ctxLocal, op, NULL, &st);
    CMRelease(ctxLocal);
    
    if(enm) {
@@ -639,7 +639,7 @@ void initInterOp(
 
    _SFCB_TRACE(1,("--- checking for cim_listenerdestination"));
    op=CMNewObjectPath(broker,"root/interop","cim_listenerdestination",&st);
-   enm = _broker->bft->enumInstances(_broker, ctx, op, NULL, &st);
+   enm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, &st);
    
    if(enm) {
       while(enm->ft->hasNext(enm, &st) && (ci=(enm->ft->getNext(enm, &st)).value.inst)) {
@@ -651,7 +651,7 @@ void initInterOp(
    _SFCB_TRACE(1,("--- checking for cim_indicationsubscription"));
    op=CMNewObjectPath(broker,"root/interop","cim_indicationsubscription",&st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
-   enm = _broker->bft->enumInstances(_broker, ctxLocal, op, NULL, &st);
+   enm = _broker->bft->enumerateInstances(_broker, ctxLocal, op, NULL, &st);
    CMRelease(ctxLocal);
    
    if(enm) {
@@ -695,7 +695,7 @@ CMPIStatus InteropProviderEnumInstanceNames(
 
    if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
-   enm = _broker->bft->enumInstanceNames(_broker, ctxLocal, ref, &st);
+   enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, ref, &st);
    CMRelease(ctxLocal);
                                       
    while(enm && enm->ft->hasNext(enm, &st)) {
@@ -721,7 +721,7 @@ CMPIStatus InteropProviderEnumInstances(
 
    if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
-   enm = _broker->bft->enumInstances(_broker, ctxLocal, ref, properties, &st);
+   enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
    CMRelease(ctxLocal);
                                       
    while(enm && enm->ft->hasNext(enm, &st)) {

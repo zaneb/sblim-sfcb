@@ -286,7 +286,7 @@ extern "C" {
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Enumeration of ObjectPathes.
      */
-     CMPIEnumeration* (*enumInstanceNames)
+     CMPIEnumeration* (*enumerateInstanceNames)
                 (const CMPIBroker* mb, const CMPIContext* ctx,
                  const CMPIObjectPath* op, CMPIStatus* rc);
 
@@ -366,7 +366,7 @@ extern "C" {
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Enumeration of Instances.
      */
-     CMPIEnumeration* (*enumInstances)
+     CMPIEnumeration* (*enumerateInstances)
                 (const CMPIBroker* mb, const CMPIContext* ctx,
                  const CMPIObjectPath* op, const char** properties, CMPIStatus* rc);
 

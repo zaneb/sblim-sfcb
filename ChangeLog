@@ -1,3 +1,13 @@
+2008-01-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cmpift.h, cmpimacs.h, interopProvider.h:
+	Fixed 1830845: standards naming issue for _CMPIBrokerFT.enumInstances()
+	(patch by Sean Swehla)
+
+	* cmpift.h:
+	Fixed 1826571: Fixed wrong type for _CMPIBroker.brokerCapabilities
+	(patch by Sean Swehla)
+	
 2008-01-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* instance.c:

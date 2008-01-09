@@ -226,7 +226,7 @@ extern "C" {
      /** 32 bits describing CMPI features supported by this CIMOM.
          See CMPI_MB_Class_x and CMPI_MB_Supports_xxx flags.
      */
-     unsigned long brokerClassification;
+     unsigned int brokerCapabilities;
      /** CIMOM version as defined by CIMOM
      */
      unsigned int brokerVersion;

@@ -31,10 +31,9 @@
 	Fixed 1831794: unfinished SSL handshake blocks HTTP adapter
 	A 5 second timeout for the SSL handshake has been implemented.
 
-
 2007-11-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
-	* control.c, httpAdapter.c, sfcBroker.c
+	* control.c, httpAdapter.c, sfcBroker.c:
 	Fixed 1830770: Disallow external http connections (see README)
 
 2007-11-05  Sven Schuetz <sven@de.ibm.com> (patch submitted by Tim Potter)
@@ -48,6 +47,7 @@
 	Fixed 1823565: alignment problem during clone
 
 2007-10-31  Sven Schuetz <sven@de.ibm.com>
+	
 	* args.c, array.c, instance.c, internalProvider.c:
 	Fixed 1816606: problem with propertylist in modifyInstance
 
@@ -156,18 +156,18 @@
 
 2007-08-01  Adrian Schuur
 
-        * cimXmlGen.c, constClass.c, constClass.h:
-        Fixed 1764101: segfault in constClass::getPropQualifierAt()
+	* cimXmlGen.c, constClass.c, constClass.h:
+	Fixed 1764101: segfault in constClass::getPropQualifierAt()
 
 2007-08-01  Tyrel Datwyler <tyreld@us.ibm.com>
 
-   * classProviderGz.c:
-   Fixed 1746659: SFCB segfaults when ai commands are issued simultaneously
+	* classProviderGz.c:
+	Fixed 1746659: SFCB segfaults when ai commands are issued simultaneously
 
 2007-08-01  Sven Schuetz <sven@de.ibm.com>
 
-        * cimXmlGen.c, objectImpl.c:
-        Fixed 1763178: GetClass operation failure
+	* cimXmlGen.c, objectImpl.c:
+	Fixed 1763178: GetClass operation failure
 
 2007-08-01  Sven Schuetz <sven@de.ibm.com>
 
@@ -197,13 +197,13 @@
 
 2007-07-07  Tyrel Datwyler <tyreld@us.ibm.com>
 
-   * classProvider.c, classProviderGz.c:
-   Fixed 1746771: Memory leak in classProviderGz.c - in gatherNameSpaces()
+	* classProvider.c, classProviderGz.c:
+	Fixed 1746771: Memory leak in classProviderGz.c - in gatherNameSpaces()
 
 2007-07-07  Tyrel Datwyler <tyreld@us.ibm.com>
 
-   * httpAdapter.c:
-   Fixed 1725493: 401 send twice
+	* httpAdapter.c:
+	Fixed 1725493: 401 send twice
 
 2007-07-03  Adrian Schuur
 
@@ -556,7 +556,7 @@
 
 2007-02-07  Chris Buccella
 
-	* httpAdapter.c
+	* httpAdapter.c:
 	Fixed problem with sfcbd ignoring signals when USE_THREADS enabled
 
 2007-02-06  Sven Schuetz
@@ -588,7 +588,7 @@
 
 2007-01-26  Chris Buccella
 
-	* httpAdapter.c, sfcBroker.c
+	* httpAdapter.c, sfcBroker.c:
 	Added suport for threads on http connections
 
 2007-01-19  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-119.boeblingen.de.ibm.com>
@@ -703,7 +703,8 @@
 	valgrind complaints.
 
 2006-12-18  Sven Schuetz
-	* cimslpCMPI.c, cimslp.c, cimslpCMPI.h, cimslpSLP.c, 
+	
+	* cimslpCMPI.c, cimslp.c, cimslpCMPI.h, cimslpSLP.c: 
 	Fixed 1618258: slp problems when ssl is enabled
 
 2006-12-18  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
@@ -714,6 +715,7 @@
 	argument handling and formatting of resultvalues.
 	
 2006-12-14  Sven Schuetz
+	
 	* cimslpCMPI.c, cimslp.h, trace.h, trace.c, cimslp.c, Makefile.am, 
 	cimslpCMPI.h, cimslpUtil.h, cimslpSLP.h, cimslpSLP.c:
 	Fixed 1615731: slp enhancements (shutdown, tracing)
@@ -762,8 +764,7 @@
 
 2006-12-03  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
-	* instance.c: 
-	Postfix for 1605216: removed memory leak.
+	* instance.c: Postfix for 1605216: removed memory leak.
 
 2006-11-30  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
@@ -771,6 +772,7 @@
 	Fixed 1606013: prevent segfault with deepInheritance=false.
 
 2006-11-29  Sven Schuetz
+	
 	* cimXmlOps.y, internalProvider.c, providerDrv.c, instance.c, indication.mof,
 	native.h:
 	Fixed 1605216: empty propertyList causes parser error
@@ -802,6 +804,7 @@
 	Fixed 1601644: added more timing traces.
 
 2006-11-23  Sven Schuetz
+	
 	* interopProvider.c, internalProvider.c:
 	Fixed 1601174: fixed interopProvider segfault
 
@@ -828,6 +831,7 @@
 	behavior. In both cases, the correct number of instances is returned now.
 
 2006-11-21  Sven Schuetz
+	
 	* sfcbrepos.sh.in, Makefile.am, interop.mof, indication.mof, README
 	Fixed 1599697: sfcbrepos include default mofs
 
@@ -838,26 +842,28 @@
 	clean up the child processes.
 
 2006-11-09  Sven Schuetz
+	
 	* cimXmlGen.c, cimXmlRequest.c, objectImpl.c:
 	Fixed 1593220: bug in setQualifier
 
 2006-11-08  Sven Schuetz
+	
 	* cimXmlOps.y, cimXmlParser.c:
 	Fixed 1592760: sfcb PROPERTY.ARRAY creation fails
 
 2006-11-07  Sven Schuetz
+	
 	* objectImpl.h, objectImplSwapI32toP32.c, instance.c,
 	qualifier.c:
 	Fixed 1587752: objectImplSwapI32toP32.c needs to be extended
 	
-	* objectImpl.c:
-	Fixed 1592037: objectImpl Array creation
+	* objectImpl.c: Fixed 1592037: objectImpl Array creation
 	
 
 2006-10-27  Sven Schuetz
 
 	* Makefile.am, sfcbrepos.sh.in, fileRepository.h, fileRepository.c, 
-	internalProvider.c,
+	internalProvider.c:
 	Fixed 1578815: create fileRepository shared library
 
 2006-10-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
@@ -869,8 +875,7 @@
 
 2006-10-20  Viktor Mihajlovski  <mihajlov@localhost.localdomain>
 
-	* dbpAdapter.c, sqlStatement.c: 
-	Fixed 1581214: compile problems.
+	* dbpAdapter.c, sqlStatement.c: Fixed 1581214: compile problems.
 
 	* cimXmlRequest.c, constClass.c: 
 	Update for 1443864: use free instead of release to get rid of resultdata
@@ -882,7 +887,7 @@
 	Fixed 1578051: race condition in provider initialization code.
 	Further, hardened client (e.g. invokeProvider) code.
 
-2006-10-06	Sven Schuetz
+2006-10-06  Sven Schuetz
 
 	* cimXmlRequest.c, qualifierProvider.c, providerMgr.c, providerDrv.c,
 	Makefile.am, configure.ac, README, cimXmlGen.c
@@ -891,8 +896,7 @@
 
 2006-09-29  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
-	* constClass.c: 
-	Fixed 1567754: segfault on enumerate classes.
+	* constClass.c: Fixed 1567754: segfault on enumerate classes.
 
 2006-09-29  Sven Schuetz
 
@@ -965,28 +969,35 @@
 	with release 1.1.1 functionality.
 
 2006-07-26  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
+
 	* control.c, sfcbBroker.c, trace.c, trace.h: 
 	Fixed 1529021: Added trace options to config file.
 
 2006-07-25  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
-	* cimXmlParser.c: 
-	Fixed 1528304: segfault on reference parameters.
+
+	* cimXmlParser.c: Fixed 1528304: segfault on reference parameters.
 
 	* README, configure.ac, getSchema.sh.pre.in: 
 	Fixed 1528455: added support for local CIM schema files.
 
 2006-07-25 Sven Schuetz
 
-	* cimslp.c:
-	Fixed potential potential memory problem
+	* cimslp.c: Fixed potential potential memory problem
 
 2006-07-19  Sven Schuetz
 
-	* args.c, array.c, brokerEnc.c, brokerUpc.c, cimXmlGen.c, cimXmlRequest.c, cimcClientSfcbLocal.c, constClass.c, context.c, control.c, datetime.c, enumeration.c, instance.c, internalProvider.c, interopProvider.c, native.h, objectImpl.c, objectpath.c, predicate.c, queryOperation.c, result.c, selectexp.c, sqlStatement.c, string.c, support.c, value.c:
-	Fixed 1525280: fixed segfault when linking with sfcc code by renaming function calls
-	* cimslp.c, cimslpCMPI.c, cimslpSLP.c:
-	Fixed 1296278: added slp support
-	* configure.ac, acinclude.m4, Makefile.am
+	* args.c, array.c, brokerEnc.c, brokerUpc.c, cimXmlGen.c,
+	cimXmlRequest.c, cimcClientSfcbLocal.c, constClass.c, context.c,
+	control.c, datetime.c, enumeration.c, instance.c,
+	internalProvider.c, interopProvider.c, native.h, objectImpl.c,
+	objectpath.c, predicate.c, queryOperation.c, result.c,
+	selectexp.c, sqlStatement.c, string.c, support.c, value.c:
+	Fixed 1525280: fixed segfault when linking with sfcc code by
+	renaming function calls
+
+	* cimslp.c, cimslpCMPI.c, cimslpSLP.c: Fixed 1296278: added slp support
+
+	* configure.ac, acinclude.m4, Makefile.am:
 	Modified build process to include SLP stuff
 
 2006-07-18  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
@@ -995,14 +1006,14 @@
 	Fixed 1524781: fixed handling of local instance path values for
 	association class reference properties.
 
-2006-07-17	Sven Schuetz
+2006-07-17  Sven Schuetz
 
-	* cimslp.c, cimslpCMPI.c, cimslpSLP.c:
-	Added SLP Support
+	* cimslp.c, cimslpCMPI.c, cimslpSLP.c: Added SLP Support
+	
 	* hashtable.c, utilFactory.c, utilHashtable.c, utilStringbuffer.c:
 	Moved to sfcUtil, build as shared library now
-	* Makefile.am, configure.am
-	Included slp stuff into build process
+	
+	* Makefile.am, configure.am: Included slp stuff into build process
 
 2006-07-07  Viktor Mihajlovski  <mihajlov@dyn-9-152-143-50.boeblingen.de.ibm.com>
 
@@ -1073,10 +1084,10 @@
 
 2006-01-27  a3schuur
 
-	* objectImplSwapI32toP32.c: [ 1408327 ] sfcbmof does not support
-	big/little endian in cross-compile sectionOffsets not set when
-	section is empty.  arrayBufferOffset and strBufOffset not cleared
-	when buffer empty.
+	* objectImplSwapI32toP32.c: 
+	[ 1408327 ] sfcbmof does not support big/little endian in
+	cross-compile sectionOffsets not set when section is empty.
+	arrayBufferOffset and strBufOffset not cleared when buffer empty.
 
 2006-01-26  mihajlov
 
@@ -1086,13 +1097,14 @@
 2006-01-26  mihajlov
 
 	* man/sfcbrepos.1.pre.in, man/sfcbstage.1.pre.in,
-	man/sfcbunstage.1.pre.in: [ 1408327 ] sfcbmof does not support
-	big/little endian in cross-compile.  Updated man pages.
+	man/sfcbunstage.1.pre.in: 
+	[ 1408327 ] sfcbmof does not support big/little endian in
+	cross-compile.  Updated man pages.
 
 2006-01-26  mihajlov
 
-	* mofc/mofparse.c: Enhancement: allow multiple backend options to
-	be specified.
+	* mofc/mofparse.c: 
+	Enhancement: allow multiple backend options to be specified.
 
 2006-01-26  mihajlov
 
@@ -1123,51 +1135,54 @@
 
 2006-01-24  a3schuur
 
-	* objectImpl.h, objectImplSwapI32toP32.c: [ 1408327 ] sfcbmof does
-	not support big/little endian in cross-compile Additional alignment
-	fixes - now generating same length classSchema files.
+	* objectImpl.h, objectImplSwapI32toP32.c: 
+	[ 1408327 ] sfcbmof does not support big/little endian in
+	cross-compile Additional alignment fixes - now generating same
+	length classSchema files.
 
 2006-01-24  mihajlov
 
-	* sfcbdump.c: SFCB Repository Dump Program.
+	* sfcbdump.c: 
+	SFCB Repository Dump Program.
 
 2006-01-23  a3schuur
 
 	* Makefile.am, msgqueue.c, objectImpl.c, objectImpl.h,
 	objectImplMP.h, objectImplSwapEndian.c, objectImplSwapI32toP32.c,
-	mofc/backend_sfcb.c: [ 1408327 ] sfcbmof does not support
-	big/little endian in cross-compile Previous fix did not correctly
-	anticipate Power32 alignment rules.  objectImplSwapEndian.c has
-	been removed because totally inadequate.  objectImpiI32toP32.c has
-	been created instead. It recreates classSchemas files for Power32
-	systems.  sfcbmof now requires -b P32 to invoke the cross compile
-	support.  -b P32 only works one way only: It must be executed on a
-	ix86 machine and it will only generate classSchemas files for
-	Power32.
+	mofc/backend_sfcb.c: 
+	[ 1408327 ] sfcbmof does not support big/little endian in
+	cross-compile Previous fix did not correctly anticipate Power32
+	alignment rules.  objectImplSwapEndian.c has been removed because
+	totally inadequate.  objectImpiI32toP32.c has been created
+	instead. It recreates classSchemas files for Power32 systems.
+	sfcbmof now requires -b P32 to invoke the cross compile support.
+	-b P32 only works one way only: It must be executed on a ix86
+	machine and it will only generate classSchemas files for Power32.
 
 2006-01-20  a3schuur
 
-	* objectImplMP.h, objectImplSwapI32toP32.c: [ 1408327 ] sfcbmof
-	does not support big/little endian in cross-compile Additional
-	support for mofc cross-compile
+	* objectImplMP.h, objectImplSwapI32toP32.c: 
+	[ 1408327 ] sfcbmof does not support big/little endian in
+	cross-compile Additional support for mofc cross-compile
 
 2006-01-17  a3schuur
 
 	* classProvider.c, classProviderGz.c, objectImpl.c, objectImpl.h,
-	mofc/backend_sfcb.c, mofc/configure.ac: fix for [ 1408327 ] sfcbmof
-	does not support big/little endian in cross-compile
+	mofc/backend_sfcb.c, mofc/configure.ac: 
+	fix for [ 1408327 ] sfcbmof does not support big/little endian in
+	cross-compile
 
 2006-01-16  a3schuur
 
-	* args.c, providerDrv.c, support.c: fixed [ 1407244 ] memory leak
-	with args objects
-	args objects created by providerDrv.c not garbage collected.
-	restructured args.c
+	* args.c, providerDrv.c, support.c: 
+	fixed [ 1407244 ] memory leak with args objects args objects
+	created by providerDrv.c not garbage collected.  restructured
+	args.c
 
 2006-01-12    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* man/sfcbd.1.pre.in, man/sfcbstage.1.pre.in, man/sfcbstage.1.pre.in, 
-	man/sfcbrepos.1.pre.in, README : 
+	man/sfcbrepos.1.pre.in, README: 
 	Fix for 1404047. Documentation Updates.
 	
 	* Makefile.am, mofpp.c: 
@@ -1180,8 +1195,8 @@
 
 2006-01-10  a3schuur
 
-	* classProviderGz.c, constClass.c: Fixed [ 1386191 ] sfcb memory
-	footprint for large schemas too high
+	* classProviderGz.c, constClass.c: 
+	Fixed [ 1386191 ] sfcb memory footprint for large schemas too high
 	Fixed memory leak in constClass::release Fixed bug in
 	classProviderGz.c Changed class cache size from 2 to 10
 
@@ -1212,14 +1227,15 @@
 2005-12-19    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
 	* cimXmlGen.c: 
-	Fixed 1382741: Added to code to insert host and namespace information to instance
-	names. Also added logic to create the correct (local) path XML.
+	Fixed 1382741: Added to code to insert host and namespace
+	information to instance names. Also added logic to create the
+	correct (local) path XML.
 
 2005-12-18    <mihajlov@localhost.localdomain>
 
 	* objectpath.c: 
-	Fixed 1381312. Corrected the objectpath string parser to deal with reference type
-	properties.
+	Fixed 1381312. Corrected the objectpath string parser to deal with
+	reference type properties.
 
 	* internalProvider.c: 
 	Fixed 1384612. In the object path normalization the namespace for
@@ -1237,8 +1253,8 @@
 2005-12-17  a3schuur
 
 	* Makefile.am, classProviderGz.c: 
-	Fixed 1386191. Added caching ClassProviderGz.c,
-	optionally accepting compressed classSchemas files.
+	Fixed 1386191. Added caching ClassProviderGz.c, optionally
+	accepting compressed classSchemas files.
 
 	This provider does not keep complete classSchemas file in memory
 	but uses a cache instead. Cache limit is currently set to a maximum
@@ -1290,8 +1306,7 @@
 	Fixed 1380442. 	Added productions for qualifier related issues. 
 	Fixed an ambiguos rule for reference arrays. 
 
-	* cimXmlRequest.c:
-	Fixed 1380442. Added null value check.
+	* cimXmlRequest.c: Fixed 1380442. Added null value check.
 
 2005-12-13    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
@@ -1317,14 +1332,16 @@
 
 2005-12-13  a3schuur
 
-	* mofpp.c: Added Mofpp (mof preprocessor) this program merges
-	#pragma include files into one mof file
+	* mofpp.c: 
+	Added Mofpp (mof preprocessor) this program merges #pragma include
+	files into one mof file
 
 2005-12-13  a3schuur
 
 	* brokerUpc.c, cimXmlGen.c, cimXmlRequest.c, classProvider.c,
-	constClass.c, fileRepository.c, sfcBroker.c: Cleaning up function
-	prototypes - Adding static where global functions are not needed
+	constClass.c, fileRepository.c, sfcBroker.c: 
+	Cleaning up function prototypes - Adding static where global
+	functions are not needed
 
 2005-12-09    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
@@ -1335,8 +1352,7 @@
 	Fixed 1376959. Added CIM_IndicationHandlerCIMXML to default
 	registration and interop MOF.
 	
-	* brokerUpc.c: 
-	Fixed 1376955. Use correct opcode for invokeMethod.
+	* brokerUpc.c: Fixed 1376955. Use correct opcode for invokeMethod.
 
 2005-12-02    <mihajlov@localhost.localdomain>
 
@@ -1350,8 +1366,8 @@
 
 2005-11-21  a3schuur
 	* datetime.c:
-	Fixed [ 1352052 ] sfcb modifies datetime properties
-	sfcb now stores date-time information as char string
+	Fixed [ 1352052 ] sfcb modifies datetime properties sfcb now
+	stores date-time information as char string
 
 2005-11-20  bestorga-oss
 
@@ -1403,10 +1419,9 @@
 
 	* cimXmlRequest.c, default.reg, httpAdapter.c,
 	interopServerProvider.c, queryOperation.h: 
-	Fixed [ 1356303 ] Cannot
-	make connection by Java based CIM Browser sfcb outputs 1 crlf to
-	much before response payload sfcb incorrectly close port when
-	detecting M-POST request
+	Fixed [ 1356303 ] Cannot make connection by Java based CIM Browser
+	sfcb outputs 1 crlf to much before response payload sfcb
+	incorrectly close port when detecting M-POST request
 
 2005-11-17    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
@@ -1417,7 +1432,6 @@
 	Bug 1358952: Added productions for array type method parameters,
 	including reference arrays. Added parser support datatypes for
 	that.
-
 
 2005-10-21    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
@@ -1470,8 +1484,8 @@
 
 2005-10-10  a3schuur
 
-	* classProvider.c: Correction of class data total size (excluding
-	DMY_ classes)
+	* classProvider.c: 
+	Correction of class data total size (excluding DMY_ classes)
 
 2005-10-06    <mihajlov@dyn-9-152-143-45.boeblingen.de.ibm.com>
 
@@ -1491,17 +1505,18 @@
 
 2005-10-04  a3schuur
 
-	* httpAdapter.c: Fixed sfcbd hang situation when http port not
-	  available
+	* httpAdapter.c: 
+	Fixed sfcbd hang situation when http port not available
 
 2005-10-02  a3schuur
 
-	* providerDrv.c, support.h: Fixed 1195240  sfcb doesn't close
-	  client connection on error
+	* providerDrv.c, support.h: 
+	Fixed 1195240 sfcb doesn't close client connection on error
+
 2005-09-30    mihajlov
 
-	* httpAdapter.c, control.c, sfcb.cfg.pre.in, 
-	man/sfcbd.1.pre.in: Bug 1308252. Added support for client certificate
+	* httpAdapter.c, control.c, sfcb.cfg.pre.in, man/sfcbd.1.pre.in: 
+	Bug 1308252. Added support for client certificate
 	verfication. Introduced new config options and updated man page.
 
 2005-09-27  a3schuur
@@ -1510,17 +1525,19 @@
 
 2005-09-27  a3schuur
 
-	* httpAdapter.c: Bug [ 1298807 ] sfcb dos vulnerability Next step
-	to detect and reject DOS attacks.  Fist data after accept must
-	arrive within 5 seconds, otherwise the request will be rejected.
+	* httpAdapter.c: 
+	Bug [ 1298807 ] sfcb dos vulnerability Next step to detect and
+	reject DOS attacks.  Fist data after accept must arrive within 5
+	seconds, otherwise the request will be rejected.
 
 2005-09-27  a3schuur
 
-	* httpAdapter.c: Bug [ 1298807 ] sfcb dos vulnerability First steps
-	to detect and reject DOS attacks.  a) None POST requests will be
-	rejected as early as possible without attempting to read remaining
-	HTTP header data.  b) Any request having a combined header data
-	size longer than 5000 bytes will be rejected
+	* httpAdapter.c: 
+	Bug [ 1298807 ] sfcb dos vulnerability First steps to detect and
+	reject DOS attacks.  a) None POST requests will be rejected as
+	early as possible without attempting to read remaining HTTP header
+	data.  b) Any request having a combined header data size longer
+	than 5000 bytes will be rejected
 
 2005-09-20  mihajlov
 
@@ -1528,60 +1545,65 @@
 
 2005-09-20  mihajlov
 
-	* Makefile.am, configure.ac, man/sfcbuuid.1.pre.in: Bugs: 1296278.
-	Added support for the generation of a CIM server uuid.
+	* Makefile.am, configure.ac, man/sfcbuuid.1.pre.in: 
+	Bugs: 1296278.  Added support for the generation of a CIM server
+	uuid.
 
 2005-09-19  a3schuur
 
-	* default.reg, interopServerProvider.c: Added support for
-	CIM_ObjectManagerCommunicationMechanism class.
+	* default.reg, interopServerProvider.c: 
+	Added support for CIM_ObjectManagerCommunicationMechanism class.
 
 2005-09-19  mihajlov
 
-	* httpAdapter.c: Bug 1292955. Allow content-length=0 request
-	bodies for better interoperability.
+	* httpAdapter.c: 
+	Bug 1292955. Allow content-length=0 request bodies for better
+	interoperability.
 	
 2005-09-17  a3schuur
 
-	* interopServerProvider.c: Removed depricated
-	DescriptionOfClassInfo property from cim_namespace
+	* interopServerProvider.c: 
+	Removed depricated DescriptionOfClassInfo property from
+	cim_namespace
 
 2005-09-16  a3schuur
 
-	* interopServerProvider.c: Minor fixes to namespace provider
-	support - setting ObjectManagerName property.
+	* interopServerProvider.c: 
+	Minor fixes to namespace provider support - setting
+	ObjectManagerName property.
 
 2005-09-16  a3schuur
 
-	* default.reg, interopServerProvider.c: Update in
-	interopServerProvider for CIM_ObjectManager This update is
-	anticipating a fix for the uuid file in the sfcb directory
+	* default.reg, interopServerProvider.c: 
+	Update in interopServerProvider for CIM_ObjectManager This update
+	is anticipating a fix for the uuid file in the sfcb directory
 
 2005-09-16  mihajlov
 
-	* httpAdapter.c: Bugs: 1292955. Accept URIs other than /cimom and
-	empty request bodies.  Further, reply with 411 if the content
-	length is not specified.
+	* httpAdapter.c: 
+	Bugs: 1292955. Accept URIs other than /cimom and empty request
+	bodies.  Further, reply with 411 if the content length is not
+	specified.
 
 2005-09-13  a3schuur
 
-	* Makefile.am, default.reg, interopServerProvider.c: Added
-	interopServerProvider.c This module will support CIM classes needed
-	for SLP support.  This initial version supports CIM_Namespace
-	read-only mode. You can now enumerate (names and instance) class
-	CMI_Namespace
+	* Makefile.am, default.reg, interopServerProvider.c: 
+	Added interopServerProvider.c This module will support CIM classes
+	needed for SLP support.  This initial version supports
+	CIM_Namespace read-only mode. You can now enumerate (names and
+	instance) class CMI_Namespace
 
 2005-09-12  tyreld
 
-	* control.c, providerRegister.c
-	sfcBroker.c, sfcb.cfg.pre.in, man/sfcbd.1.pre.in
+	* control.c, providerRegister.c, sfcBroker.c, sfcb.cfg.pre.in, 
+	man/sfcbd.1.pre.in:
 	Bugs fixed: 1284079. Added config file option to support disabling 
 	the interop namespace.
 
 2005-09-09  mihajlov
 
-	* getSchema.sh.pre.in, sfcbrepos.sh.in,	
-	sfcbstage.sh.in, sfcbunstage.sh.in: 
+	* getSchema.sh.pre.in, sfcbrepos.sh.in,	sfcbstage.sh.in, 
+	sfcbunstage.sh.in: 
 	Bugs: 1284983. Fixed interoperability problems in sfcb scripts in
 	conjunction with ash.
 
@@ -1623,8 +1645,9 @@
 
 2005-08-31  tyreld
 
-	* man/sfcbd.1: Bug 1276160  Update skeleton man pages.
-	Corrected misspelled environment variable.
+	* man/sfcbd.1: 
+	Bug 1276160 Update skeleton man pages.  Corrected misspelled
+	environment variable.
 
 	* man/genSslCert.1, man/getSchema.1, man/sfcbmof.1,
 	man/sfcbrepos.1, man/sfcbstage.1, man/sfcbunstage.1: 
@@ -1642,69 +1665,72 @@
 
 2005-08-31  mihajlov
 
-	* NEWS, README, configure.ac: Bugs fixed: 1209974, 1222948.
-	Updated README and fixed the disable-debug option of configure.
+	* NEWS, README, configure.ac: 
+	Bugs fixed: 1209974, 1222948.  Updated README and fixed the
+	disable-debug option of configure.
 
-	* Makefile.am, configure.ac: Bugs fixed: 1203835. Minor changes in
-	the lex/yacc invocation.  Bumped version number to 0.9.1.
+	* Makefile.am, configure.ac: 
+	Bugs fixed: 1203835. Minor changes in the lex/yacc invocation.
+	Bumped version number to 0.9.1.
 
-	* Makefile.am, sfcb.spec.in: Bugs fixed: 1209974. Added/fixed
-	support for man pages in Makefile and RPM spec.
+	* Makefile.am, sfcb.spec.in: 
+	Bugs fixed: 1209974. Added/fixed support for man pages in Makefile
+	and RPM spec.
 
 2005-08-30  tyreld
 
 	* Makefile.am: Modified so that the sfcb man pages are installed.
 
-	* Makefile.am: Replaced explicit calls to yacc with $(YACC) which
-	is set by the configure script.
+	* Makefile.am: 
+	Replaced explicit calls to yacc with $(YACC) which is set by the
+	configure script.
 
-	* Makefile.am: The sfcb.html file was removed from the CVS tree. It
-	however is still referenced in the Makefile which breaks when
-	attempting to install the missing file. Removed sfcb.html from the
-	Makefile.
+	* Makefile.am: 
+	The sfcb.html file was removed from the CVS tree. It however is
+	still referenced in the Makefile which breaks when attempting to
+	install the missing file. Removed sfcb.html from the Makefile.
 
-	* configure.ac: Added an error message in the event that bison is
-	not found as it is a build requirement.
+	* configure.ac: 
+	Added an error message in the event that bison is not found as it
+	is a build requirement.
 
-	* README: Updated section pertaining to command line options to
-	reflect recent changes.
+	* README: 
+	Updated section pertaining to command line options to reflect
+	recent changes.
 
-	* sfcBroker.c: The interop namespace is now enabled by default, and
-	disabling it will now be supported from the config file in the
-	future. Added usage and version information. Revamped command line
-	processing so that it better conforms to users expected
-	conventions. Please note the new command line options:
+	* sfcBroker.c: 
+	The interop namespace is now enabled by default, and disabling it
+	will now be supported from the config file in the future. Added
+	usage and version information. Revamped command line processing so
+	that it better conforms to users expected conventions. Please note
+	the new command line options:
 
 		Usage: sfcbd [options]
 
 		Options:
-		 -c, --config-file=<FILE>	 use alternative
-	configuration file
-		 -d, --daemon			 run in the background
-		 -h, --help			 display this message and
-	exit
-		 -s, --collect-stats		 turn on runtime statistics
-	collecting
-		 -t, --trace-components=<N|?>	 activate component-level
-	tracing messages where
-						 N is an OR-ed bitmask
-	integer defining the
-						 components to trace; ?
-	lists the available
-						 components with their
-	bitmask and exits
-		 -v, --version			 output version information
-	and exit
+		 -c, --config-file=<FILE>        use alternative config file
+		 -d, --daemon                    run in the background
+		 -h, --help                      display this message and exit
+		 -s, --collect-stats             turn on runtime statistics
+	                                         collecting
+		 -t, --trace-components=<N|?>    activate component-level
+	                                         tracing messages
+	                                         'N' is an OR-ed bitmask
+	                                         integer defining the
+	                                         components to trace 
+	                                         '?' lists the available
+	                                         components with their bitmask
+	         -v, --version                   output version information
 
-		For SBLIM package updates and additional information,
-	please see
-		    the SBLIM homepage at http://sblim.sourceforge.net
+	For SBLIM package updates and additional information,
+	please see the SBLIM homepage at http://sblim.sourceforge.net
 
 2005-08-30  mihajlov
 
-	* httpAdapter.c: Bug fixed: 1276651. Didn't compile under Fedora
-	Core 4 (gcc4).	Needed to change arguments for accept and bind and
-	remove a static/external clash.
+	* httpAdapter.c: 
+	Bug fixed: 1276651. Didn't compile under Fedora Core 4
+	(gcc4). Needed to change arguments for accept and bind and remove
+	a static/external clash.
 
 2005-08-29  bestorga-oss
 
@@ -1740,43 +1766,49 @@
 
 2005-08-02  a3schuur
 
-	* configure.ac, mofc/configure.ac: Added -fsigned-char compile flag
-	to ensure ppc gcc treats char the same way as gcc on ix86
+	* configure.ac, mofc/configure.ac: 
+	Added -fsigned-char compile flag to ensure ppc gcc treats char the
+	same way as gcc on ix86
 
-	* mofc/mofparse.c: fixed [ 1250128 ] sfcbmof fails on ppc
-	char opt; on line 49 changed to int opt;
+	* mofc/mofparse.c: 
+	fixed [ 1250128 ] sfcbmof fails on ppc char opt; on line 49
+	changed to int opt;
 
 2005-07-28  mihajlov
 
-	* sfcb.init-suse.in: Bugs fixed: 1242508.  Typo rcstatus instead of
-	rc_status fixed.
+	* sfcb.init-suse.in: 
+	Bugs fixed: 1242508.  Typo rcstatus instead of rc_status fixed.
 
 2005-07-27  a3schuur
 
-	* fileRepository.c, internalProvider.c: Fixed [ 1246249 ] sfcb
-	fails to correctly locate repository Added getRepDir() routine.
+	* fileRepository.c, internalProvider.c: 
+	Fixed [ 1246249 ] sfcb fails to correctly locate repository Added
+	getRepDir() routine.
 
 2005-07-27  mihajlov
 
 	* Makefile.am, brokerUpc.c, configure.ac, msgqueue.c, msgqueue.h,
-	providerDrv.c, providerMgr.c, sfcb.spec.in: Bugs fixed: 1246130,
-	1246009.  Indications can now be disabled effectively.	Endianness
-	sensitivity removed from msgqueue data structures.
+	providerDrv.c, providerMgr.c, sfcb.spec.in: 
+	Bugs fixed: 1246130, 1246009.  Indications can now be disabled
+	effectively. Endianness sensitivity removed from msgqueue data
+	structures.
 
 2005-07-26  a3schuur
 
 	* wbemcat: fixed debugging adat
 
-	* wbemcat: Fixed [ 1242514 ] wbemcat fails under SuSE nc program
-	not needed anymore. Its function is replaced by a few Perl stmts.
+	* wbemcat: 
+	Fixed [ 1242514 ] wbemcat fails under SuSE nc program not needed
+	anymore. Its function is replaced by a few Perl stmts.
 
 	* args.c, array.c, context.c, datetime.c, enumeration.c,
-	providerDrv.c, string.c, support.c, support.h: Additional cleanup
-	for [ 1245096 ] mem_state set incorrectly by instance:clone()
-	Removed TOOL_MEM_ADD etc defines in support.h Changed
-	MEM_NOT_TRACKED value to -2 - getting better control for memory
-	management
+	providerDrv.c, string.c, support.c, support.h: 
+	Additional cleanup for [ 1245096 ] mem_state set incorrectly by
+	instance:clone() Removed TOOL_MEM_ADD etc defines in support.h
+	Changed MEM_NOT_TRACKED value to -2 - getting better control for
+	memory management
 
-	* instance.c: Fixed [ 1245096 ] mem_state set incorrectly by
-	instance:clone() mem_state now set to MEM_NOT_TRACKED.
+	* instance.c: 
+	Fixed [ 1245096 ] mem_state set incorrectly by instance:clone()
+	mem_state now set to MEM_NOT_TRACKED.
 

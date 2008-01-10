@@ -27,6 +27,7 @@
 #include <string.h>
 
 extern UtilStringBuffer *newStringBuffer(int);
+extern int getControlChars(char *id, char **val);
 
 // These are the constant headers added to all requests
 static const char *headers[] = {
@@ -140,6 +141,7 @@ static size_t writeCb(void *ptr, size_t size, size_t nmemb, void *stream)
 static int genRequest(CurlData *cd, char *url, char **msg)
 {
     CURLcode rv;
+    char *fnc,*fnk;
     
     *msg=NULL;
     
@@ -165,7 +167,18 @@ static int genRequest(CurlData *cd, char *url, char **msg)
     /* Disable SSL verification */
     rv = curl_easy_setopt(cd->mHandle, CURLOPT_SSL_VERIFYHOST, 0);
     rv = curl_easy_setopt(cd->mHandle, CURLOPT_SSL_VERIFYPEER, 0);
-    
+
+    /* set up client side cert usage */ 
+    if (( getControlChars("sslCertificateFilePath", &fnc)==0) &&
+        ( getControlChars("sslKeyFilePath", &fnk) ==0)) {
+       rv = curl_easy_setopt(cd->mHandle, CURLOPT_SSLKEY, fnk);
+       rv = curl_easy_setopt(cd->mHandle, CURLOPT_SSLCERT, fnc);
+    }
+    else {
+       *msg=strdup("Failed to get cert path and/or key file information for client side cert usage.");
+        return 3;
+    }
+
     /* Set transfer timeout to 10 sec */
     rv = curl_easy_setopt(cd->mHandle, CURLOPT_TIMEOUT, 10);
 

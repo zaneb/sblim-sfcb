@@ -1,3 +1,9 @@
+2008-01-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLExport.c:
+	Fixed 1866424: Indication sending via https does not include client cert
+	(patch by Peter Mellquist)
+	
 2008-01-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cmpift.h, cmpimacs.h, interopProvider.h:

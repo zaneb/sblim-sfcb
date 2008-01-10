@@ -14,6 +14,7 @@ Bugs fixed:
 - 1784913 Fixed change filter handling
 - 1816606 Fixed sfcb problem with propertylist in modifyInstance
 - 1850416 Fixed Deadlock in getObjectPath()
+- 1866424 Fixed Indication sending via https does not include client cert
 
 Changes in 1.2.5
 ================

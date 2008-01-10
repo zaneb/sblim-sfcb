@@ -1,6 +1,19 @@
 External Contributions to sfcb
 ******************************
 
+12/13/2007 by Tim Potter, HP
+----------------------------
+--- instance.c.orig	2007-12-14 10:46:37.000000000 +1100
++++ instance.cimXmlGen2007-12-14 10:48:24.000000000 +1100
+@@ -325,6 +325,7 @@
+       if(rc) {
+              CMSetStatus(rc, CMPI_RC_ERR_INVALID_CLASS);
+	          }
++		      Broker->xft->unlockMutex(*mtx);
+		          return NULL;
+			   }
+       }
+
 
 10/23/2007 by Rajib Saha, AMI
 -----------------------------

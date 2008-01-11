@@ -1178,15 +1178,6 @@ static long sizeProperties(ClObjectHdr * hdr, ClSection * s)
    ClProperty *p = (ClProperty *) ClObjectGetClSection(hdr, s);
 
    for (l = s->used; l > 0; l--, p++) {
-        if (hdr->type == HDR_Instance && p->quals & ClProperty_Q_EmbeddedObject) {
-            if ((p->flags & ClProperty_EmbeddedObjectAsString)==0) {
-                p->flags|=ClProperty_EmbeddedObjectAsString;
-                UtilStringBuffer *sb = UtilFactory->newStrinBuffer(1024);
-                instance2xml(p->data.value.inst,sb,0);
-                p->data.value.dataPtr.length = addClString(hdr, sb->ft->getCharPtr(sb));
-                sb->ft->release(sb);
-            }
-        }
         if (p->qualifiers.used)
         sz += sizeQualifiers(hdr, &p->qualifiers);
    }      

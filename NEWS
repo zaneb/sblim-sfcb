@@ -15,6 +15,7 @@ Bugs fixed:
 - 1816606 Fixed sfcb problem with propertylist in modifyInstance
 - 1850416 Fixed Deadlock in getObjectPath()
 - 1866424 Fixed Indication sending via https does not include client cert
+- 1868692 Fixed embedded inst support broken
 
 Changes in 1.2.5
 ================

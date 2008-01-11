@@ -191,6 +191,7 @@ static char *paramType(CMPIType type)
    switch (type & ~CMPI_ARRAY) {
    case CMPI_chars:
    case CMPI_string:
+   case CMPI_instance:
       return "string";
    case CMPI_sint64:
       return "sint64";

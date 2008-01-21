@@ -1,3 +1,7 @@
+2008-01-21 Gary Readler <gdr@us.ibm.com>
+	* dbpAdapter.c,httpAdapter.c
+	fIXED 1854481: bzero() is deprecated
+
 2008-01-11 Sven Schuetz <sven@de.ibm.com>
 
 	* cimXmlRequest.c, objectImpl.c:

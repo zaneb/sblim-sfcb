@@ -1456,7 +1456,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    ru = 1;
    setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, (char *) &ru, sizeof(ru));
 
-   bzero(&sin, sin_len);
+   memset(&sin,0,sin_len);
 
    if (getControlBool("httpLocalOnly", &httpLocalOnly))
       httpLocalOnly=0;

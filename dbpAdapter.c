@@ -605,7 +605,7 @@ int dbpDaemon(int argc, char *argv[], int sslMode, int sfcbPid) {//int argc, cha
    ru = 1;
    setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, (char *) &ru, sizeof(ru));
 
-   bzero(&sin, sin_len);
+   memset(&sin,0,sin_len);
 
    sin.sin_family = AF_INET;
    sin.sin_addr.s_addr = INADDR_ANY;
@@ -722,7 +722,7 @@ int dbpDaemon(int argc, char *argv[], int sslMode, int sfcbPid) {//int argc, cha
    ru = 1;
    setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, (char *) &ru, sizeof(ru));
 
-   bzero(&sin, sin_len);
+   memset(&sin,0,sin_len);
 
    sin.sin_family = AF_INET;
    sin.sin_addr.s_addr = INADDR_ANY;

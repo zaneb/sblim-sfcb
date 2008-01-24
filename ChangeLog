@@ -1,3 +1,8 @@
+2008-01-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* support.c:
+	Fixed 1879262: SFCB does a double free when processing a request
+
 2008-01-21 Gary Readler <gdr@us.ibm.com>
 	* dbpAdapter.c,httpAdapter.c
 	fIXED 1854481: bzero() is deprecated

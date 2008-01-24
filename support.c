@@ -373,9 +373,9 @@ static void __cleanup_mt(void *ptr)
      mt->cleanupDone = 1;
      __flush_mt(mt);
      
-     free(mt->hc.memObjs);
-     free(mt->hc.memEncObjs);
-     free(mt);
+     if (mt->hc.memObjs) free(mt->hc.memObjs);
+     if (mt->hc.memEncObjs) free(mt->hc.memEncObjs);
+     if (mt) free(mt);
    }
    _SFCB_EXIT();
 }

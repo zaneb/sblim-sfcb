@@ -395,6 +395,7 @@ static int spSendMsg(int *to, int *from, int n, struct iovec *iov, int size)
    
    msg.msg_name = NULL;
    msg.msg_namelen = 0;
+   msg.msg_flags = 0;
    msg.msg_iov = iov;
    msg.msg_iovlen = n;   
 
@@ -518,6 +519,7 @@ static int spSendCtl(int *to, int *from, short code, unsigned long count,
    
    msg.msg_name = NULL;
    msg.msg_namelen = 0;
+   msg.msg_flags = 0;
    msg.msg_iov = iov;
    msg.msg_iovlen = 1;
 

@@ -18,6 +18,7 @@ Bugs fixed:
 - 1868692 Fixed embedded inst support broken
 - 1854481 Fixed bzero() is deprecated
 - 1879262 Fixed SFCB does a double free when processing a request
+- 1879330 Fixed Uninitialised memory in spSendMsg() and spSendCtl()
 
 Changes in 1.2.5
 ================

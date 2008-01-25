@@ -1,3 +1,9 @@
+2008-01-25 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* msgqueue.c:
+	Fixed 1879330: Uninitialised memory in spSendMsg() and spSendCtl()
+	(patch by Tim Potter)
+	
 2008-01-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* support.c:

@@ -112,6 +112,7 @@ are already installed on your Linux/Unix system:
 	curl-devel >= 7.11.1-1
 
 If you want to enable SSL support, the following packages are needed as well:
+
 	openssl > 0.9.7
 	openssl-devel > 0.9.7
 
@@ -123,23 +124,21 @@ If you want to enable SLP support, the following packages are needed as well:
 	openslp (available from http://www.openslp.org)
 	sfcc (available from our sblim cvs)
 
-Make sure all the required packages are installed prior to attempting to
-build sfcb or any of the supporting packages. In particular, libtool-1.5.8
-(or higher) is shipped only by most the most recent Linux distro's (mid 2005),
-so you may need to install a more recent version than what is on your system. 
-Missing or outdated packages will result in a variety of build problems... 
+Make sure all the required packages are installed prior to attempting
+to build sfcb or any of the supporting packages. You may need to
+install a more recent version than what is on your system.  Missing or
+outdated packages will result in a variety of build problems.
 
 
 3. Quick Install Instructions
 =============================
-
 Note: the quick install supports you in setting up an environment including
 providers and additional support programs. If you are interested only in 
-sfcb refer to the instructions in 5.
+sfcb refer to the instructions in section 5.
 
 The sfcb package includes an install script to download (via CVS), build and
 install sfcb and all its supporting packages. To download the sfcb package
-and run the install script type
+and run the install script:
 
 	cvs -z3 -d:pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim co -P sfcb
 	cd sfcb
@@ -149,7 +148,7 @@ You will be prompted for various install options, as well as the root password
 when it is needed for system operations that require root access. Most of the
 time the default options should work. By default sfcb will download its source
 files and supporting packages to $PWD/sfcb/ in the current working directory
-and install itself under /usr/local/...
+and install itself under /usr/local/
 
 
 4. Change History
@@ -157,44 +156,42 @@ and install itself under /usr/local/...
 
 See NEWS file of the sfcb package
 
+
 5. Downloading sfcb and mofc Source
 ===================================
 
 Option 1:
 --------
-You can download and extract the tarball containing both sfcb
-and mofc ready to build
 
-	wget http://kent.dl.sourceforge.net/sourceforge/sblim/sblim-sfcb-1.1.0.tar.bz2
-	bzip2 -dc sblim-sfcb-1.1.0.tar.bz2 | tar -xv
-
-For alternative SourceForge mirrors of this tarball see
+You can download and extract the tarball containing both sfcb and mofc
+ready to build:
 
 	http://sourceforge.net/projects/sblim/
 
-and click on the sblim-sfcb package.
+and click on the sblim-sfcb package to download.  Then unpack: 
+
+	tar jxf sblim-sfcb-x.y.z.tar.bz2
 
 You are now ready to build sfcb and mofc (see Section 6 below).
 
 Option 2:
 --------
-To download the latest (unsupported) version of sfcb from CVS source type
+
+To download the latest (unsupported) version of sfcb from CVS source:
 
 	cvs -z3 -d:pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim co -P sfcb
 
-You must also download the required mofc (MOF compiler) package into the
-sfcb source directory
+You must also download the required mofc (MOF compiler) package INTO
+the sfcb source directory:
 
 	cd sfcb
 	cvs -z3 -d:pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim co -P mofc
 
-Then run autoconfiscate to setup the autoconf files
+Then run autoconfiscate to setup the autoconf files.  From the sfcb directory:
 
 	./autoconfiscate.sh
-	cd -
 
 You are now ready to build sfcb and mofc (see Section 6 below).
-
 
 
 6. Building sfcb and mofc
@@ -204,14 +201,16 @@ building and installing them on different Linux/Unix systems. In most cases
 the autoconf scripts will determine the correct build/compile options for
 your system.
 
-After downloading the sfcb and mofc, either from CVS or tarball, built the
-packages by
+After downloading the sfcb and mofc, either from CVS or tarball, build the
+packages by:
 
-	cd sfcb (or cd sblim-sfcb-1.1.0)
         ./configure
         make
-        su -c 'make install'
-        su -c 'make postinstall'
+
+And as root:
+
+        make install
+        make postinstall
 
 NOTE: By default, sfcb is installed with a prefix of /usr/local, which is
 acceptable for local installation. If sfcb is installed via RPM, the
@@ -319,6 +318,7 @@ If CIMSCHEMA_SOURCE points to a local file, curl is not required.
 Alternatevily, these environment variables may be set before invoking
 getSchema.sh.
 
+
 10. Starting and Stopping sfcb
 ==============================
 sfcb installs an init.d style script under /usr/local/etc/init.d/ to allow
@@ -374,6 +374,7 @@ This should be done as a last resort - always try a clean shutdown first.
 To stop and restart sfcbd type
 
 	/usr/local/etc/init.d/sfcb restart
+
 
 11. Command Line Options
 ========================
@@ -646,6 +647,7 @@ SBLIM_TRACE_FILE=/path/to/file
 	Setting this envorinment variable causes the trace messages to be
 	written to a file instead.
 
+
 14. Installing CMPI Providers
 =============================
 As mentioned, sfcb supports CMPI providers. In order to install a CMPI provider
@@ -656,6 +658,7 @@ commands as described in 17. and 18.
 Ideally the provider package is enabled for sfcb, so that a make install and/or
 make postinstall will care for the proper registration. For instance most
 of the SBLIM providers are prepared for sfcb. See 22. below.
+
 
 15. Testing sfcb with wbemcat and xmltest
 =========================================
@@ -843,19 +846,19 @@ loop and so be able to debug the normal execution of this process:
 
 The following is the relevant code from providerDrv.c
 
-2003          if (once && debugMode && parms->req->operation != OPS_LoadProvider) for (;;) {
-2004             fprintf(stdout,"-#- Pausing for provider: %s -pid: %d\n",name,currentProc);
-2005             once=0;
-2006             sleep(5);
-2007          }
-2008
-2009          if (parms->req->operation == OPS_LoadProvider || debugMode) {
-2010             processProviderInvocationRequestsThread(parms);
-2011          }
-2012          else {
-2013             pthread_create(&t, &tattr, (void *(*)(void *))
-2014                 processProviderInvocationRequestsThread, (void *) parms);
-2015          }
+2932          if (once && debugMode && parms->req->operation != OPS_LoadProvider) for (;;) {
+2933             fprintf(stdout,"-#- Pausing for provider: %s -pid: %d\n",name,currentProc);
+2934             once=0;
+2935             sleep(5);
+2936          }
+2937
+2938          if (parms->req->operation == OPS_LoadProvider || debugMode) {
+2939             processProviderInvocationRequestsThread(parms);
+2940          }
+2941          else {
+2942             pthread_create(&t, &tattr, (void *(*)(void *))
+2943                 processProviderInvocationRequestsThread, (void *) parms);
+2944          }
   
 [How pause class provider to attach debugger?]
 
@@ -881,7 +884,7 @@ and
 
 Note: CIM namespaces are automatically converted to lowercase letters 
 when looking for the corresponding directory tree under
-/usr/local/var/lib/sfcb/registration/repository/...
+/usr/local/var/lib/sfcb/registration/repository/
 
 Each namespace leaf directory contains a single file called "classSchemas"
 that contains a compiled binary representation of *all* the CIM classes
@@ -1046,6 +1049,7 @@ in the staging area.
 after which you must still rebuild the class repository and restart sfcb as
 before.
 
+
 19. Indications
 ===============
 Indications are enabled via the configure script. They are enabled by default.
@@ -1098,6 +1102,7 @@ implementation like the following is perfectly ok:
    type: indication instance
    namespace: root/cimv2
 #
+
 
 20. Alternative Class Providers
 ===============================
@@ -1193,6 +1198,7 @@ This has been tested for the following platforms:
 s390 (31-bit)
 ppc (32-bit)
 
+
 21. Authentication Support
 ==========================
 sfcb can be configured to support HTTP basic authentication and authentication
@@ -1237,6 +1243,7 @@ shared memory. This list is automatically updated if a client can both
 supply a trusted certificate AND succesfully authenticate via HTTP basic
 authentication. In the case of special requirements, it is necessary to
 implement a custom certificate authentication library.
+
 
 22. Installing Existing SBLIM Providers
 =======================================
@@ -1567,7 +1574,7 @@ The SBLIM project maintains a mailing list to which you should direct all
 questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
 To subscribe to this mailing list visit
 
-        http://lists.sourceforge.net/lists/listinfo/sblim-issues
+        http://lists.sourceforge.net/lists/listinfo/sblim-devel
 
 The SBLIM Project Bug tracking page can be found at
 
@@ -1598,4 +1605,16 @@ Problem:  Can't register new providers; sfcbrepos/sfcbmof fails after upgrading
 Cause:    Most likely you forgot to get the new version of mofc and an old, 
           incompatible version of sfcbmof was left behind from a previous install.
 Solution: Build the latest mofc with sfcb as described in Sec. 6.  If using the
-          same install path as before, this will overwrite the old sfcbmof
+          same install path as before, this will overwrite the old sfcbmof. Make
+	  sure to run sfcbrepos or rerun the entire sfcb build process again to 
+	  create a new copy of the repository
+
+Problem:  "unsupported object implementation format" error on startup
+Cause:    The repository is old or corrupt
+Solution: Run sfcbrepos to rebuild the repository
+
+Problem:  sfcbrepos does not exist
+Cause:    You are building sfcb from CVS and do not have the mof compiler
+Solution: Build the latest mofc with sfcb as described in Sec. 6.  Note: you 
+          should NOT run configure in the mofc subdirectory; the sfcb configure
+	  script will take care of this

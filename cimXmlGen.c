@@ -317,7 +317,7 @@ CMPIValue makeFromEmbeddedObject(XtokValue value, char *ns)
 
 CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, char* ns)
 {
-   CMPIValue value,*valp;
+   CMPIValue value;
    CMPIType t;
 
    if (type==0) {
@@ -399,7 +399,7 @@ CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, c
       value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(val.value, NULL);
       break;
    case CMPI_ref:
-      valp=getKeyValueTypePtr("ref", NULL, ref, &value, &t, ns);
+      getKeyValueTypePtr("ref", NULL, ref, &value, &t, ns);
       break;
    case CMPI_instance:
       value=makeFromEmbeddedObject(val, ns);

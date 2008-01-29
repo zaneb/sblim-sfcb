@@ -468,7 +468,7 @@ void *swapI32toP32Class(ClClass * cls, int *size)
    int sz=p32SizeClassH(hdr,cls) + CLEXTRA;
    struct utsname uName;
    static int first=1;
-   char *cn;
+   // char *cn;
    
    if (first) {
       uname(&uName);
@@ -480,7 +480,7 @@ void *swapI32toP32Class(ClClass * cls, int *size)
       first=0;
    }
    
-   cn=(char*)ClObjectGetClString(&cls->hdr, &cls->name);
+   // cn=(char*)ClObjectGetClString(&cls->hdr, &cls->name);
    
    CLP32_ClClass *nc = (CLP32_ClClass *) calloc(1,sz);
 

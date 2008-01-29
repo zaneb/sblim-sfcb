@@ -196,11 +196,7 @@ static CMPIEnumeration *cpyEnumResponses(BinRequestContext * binCtx,
                                  int arrLen)
 {
    int i, c, j;
-   union o {
-     CMPIInstance *inst;
-     CMPIObjectPath *path;
-     CMPIConstClass *cls;
-   } object;
+   CMPIInstance *inst;
    CMPIArray *ar,*art;
    CMPIEnumeration *enm;
    CMPIStatus rc;
@@ -213,14 +209,14 @@ static CMPIEnumeration *cpyEnumResponses(BinRequestContext * binCtx,
    for (c = 0, i = 0; i < binCtx->rCount; i++) {
       for (j = 0; j < resp[i]->count; c++, j++) {
          if (binCtx->type == CMPI_ref)
-            object.path = relocateSerializedObjectPath(resp[i]->object[j].data);
+            relocateSerializedObjectPath(resp[i]->object[j].data);
          else if (binCtx->type == CMPI_instance)
-            object.inst = relocateSerializedInstance(resp[i]->object[j].data);
+            relocateSerializedInstance(resp[i]->object[j].data);
          else if (binCtx->type == CMPI_class) {
-            object.cls = relocateSerializedConstClass(resp[i]->object[j].data);
+            relocateSerializedConstClass(resp[i]->object[j].data);
          }
-    //     object.inst=CMClone(object.inst,NULL);
-         rc=CMSetArrayElementAt(ar,c, (CMPIValue*)&object.inst, binCtx->type);
+    //     inst=CMClone(inst,NULL);
+         rc=CMSetArrayElementAt(ar,c, (CMPIValue*)&inst, binCtx->type);
       }
    }
 

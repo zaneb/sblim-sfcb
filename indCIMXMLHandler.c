@@ -119,13 +119,12 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    CMPIArgs *in,*out=NULL;
    CMPIObjectPath *op;
    CMPIData rv;
-   CMPIInstance *tci;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerCreateInstance");
    
    if (interOpNameSpace(cop,&st)==0) _SFCB_RETURN(st);
 
-   tci=internalProviderGetInstance(cop,&st);
+   internalProviderGetInstance(cop,&st);
    if (st.rc==CMPI_RC_ERR_FAILED) _SFCB_RETURN(st);
    if (st.rc==CMPI_RC_OK) {
       setStatus(&st,CMPI_RC_ERR_ALREADY_EXISTS,NULL);
@@ -169,13 +168,12 @@ CMPIStatus IndCIMXMLHandlerDeleteInstance(CMPIInstanceMI * mi,
    CMPIArgs *in,*out=NULL;
    CMPIObjectPath *op;
    CMPIData rv;
-   CMPIInstance *tci;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerDeleteInstance");  
     
    if (interOpNameSpace(cop,&st)==0) _SFCB_RETURN(st);
    
-   tci=internalProviderGetInstance(cop,&st);
+   internalProviderGetInstance(cop,&st);
    if (st.rc) _SFCB_RETURN(st);
    
    in=CMNewArgs(_broker,NULL);

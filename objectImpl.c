@@ -839,8 +839,7 @@ int ClClassGetQualifierAt(ClClass * cls, int id, CMPIData * data, char **name)
 
 int ClClassGetQualifierCount(ClClass * cls)
 {
-   ClQualifier *p;
-   p = (ClQualifier *) ClObjectGetClSection(&cls->hdr, &cls->qualifiers);
+   ClObjectGetClSection(&cls->hdr, &cls->qualifiers);
    return cls->qualifiers.used;
 }
 
@@ -1853,8 +1852,7 @@ char *ClInstanceToString(ClInstance * inst)
 
 int ClInstanceGetPropertyCount(ClInstance * inst)
 {
-   ClProperty *p;
-   p = (ClProperty *) ClObjectGetClSection(&inst->hdr, &inst->properties);
+   ClObjectGetClSection(&inst->hdr, &inst->properties);
    return inst->properties.used;
 }
 
@@ -2051,8 +2049,7 @@ char *ClObjectPathToString(ClObjectPath * op)
 
 int ClObjectPathGetKeyCount(ClObjectPath * op)
 {
-   ClProperty *p;
-   p = (ClProperty *) ClObjectGetClSection(&op->hdr, &op->properties);
+   ClObjectGetClSection(&op->hdr, &op->properties);
    return op->properties.used;
 }
 
@@ -2215,8 +2212,7 @@ void ClArgsFree(ClArgs * arg)
 int ClArgsGetArgCount(ClArgs * arg)
 {
    _SFCB_ENTER(TRACE_OBJECTIMPL, "ClArgsGetArgCount");
-   ClProperty *p;
-   p = (ClProperty *) ClObjectGetClSection(&arg->hdr, &arg->properties);
+   ClObjectGetClSection(&arg->hdr, &arg->properties);
    _SFCB_RETURN(arg->properties.used);
 }
 

@@ -832,7 +832,6 @@ static CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
                                        CMPIObjectPath * ref, CMPIConstClass * cc)
 {
    ClassRegister *cReg;
-   CMPIConstClass * cl;
    int rc;
    
    CMPIStatus st = { CMPI_RC_OK, NULL };
@@ -848,12 +847,11 @@ static CMPIStatus ClassProviderCreateClass(CMPIClassMI * mi,
    char *pn = (char*)cc->ft->getCharSuperClassName(cc);
    char *cn = (char*)cc->ft->getCharClassName(cc);
 
-   cl = getClass(cReg,cn);
-   if (cl) {
+   if (getClass(cReg,cn)) {
       st.rc = CMPI_RC_ERR_ALREADY_EXISTS;
       _SFCB_RETURN(st);
    }
-   if (pn && (cl=getClass(cReg,pn))==NULL) {
+   if (pn && getClass(cReg,pn)==NULL) {
       st.rc = CMPI_RC_ERR_INVALID_SUPERCLASS;
       _SFCB_RETURN(st);
    }

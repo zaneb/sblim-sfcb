@@ -112,6 +112,21 @@ char *XMLEscape(char *in, int *outlen)
    _SFCB_RETURN(out);
 }
 
+/** Takes a string representation of type and value, creates corresponding 
+  * CMPI data type.
+  *
+  * @param type is the string representation of a CMPI type ("boolean", 
+  *             "numeric", "ref").  Any other value is treated as CMPI_chars
+  * @param value is the string representation of the CMPI value to be assigned
+  * @param ref is
+  * @param val is the CMPI value created (is modified)
+  * @param typ is the CMPI type (is modified)
+  * @param scopingNS is
+  *
+  * @return The created CMPIValue
+  *
+  */
+
 CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
                               CMPIValue * val, CMPIType * typ, char *scopingNS)
 {

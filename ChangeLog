@@ -1,3 +1,8 @@
+2008-01-29 Gary Readler <gdr@us.ibm.com>
+
+	* httpAdapter.c:
+	Fixed 1725489 sfcb sending zero sized chunks in response
+
 
 2008-01-29 Gary Readler <gdr@us.ibm.com>
 

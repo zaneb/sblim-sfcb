@@ -506,10 +506,16 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
             else len += ls[i] = strlen(rs.segments[i].txt);
          }
       }
-
-      sprintf(str, "\r\n%x\r\n",len);
-      commWrite(*(ctx->commHndl), str, strlen(str));
-
+      /*  
+       * make sure we do not have a 0 len , this would 
+       * indicate the end of the chunk data. 
+       */
+      if(len != 0) {
+        sprintf(str, "\r\n%x\r\n",len);     
+        commWrite(*(ctx->commHndl), str, strlen(str));
+        _SFCB_TRACE(1,("---  writeChunkResponse chunk amount %x ",len));
+      }
+      
       for (len = 0, i = 0; i < 7; i++) {
          if (rs.segments[i].txt) {
             if (rs.segments[i].mode == 2) {

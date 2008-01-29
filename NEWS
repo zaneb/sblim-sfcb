@@ -20,6 +20,7 @@ Bugs fixed:
 - 1879262 Fixed SFCB does a double free when processing a request
 - 1879330 Fixed Uninitialised memory in spSendMsg() and spSendCtl()
 - 1878340 Fixed sfcb does not complete chunked transfer , sfcb hangs
+- 1725489 Fixed sfcb:Zero sized chunks in response
 
 Changes in 1.2.5
 ================

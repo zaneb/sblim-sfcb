@@ -1114,7 +1114,7 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
          _SFCB_TRACE(1,("--- writing chunk")); 
          ctx->chunkFncs->writeChunk(ctx, resp);
          _SFCB_TRACE(1,("--- back from writing chunk"));
-         if (resp->moreChunks) spSendAck(resultSockets.receive);
+         if (resp->moreChunks) spSendAck(sockets.receive);
          
          releaseHeap(hc);
          

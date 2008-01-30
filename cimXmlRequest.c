@@ -1670,10 +1670,12 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    
    if (req->objectName.bindings.next==0) {
+      free(sreq);
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
            "Associator operation for classes not supported")));
    }
    if (!req->objNameSet) {
+      free(sreq);
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment
                    (CMPI_RC_ERR_INVALID_PARAMETER, 
                    "ObjectName parameter required")));
@@ -1859,10 +1861,12 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    
    if (req->objectName.bindings.next==0) {
+      free(sreq);
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment(CMPI_RC_ERR_NOT_SUPPORTED, 
            "References operation for classes not supported")));
    }
    if (!req->objNameSet) {
+      free(sreq);
       _SFCB_RETURN(iMethodErrResponse(hdr, getErrSegment
                    (CMPI_RC_ERR_INVALID_PARAMETER, 
                    "ObjectName parameter required")));

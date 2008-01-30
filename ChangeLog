@@ -1,3 +1,8 @@
+2008-01-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlGen.c:
+	Fixed 1879334: Memory leaks in cimXmlRequest.c (patch by Tim Potter)
+
 2008-01-29 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlGen.c, cimcClientSfcbLocal.c, classProvider.c, 

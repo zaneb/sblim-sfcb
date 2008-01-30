@@ -22,6 +22,7 @@ Bugs fixed:
 - 1878340 Fixed sfcb does not complete chunked transfer , sfcb hangs
 - 1725489 Fixed sfcb:Zero sized chunks in response
 - 1879319 Fixed various unused variable warnings
+- 1879334 Fixed Memory leaks in cimXmlRequest.c
 
 Changes in 1.2.5
 ================

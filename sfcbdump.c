@@ -400,6 +400,7 @@ static int dumpQualifiers(const ClClass *cls, const char *prefix)
 	  sprintf(prefixbuf,"%s -- Qualifier[%3d]:",prefix,i);
 	  dumpString(&cls->hdr,&cq[i].id,prefixbuf);
 	}
+	free(prefixbuf);
       }
     } else {
       fprintf(stderr,"%s to many qualifier entries %d\n",

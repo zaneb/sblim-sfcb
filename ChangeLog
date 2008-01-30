@@ -5,6 +5,9 @@
 
 	* brokerUpc:
 	Fixed 1879454: Memory leaks in brokerUpc.c (patch by Tim Potter)
+
+	* sfcbdump.c:
+	Fixed 1883049: Memory leak in sfcbdump (patch by Tim Potter)
 	
 2008-01-29 Chris Buccella  <buccella@linux.vnet.ibm.com>
 

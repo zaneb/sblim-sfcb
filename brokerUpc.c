@@ -512,8 +512,8 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
             inst = relocateSerializedInstance(resp->object[0].data);
             tInst=inst->ft->clone(inst,NULL);
             memLinkInstance(tInst);
-            free(resp);
          }
+	 free(resp);
       }
       else st = setErrorStatus(irc);
       
@@ -587,8 +587,8 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
             op = relocateSerializedObjectPath(resp->object[0].data);
             tOp=op->ft->clone(op,NULL);
             memLinkObjectPath(tOp);
-            free(resp);
          }
+	 free(resp);
       }
       else st = setErrorStatus(irc);
       
@@ -658,9 +658,7 @@ static CMPIStatus modifyInstance(const CMPIBroker * broker,
          closeProviderContext(&binCtx);
          resp->rc--;
          buildStatus(resp,&st);
-         if (resp->rc == CMPI_RC_OK) {
-            free(resp);
-         }
+	 free(resp);
       }
       else st = setErrorStatus(irc);
       
@@ -714,9 +712,7 @@ static CMPIStatus deleteInstance(const CMPIBroker * broker,
          closeProviderContext(&binCtx);
          resp->rc--;
          buildStatus(resp,&st);
-         if (resp->rc == CMPI_RC_OK) {
-            free(resp);
-         }
+	 free(resp);
       }
       else st = setErrorStatus(irc);
       
@@ -1006,8 +1002,8 @@ static CMPIData invokeMethod(const CMPIBroker * broker, const CMPIContext * cont
                }
             }
             rv=resp->rv;
-            free(resp);
          }
+	 free(resp);
       }
       else st = setErrorStatus(irc);
       

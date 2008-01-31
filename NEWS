@@ -25,6 +25,7 @@ Bugs fixed:
 - 1879334 Fixed Memory leaks in cimXmlRequest.c
 - 1879454 Fixed Memory leaks in brokerUpc.c
 - 1883049 Fixed Memory leak in sfcbdump
+- 1883796 Fixed unused variables in objectpath.c
 
 Changes in 1.2.5
 ================

@@ -312,9 +312,7 @@ char *oft_toCharsNormalized(const CMPIObjectPath * cop, CMPIConstClass * cls,
                             int full, CMPIStatus * rc)
 {
    char str[2048] = { 0 };
-   CMPIString *ns;
    CMPIString *cn;
-   CMPIString *hn;
    CMPIString *name;
    CMPIData data;
    CMPIStatus irc;
@@ -322,10 +320,6 @@ char *oft_toCharsNormalized(const CMPIObjectPath * cop, CMPIConstClass * cls,
    unsigned int i, n, m;
    char *v;
 
-   if (full) {
-      hn = __oft_getHostName(cop, rc);
-      ns = __oft_getNameSpace(cop, rc);
-   }
    cn = __oft_getClassName(cop, rc);
    strcat(str, (char *) cn->hdl);
 

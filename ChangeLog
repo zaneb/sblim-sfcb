@@ -1,3 +1,8 @@
+2008-01-31 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* objectpath.c:
+	Fixed 1883796: unused variables in objectpath.c
+
 2008-01-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlRequest.c:

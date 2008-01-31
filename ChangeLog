@@ -3,6 +3,10 @@
 	* objectpath.c:
 	Fixed 1883796: unused variables in objectpath.c
 
+	* cimXmlGen.c:
+	Fixed 1883826: getKeyValueTypePtr() always returns false for boolean 
+	values
+	
 2008-01-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlRequest.c:

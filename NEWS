@@ -26,6 +26,7 @@ Bugs fixed:
 - 1879454 Fixed Memory leaks in brokerUpc.c
 - 1883049 Fixed Memory leak in sfcbdump
 - 1883796 Fixed unused variables in objectpath.c
+- 1883826 Fixed getKeyValueTypePtr() always returns false for boolean values
 
 Changes in 1.2.5
 ================

@@ -134,7 +134,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
       if (strcasecmp(type, "string") == 0);
       else if (strcasecmp(type, "boolean") == 0) {
          *typ = CMPI_boolean;
-         if (strcasecmp(type, "true") == 0)
+         if (strcasecmp(value, "true") == 0)
             val->boolean = 1;
          else
             val->boolean = 0;

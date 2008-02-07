@@ -569,7 +569,7 @@ inline static   void CMSetStatusWithChars(const CMPIBroker *mb, CMPIStatus* st, 
               ( CMPIInstance* inst, const CMPIObjectPath *obj)
 	{ return ((inst)->ft->setObjectPath((inst),(obj))); }
 #else
-  #define CMSetObjectPath(i,obj)        ((i)->ft->getObjectPath((i),(obj)))
+  #define CMSetObjectPath(i,obj)        ((i)->ft->setObjectPath((i),(obj)))
 #endif
 #endif
 

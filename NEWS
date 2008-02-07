@@ -27,6 +27,7 @@ Bugs fixed:
 - 1883049 Fixed Memory leak in sfcbdump
 - 1883796 Fixed unused variables in objectpath.c
 - 1883826 Fixed getKeyValueTypePtr() always returns false for boolean values
+- 1888889 Fixed Typo in sfcb's cmpimacs.h for CMSetObjectPath macro
 
 Changes in 1.2.5
 ================

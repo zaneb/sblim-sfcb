@@ -1,3 +1,8 @@
+2008-02-14 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* getSchema.sh.pre.in:
+	Fixed 1894061: Allow sfcb to use updated versions of the CIM Schema
+
 2008-02-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cmpimacs.h:

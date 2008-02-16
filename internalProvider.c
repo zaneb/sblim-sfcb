@@ -443,6 +443,7 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    if (addBlob(bnss,cns,key,blob,(int)len)) {
       CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
       st.msg=sfcb_native_new_CMPIString("Unable to write to repository",NULL,0);
+      free(blob);
       return st;
    }
    free(blob);

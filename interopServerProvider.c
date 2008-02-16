@@ -137,7 +137,7 @@ static void gatherNameSpacesData(const char *dn, int dbl,
      if (nsOpt!=1) { 
         if (nsOpt==0) gatherNameSpacesData(n,dbl,rslt,op,ci,nsOpt);
      }
-     
+     free(n);
    }
    closedir(dir);     
 } 

@@ -219,18 +219,21 @@ static ClassRegister *newClassRegister(char *fname)
          if (vrp->size==sizeof(ClVersionRecord) && vrp->type==HDR_Version) vRec=1;
          else if (vrp->size==sizeof(ClVersionRecord)<<24 && vrp->type==HDR_Version) {
             mlogf(M_ERROR,M_SHOW,"--- %s is in wrong endian format - directory skipped\n",fin);
+	    fclose(in);	    
             return NULL;
          }
       }
       
       if (vRec==0 && hdr.type!=HDR_Class) {
          mlogf(M_ERROR,M_SHOW,"--- %s contains non-class record(s) - directory skipped\n",fin);
+	 fclose(in);
          return NULL;
      }
       
       buf = (char *) malloc(hdr.size);
       if (buf==NULL) {
          mlogf(M_ERROR,M_SHOW,"--- %s contains record(s) that are too long - directory skipped\n",fin);
+	 fclose(in);
          return NULL;
       }
       
@@ -243,6 +246,7 @@ static ClassRegister *newClassRegister(char *fname)
             cr->vr=(ClVersionRecord*)buf;
             if (strcmp(cr->vr->id,"sfcb-rep")) {
                mlogf(M_ERROR,M_SHOW,"--- %s contains invalid version record - directory skipped\n",fin);
+	       fclose(in);
                return NULL;
             }   
             vRec=0;
@@ -255,6 +259,7 @@ static ClassRegister *newClassRegister(char *fname)
             if (cr->vr) v=cr->vr->objImplLevel;
             mlogf(M_ERROR,M_SHOW,"--- %s contains unsupported object implementation format (%d) - directory skipped\n",
                fin,v);
+	    fclose(in);
             return NULL;
          }
 
@@ -280,12 +285,14 @@ static ClassRegister *newClassRegister(char *fname)
       }
       else {
          mlogf(M_ERROR,M_SHOW,"--- %s contains invalid record(s) - directory skipped\n",fin);
+	 fclose(in);
          return NULL;
       }
       first=0;
 
    }     
 
+   fclose(in);
  
    if (cr->vr) {
       mlogf(M_INFO,M_SHOW,"--- ClassProvider for %s (%d.%d-%d) using %ld bytes\n", 
@@ -550,8 +557,8 @@ static void removeClass(ClassRegister * cr,  const char *clsName)
             }   
          }
          fwrite(buf,1,hdr.size,repnew);
-         free(buf);
       }   
+      free(buf);
    }
    fclose(repold);
    fclose(repnew);

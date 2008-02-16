@@ -1,3 +1,9 @@
+2008-02-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* classProvider.c, classSchema2c.c, internalProvider.c, 
+	interopServerProvider.c:
+	Fixed 1891702: Fix various resource leaks (patch by Tim Potter)
+
 2008-02-14 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* getSchema.sh.pre.in:

@@ -18,6 +18,11 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+02/15/2008 by Tim Potter, HP
+----------------------------
+[ 1891702 ] Fix various resource leaks
+
+
 01/24/2008 by Tim Potter, HP
 ----------------------------
 [ 1879319 ] Fix various unused variable warnings

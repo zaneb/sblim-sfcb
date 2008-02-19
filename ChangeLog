@@ -3,6 +3,8 @@
 	* internalProvider.c:
 	Fixed 1892621: Memory leak in associator and associatorNames
 	(patch by Tim Potter)
+	Fixed 1893300: More memory leaks in associators and associatorNames
+	(patch by Tim Potter)
 
 2008-02-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
 

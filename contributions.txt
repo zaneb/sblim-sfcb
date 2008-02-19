@@ -18,6 +18,13 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+02/19/2008 by Tim Potter, HP
+----------------------------
+[ 1892621 ] Memory leak in associator and associatorNames
+[ 1893300 ] More memory leaks in associators and associatorNames
+[ 1896551 ] Memory leak on loadProvider() failure
+
+
 02/15/2008 by Tim Potter, HP
 ----------------------------
 [ 1891702 ] Fix various resource leaks

@@ -32,6 +32,7 @@ Bugs fixed:
 - 1891702 Fixed various resource leaks
 - 1892621 Fixed Memory leak in associator and associatorNames
 - 1893300 Fixed More memory leaks in associators and associatorNames
+- 1896551 Fixed Memory leak on loadProvider() failure
 
 Changes in 1.2.5
 ================

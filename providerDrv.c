@@ -2641,6 +2641,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
               info->providerName);
       mlogf(M_ERROR,M_SHOW,msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
+      free(info);
       _SFCB_RETURN(resp);
    }
    case -2:  {
@@ -2649,6 +2650,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
               info->providerName);
       mlogf(M_ERROR,M_SHOW,msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
+      free(info);
       _SFCB_RETURN(resp);
    }
    default:

@@ -30,6 +30,7 @@ Bugs fixed:
 - 1883826 Fixed getKeyValueTypePtr() always returns false for boolean values
 - 1888889 Fixed Typo in sfcb's cmpimacs.h for CMSetObjectPath macro
 - 1891702 Fixed various resource leaks
+- 1892621 Fixed Memory leak in associator and associatorNames
 
 Changes in 1.2.5
 ================

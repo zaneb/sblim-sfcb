@@ -654,6 +654,7 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
          }
          if (matched==0) refs->ft->removeCurrent(refs);
       }
+      pn->ft->release(pn);
    }
    
    if (associatorFunction==REF) {

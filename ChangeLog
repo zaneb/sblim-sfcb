@@ -1,3 +1,9 @@
+2008-02-19 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* internalProvider.c:
+	Fixed 1892621: Memory leak in associator and associatorNames
+	(patch by Tim Potter)
+
 2008-02-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* classProvider.c, classSchema2c.c, internalProvider.c, 

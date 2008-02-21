@@ -1,3 +1,8 @@
+2008-02-21 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* internalProvider.c:
+	Altered last change for 1893300 to solve double free problem
+
 2008-02-19 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* internalProvider.c:

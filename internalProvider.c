@@ -732,7 +732,6 @@ CMPIStatus getRefs(const CMPIContext * ctx,  const CMPIResult * rslt,
                CMPIObjectPath *op=CMGetObjectPath(aci,NULL);
                CMReturnObjectPath(rslt,op);
             }
-	    ((UtilStringBuffer *)an)->ft->release(an);
          }
       }  
       

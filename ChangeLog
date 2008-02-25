@@ -1,3 +1,8 @@
+2008-02-25 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* internalProvider.c:
+	Altered another change from 1893300
+
 2008-02-21 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* internalProvider.c:

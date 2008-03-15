@@ -33,6 +33,7 @@ Bugs fixed:
 - 1892621 Fixed Memory leak in associator and associatorNames
 - 1893300 Fixed More memory leaks in associators and associatorNames
 - 1896551 Fixed Memory leak on loadProvider() failure
+- 1914551 Fixed sfcb file descriptor leaks
 
 Changes in 1.2.5
 ================

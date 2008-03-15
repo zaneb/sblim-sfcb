@@ -1281,6 +1281,9 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    unlockUpCall(Broker);
 
    free(resp);
+   if(!localMode){
+  	close(binCtx.provA.socket);
+   }
    closeProviderContext(&binCtx);
 
    _SFCB_RETURN(ccl);

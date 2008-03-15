@@ -1550,6 +1550,7 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
 static void* release(ClientEnv* ce)
 {
    void *lib=ce->hdl;
+   close(sfcbSockets.send);
    free(ce);
    uninitGarbageCollector();
    return lib;

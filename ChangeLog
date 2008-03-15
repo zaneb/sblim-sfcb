@@ -1,6 +1,6 @@
 2008-03-14 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
-	* cimcClientSfcbLocal, providerMgr.c:
+	* cimcClientSfcbLocal.c, providerMgr.c:
 	Fixed 1914551: sfcb file descriptor leaks
 	(patch by J. Vinodhini)
 

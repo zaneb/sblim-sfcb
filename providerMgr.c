@@ -854,6 +854,8 @@ void processProviderMgrRequests()
    if (interOpProvInfoPtr!=forceNoProvInfoPtr) {
      sleep(2);
      startUpProvider("root/interop","$InterOpProvider$");
+     sleep(2);
+     startUpProvider("root/interop","$ProfileProvider$");
    }   
 #endif
       

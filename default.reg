@@ -19,6 +19,13 @@
    unload: never
    namespace: root/interop
 #
+[$ProfileProvider$]
+   provider: ProfileProvider
+   location: sfcProfileProvider
+   type: instance method
+   unload: never
+   namespace: root/interop
+#
 [$QualifierProvider$]
    provider: QualifierProvider
    location: sfcQualifierProvider
@@ -48,6 +55,13 @@
    provider: InteropProvider
    location: sfcInteropProvider
    type: instance method
+   namespace: root/interop
+#
+[CIM_RegisteredProfile]
+   provider: ProfileProvider
+   location: sfcProfileProvider
+   type: instance method
+   unload: never
    namespace: root/interop
 #
 [CIM_Namespace]

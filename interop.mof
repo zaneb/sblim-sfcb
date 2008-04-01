@@ -16,8 +16,12 @@ class DMY_ObjectManagerCommunicationMechanism : CIM_ObjectManagerCommunicationMe
 };
 
 class DMY_RegisteredSubProfile : CIM_RegisteredSubProfile
-{
-};
+ {
+ };
+
+class DMY_RegisteredProfile : CIM_RegisteredProfile
+ {
+ };
 
 class DMY_Namespace : CIM_Namespace
 {

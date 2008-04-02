@@ -18,9 +18,15 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+04/02/2008 by Rajib Saha
+------------------------
+[ 1928685 ] sfcb httpAdapter memory leak while authenticating
+
+
 03/14/2008 by J. Vinodhini, AMI
 -------------------------------
 [ 1914551 ] sfcb file descriptor leaks
+
 
 02/19/2008 by Tim Potter, HP
 ----------------------------

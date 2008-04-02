@@ -1576,19 +1576,17 @@ To subscribe to this mailing list visit
 
         http://lists.sourceforge.net/lists/listinfo/sblim-devel
 
-The SBLIM Project Bug tracking page can be found at
+The SBLIM Project Bug tracking page can be found at:
 
 	http://sourceforge.net/tracker/?group_id=128809&atid=712784
 
-
-28. Known Bugs
-==============
-- The HTTP xml codec does not correctly handle arrays and reference arrays.
-- Namespace enforcement is not correct when provider registration has no namespace definition.
-- (others?)
+Here you will find a list of all known bugs for SFCB (set the Category
+field to "sfcb").  You can also report new bugs and request features.
+When reporting a bug, please provide a good description and attach any
+useful files, such as patches or the XML used to generate the error.
 
 
-29. Troubleshooting
+28. Troubleshooting
 ===================
 
 Problem:  Receive "error while loading shared libraries" on sfcbd startup

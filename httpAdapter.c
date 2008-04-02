@@ -190,6 +190,7 @@ int baValidate(char *cred, char **principal)
    static void *authLib=NULL;
    static Authenticate authenticate=NULL;
    char dlName[512];
+   int ret = 0;
 
    if (strncasecmp(cred,"basic ",6)) return 0;
    auth=decode64(cred+6);
@@ -214,8 +215,12 @@ int baValidate(char *cred, char **principal)
    }
 
    *principal=strdup(auth);
-   if (authenticate(auth,pw)) return 1;
-   return 0;
+   if (authenticate(auth,pw)) 
+   		ret = 1;
+
+   free(auth);
+
+   return ret;
 }
 
 static void handleSigChld(int sig)

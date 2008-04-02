@@ -1,3 +1,9 @@
+2008-04-02 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	Fixed 1928685 sfcb httpAdapter memory leak while authenticating
+	(patch by Rajib Saha)
+
 2008-03-14 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c, providerMgr.c:

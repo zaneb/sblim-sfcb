@@ -252,6 +252,18 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
                 
                 
   for(i = 0; instances[i] != NULL; i++) {
+
+    //check to see if this profile wants to be advertised
+    CMPIArray* atArray;
+    atArray = CMGetProperty(instances[i], "AdvertiseTypes", &status).value.array;
+    if (status.rc == CMPI_RC_ERR_NO_SUCH_PROPERTY || 
+        atArray == NULL || 
+	CMGetArrayElementAt(atArray, 0, &status).value.uint16 != 3) {
+
+      _SFCB_TRACE(1,("--- profile does not want to be advertised; skipping"));
+      continue;
+    }
+
     objectpath = instances[i]->ft->getObjectPath(instances[i], &status);
     if(status.rc) {
       //no object path ??
@@ -271,7 +283,7 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
     //if the result is not null, we are operating on a CIM_RegisteredSubProfile, which we don't want
     if(!enumeration || !enumeration->ft->hasNext(enumeration, &status)) {
       CMPIData propertyData;
-                        
+
       propertyData = instances[i]->ft->getProperty(instances[i],
                                                    "RegisteredOrganization",
                                                    &status);

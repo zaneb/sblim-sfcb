@@ -1474,6 +1474,10 @@ standalone process above.
 For the syntax of the advertised attributes see the WBEM SLP Template available
 from the dmtf website at: http://www.dmtf.org/standards/wbem/wbem.1.0.en
 
+If you have a provider registered for a CIM_RegisteredProfile class and you 
+would like it to be advertised via slp, ensure that the AdvertiseTypes property
+is set to {3}.  Any other state will prevent the profile name from being 
+included in the slp advertisement.
 
 26. Files
 =========

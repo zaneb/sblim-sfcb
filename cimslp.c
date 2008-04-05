@@ -80,6 +80,11 @@ static void handleSigUsr1(int sig)
 	exit(0);
 }
 
+static void handleSigHup(int sig)
+{
+	mlogf(M_INFO,M_SHOW,"--- %s restarting %d\n",processName,getpid());
+}
+
 #ifdef HAVE_SLP
 
 void forkSLPAgent(cimomConfig cfg, int slpLifeTime, int sleepTime)
@@ -96,7 +101,7 @@ void forkSLPAgent(cimomConfig cfg, int slpLifeTime, int sleepTime)
 	setSignal(SIGUSR1, handleSigUsr1,0);
 	setSignal(SIGINT, SIG_IGN,0);
 	setSignal(SIGTERM, SIG_IGN,0);
-	setSignal(SIGHUP, SIG_IGN,0);
+	setSignal(SIGHUP, handleSigHup,0);
 	if(strcasecmp(cfg.commScheme, "http") == 0) {
 		processName = "SLP Agent for HTTP Adapter";
 	} else {
@@ -110,6 +115,7 @@ void forkSLPAgent(cimomConfig cfg, int slpLifeTime, int sleepTime)
       	/*if awaked-exit*/
       	exit(0);
     } else {
+        slppid=pid;
         addStartedAdapter(pid);
     }
 }

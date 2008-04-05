@@ -24,5 +24,6 @@
 #define _cimslp_h
 
 int slpAgent();
+int slppid;
 
 #endif

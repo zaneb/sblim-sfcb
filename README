@@ -381,7 +381,7 @@ To stop and restart sfcbd type
 sfcb has a few commandline options that enable/disable particular runtime
 features. They are
 
-	sfcbd [-t N|?] [-d] [-v] [-h] [-s] [-c FILE] 
+	sfcbd [-t N|?] [-d] [-v] [-h] [-k] [-s] [-c FILE] 
 
 where
 	-t, --trace-components<N|?>
@@ -422,6 +422,10 @@ where
 
 	-h, --help
 		Displays usage infomration and exits.
+
+	-k, --color-trace
+		Prints trace output in a different color per process for easier
+		debugging.  Not recommended when redirecting output to a file.
 
 	-s, --collect-stats	
 		Turn on runtime statistics collecting. If enabled then

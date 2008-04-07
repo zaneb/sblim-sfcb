@@ -1,7 +1,12 @@
+2008-04-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* sfcBroker.c, trace.h, trace.c:
+	Fixed 1875122: sfcb colorized traces
+
 2008-04-02 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:
-	Fixed 1928685 sfcb httpAdapter memory leak while authenticating
+	Fixed 1928685: sfcb httpAdapter memory leak while authenticating
 	(patch by Rajib Saha)
 
 2008-03-14 Chris Buccella  <buccella@linux.vnet.ibm.com>

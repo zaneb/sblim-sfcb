@@ -499,6 +499,7 @@ static void usage(int status)
 		" -c, --config-file=<FILE>        use alternative configuration file",
 		" -d, --daemon                    run in the background",
 		" -h, --help                      display this message and exit",
+		" -k, --color-trace               color the trace output of each process",
 		" -s, --collect-stats             turn on runtime statistics collecting",
 		" -t, --trace-components=<N|?>    activate component-level tracing messages where",
 		"                                 N is an OR-ed bitmask integer defining the",
@@ -541,6 +542,7 @@ int main(int argc, char *argv[])
    else name = argv[0];
 
    collectStat=0;
+   colorTrace=0;
    processName="sfcbd";
    provPauseStr=getenv("SFCB_PAUSE_PROVIDER");
    httpPauseStr=getenv("SFCB_PAUSE_CODEC");
@@ -557,13 +559,14 @@ int main(int argc, char *argv[])
 	   { "config-file",      required_argument, 0,        'c' },
 	   { "daemon",           no_argument,       0,        'd' },
 	   { "help",             no_argument,       0,        'h' },
+	   { "color-trace",      no_argument,       0,        'k' },
 	   { "collect-stats",    no_argument,       0,        's' },
 	   { "trace-components", required_argument, 0,        't' },
 	   { "version",          no_argument,       0,        'v' },
 	   { 0, 0, 0, 0 }
        };
 
-   while ((c = getopt_long(argc, argv, "c:dhst:v", long_options, 0)) != -1)
+   while ((c = getopt_long(argc, argv, "c:dhkst:v", long_options, 0)) != -1)
    {
        switch(c)
        {
@@ -580,6 +583,10 @@ int main(int argc, char *argv[])
 
 	   case 'h':
 	       usage(0);
+
+	   case 'k':
+	       colorTrace = 1;
+	       break;
 
 	   case 's':
 	       collectStat = 1;

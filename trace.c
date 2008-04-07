@@ -74,6 +74,23 @@ TraceId traceIds[]={
   {NULL,0}
 };   
 
+/* 
+  set the fg color on the console 
+  reset = 1 will restore previous color set
+  see trace.h for valid attr, fg, bg values
+
+  TODO: fix reset of fg color.  currently we assume it was white
+*/
+void changeTextColor(int reset)
+{ 
+  char command[13];
+  int attr = (reset) ? RESET : currentProc % 2;
+  int fg = (reset) ? WHITE : currentProc % 7;
+  int bg =  BLACK;
+  if (fg == BLACK) fg = WHITE;
+  sprintf(command, "%c[%d;%d;%dm", 0x1B, attr, fg + 30, bg + 40);
+  fprintf(stderr, "%s", command);
+}
 
 void _sfcb_trace_start(int n)
 {
@@ -142,6 +159,7 @@ void _sfcb_trace(int level, char *file, int line, char *msg)
          mlogf(M_ERROR,M_SHOW, "--- Couldn't open trace file");
          return;
       }
+      colorTrace = 0; /* prevents escape chars from getting into the file */
    }
    else {
       ferr = stderr;
@@ -156,8 +174,16 @@ void _sfcb_trace(int level, char *file, int line, char *msg)
       }
    }
 
-   fprintf(ferr, "[%i] [%s] %d --- %s(%i) : %s\n", level, tm, currentProc, file,
-           line, msg);
+   if (colorTrace) {
+     changeTextColor(0);
+     fprintf(ferr, "[%i] [%s] %d --- %s(%i) : %s\n", level, tm, currentProc, file,
+	     line, msg);
+     changeTextColor(1);
+   }
+   else {
+     fprintf(ferr, "[%i] [%s] %d --- %s(%i) : %s\n", level, tm, currentProc, file,
+	     line, msg);
+   }
 
    if ((_SFCB_TRACE_FILE != NULL)) {
       fclose(ferr);

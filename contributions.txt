@@ -18,6 +18,11 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+04/08/2008 by Tim Potter
+------------------------
+[ 1893302 ] New CMPI arrays not tracked
+
+
 04/02/2008 by Rajib Saha
 ------------------------
 [ 1928685 ] sfcb httpAdapter memory leak while authenticating

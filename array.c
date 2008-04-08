@@ -386,7 +386,7 @@ CMPIArray *internal_native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
 CMPIArray *native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
                                  ClObjectHdr * hdr)
 {
-    return internal_native_make_CMPIArray(av, rc, hdr, MEM_NOT_TRACKED);
+    return internal_native_make_CMPIArray(av, rc, hdr, MEM_TRACKED);
 }
 
 CMPIStatus sfcb_simpleArrayAdd(CMPIArray * array, CMPIValue * val, CMPIType type)

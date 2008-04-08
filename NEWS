@@ -36,6 +36,7 @@ Bugs fixed:
 - 1896551 Fixed Memory leak on loadProvider() failure
 - 1914551 Fixed sfcb file descriptor leaks
 - 1928685 Fixed sfcb httpAdapter memory leak while authenticating
+- 1893302 Fixed New CMPI arrays not tracked
 
 Changes in 1.2.5
 ================

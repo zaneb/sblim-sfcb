@@ -1,3 +1,9 @@
+2008-04-08 Chris Buccella  <chris@thefoot.local>
+
+	* array.c:
+	Fixed 1893302: New CMPI arrays not tracked
+	(patch by Tim Potter)
+	
 2008-04-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* sfcBroker.c, trace.h, trace.c:

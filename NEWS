@@ -8,6 +8,7 @@ New features:
 - 1830770 disallow external http connections
 - 1894061 Allow sfcb to use updated versions of the CIM Schema. 2.17 is default
 - 1875122 sfcb colorized traces
+- 1828500 CMPI 2.0 support
 
 Bugs fixed:
 - 1793223 Fixed cross-built ClProperty size mismatch

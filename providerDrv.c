@@ -1860,7 +1860,7 @@ static BinResponseHdr *enumInstances(BinRequestHdr * hdr, ProviderInfo * info,
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
    TIMING_START(hdr,info)
-   rci = info->instanceMI->ft->enumInstances(info->instanceMI, ctx, result, path, (const char**)props);
+   rci = info->instanceMI->ft->enumerateInstances(info->instanceMI, ctx, result, path, (const char**)props);
    TIMING_STOP(hdr,info)
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
@@ -1909,7 +1909,7 @@ static BinResponseHdr *enumInstanceNames(BinRequestHdr * hdr,
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
    TIMING_START(hdr,info)
-   rci = info->instanceMI->ft->enumInstanceNames(info->instanceMI, ctx, result,
+   rci = info->instanceMI->ft->enumerateInstanceNames(info->instanceMI, ctx, result,
                                                path);
    TIMING_STOP(hdr,info)
    _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
@@ -2039,9 +2039,9 @@ static BinResponseHdr *execQuery(BinRequestHdr * hdr, ProviderInfo * info, int r
          qs->keys[c]=NULL;
 
          setResultQueryFilter(result,qs);      
-         _SFCB_TRACE(1, ("--- Calling enumInstances provider %s",info->providerName));
+         _SFCB_TRACE(1, ("--- Calling enumerateInstances provider %s",info->providerName));
 	 TIMING_START(hdr,info)
-         rci = info->instanceMI->ft->enumInstances(info->instanceMI, ctx, result,
+         rci = info->instanceMI->ft->enumerateInstances(info->instanceMI, ctx, result,
                       path,NULL); 
 	 TIMING_STOP(hdr,info)
          _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));

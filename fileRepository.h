@@ -18,6 +18,7 @@
  * Directory/file based respository implementation.
  *
 */
+#include <stdio.h>
 #include "sfcUtil/utilft.h"
 
 #ifndef _FILEREPOSITORY_
@@ -39,12 +40,12 @@ typedef struct blobIndex {
 #define NEW(td) (td*)calloc(sizeof(td),1)
 
 extern void freeBlobIndex(BlobIndex **bi, int all);
-extern int getIndex(char *ns, char *cls, int elen, int mki, BlobIndex** bip);
-extern int addBlob(char *ns, char * cls, char *id, void *blob, int len);
-extern int deleteBlob(char *ns, char * cls, char *id);
-extern void *getBlob(char *ns, char *cls, char *id, int *len);
-extern int existingBlob(char *ns, char * cls, char *id);
-extern int existingNameSpace(char *ns);
+extern int getIndex(const char *ns, const char *cls, int elen, int mki, BlobIndex** bip);
+extern int addBlob(const char *ns, const char * cls, char *id, void *blob, int len);
+extern int deleteBlob(const char *ns, const char * cls, const char *id);
+extern void *getBlob(const char *ns, const char *cls, const char *id, int *len);
+extern int existingBlob(const char *ns, const char * cls, const char *id);
+extern int existingNameSpace(const char *ns);
 extern void* getFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
 extern void* getNext(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
 

@@ -57,7 +57,7 @@ extern void setStatus(CMPIStatus *st, CMPIrc rc, const char *msg);
 
 static const CMPIBroker *_broker;
 
-static char * repositoryNs (char * nss)
+static const char * repositoryNs (const char * nss)
 {
   if (strcasecmp(nss,pg_interopNs)==0) {
     return interopNs;
@@ -90,7 +90,7 @@ static CMPIInstance *instifyBlob(void * blob) {
 	}	
 }
 
-static CMPIInstance* ipGetBlob(char *ns, char *cls, char *id, int *len) {
+static CMPIInstance* ipGetBlob(const char *ns, const char *cls, char *id, int *len) {
 	void *blob=getBlob(ns, cls, id, len);
    	return instifyBlob(blob);
 }
@@ -124,7 +124,7 @@ const char **getKeyList(const CMPIObjectPath *cop)
 static char **nsTab=NULL;
 static int nsTabLen=0;
 
-static int testNameSpace(char *ns, CMPIStatus *st)
+static int testNameSpace(const char *ns, CMPIStatus *st)
 {
     char **nsp=nsTab;
     
@@ -151,7 +151,7 @@ static int testNameSpace(char *ns, CMPIStatus *st)
     return 0;
 }
 
-static BlobIndex *_getIndex(char *ns, char *cn)
+static BlobIndex *_getIndex(const char *ns, const char *cn)
  {
    BlobIndex *bi;
    if (getIndex(ns,cn,strlen(ns)+strlen(cn)+64,0,&bi))
@@ -203,9 +203,9 @@ CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
    CMPIString *cn = CMGetClassName(ref, NULL);
    CMPIString *ns = CMGetNameSpace(ref, NULL);
    CMPIObjectPath *cop;
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
-   char *bnss=repositoryNs(nss);
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *cns=cn->ft->getCharPtr(cn,NULL);
+   const char *bnss=repositoryNs(nss);
    size_t ekl;
    int i,ac=0;
    char copKey[8192]="";
@@ -271,9 +271,9 @@ static CMPIStatus enumInstances(CMPIInstanceMI * mi,
    BlobIndex *bi;
    CMPIString *cn = CMGetClassName(ref, NULL);
    CMPIString *ns = CMGetNameSpace(ref, NULL);
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
-   char *bnss=repositoryNs(nss);
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *cns=cn->ft->getCharPtr(cn,NULL);
+   const char *bnss=repositoryNs(nss);
    int len,i,ac=0;
    CMPIInstance *ci;
    CMPIArgs *in,*out;
@@ -373,9 +373,9 @@ CMPIInstance *internalProviderGetInstance(const CMPIObjectPath * cop, CMPIStatus
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *key = normalizeObjectPathChars(cop);
    CMPIInstance *ci=NULL;
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
-   char *bnss=repositoryNs(nss);
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *cns=cn->ft->getCharPtr(cn,NULL);
+   const char *bnss=repositoryNs(nss);
    CMPIStatus st = { CMPI_RC_OK, NULL };
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "internalProviderGetInstance");
@@ -437,9 +437,9 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    CMPIString *cn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *key = normalizeObjectPathChars(cop);
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
-   char *bnss=repositoryNs(nss);
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *cns=cn->ft->getCharPtr(cn,NULL);
+   const char *bnss=repositoryNs(nss);
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderCreateInstance");
    
@@ -494,9 +494,9 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
    CMPIString *cn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *key = normalizeObjectPathChars(cop);
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
-   char *bnss=repositoryNs(nss);
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *cns=cn->ft->getCharPtr(cn,NULL);
+   const char *bnss=repositoryNs(nss);
    const char **keyList;
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderSetInstance");
@@ -547,9 +547,9 @@ CMPIStatus InternalProviderDeleteInstance(CMPIInstanceMI * mi,
    CMPIString *cn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    char *key = normalizeObjectPathChars(cop);
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *cns=cn->ft->getCharPtr(cn,NULL);
-   char *bnss=repositoryNs(nss);
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *cns=cn->ft->getCharPtr(cn,NULL);
+   const char *bnss=repositoryNs(nss);
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderDeleteInstance");
    

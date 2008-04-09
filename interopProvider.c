@@ -769,9 +769,9 @@ CMPIStatus InteropProviderCreateInstance(
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(cop, NULL);
-   char *cns = cn->ft->getCharPtr(cn,NULL);
+   const char *cns = cn->ft->getCharPtr(cn,NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
-   char *nss = ns->ft->getCharPtr(ns,NULL);
+   const char *nss = ns->ft->getCharPtr(ns,NULL);
    CMPIContext *ctxLocal;
    CMPIInstance *ciLocal;
    CMPIValue valSNS;
@@ -870,7 +870,7 @@ CMPIStatus InteropProviderModifyInstance(
 {
 	CMPIStatus st = { CMPI_RC_OK, NULL };
 	CMPIString *cn = CMGetClassName(cop, NULL);
-	char *cns = cn->ft->getCharPtr(cn,NULL);
+	const char *cns = cn->ft->getCharPtr(cn,NULL);
 	CMPIContext *ctxLocal;
 	
 	_SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderModifyInstance");
@@ -927,9 +927,9 @@ CMPIStatus InteropProviderDeleteInstance(
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(cop, NULL);
-   char *cns = cn->ft->getCharPtr(cn,NULL);
+   const char *cns = cn->ft->getCharPtr(cn,NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
-   char *nss = ns->ft->getCharPtr(ns,NULL);
+   const char *nss = ns->ft->getCharPtr(ns,NULL);
    char *key = normalizeObjectPathCharsDup(cop);
    Filter *fi;
    Subscription *su;

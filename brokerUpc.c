@@ -401,11 +401,11 @@ static CMPIEnumeration *genericEnumRequest(const CMPIBroker * broker,
                               context, result, copLocalCall, resultclass, role);
               break;
 		    case OPS_EnumerateInstances:
-		      rci = pInfo->instanceMI->ft->enumInstances(pInfo->instanceMI,
+		      rci = pInfo->instanceMI->ft->enumerateInstances(pInfo->instanceMI,
 		                      context, result, copLocalCall, props);
 		      break;
 		    case OPS_EnumerateInstanceNames:
-		      rci = pInfo->instanceMI->ft->enumInstanceNames(pInfo->instanceMI,
+		      rci = pInfo->instanceMI->ft->enumerateInstanceNames(pInfo->instanceMI,
 		                      context, result, copLocalCall);		                      
 		      break;
 		  }

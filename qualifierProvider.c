@@ -48,7 +48,7 @@ static const CMPIBroker *_broker;
  * 
  */
 
-static char * repositoryNs (char * nss)
+static const char * repositoryNs (const char * nss)
 {
   if (strcasecmp(nss,pg_interopNs)==0) {
     return interopNs;
@@ -56,7 +56,7 @@ static char * repositoryNs (char * nss)
     return nss;
   }   
 }
-static int testNameSpace(char *ns, CMPIStatus *st)
+static int testNameSpace(const char *ns, CMPIStatus *st)
 {
     if (interOpProvInfoPtr==forceNoProvInfoPtr) {
        if (strcasecmp(ns,interopNs)==0) {
@@ -98,9 +98,9 @@ static CMPIStatus QualifierProviderGetQualifier(CMPIQualifierDeclMI * mi,
    CMPIString *qn = CMGetClassName(cop, NULL); //qualifier name - abused classname to hold it
    CMPIString *ns = CMGetNameSpace(cop, NULL);
    void *blob;
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *qns=qn->ft->getCharPtr(qn,NULL);
-   char *bnss=repositoryNs(nss);	
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *qns=qn->ft->getCharPtr(qn,NULL);
+   const char *bnss=repositoryNs(nss);	
 	
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "QualifierProviderGetQualifier");
    _SFCB_TRACE(1,("--- Get Qualifier for %s %s %s",nss,qualrep,qns));
@@ -144,8 +144,8 @@ static CMPIStatus QualifierProviderSetQualifier(CMPIQualifierDeclMI * mi,
 	void *blob;
 	CMPIString *ns = CMGetNameSpace(cop, NULL);
 	char *qns = (char *)qual->ft->getCharQualifierName(qual);
-	char *nss=ns->ft->getCharPtr(ns,NULL);
-	char *bnss=repositoryNs(nss);
+	const char *nss=ns->ft->getCharPtr(ns,NULL);
+	const char *bnss=repositoryNs(nss);
    
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "QualifierProviderSetQualifier");
    _SFCB_TRACE(1,("--- Set Qualifier for %s %s %s",nss,qualrep,qns));
@@ -183,9 +183,9 @@ static CMPIStatus QualifierProviderDeleteQualifier(CMPIQualifierDeclMI * mi,
    CMPIString *qn = CMGetClassName(cop, NULL);
    CMPIString *ns = CMGetNameSpace(cop, NULL);
 
-   char *nss=ns->ft->getCharPtr(ns,NULL);
-   char *qns=qn->ft->getCharPtr(qn,NULL);
-   char *bnss=repositoryNs(nss);
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *qns=qn->ft->getCharPtr(qn,NULL);
+   const char *bnss=repositoryNs(nss);
 
    _SFCB_ENTER(TRACE_INTERNALPROVIDER, "QualifierProviderDeleteQualifier");
    
@@ -210,8 +210,8 @@ static CMPIStatus QualifierProviderEnumQualifiers(CMPIQualifierDeclMI * mi,
 										CMPIObjectPath * ref)
 {
 	CMPIString *ns = CMGetNameSpace(ref, NULL);
-	char *nss=ns->ft->getCharPtr(ns,NULL);
-	char *bnss=repositoryNs(nss);
+	const char *nss=ns->ft->getCharPtr(ns,NULL);
+	const char *bnss=repositoryNs(nss);
 	BlobIndex *bi;
 	int len=0;
 	void *blob;

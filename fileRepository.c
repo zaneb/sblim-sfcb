@@ -67,7 +67,7 @@ static char *getRepDir()
    return repfn;      
 }
 
-static int getIndexRecord(BlobIndex * bi, char *key, size_t keyl, char **keyb, size_t *keybl)
+static int getIndexRecord(BlobIndex * bi, const char *key, size_t keyl, char **keyb, size_t *keybl)
 /* returns -1 failure, 0 OK, 1 not found (only with key)
  */
 {
@@ -190,7 +190,7 @@ void freeBlobIndex(BlobIndex **bip, int all)
    *bip=NULL;
 }
 
-static int indxLocate(BlobIndex *bi,char *key)
+static int indxLocate(BlobIndex *bi,const char *key)
 {
    int loc;
    int kl=strlen(key);
@@ -272,7 +272,7 @@ static int adjust(BlobIndex *bi, int pos, int adj)
    return 0;
 }
 
-static int rebuild(BlobIndex *bi, char *id, void *blob, int blen)
+static int rebuild(BlobIndex *bi, const char *id, void *blob, int blen)
 {
    int ofs,len,xt=0,dt=0;
    unsigned long pos;
@@ -317,7 +317,7 @@ static int rebuild(BlobIndex *bi, char *id, void *blob, int blen)
    return 0;
 }
 
-int getIndex(char *ns, char *cls, int elen, int mki, BlobIndex **bip)
+int getIndex(const char *ns, const char *cls, int elen, int mki, BlobIndex **bip)
 {
    BlobIndex *bi;
    char *fn;
@@ -371,7 +371,7 @@ int getIndex(char *ns, char *cls, int elen, int mki, BlobIndex **bip)
     return 1;
 }
 
-int addBlob(char *ns, char * cls, char *id, void *blob, int len)
+int addBlob(const char *ns, const char * cls, char *id, void *blob, int len)
 {
    int keyl=strlen(ns)+strlen(cls)+strlen(id)+strlen(BASE);
    int es,ep,rc;
@@ -439,7 +439,7 @@ int addBlob(char *ns, char * cls, char *id, void *blob, int len)
    return 0;
 }
 
-int deleteBlob(char *ns, char * cls, char *id)
+int deleteBlob(const char *ns, const char * cls, const char *id)
 {
    int keyl=strlen(ns)+strlen(cls)+strlen(id)+strlen(BASE);
    BlobIndex *bi;
@@ -461,7 +461,7 @@ int deleteBlob(char *ns, char * cls, char *id)
    return 1;
 }
 
-int existingBlob(char *ns, char * cls, char *id)
+int existingBlob(const char *ns, const char * cls, const char *id)
 {
    int keyl=strlen(ns)+strlen(cls)+strlen(id)+strlen(BASE);
    BlobIndex *bi;
@@ -476,7 +476,7 @@ int existingBlob(char *ns, char * cls, char *id)
    return r;
 }
 
-void *getBlob(char *ns, char *cls, char *id, int *len)
+void *getBlob(const char *ns, const char *cls, const char *id, int *len)
 {
    int keyl=strlen(ns)+strlen(cls)+strlen(id)+strlen(BASE);
    BlobIndex *bi;
@@ -507,7 +507,7 @@ void *getBlob(char *ns, char *cls, char *id, int *len)
    return NULL;
 }
 
-int existingNameSpace(char *ns)
+int existingNameSpace(const char *ns)
 {
    int keyl;
    char *fn,*p;

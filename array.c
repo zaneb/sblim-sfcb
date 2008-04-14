@@ -264,6 +264,7 @@ void sfcb_native_array_increase_size(const CMPIArray * array, CMPICount incremen
       a->data = (struct native_array_item *)
          realloc(a->data, a->max * sizeof(struct native_array_item));
       memset(&a->data[a->size], 0, sizeof(struct native_array_item) * increment);
+      __make_NULL(a , a->size , a->max - 1, 0);
    }
    a->size += increment;
 }

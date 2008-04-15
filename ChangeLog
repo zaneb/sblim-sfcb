@@ -1,7 +1,18 @@
+2008-04-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cmpift.h, context.c, instance.c:
+	Fixed compiler warnings introduced by 1828500 fix
+
 2008-04-14 Gary Readler  <gdr@us.ibm.com>
 
 	* array.c:
-	Fixed 1942130: segfault when array increased by CMSetArrayElementAt . 
+	Fixed 1942130: segfault when array increased by CMSetArrayElementAt
+
+2008-04-09 Sean Swehla
+	* Makefile.am, brokerUpc.c, cmpidt.h, cmpift.h, cmpimacs.h, cmpios.h, 
+	cmpipl.h, fileRepository.c, fileRepository.h, internalProvider.c, 
+	interopProvider.c, providerDrv.c, qualifierProvider.c
+	Added 1828500: CMPI 2.0 support
 	
 2008-04-08 Chris Buccella  <chris@thefoot.local>
 
@@ -14,12 +25,22 @@
 	* sfcBroker.c, trace.h, trace.c:
 	Fixed 1875122: sfcb colorized traces
 
+2008-04-05 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimslp.c, cimslp.h, cimslpCMPI.c:
+	SLP support for 1930758
+	
 2008-04-02 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:
 	Fixed 1928685: sfcb httpAdapter memory leak while authenticating
 	(patch by Rajib Saha)
 
+2008-04-01 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* profileProvider.c, Makefile.am, profileMgr.c, default.reg, interop.mof:
+	Added 1930758: Profile Registration support
+	
 2008-03-14 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c, providerMgr.c:

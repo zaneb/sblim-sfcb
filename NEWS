@@ -9,6 +9,7 @@ New features:
 - 1894061 Allow sfcb to use updated versions of the CIM Schema. 2.17 is default
 - 1875122 sfcb colorized traces
 - 1828500 CMPI 2.0 support
+- 1930758 Profile Registration Support
 
 Bugs fixed:
 - 1793223 Fixed cross-built ClProperty size mismatch

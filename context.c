@@ -140,7 +140,7 @@ static unsigned int __cft_getEntryCount(const CMPIContext * ctx, CMPIStatus * rc
 }
 
 
-static CMPIStatus __cft_addEntry(CMPIContext * ctx,
+static CMPIStatus __cft_addEntry(const CMPIContext * ctx,
                                  const char *name,
                                  const CMPIValue * value, CMPIType type)
 {

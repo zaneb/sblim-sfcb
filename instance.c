@@ -233,7 +233,7 @@ static CMPICount __ift_getPropertyCount(const CMPIInstance * ci, CMPIStatus * rc
 }
 
 
-static CMPIStatus __ift_setProperty(CMPIInstance * instance,
+static CMPIStatus __ift_setProperty(const CMPIInstance * instance,
                                     const char *name,
                                     const CMPIValue * value, CMPIType type)
 {
@@ -541,7 +541,7 @@ static struct {
    unsigned int (*getPropertyCount)
       (const CMPIInstance* inst, CMPIStatus* rc);
    CMPIStatus (*setProperty)
-      (CMPIInstance* inst, const char *name,
+      (const CMPIInstance* inst, const char *name,
        const CMPIValue* value, CMPIType type);
    CMPIObjectPath* (*getObjectPath)
       (const CMPIInstance* inst, CMPIStatus* rc);
@@ -634,7 +634,7 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
 
    CMPIStatus tmp1, tmp2, tmp3;
    CMPIString *str;
-   char *ns, *cn;
+   const char *ns, *cn;
    int j,state;
 
    instance.instance = i;

@@ -2210,7 +2210,7 @@ struct _CMPIErrorFT {
 	 @param rc Output: Service return status (suppressed when NULL).
 	 @return Pointer to char *representation.
       */
-    const char *(*getCharPtr) (const CMPIString * st, CMPIStatus * rc);
+    char *(*getCharPtr) (const CMPIString * st, CMPIStatus * rc);
   };
 
 

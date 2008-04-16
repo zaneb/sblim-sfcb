@@ -1,3 +1,9 @@
+2008-04-16 Gary Readler  <gdr@us.ibm.com>
+
+	* cimcClientSfcbLocal.c configure.ac enumeration.c providerMgr.c providerMgr.h
+	  sfcbenum.h :
+	added 1828585: Large Volume Support (LocalConnect)
+
 2008-04-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cmpift.h, context.c, instance.c:

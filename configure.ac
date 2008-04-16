@@ -38,6 +38,12 @@ AC_ARG_ENABLE(debug,
 	[enable_debug="yes"]
 	)	
 
+AC_ARG_ENABLE(large_volume_support,
+	[AC_HELP_STRING([--enable-large_volume_support],
+		[large_volume_support uses http chunk for enumclasses,enumclassnames,enuminstances,enuminstancenames.])],
+	[large_volume_support=$enableval],
+	[large_volume_support="no"]
+	)	
 AC_ARG_ENABLE(ssl,
 	[AC_HELP_STRING([--enable-ssl],
 		[include ssl support for SFCB.])])
@@ -159,6 +165,10 @@ if test "$enable_pam" == "yes"; then
 else
    SFCB_CONF_BASICAUTHLIB=sfcBasicAuthentication   
    SFCB_CONF_DOBASICAUTH=false
+fi
+if test "$large_volume_support" == "yes" ; then
+   echo "enabled to compile for large volume support"
+   SFCB_CPPFLAGS="-DLARGE_VOL_SUPPORT $SFCB_CPPFLAGS"
 fi
 AC_SUBST(SFCB_CONF_DOBASICAUTH)
 AC_SUBST(SFCB_CONF_BASICAUTHLIB)

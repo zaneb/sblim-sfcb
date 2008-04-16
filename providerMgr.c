@@ -46,6 +46,14 @@
 #define SFCB_INCL_INDICATION_SUPPORT 1
 #endif
 
+#ifdef LARGE_VOL_SUPPORT
+#include <pthread.h>
+#include "sfcbenum.h"
+void addEnumResponsesLV(BinRequestContext * , BinResponseHdr ** , int );
+int getLastValid(CMPIEnumeration * ) ;
+int enumLock(CMPIEnumeration * ) ;
+int enumUnLock(CMPIEnumeration * ) ;
+#endif
 #ifdef SFCB_IX86
 #define SFCB_ASM(x) asm(x)
 #else
@@ -1208,6 +1216,13 @@ BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
       *count += resp[i]->count;
       resp[i]->rc--;
       if (*err == 0 && resp[i]->rc != 0) *err = i+1;
+      #ifdef LARGE_VOL_SUPPORT
+         if(binCtx->largeVolLocal)
+         {
+            addEnumResponsesLV(binCtx,resp,i); 
+         }
+      
+      #endif
    }
    
    if (!localMode) {
@@ -1536,3 +1551,82 @@ static UtilList *_getAssocClassNames(const char *ns)
    _SFCB_RETURN(ul);
 }
 
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+#ifdef LARGE_VOL_SUPPORT
+void addEnumResponsesLV(BinRequestContext * binCtx,BinResponseHdr ** resp , int index)
+{
+   int c, j ,enumState;
+   int arrayCurrentCount = 0 ;
+   int arrayAddCount ;
+   union o {
+     CMPIInstance *inst;
+     CMPIObjectPath *path;
+     CMPIConstClass *cls;
+   } object;
+   CMPIArray *ar,*art;
+   CMPIStatus rc;
+   CMPIEnumeration *enumeration = binCtx->enm ;
+
+   /* ********************************************************************** */
+   /* ********************************************************************** */
+   /* ********************************************************************** */
+   /* ********************************************************************** */
+   
+
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "genEnumResponses");
+  
+   /*
+    * get count of how many we want to add 
+    */
+      
+   arrayAddCount = resp[index]->count;
+     
+   /*
+    * if first time allocate array 
+    * if its an add , we increase the array count.
+    */
+
+   enumState = getEnumState(enumeration) ;
+  
+   if(enumState == ENUM_INIT) {
+      ar  = NewCMPIArray(0, binCtx->type, NULL);
+   } else {
+   	 ar = art = getEnumDatap(enumeration) ;
+     arrayCurrentCount = getLastValid(enumeration)+1 ;
+   }
+      
+   /*
+    * starting array index is arrayCurrentCount
+    */
+
+ 
+   for (j = 0 , c = arrayCurrentCount ; j < resp[index]->count; c++, j++) {
+      if (binCtx->type == CMPI_ref){
+         object.path = relocateSerializedObjectPath(resp[index]->object[j].data);
+      }
+      else if (binCtx->type == CMPI_instance){
+         object.inst = relocateSerializedInstance(resp[index]->object[j].data);
+      }
+      else if (binCtx->type == CMPI_class) {
+         object.cls = relocateSerializedConstClass(resp[index]->object[j].data);
+      }
+
+      enumLock(enumeration) ;
+      rc=CMSetArrayElementAt(ar,c, (CMPIValue*)&object.inst, binCtx->type);
+      incLastValid(enumeration) ;
+      enumUnLock(enumeration) ;
+        
+      if(enumState == ENUM_INIT) {
+         setEnumArray(enumeration,ar);
+         setEnumState(enumeration,ENUM_STARTED) ;
+      }
+   } 
+   
+   _SFCB_EXIT();
+}
+#endif

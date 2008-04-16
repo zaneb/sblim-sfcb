@@ -93,6 +93,36 @@ static void set_debug()
 }
 #endif
 
+#ifdef LARGE_VOL_SUPPORT
+/*
+ * 
+ */
+ 
+extern int  getEnumState(CMPIEnumeration * ) ;
+extern void setEnumState(CMPIEnumeration * ,int) ;
+#include "sfcbenum.h"
+
+typedef struct thrdInfo {
+	CMPIEnumeration * enm;
+	Client * mb ;
+	CMPIObjectPath * cop ;
+	CMPIFlags flags ;
+	char ** properties ;
+	CMPIStatus * rc ;
+} thrdInfo ;
+      
+void sfcb_native_array_increase_size(const CMPIArray *, CMPICount);
+static CMPIEnumeration * enumInstances(Client *,CMPIObjectPath *,	CMPIFlags,char **,CMPIStatus *);
+                  void * enumInstancesThrd( thrdInfo * ) ;
+static CMPIEnumeration * enumInstanceNames(Client *,CMPIObjectPath *,CMPIStatus *);
+                  void * enumInstanceNamesThrd( thrdInfo * ) ;
+static CMPIEnumeration * enumClassNames(Client *,CMPIObjectPath *,CMPIFlags,CMPIStatus *);
+                  void * enumClassNamesThrd(thrdInfo * );
+static CMPIEnumeration * enumClasses(Client *,CMPIObjectPath *,CMPIFlags,CMPIStatus *) ;
+                  void * enumClassesThrd( thrdInfo * ) ;
+
+#endif
+
 typedef const struct _ClientConnectionFT {
     CMPIStatus (*release) (ClientConnection *);
 } ClientConnectionFT;
@@ -268,6 +298,7 @@ static void closeSockets(BinRequestContext *binCtx)
    }
 }
 
+#ifndef LARGE_VOL_SUPPORT
 static CMPIEnumeration * enumInstanceNames(
 	Client * mb,
 	CMPIObjectPath * cop,
@@ -414,7 +445,7 @@ static CMPIEnumeration * enumInstances(
 
 }
 
-
+#endif
 /* --------------------------------------------------------------------------*/
 
 static CMPIInstance * getInstance(
@@ -1313,6 +1344,7 @@ static CMPIConstClass * getClass(
    _SFCB_RETURN(NULL);
 }
 
+#ifndef LARGE_VOL_SUPPORT
 static CMPIEnumeration* enumClassNames(
 	Client * mb,
 	CMPIObjectPath * cop,
@@ -1449,6 +1481,7 @@ static CMPIEnumeration * enumClasses(
 
 }
 
+#endif
 
 
 
@@ -1671,4 +1704,541 @@ ClientEnv* _Create_SfcbLocal_Env(char *id)
     
     return env;
  }
- 
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+/* ************************************************************************************** */
+#ifdef LARGE_VOL_SUPPORT
+
+
+
+static CMPIEnumeration * enumInstances(
+	Client * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	char ** properties,
+	CMPIStatus * rc)
+{
+  pthread_t       enumThrdId  = 0 ;
+  int             pthrd_error   = 0 ;
+	thrdInfo passedInfo  ;
+	CMPIEnumeration *enm = NULL;
+	int enumState = 0 ;
+	int timeOut = 0 ;
+	 _SFCB_ENTER(TRACE_CIMXMLPROC, "enumInstances");
+	
+  /*
+   * allocate an enum 
+   */
+	
+  enm = NewCMPIEnumeration(NULL, NULL);
+	  
+  setEnumState(enm, ENUM_INIT) ;
+  
+  /*
+   * fill in info to send to the thread
+   */
+  passedInfo.enm = enm ;
+  passedInfo.mb = mb ;
+  passedInfo.cop = cop ;
+  passedInfo.flags = flags ;
+  passedInfo.properties = properties ;
+  passedInfo.rc = rc ;
+
+  pthrd_error = pthread_create(&enumThrdId,
+                                  NULL,
+                                  (void*)&enumInstancesThrd,
+                                  (void*)&passedInfo);
+
+
+  /*
+   * for now delay here till we see state changed
+   */
+  while ((enumState = getEnumState(enm)) == ENUM_INIT){
+     // usleep(200000) ;	
+     usleep(5000) ;
+     timeOut++ ;
+     if(timeOut > 1000){
+  	 	  pthread_cancel(enumThrdId);
+  	 	  CIMCSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed timeout - EnumState is still ENUM_INIT "); 	     	
+  	    break;     	
+     }
+  }
+    
+	_SFCB_RETURN(enm);
+}
+
+void * enumInstancesThrd( thrdInfo * passedInInfo)
+{ 
+	 Client * mb = passedInInfo->mb ;
+	 CMPIObjectPath * cop = passedInInfo->cop ;
+	 CMPIFlags flags = passedInInfo->flags ;
+	 char ** properties = passedInInfo->properties ;
+	 CMPIStatus * rc = passedInInfo->rc ;
+   CMPIEnumeration *enm = passedInInfo->enm;
+
+   EnumInstancesReq *sreq;
+   int pCount=0, irc, l = 0, err = 0,sreqSize=sizeof(EnumInstancesReq);
+   BinResponseHdr **resp;
+   BinRequestContext binCtx;
+   OperationHdr oHdr={OPS_EnumerateInstances,0,2};
+
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "enumInstanceThrd");
+   
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+   CMPIString *cn=cop->ft->getClassName(cop,NULL);
+   
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
+   oHdr.className=setCharsMsgSegment((char*)cn->hdl);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+
+   if (properties) {
+      char **p;
+      for (p=properties; *p; p++) pCount++;
+   }
+   
+   sreqSize+=pCount*sizeof(MsgSegment);
+   sreq=calloc(1,sreqSize);
+   sreq->hdr.operation=OPS_EnumerateInstances;
+   sreq->hdr.count=pCount+2;
+
+   sreq->objectPath = setObjectPathMsgSegment(cop);
+   sreq->principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+
+   binCtx.oHdr = (OperationHdr *) &oHdr;
+   binCtx.bHdr = &sreq->hdr;
+   binCtx.bHdr->flags = flags;
+   binCtx.type=CMPI_instance;
+   binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sreqSize;
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0; 
+   binCtx.pAs=NULL;
+   binCtx.largeVolLocal= 1;
+   binCtx.enm=enm;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
+   
+   CMRelease(ns);
+   CMRelease(cn);
+   
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Calling Providers"));
+
+      resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
+      closeProviderContext(&binCtx);
+
+      setEnumState(enm , ENUM_COMPLETE) ;
+      
+      if(err != 0) {   
+         if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
+                  (char*)resp[err-1]->object[0].data);
+      }
+      
+      if (resp) freeResps(resp,binCtx.pCount);
+      
+      free(sreq);
+      
+      _SFCB_RETURN(NULL);
+   }
+   else ctxErrResponse(&binCtx,rc);
+   closeProviderContext(&binCtx);
+   free(sreq);
+   
+   _SFCB_RETURN(NULL);
+
+}
+/* ************************************************************************************* */
+
+static CMPIEnumeration * enumInstanceNames(
+	Client * mb,
+	CMPIObjectPath * cop,
+	CMPIStatus * rc)
+{
+  pthread_t       enumThrdId  = 0 ;
+  int             pthrd_error   = 0 ;
+	thrdInfo passedInfo  ;
+	CMPIEnumeration *enm = NULL;
+	int enumState = 0 ;
+	int timeOut = 0 ;
+	
+	 _SFCB_ENTER(TRACE_CIMXMLPROC, "enumInstanceNames");
+	
+  /*
+   * allocate an enum 
+   */
+	
+  enm = NewCMPIEnumeration(NULL, NULL);
+	  
+  setEnumState(enm, ENUM_INIT) ;
+  
+  /*
+   * fill in info to send to the thread
+   */
+  passedInfo.enm = enm ;
+  passedInfo.mb = mb ;
+  passedInfo.cop = cop ;
+  passedInfo.flags = 0 ;
+  passedInfo.properties = NULL ;
+  passedInfo.rc = rc ;
+  
+  pthrd_error = pthread_create(&enumThrdId,
+                                  NULL,
+                                  (void*)&enumInstanceNamesThrd,
+                                  (void*)&passedInfo);
+  
+  /*
+   * for now delay here till we see state changed
+   */
+  while ((enumState = getEnumState(enm)) == ENUM_INIT){
+     //usleep(200000) ;
+     usleep(5000) ;
+     timeOut++ ;
+     if(timeOut > 1000){
+  	 	  pthread_cancel(enumThrdId);
+  	 	  CIMCSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed timeout - EnumState is still ENUM_INIT "); 	     	
+  	    break;     	
+     }	
+  }
+
+	_SFCB_RETURN(enm);
+}
+
+void * enumInstanceNamesThrd( thrdInfo * passedInInfo)
+{
+   Client * mb = passedInInfo->mb ;
+	 CMPIObjectPath * cop = passedInInfo->cop ;
+	 CMPIStatus * rc = passedInInfo->rc ;
+   CMPIEnumeration *enm = passedInInfo->enm;
+   
+   EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, 2);
+   int irc, l = 0, err = 0;
+   BinResponseHdr **resp;
+   BinRequestContext binCtx;
+   OperationHdr oHdr={OPS_EnumerateInstanceNames,0,2};
+
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "enumInstanceNamesThrd");
+
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+   CMPIString *cn=cop->ft->getClassName(cop,NULL);
+   
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
+   oHdr.className=setCharsMsgSegment((char*)cn->hdl);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+
+   sreq.objectPath = setObjectPathMsgSegment(cop);
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+
+   binCtx.oHdr = (OperationHdr *) &oHdr;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.bHdr->flags = 0;
+   binCtx.type=CMPI_ref;
+   binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+   binCtx.largeVolLocal= 1; 
+   binCtx.enm=enm;
+
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr *) &oHdr);
+   CMRelease(ns);
+   CMRelease(cn);
+   
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Calling Providers"));
+      resp = invokeProviders(&binCtx, &err, &l);
+      _SFCB_TRACE(1, ("--- Back from Provider"));
+
+      closeSockets(&binCtx);
+      closeProviderContext(&binCtx);
+      
+      setEnumState(enm , ENUM_COMPLETE) ;
+      
+      if (err != 0) {
+         if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
+                    (char*)resp[err-1]->object[0].data);
+      }
+      
+      if (resp) freeResps(resp,binCtx.pCount);
+      	
+      _SFCB_RETURN(NULL);
+   }
+   else ctxErrResponse(&binCtx,rc);
+   closeProviderContext(&binCtx);
+   
+   _SFCB_RETURN(NULL);
+}
+
+////////////////////////////////////////////
+
+static CMPIEnumeration * enumClassNames(
+	Client * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	CMPIStatus * rc)
+{
+	pthread_t       enumThrdId  = 0 ;
+  int             pthrd_error   = 0 ;
+	thrdInfo passedInfo  ;
+	CMPIEnumeration *enm = NULL;
+	int enumState = 0 ;
+	int timeOut = 0 ;
+	
+	 _SFCB_ENTER(TRACE_CIMXMLPROC, "enumClassNames");
+	
+  /*
+   * allocate an enum 
+   */
+	
+  enm = NewCMPIEnumeration(NULL, NULL);
+	  
+  setEnumState(enm, ENUM_INIT) ;
+  
+  /*
+   * fill in info to send to the thread
+   */
+  passedInfo.enm = enm ;
+  passedInfo.mb = mb ;
+  passedInfo.cop = cop ;
+  passedInfo.flags = flags;
+  passedInfo.properties = NULL ;
+  passedInfo.rc = rc ;
+  
+  pthrd_error = pthread_create(&enumThrdId,
+                                  NULL,
+                                  (void*)&enumClassNamesThrd,
+                                  (void*)&passedInfo);
+  
+  /*
+   * for now delay here till we see state changed
+   */
+  while ((enumState = getEnumState(enm)) == ENUM_INIT){
+     usleep(5000) ;	
+  	 timeOut++;
+  	 if(timeOut > 1000){
+  	 	pthread_cancel(enumThrdId);
+  	 	CIMCSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed timeout - EnumState is still ENUM_INIT "); 	     	
+  	  break;
+  	 }
+  }
+  
+	_SFCB_RETURN(enm);
+	
+}
+
+
+void * enumClassNamesThrd(thrdInfo * passedInInfo)
+{
+	 Client * mb = passedInInfo->mb ;
+   CMPIObjectPath * cop = passedInInfo->cop ;
+   CMPIFlags flags = passedInInfo->flags ;
+   // char ** properties = NULL ;
+   CMPIStatus * rc = passedInInfo->rc ;
+   CMPIEnumeration *enm = passedInInfo->enm;
+   
+   EnumClassNamesReq sreq = BINREQ(OPS_EnumerateClassNames, 2);
+   int irc, l = 0, err = 0;
+   BinResponseHdr **resp;
+   BinRequestContext binCtx;
+   OperationHdr oHdr={OPS_EnumerateClassNames,0,2};
+   
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "enumClassNamesThrd");
+   
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+   CMPIString *cn=cop->ft->getClassName(cop,NULL);
+   
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
+   oHdr.className=setCharsMsgSegment((char*)cn->hdl);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+   
+   sreq.objectPath = setObjectPathMsgSegment(cop);
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+   sreq.hdr.flags = flags;
+
+   binCtx.oHdr = (OperationHdr*) &oHdr;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.bHdr->flags = flags;
+   binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.type=CMPI_ref;
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+   binCtx.largeVolLocal= 1; 
+   binCtx.enm=enm;
+
+
+  _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx,(OperationHdr*)&oHdr);
+
+   CMRelease(ns);
+   CMRelease(cn);
+
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Calling Providers"));
+      resp = invokeProviders(&binCtx, &err, &l);
+      _SFCB_TRACE(1, ("--- Back from Provider"));
+
+      closeSockets(&binCtx);
+      closeProviderContext(&binCtx);
+
+      setEnumState(enm , ENUM_COMPLETE) ;
+     
+      if (err != 0) {
+         if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
+                   (char*)resp[err-1]->object[0].data);
+      }
+      
+      if (resp) freeResps(resp,binCtx.pCount);
+      	
+      _SFCB_RETURN(NULL);
+   }
+   else ctxErrResponse(&binCtx,rc);
+   closeProviderContext(&binCtx);
+   
+   _SFCB_RETURN(NULL);
+}
+
+static CMPIEnumeration * enumClasses(
+	Client * mb,
+	CMPIObjectPath * cop,
+	CMPIFlags flags,
+	CMPIStatus * rc)
+{
+	pthread_t       enumThrdId  = 0 ;
+  int             pthrd_error   = 0 ;
+	thrdInfo passedInfo  ;
+	CMPIEnumeration *enm = NULL;
+	int enumState = 0 ;
+	int timeOut = 0 ;
+	
+	 _SFCB_ENTER(TRACE_CIMXMLPROC, "enumClasses");
+	
+  /*
+   * allocate an enum 
+   */
+	
+  enm = NewCMPIEnumeration(NULL, NULL);
+	  
+  setEnumState(enm, ENUM_INIT) ;
+  
+  /*
+   * fill in info to send to the thread
+   */
+  passedInfo.enm = enm ;
+  passedInfo.mb = mb ;
+  passedInfo.cop = cop ;
+  passedInfo.flags = flags;
+  passedInfo.properties = NULL ;
+  passedInfo.rc = rc ;
+  
+  pthrd_error = pthread_create(&enumThrdId,
+                                  NULL,
+                                  (void*)&enumClassesThrd,
+                                  (void*)&passedInfo);
+  
+  /*
+   * for now delay here till we see state changed
+   */
+  while ((enumState = getEnumState(enm)) == ENUM_INIT){
+     usleep(5000) ;
+     timeOut++ ;
+     if(timeOut > 1000){
+  	 	  pthread_cancel(enumThrdId);
+  	 	  CIMCSetStatusWithChars(rc,CMPI_RC_ERR_FAILED," Failed timeout - EnumState is still ENUM_INIT "); 	     	
+  	    break;     	
+     }
+  }
+  
+	_SFCB_RETURN(enm);
+	
+}
+
+void * enumClassesThrd( thrdInfo * passedInInfo)
+{
+   Client * mb = passedInInfo->mb ;
+   CMPIObjectPath * cop = passedInInfo->cop ;
+   CMPIFlags flags = passedInInfo->flags ;
+   CMPIStatus * rc = passedInInfo->rc ;
+   CMPIEnumeration *enm = passedInInfo->enm;
+   
+   EnumClassesReq sreq = BINREQ(OPS_EnumerateClasses, 2);
+   int irc, l = 0, err = 0;
+   BinResponseHdr **resp;
+   BinRequestContext binCtx;
+   OperationHdr oHdr={OPS_EnumerateClasses,0,2};
+
+   
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "enumClassesThrd");
+   
+   if (rc) CMSetStatus(rc, CMPI_RC_OK);
+
+   CMPIString *ns=cop->ft->getNameSpace(cop,NULL);
+   CMPIString *cn=cop->ft->getClassName(cop,NULL);
+   
+   oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
+   oHdr.className=setCharsMsgSegment((char*)cn->hdl);
+
+   memset(&binCtx,0,sizeof(BinRequestContext));
+
+   sreq.objectPath = setObjectPathMsgSegment(cop);
+   sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+   sreq.hdr.flags = flags;
+
+   binCtx.oHdr = (OperationHdr*)&oHdr;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.bHdr->flags = flags;
+   binCtx.type=CMPI_class;
+   binCtx.rHdr = NULL;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
+   binCtx.pAs=NULL;
+   binCtx.largeVolLocal= 1; 
+   binCtx.enm=enm;
+
+   _SFCB_TRACE(1, ("--- Getting Provider context"));
+   irc = getProviderContext(&binCtx, (OperationHdr*)&oHdr);
+
+   CMRelease(ns);
+   CMRelease(cn);
+
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Calling Providers"));
+      resp = invokeProviders(&binCtx, &err, &l);
+
+      closeSockets(&binCtx);
+      closeProviderContext(&binCtx);
+      
+      setEnumState(enm , ENUM_COMPLETE) ;
+       
+      if (err != 0) {
+         if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
+                    (char*)resp[err-1]->object[0].data);
+      }
+      
+      if (resp) freeResps(resp,binCtx.pCount);
+      	
+      _SFCB_RETURN(NULL);
+   }
+   else ctxErrResponse(&binCtx,rc);
+   closeProviderContext(&binCtx);
+
+   _SFCB_RETURN(NULL);
+
+}
+
+#endif

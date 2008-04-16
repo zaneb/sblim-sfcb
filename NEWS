@@ -10,6 +10,7 @@ New features:
 - 1875122 sfcb colorized traces
 - 1828500 CMPI 2.0 support
 - 1930758 Profile Registration Support
+- 1828585 Large Volume Data support local connect 
 
 Bugs fixed:
 - 1793223 Fixed cross-built ClProperty size mismatch

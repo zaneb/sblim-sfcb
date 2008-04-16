@@ -1619,6 +1619,10 @@ Problem:  "unsupported object implementation format" error on startup
 Cause:    The repository is old or corrupt
 Solution: Run sfcbrepos to rebuild the repository
 
+Problem:  "operation on non-socket" error on startup
+Cause:    The repository is out-of-date
+Solution: Run sfcbrepos to rebuild the repository
+
 Problem:  sfcbrepos does not exist
 Cause:    You are building sfcb from CVS and do not have the mof compiler
 Solution: Build the latest mofc with sfcb as described in Sec. 6.  Note: you 

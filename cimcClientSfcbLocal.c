@@ -220,40 +220,43 @@ void freeResps(BinResponseHdr **resp, int count)
 }
 
 extern void setEnumArray(CMPIEnumeration * enumeration,CMPIArray * array);
-
 static CMPIEnumeration *cpyEnumResponses(BinRequestContext * binCtx,
                                  BinResponseHdr ** resp,
                                  int arrLen)
 {
    int i, c, j;
-   CMPIInstance *inst;
+   union o {
+     CMPIInstance *inst;
+     CMPIObjectPath *path;
+     CMPIConstClass *cls;
+   } object;
    CMPIArray *ar,*art;
    CMPIEnumeration *enm;
    CMPIStatus rc;
-
+   
    _SFCB_ENTER(TRACE_CIMXMLPROC, "genEnumResponses");
-
+   
    ar = NewCMPIArray(arrLen, binCtx->type, NULL);
    art = NewCMPIArray(0, binCtx->type, NULL);
-
+   
    for (c = 0, i = 0; i < binCtx->rCount; i++) {
       for (j = 0; j < resp[i]->count; c++, j++) {
          if (binCtx->type == CMPI_ref)
-            relocateSerializedObjectPath(resp[i]->object[j].data);
+            object.path = relocateSerializedObjectPath(resp[i]->object[j].data);
          else if (binCtx->type == CMPI_instance)
-            relocateSerializedInstance(resp[i]->object[j].data);
+            object.inst = relocateSerializedInstance(resp[i]->object[j].data);
          else if (binCtx->type == CMPI_class) {
-            relocateSerializedConstClass(resp[i]->object[j].data);
+            object.cls = relocateSerializedConstClass(resp[i]->object[j].data);
          }
-    //     inst=CMClone(inst,NULL);
-         rc=CMSetArrayElementAt(ar,c, (CMPIValue*)&inst, binCtx->type);
+    //     object.inst=CMClone(object.inst,NULL);
+         rc=CMSetArrayElementAt(ar,c, (CMPIValue*)&object.inst, binCtx->type);
       }
    }
 
    enm = NewCMPIEnumeration(art, NULL);
    setEnumArray(enm,ar);
    art->ft->release(art);
-
+   
    _SFCB_RETURN(enm);
 }
 

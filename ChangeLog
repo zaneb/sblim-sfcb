@@ -1,3 +1,9 @@
+2008-04-17 Gary Readler  <gdr@us.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+        Reversed changes from 1879319; was causing a segfault for certain
+        testcases
+
 2008-04-16 Gary Readler  <gdr@us.ibm.com>
 
 	* cimcClientSfcbLocal.c configure.ac enumeration.c providerMgr.c providerMgr.h

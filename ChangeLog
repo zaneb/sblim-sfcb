@@ -1,3 +1,9 @@
+2008-04-23 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	Fixed 1919970: Provider process not terminated after idle 
+	(w/ LocalConnect) (patch by Luong Nguyen-Duy)
+
 2008-04-17 Gary Readler  <gdr@us.ibm.com>
 
 	* cimcClientSfcbLocal.c:

@@ -18,8 +18,13 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
-04/08/2008 by Tim Potter
-------------------------
+04/23/2008 by Luong Nguyen-Duy, Sun
+-----------------------------------
+[ 1919970 ] Provider process not terminated after idle (w/ LocalConnect)
+
+
+04/08/2008 by Tim Potter, HP
+----------------------------
 [ 1893302 ] New CMPI arrays not tracked
 
 

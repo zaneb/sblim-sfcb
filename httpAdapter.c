@@ -203,7 +203,7 @@ int baValidate(char *cred, char **principal)
 
    if (err==0 && authLib==NULL) {
       char *ln;
-      int err=1;
+      err=1;
       if (getControlChars("basicAuthlib", &ln)==0) {
          libraryName(NULL,ln,dlName);
         if ((authLib=dlopen(dlName, RTLD_LAZY))) {
@@ -214,9 +214,14 @@ int baValidate(char *cred, char **principal)
       if (err) mlogf(M_ERROR,M_SHOW,"--- Authentication exit %s not found\n",dlName);
    }
 
-   *principal=strdup(auth);
-   if (authenticate(auth,pw)) 
-   		ret = 1;
+   if (err) {
+     ret = 1;
+   } 
+   else {
+     *principal=strdup(auth);
+     if (authenticate(auth,pw)) 
+       ret = 1;
+   }
 
    free(auth);
 

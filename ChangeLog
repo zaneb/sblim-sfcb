@@ -1,3 +1,9 @@
+2008-04-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	Fixed 1951133: httpAdapter crashes if auth library can't be loaded
+	(patch by Chris Abbey)
+
 2008-04-23 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c:

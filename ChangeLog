@@ -1,3 +1,9 @@
+2008-04-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+    * providerDrv.c
+    Fixed 1920539: sfcb crashes in getinstance
+    (patch by Tim Potter)
+
 2008-04-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

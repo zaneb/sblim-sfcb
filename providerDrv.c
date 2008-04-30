@@ -1680,15 +1680,22 @@ static BinResponseHdr *getInstance(BinRequestHdr * hdr, ProviderInfo * info,
    r = native_result2array(result);
 
    if (rci.rc == CMPI_RC_OK) {
-      count = 1;
-      resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr) +
-                                    ((count - 1) * sizeof(MsgSegment)));
-      resp->moreChunks=0;
-      resp->rc = 1;
-      resp->count = count;
-      for (i = 0; i < count; i++)
-         resp->object[i] =
-             setInstanceMsgSegment(CMGetArrayElementAt(r, i, NULL).value.inst);
+      if (r && CMGetArrayCount(r, NULL) > 0) {
+         count = 1;
+
+         resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr) +
+                                       ((count - 1) * sizeof(MsgSegment)));
+         resp->moreChunks=0;
+         resp->rc = 1;
+         resp->count = count;
+         for (i = 0; i < count; i++)
+            resp->object[i] =
+              setInstanceMsgSegment(CMGetArrayElementAt(r, i, NULL).value.inst);
+      } else {
+         rci.rc = CMPI_RC_ERR_NOT_FOUND;
+         rci.msg = NULL;
+         resp = errorResp(&rci);
+      }
    }
    else resp = errorResp(&rci);
    if (props) free(props);

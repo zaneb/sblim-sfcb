@@ -320,6 +320,7 @@ int exportIndication(char *url, char *payload, char **resp, char **msg)
    FILE *out;
    
    *msg=NULL;
+   *resp=NULL;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "exportIndication");
 

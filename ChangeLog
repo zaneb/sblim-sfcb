@@ -1,3 +1,9 @@
+2008-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+    * indCIMXMLExport.c
+    * indCIMXMLHandler.c
+    fixed 1896550: Memory leak in exportIndication
+    (patch by Tim Potter)
+
 2008-04-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
     * providerDrv.c

@@ -1,3 +1,9 @@
+2008-05-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c, providerMgr.c, msgqueue.c:
+	Reversed original fix for 1919970, added new one
+	(patch by Gokulakannan)
+
 2008-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
     * indCIMXMLExport.c
     * indCIMXMLHandler.c

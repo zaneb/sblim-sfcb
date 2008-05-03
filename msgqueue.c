@@ -49,7 +49,7 @@ int noHttpPause=0;
 char *httpPauseStr=NULL;
 
 key_t sfcbSemKey;
-int sfcbSem;
+int sfcbSem = -1;
 
 
 /*

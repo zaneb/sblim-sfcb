@@ -912,9 +912,16 @@ void closeProviderContext(BinRequestContext * ctx)
 static void setInuseSem(void *id)
 {
    ProvIds ids;
+   key_t semKey;
 
-   _SFCB_ENTER(TRACE_PROVIDERMGR, "setInuseSem");
-   ids.ids=id;   
+    _SFCB_ENTER(TRACE_PROVIDERMGR, "setInuseSem");
+   if (sfcbSem < 0) { //Semaphore Not initialized.
+        semKey=ftok(SFCB_BINARY,'S');
+       sfcbSem=semget(semKey,1, 0600);
+   }
+
+   ids.ids=id;
+
    semAcquire(sfcbSem,(ids.procId*3)+provProcGuardId+provProcBaseId);
    semAcquire(sfcbSem,(ids.procId*3)+provProcInuseId+provProcBaseId);
    semReleaseUnDo(sfcbSem,(ids.procId*3)+provProcInuseId+provProcBaseId);

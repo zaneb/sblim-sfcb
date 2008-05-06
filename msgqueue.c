@@ -686,7 +686,18 @@ void localConnectServer()
       cl=sizeof(clientAddr);
       if ((nsocket=accept(ssocket,(struct sockaddr*)&serverAddr,&cl))<0) {
          perror("accept error");
-         return;
+
+         /* Being interrupted isn't necessarily bad; try once more */
+         if (errno == EINTR) {
+           if ((nsocket=accept(ssocket,(struct sockaddr*)&serverAddr,&cl))<0) {
+             perror("accept error (2)");
+             return;
+           }
+         }
+         /* any other error, just return (should probably be more graceful) */
+         else {
+           return;
+         }
       }
       
       read(nsocket, &msg.size, sizeof(msg.size));

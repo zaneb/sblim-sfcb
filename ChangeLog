@@ -1,3 +1,8 @@
+2008-05-06 Cbris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* msgqueue.c:
+	Fixed 1959063: "accept error" on provider unloading (LocalConnect)
+
 2008-05-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c, providerMgr.c, msgqueue.c:

@@ -9,6 +9,7 @@ Bugs fixed:
 - 1951133 Fixed httpAdapter crashes if auth library can't be loaded
 - 1920539 Fixed sfcb crashes in getinstance
 - 1896550 Memory leak in exportIndication
+- 1959063 "accept error" on provider unloading (LocalConnect)
 
 Changes in 1.3.0
 ================

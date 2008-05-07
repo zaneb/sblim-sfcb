@@ -54,6 +54,36 @@ else
 INDICATION_LIBS =
 endif
 
+if LOCAL_CONNECT_ONLY
+HTTP_ADAPTER_LIBS =
+HTTP_ADAPTER_LIBS_LINK =
+else
+HTTP_ADAPTER_LIBS = libsfcHttpAdapter.la
+HTTP_ADAPTER_LIBS_LINK = -lsfcHttpAdapter
+endif
+
+
+#
+# if enable_local_connect_no_indication is set to "yes"
+# then we won't build libsfcCimXmlCodec.so, libsfcHttpAdapter.so
+# and libsfcIndCIMXMLHandler..so
+#
+if LOCAL_CONNECT_NO_INDICATION
+CIMXMLCODEC_LIBS =
+CIMXMLCODEC_LIBS_LINK =
+
+HTTP_ADAPTER_LIBS =
+HTTP_ADAPTER_LIBS_LINK =
+
+INDICATION_LIBS =
+else
+CIMXMLCODEC_LIBS = libsfcCimXmlCodec.la
+CIMXMLCODEC_LIBS_LINK = -lsfcCimXmlCodec
+
+HTTP_ADAPTER_LIBS = libsfcHttpAdapter.la
+HTTP_ADAPTER_LIBS_LINK = -lsfcHttpAdapter
+endif
+
 if SLP
 SLP_LIBS = libslpAgent.la
 SLP_LIB = -lslpAgent
@@ -102,8 +132,8 @@ lib_LTLIBRARIES = \
    libsfcClassProvider.la \
    libsfcClassProviderGz.la \
    libsfcClassProviderMem.la \
-   libsfcCimXmlCodec.la \
-   libsfcHttpAdapter.la \
+   $(CIMXMLCODEC_LIBS) \
+   $(HTTP_ADAPTER_LIBS) \
    libsfcBasicAuthentication.la \
    libsfcCertificateAuthentication.la \
    libsfcObjectImplSwapI32toP32.la \
@@ -215,11 +245,17 @@ libsfcFileRepository_la_SOURCES = \
 libsfcFileRepository_la_LIBADD=-lsfcBrokerCore	
 libsfcFileRepository_la_DEPENDENCIES=libsfcBrokerCore.la
 
+#
+# if enable_local_connect_no_indication is not turned on then
+# we will build libsfcHttpAdapter
+#
+if !LOCAL_CONNECT_NO_INDICATION
 libsfcHttpAdapter_la_SOURCES = \
    httpAdapter.c \
    httpComm.c
-libsfcHttpAdapter_la_LIBADD=-lsfcBrokerCore -lsfcCimXmlCodec
-libsfcHttpAdapter_la_DEPENDENCIES=libsfcBrokerCore.la libsfcCimXmlCodec.la
+libsfcHttpAdapter_la_LIBADD=-lsfcBrokerCore $(CIMXMLCODEC_LIBS_LINK)
+libsfcHttpAdapter_la_DEPENDENCIES=libsfcBrokerCore.la $(CIMXMLCODEC_LIBS)
+endif
 
 libsfcBasicAuthentication_la_SOURCES = \
    sfcBasicAuthentication.c
@@ -256,9 +292,9 @@ libsfcInteropServerProvider_la_DEPENDENCIES=libsfcBrokerCore.la
 libsfcIndCIMXMLHandler_la_SOURCES = \
    indCIMXMLHandler.c \
    indCIMXMLExport.c 
-libsfcIndCIMXMLHandler_la_LIBADD=-lsfcBrokerCore -lsfcInternalProvider -lsfcCimXmlCodec -lsfcHttpAdapter
+libsfcIndCIMXMLHandler_la_LIBADD=-lsfcBrokerCore -lsfcInternalProvider $(CIMXMLCODEC_LIBS_LINK) $(HTTP_ADAPTER_LIBS_LINK)
 libsfcIndCIMXMLHandler_la_DEPENDENCIES=libsfcBrokerCore.la libsfcInternalProvider.la \
-	libsfcCimXmlCodec.la libsfcHttpAdapter.la
+	$(CIMXMLCODEC_LIBS) $(HTTP_ADAPTER_LIBS)
 
 libsfcProfileProvider_la_SOURCES = \
    profileProvider.c 
@@ -280,12 +316,18 @@ libsfcClassProviderMem_la_SOURCES = \
 libsfcClassProviderMem_la_LIBADD=-lsfcBrokerCore
 libsfcClassProviderMem_la_DEPENDENCIES=libsfcBrokerCore.la
 
+#
+# if enable_local_connect_no_indication is not turned on then
+# we will build libsfcCimXmlCodec
+#
+if !LOCAL_CONNECT_NO_INDICATION
 libsfcCimXmlCodec_la_SOURCES = \
    cimXmlOps.y \
    cimXmlParserProcessed.c \
    cimXmlRequest.c 
 libsfcCimXmlCodec_la_LIBADD=-lsfcBrokerCore 
 libsfcCimXmlCodec_la_DEPENDENCIES=libsfcBrokerCore.la
+endif
 
 if SLP
 libslpAgent_la_CFLAGS = $(AM_CFLAGS)
@@ -305,8 +347,8 @@ libsfcQualifierProvider_la_DEPENDENCIES=libsfcBrokerCore.la libsfcFileRepository
 endif
 
 sfcbd_SOURCES=sfcBroker.c
-sfcbd_LDADD=-lsfcBrokerCore -lsfcCimXmlCodec -lsfcHttpAdapter $(SLP_LIB)
-sfcbd_DEPENDENCIES=libsfcBrokerCore.la libsfcCimXmlCodec.la libsfcHttpAdapter.la
+sfcbd_LDADD=-lsfcBrokerCore $(CIMXMLCODEC_LIBS_LINK) $(HTTP_ADAPTER_LIBS_LINK) $(SLP_LIB)
+sfcbd_DEPENDENCIES=libsfcBrokerCore.la $(CIMXMLCODEC_LIBS) $(HTTP_ADAPTER_LIBS)
 
 sfcbmofpp_SOURCES=mofpp.c
 
@@ -403,7 +445,7 @@ install-data-local:
 	test -d $(DESTDIR)$(sfcbstatedir)/registration/repository || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/registration/repository
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
-	$(INSTALL_DATA) $(srcdir)/default.reg $(DESTDIR)$(sfcbstatedir)/stage
+	$(INSTALL_DATA) ./default.reg $(DESTDIR)$(sfcbstatedir)/stage
 	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 if INDICATIONS
 	$(INSTALL_DATA) $(srcdir)/indication.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs

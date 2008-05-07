@@ -1,9 +1,16 @@
-2008-05-06 Cbris Buccella  <buccella@linux.vnet.ibm.com>
+2008-05-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* configure.ac, sfcBroker.c, default.reg.in, cimXmlRequest.c, 
+	Makefile.am:
+	Fixed 1953683: allow sfcb to be built to support localconnect only
+	(patch by Luong Nguyen-Duy)
+	
+2008-05-06 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* msgqueue.c:
 	Fixed 1959063: "accept error" on provider unloading (LocalConnect)
 
-2008-05-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
+2008-05-02 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c, providerMgr.c, msgqueue.c:
 	Reversed original fix for 1919970, added new one

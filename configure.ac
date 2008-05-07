@@ -70,6 +70,13 @@ AC_ARG_ENABLE(indications,
 	[enable_indications="yes"]
 	)
 
+AC_ARG_ENABLE(local_connect_only,
+	[AC_HELP_STRING([--enable-local-connect-only],
+		[SFCB will only support local connection. Http server will not be built.])],
+	[enable_local_connect_only=$enableval],
+	[enable_local_connect_only="no"]
+	)
+
 AC_ARG_ENABLE(default-properties,
 	[AC_HELP_STRING([--disable-default-properties],
 		[disable generation of default instance properties for SFCB.])],
@@ -151,8 +158,12 @@ if test "$enable_slp" == "yes"; then
 fi
 
 if test "$enable_qualifierrep" == "yes"; then
+   LOAD_QUALIFIER_PROVIDER=
    AC_DEFINE(HAVE_QUALREP,,[Qualifier repository support enabled.])
+else
+   LOAD_QUALIFIER_PROVIDER='#'
 fi
+AC_SUBST(LOAD_QUALIFIER_PROVIDER)
 
 if test "$enable_optimized_enumeration" == "yes"; then
    AC_DEFINE(HAVE_OPTIMIZED_ENUMERATION,1,[Enumeration optimization enabled.])
@@ -229,10 +240,15 @@ AC_PROG_LIBTOOL
 AC_CHECK_LIB(pthread,main)
 AC_CHECK_LIB(dl,main)
 AC_CHECK_LIB(z,main,[SFCB_LIBZ=-lz],[AC_MSG_ERROR([Could not find required libz])])
-if test "$enable_indications" == "yes"; then
+if test "$enable_indications" = "yes" ; then
+   LOAD_INDICATION_PROVIDER=
    AC_DEFINE(HAVE_INDICATIONS,1,[Indication support enabled.])
    AC_CHECK_LIB(curl,main)
+else
+   LOAD_INDICATION_PROVIDER='#'
 fi
+
+AC_SUBST(LOAD_INDICATION_PROVIDER)
 
 if test "$enable_ssl" = "yes"; then
    AC_CHECK_LIB(ssl,main)
@@ -242,6 +258,17 @@ else
    SFCB_CONF_HTTPS=false	   
    SFCB_CONF_HTTP=true
 fi
+
+
+#
+# if enable_local_connect_only is on then ignore whatever is set by enable_ssl
+#
+if test "$enable_local_connect_only" = "yes" ; then
+   AC_DEFINE(LOCAL_CONNECT_ONLY_ENABLE,1,[Local Connect only.])
+   SFCB_CONF_HTTPS=false	   
+   SFCB_CONF_HTTP=false
+fi
+
 AC_SUBST(SFCB_CONF_HTTPS)
 AC_SUBST(SFCB_CONF_HTTP)
 
@@ -322,10 +349,12 @@ AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"])
 AM_CONDITIONAL(PAM,[test "$enable_pam" == "yes"]) 
 AM_CONDITIONAL(DOCS,[test "$enable_docs" == "yes"])
 AM_CONDITIONAL(IPV6,[test "$enable_ipv6" == "yes"])
+AM_CONDITIONAL(LOCAL_CONNECT_NO_INDICATION,[test "$enable_local_connect_only" == "yes" -a "$enable_indications" == "no"])
+AM_CONDITIONAL(LOCAL_CONNECT_ONLY,[test "$enable_local_connect_only" == "yes"])
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
-		 sfcb.init-redhat sfcb.init-suse sfcb.init-none 
+		 sfcb.init-redhat sfcb.init-suse sfcb.init-none default.reg
 		 man/genSslCert.1.pre  man/sfcbmof.1.pre 
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
 		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
@@ -338,6 +367,7 @@ echo sfcb configuration complete
 echo configuration features:
 echo -e "debug"\\t"${enable_debug:-no}"
 echo -e "indications"\\t"${enable_indications}"
+echo -e "local connect only "\\t"${enable_local_connect_only}"
 echo -e "ssl"\\t"${enable_ssl:-no}"
 echo -e "jdbc"\\t"${enable_jdbc:-no}"
 echo -e "slp"\\t"${enable_slp:-no}"

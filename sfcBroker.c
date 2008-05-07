@@ -53,6 +53,11 @@
 static int startSLP = 1;
 #endif
 
+#ifdef LOCAL_CONNECT_ONLY_ENABLE
+// from httpAdapter.c
+int sfcBrokerPid=0;
+#endif // LOCAL_CONNECT_ONLY_ENABLE
+
 //#define USE_THREADS
 
 // for use by thread in startHttpd, startDbpd
@@ -398,6 +403,7 @@ static void handleSigAbort(int sig)
 */
 
 
+#ifndef LOCAL_CONNECT_ONLY_ENABLE
 #ifdef USE_THREADS
 void* startHttpThread(void* params) {
   struct adapterThreadParams* p = (struct adapterThreadParams*)params;
@@ -447,6 +453,8 @@ static int startHttpd(int argc, char *argv[], int sslMode)
 #endif
    return 0;
 }
+
+#endif // LOCAL_CONNECT_ONLY_ENABLE
 
 #ifdef HAVE_JDBC
 
@@ -740,12 +748,14 @@ int main(int argc, char *argv[])
 
    startLocalConnectServer();
    
+#ifndef LOCAL_CONNECT_ONLY_ENABLE
    if (startHttp) {
       if (sslMode)
          startHttpd(argc, argv,1);
       if (!sslOMode)
          startHttpd(argc, argv,0);
    }
+#endif // LOCAL_CONNECT_ONLY_ENABLE
    
 #ifdef HAVE_JDBC
    //Start dbProtocol-Daemon

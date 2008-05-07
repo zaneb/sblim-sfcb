@@ -51,6 +51,11 @@
 #define SFCB_ASM(x)
 #endif
 
+#ifdef LOCAL_CONNECT_ONLY_ENABLE
+// from httpAdapter.c
+int noChunking = 0;
+#endif // LOCAL_CONNECT_ONLY_ENABLE
+
 typedef struct handler {
    RespSegments(*handler) (CimXmlRequestContext *, RequestHdr * hdr);
 } Handler;

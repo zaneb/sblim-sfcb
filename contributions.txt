@@ -18,6 +18,11 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+05/07/2008 by Luong Nguyen-Duy, Sun
+-----------------------------------
+[ 1953683 ] allow sfcb to be built to support localconnect only
+
+
 05/02/2008 by Gokula Kannan 
 ----------------------------
 [ 1919970 ] Provider process not terminated after idle (w/ LocalConnect)

@@ -74,7 +74,7 @@ I.8 Do not build the HTTP Server
 If only the LocalConnect interface is needed, the disk footprint can be
 reduced by not building the HTTP server and CIM-XML Codec.  This is 
 accomplished by passing --enable-local-connect-only to configure. The
-space savings is about 170K.
+space savings is about 170K, when combined with --disable-indications .
 
 II. Reducing Memory Footprint
 

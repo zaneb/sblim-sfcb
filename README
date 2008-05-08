@@ -285,6 +285,10 @@ Options:
 		on IPv4 addresses.
 		Default=no
 
+        --enable-local-connect-only
+                SFCB will only support local connection. Http server will not 
+                be built. Default=no
+
 
 9. Downloading the CIM Schema
 =============================

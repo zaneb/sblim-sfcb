@@ -22,7 +22,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(Small Footprint CIM Broker, 1.3.1preview, sblim-devel@lists.sourceforge.net, sblim-sfcb)
+AC_INIT(Small Footprint CIM Broker, 1.3.1, sblim-devel@lists.sourceforge.net, sblim-sfcb)
 AC_CONFIG_SRCDIR([providerDrv.c])
 
 #disable "seems to ignore the --datarootdir setting" warnings
@@ -362,18 +362,20 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
 		 sfcb-dox.conf])
 AC_OUTPUT
 
-echo ======================================================
-echo sfcb configuration complete
-echo configuration features:
-echo -e "debug"\\t"${enable_debug:-no}"
-echo -e "indications"\\t"${enable_indications}"
-echo -e "local connect only "\\t"${enable_local_connect_only}"
-echo -e "ssl"\\t"${enable_ssl:-no}"
-echo -e "jdbc"\\t"${enable_jdbc:-no}"
-echo -e "slp"\\t"${enable_slp:-no}"
-echo -e "qualifierrep"\\t"${enable_qualifierrep:-no}"
+echo =================================================================
+echo Configuration Features:
+echo -e "ssl"\\t\\t\\t\\t"${enable_ssl:-no}"
+echo -e "slp"\\t\\t\\t\\t"${enable_slp:-no}"
+echo -e "jdbc"\\t\\t\\t\\t"${enable_jdbc:-no}"
+echo -e "IPv6"\\t\\t\\t\\t"${enable_ipv6:-no}"
+echo -e "debug"\\t\\t\\t\\t"${enable_debug:-no}"
+echo -e "indications"\\t\\t\\t"${enable_indications}"
+echo -e "qualifierrep"\\t\\t\\t"${enable_qualifierrep:-no}"
+echo -e "Documentation"\\t\\t\\t"${enable_docs:-no}"
+echo -e "PAM authentication"\\t\\t"${enable_pam:-no}"
+echo -e "local connect only "\\t\\t"${enable_local_connect_only}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
-echo -e "PAM authentication"\\t"${enable_pam:-no}"
-echo -e "Documentation"\\t"${enable_docs:-no}"
-echo -e "IPv6"\\t"${enable_ipv6:-no}"
-echo ======================================================
+echo =================================================================
+echo
+echo "sfcb configuration complete.  you may now run 'make'"
+echo

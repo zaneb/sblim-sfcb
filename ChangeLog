@@ -1,3 +1,10 @@
+2008-05-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+    * Makefile.am
+    * footprint.pl
+	Added makefile rule and supporting script to do 
+	disk and memory footprinting.
+
 2008-05-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* configure.ac, sfcBroker.c, default.reg.in, cimXmlRequest.c, 

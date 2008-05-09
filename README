@@ -236,6 +236,22 @@ It is recommended that you do this after you have confirmed that sfcb is
 installed and working correctly because stripping the binaries will remove
 useful debugging information should problems arise. However, stripping the
 binaries and libs will significantly reduce their size.
+
+You can use the footprinting utility to evaluate the resource usage of sfcb.
+
+First you must download the ps_mem.py utility from http://www.pixelbeat.org/scripts/ps_mem.py
+Place that script anywhere in your path, or in the sfcb CVS directory, and ensure that it is
+executable.
+
+Then build and start sfcb as described in sections 6 and 10 
+
+Lastly, run the footprint utility as root:
+
+		make footprint
+
+The resulting report will describe the resource usage. You may then try different build
+options and rerun the utility to evaluate their affect. The README.sfcb-shrink file 
+gives some guidance and tips for further reducing the footprint.
  
  
 8. Build Options

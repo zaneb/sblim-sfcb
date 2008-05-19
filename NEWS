@@ -5,6 +5,7 @@ New features:
 
 
 Bugs fixed:
+-1946202 getPropQualifier function attempts to free non-malloced mem
 
 
 Changes in 1.3.1

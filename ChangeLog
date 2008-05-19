@@ -1,3 +1,9 @@
+2008-05-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+    * constClass.c
+    Fixed [ 1946202 ] getPropQualifier function attempts to free non-malloced mem
+    (Based on patch from Nicholas Bofferding)
+
 2008-05-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
     * Makefile.am

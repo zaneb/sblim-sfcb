@@ -306,7 +306,7 @@ static CMPIData getPropQualifier(CMPIConstClass * cc, const char* cp, const char
        if (rc) CMSetStatus(rc, CMPI_RC_OK);
        return rv;
      }
-     if (n) {
+     if ( n && isMallocedStrBuf(&cls->hdr) ) { 
        free(n);
      }
    }

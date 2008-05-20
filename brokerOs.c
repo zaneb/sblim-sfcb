@@ -133,7 +133,8 @@ static CMPI_MUTEX_TYPE newMutex(int opt)
 {
 #if defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
    static pthread_mutex_t tmpl = PTHREAD_MUTEX_INITIALIZER;
-   pthread_mutex_t *m = calloc(1, sizeof(pthread_mutex_t));
+   int state = 0;
+   pthread_mutex_t *m = memAlloc(MEM_TRACKED, sizeof(pthread_mutex_t), &state);
    *m = tmpl;
    return m;
 #else

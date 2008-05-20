@@ -316,7 +316,8 @@ static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
       unsigned int e, m;
 
       if (mtx == NULL) {
-	 mtx = malloc(sizeof(CMPI_MUTEX_TYPE));
+         int dummy = 0;
+	 mtx = memAlloc(MEM_TRACKED, sizeof(CMPI_MUTEX_TYPE), &dummy);
 	 *mtx = Broker->xft->newMutex(0); 
       }
       Broker->xft->lockMutex(*mtx);

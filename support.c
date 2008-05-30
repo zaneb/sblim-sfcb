@@ -469,7 +469,7 @@ void *memAlloc(int add, size_t size, int *memId)
    }
    __ALLOC_ERROR(!result);
 
-   if (add == MEM_TRACKED) {
+   if (add != MEM_TRACKED) {
       memAdd(result,memId);
    }
    _SFCB_TRACE(1, ("--- Area: %p size: %d", result, size));

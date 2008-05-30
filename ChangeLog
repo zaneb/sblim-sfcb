@@ -1,3 +1,8 @@
+2008-05-30 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+    * support.c
+    Reversed part of the patch for 1928541 to fix deadlock
+
 2008-05-29 Chris Buccella <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c:

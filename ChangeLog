@@ -1,5 +1,11 @@
 2008-05-30 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
+    * cimXmlOps.y
+    Fixed [ 1923373 ] SFCB GetClass defaults optional IncludeQualifiers=false
+    (Based on patch from Mike Lisanke)
+
+2008-05-30 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
     * support.c
     Reversed part of the patch for 1928541 to fix deadlock
 

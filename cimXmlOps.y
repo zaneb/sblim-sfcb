@@ -958,7 +958,8 @@ getClass
        $$.op.type = OPS_GetClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
-       $$.flags = FL_localOnly;
+//     $$.flags = FL_localOnly;
+       $$.flags = FL_localOnly|FL_includeQualifiers;
        $$.propertyList.values = NULL;
        $$.properties=0;
 
@@ -970,7 +971,8 @@ getClass
        $$.op.type = OPS_GetClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.className);
-       $$.flags = ($2.flags &  $2.flagsSet) | ((~$2.flagsSet) & (FL_localOnly));
+//     $$.flags = ($2.flags &  $2.flagsSet) | ((~$2.flagsSet) & (FL_localOnly));
+       $$.flags = ($2.flags &  $2.flagsSet) | ((~$2.flagsSet) & (FL_localOnly|FL_includeQualifiers));
        $$.propertyList = $2.propertyList;
        $$.properties=$2.properties;
 

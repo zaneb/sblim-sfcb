@@ -2876,18 +2876,6 @@ static void *processProviderInvocationRequestsThread(void *prms)
    free(parms);
    free(req);
 
-   if ((pInfo != NULL) && (pInfo->idleThread != 0)) {
-
-     // unset provProcInuseId to indicate that the provider is done
-     // servicing the request
-     semAcquire(sfcbSem,(pInfo->provIds.procId*3)+provProcGuardId+provProcBaseId);
-     semAcquire(sfcbSem,(pInfo->provIds.procId*3)+provProcInuseId+provProcBaseId);
-     semRelease(sfcbSem,(pInfo->provIds.procId*3)+provProcGuardId+provProcBaseId);
-
-   }
-
-
-  
    _SFCB_RETURN(NULL);
 }
 

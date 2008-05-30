@@ -1,3 +1,9 @@
+2008-05-29 Chris Buccella <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	Fixed [ 1970808 ] sfcb hangs after getinstance requests 
+	(for 1.3.1 release; current cvs still needs work)
+
 2008-05-20 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
     * brokerOs.c, instance.c, support.c

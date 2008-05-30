@@ -7,7 +7,7 @@ New features:
 Bugs fixed:
 -1946202 getPropQualifier function attempts to free non-malloced mem
 -1928541 sfcb binary interface memory leak on CMGetObjectPath
-
+- 1970808 sfcb hangs after getinstance requests
 
 Changes in 1.3.1
 ================

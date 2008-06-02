@@ -1,3 +1,8 @@
+2008-06-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+    * interopServerProvider.c 
+    Fixed [ 1945374 ] CIM_ObjectManagerCommunicationMechanism.Version not set
+
 2008-05-30 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
     * cimXmlOps.y

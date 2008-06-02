@@ -468,6 +468,8 @@ static CMPIStatus ComMechProviderEnumInstances(CMPIInstanceMI * mi,
    gethostname(hostName,511);
    CMSetProperty(ci,"SystemName",hostName,CMPI_chars);
    CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
+   /* Version of CIM-XML that is supported */
+   CMSetProperty(ci,"Version","1.0.0",CMPI_chars);
    
    mech=2;
    CMSetProperty(ci,"CommunicationMechanism",&mech,CMPI_uint16);

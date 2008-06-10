@@ -238,7 +238,7 @@ static CMPIStatus QualifierProviderEnumQualifiers(CMPIQualifierDeclMI * mi,
 			
 			retQ.dataPtr = vp;
 			CMReturnQualifier(rslt, &retQ);
-			free(q);
+			//free(q);
 		}
 		freeBlobIndex(&bi, 1);
 	} 

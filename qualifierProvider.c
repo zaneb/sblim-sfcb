@@ -127,7 +127,6 @@ static CMPIStatus QualifierProviderGetQualifier(CMPIQualifierDeclMI * mi,
 		
 		retQ.dataPtr = vp;
 		CMReturnQualifier(rslt, &retQ);
-		free(q);
    }
 
    _SFCB_RETURN(st);   
@@ -238,7 +237,6 @@ static CMPIStatus QualifierProviderEnumQualifiers(CMPIQualifierDeclMI * mi,
 			
 			retQ.dataPtr = vp;
 			CMReturnQualifier(rslt, &retQ);
-			//free(q);
 		}
 		freeBlobIndex(&bi, 1);
 	} 

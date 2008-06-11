@@ -1,3 +1,8 @@
+2008-06-11 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* qualifierProvider.c:
+	Expanded previous fix to 1983569 to included similar problem in gq
+
 2008-06-10 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
     * qualifierProvider.c

@@ -3,6 +3,9 @@
 	* qualifierProvider.c:
 	Expanded previous fix to 1983569 to included similar problem in gq
 
+	* httpAdapter.c:
+	Fixed [ 1991296 ] httpAdapter doesn't check content_length correctly
+	
 2008-06-10 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
     * qualifierProvider.c

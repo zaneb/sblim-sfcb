@@ -356,6 +356,11 @@ static void getPayload(CommHndl conn_fd, Buffer * b)
    b->content = (char *) malloc(b->content_length + 8);
    if (c) memcpy(b->content, (b->data) + b->ptr, c);
 
+   if (c > b->content_length) {
+     mlogf(M_INFO,M_SHOW,"--- HTTP Content-Length is lying; content truncated\n");
+     c = b->content_length;
+   }
+
    readData(conn_fd, (b->content) + c, b->content_length - c);
    *((b->content) + b->content_length) = 0;
 }

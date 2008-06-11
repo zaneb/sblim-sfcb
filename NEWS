@@ -12,6 +12,7 @@ Bugs fixed:
 - 1970808 sfcb hangs after getinstance requests
 - 1945374 CIM_ObjectManagerCommunicationMechanism.Version not set
 - 1983569 enumerate qualifier call causes qualifier provider to die
+- 1991296 httpAdapter doesn't check content_length correctly
 
 Changes in 1.3.1
 ================

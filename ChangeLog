@@ -5,6 +5,7 @@
 
 	* httpAdapter.c:
 	Fixed [ 1991296 ] httpAdapter doesn't check content_length correctly
+	(found by Alexander Sotirov)
 	
 2008-06-10 Sean Swehla <smswehla@linux.vnet.ibm.com>
 

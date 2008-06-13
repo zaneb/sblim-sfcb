@@ -469,12 +469,14 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
      if (isa(nss, cns, "cim_registeredprofile")) {
         CMPIArray* atArray;
         atArray = CMGetProperty(ci, "AdvertiseTypes", &st).value.array;
+#ifdef HAVE_SLP
         if (st.rc == CMPI_RC_OK || 
             atArray != NULL || 
             CMGetArrayElementAt(atArray, 0, &st).value.uint16 == 3) {
-
-          kill(slppid, SIGHUP);  /* restart SLP to update RegisteredProfiles */
+	  if (slppid > 1) /* sanity check */
+            kill(slppid, SIGHUP);  /* restart SLP to update RegisteredProfiles */
         }
+#endif
      }
    }
 

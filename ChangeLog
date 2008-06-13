@@ -1,3 +1,8 @@
+2008-06-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* internalProvider.c:
+	Fixed [ 1993385 ] sfcb restarts itself on startup
+
 2008-06-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
     * indCIMXMLExport.c

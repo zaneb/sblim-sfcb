@@ -1,3 +1,8 @@
+2008-06-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+    * indCIMXMLExport.c
+    Fixed [ 1934753 ] indCIMXMLExport.c fails to compile on gcc 4.3
+
 2008-06-11 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* qualifierProvider.c:

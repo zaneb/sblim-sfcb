@@ -243,7 +243,7 @@ static char *getErrorMessage(CURLcode err)
 {
     char error[4096];
 #if LIBCURL_VERSION_NUM >= 0x071200
-    error = curl_easy_strerror(err);
+    //error = curl_easy_strerror(err);
     snprintf(error,4095,"CURL error: %d (%s)",err,curl_easy_strerror(err));
 #else
     if ((err>0 && err<8) || (err>=22 && err<=23)) 

@@ -1,3 +1,9 @@
+2008-06-16 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* support.c:
+	Fixed [ 1914077 ] MI function signatures missing CMPIStatus * parameter
+	(Patch by Tim Potter)
+
 2008-06-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* internalProvider.c:

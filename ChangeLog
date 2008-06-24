@@ -1,3 +1,8 @@
+2008-06-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* context.c:
+	Fixed [ 1999175 ] CMAddContextEntry doesn't update entries, only adds
+
 2008-06-16 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* support.c:

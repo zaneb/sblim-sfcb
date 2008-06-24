@@ -16,6 +16,7 @@ Bugs fixed:
 - 1934753 indCIMXMLExport.c fails to compile on gcc 4.3
 - 1993385 sfcb restarts itself on startup
 - 1914077 MI function signatures missing CMPIStatus * parameter
+- 1999175 CMAddContextEntry doesn't update entries, only adds
 
 Changes in 1.3.1
 ================

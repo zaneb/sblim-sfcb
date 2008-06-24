@@ -253,7 +253,7 @@ static CMPIData __convert2CMPIData ( struct native_property * prop,
 
 
 /**
- * returns non-zero if already existant
+ * adds or replaces
  */
 static int __addProperty ( struct native_property ** prop,
 			   int mm_add,
@@ -264,43 +264,48 @@ static int __addProperty ( struct native_property ** prop,
 {
 	CMPIValue v;
 
-	if ( *prop == NULL ) {
-		struct native_property * tmp = *prop =
-			(struct native_property *)
-			calloc ( 1, sizeof ( struct native_property ) );
-  
-		tmp->name = strdup ( name );
 
-		if ( type == CMPI_chars ) {
+	/* if it's new, add it to the end of the list */
+	/* if it's an update, replace it in the list */
+	if ( *prop == NULL || (strcmp ( (*prop)->name, name ) == 0) ) {
+	   if (*prop == NULL) {
+		 *prop = (struct native_property *)
+			 calloc ( 1, sizeof ( struct native_property ) );
+	   }
+	   struct native_property * tmp = *prop; 
+		  tmp->name = strdup ( name );
 
-			type = CMPI_string;
-			v.string = sfcb_native_new_CMPIString ( (char *) value,
-								NULL, 0 );
-			value = &v;
-		}
+		  if ( type == CMPI_chars ) {
 
-		tmp->type  = type;
+			  type = CMPI_string;
+			  v.string = sfcb_native_new_CMPIString ( (char *) value,
+								  NULL, 0 );
+			  value = &v;
+		  }
 
-		if ( type != CMPI_null ) {
-			tmp->state = state;
+		  tmp->type  = type;
 
-			if ( mm_add == MEM_TRACKED ) {
+		  if ( type != CMPI_null ) {
+			  tmp->state = state;
 
-			  sfcb_setAlignedValue(&tmp->value,value,type);
-			} else {
-			
-				CMPIStatus rc;
-				tmp->value = sfcb_native_clone_CMPIValue ( type,
-								      value,
-								      &rc );
-				// what if clone() fails???
-			}
-		} else tmp->state = CMPI_nullValue;
+			  if ( mm_add == MEM_TRACKED ) {
 
-		return 0;
+			    sfcb_setAlignedValue(&tmp->value,value,type);
+			  } else {
+
+				  CMPIStatus rc;
+				  tmp->value = sfcb_native_clone_CMPIValue ( type,
+									value,
+									&rc );
+				  // what if clone() fails???
+			  }
+		  } else tmp->state = CMPI_nullValue;
+
+		  return 0;
 	}
-	return ( strcmp ( (*prop)->name, name ) == 0 ||
-		 __addProperty ( &( (*prop)->next ), 
+
+	/* continue checking the list */
+	return (  __addProperty ( &( (*prop)->next ), 
 				 mm_add,
 				 name, 
 				 type,

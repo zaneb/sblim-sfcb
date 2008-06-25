@@ -1,3 +1,8 @@
+2008-06-25 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* fileRepository.c:
+	Fixed [ 2001879 ] sfcb string compares for qualifier name are case-sensitive
+
 2008-06-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* context.c:

@@ -67,7 +67,7 @@ static char *getRepDir()
    return repfn;      
 }
 
-static int getIndexRecord(BlobIndex * bi, const char *key, size_t keyl, char **keyb, size_t *keybl)
+static int getIndexRecordCase(BlobIndex * bi, const char *key, size_t keyl, char **keyb, size_t *keybl, short ignorecase)
 /* returns -1 failure, 0 OK, 1 not found (only with key)
  */
 {
@@ -158,9 +158,17 @@ static int getIndexRecord(BlobIndex * bi, const char *key, size_t keyl, char **k
   bi->next += elen;
   /* check if key was specified and matches */
   if (keyl > 0) {
-    if (keyl != ekl || strncmp(kbptr,key,keyl)) {
-      /* mismatch */
-      return 1;
+    if (ignorecase) {
+      if (keyl != ekl || strncasecmp(kbptr,key,keyl)) {
+	/* mismatch */
+	return 1;
+      }
+    }
+    else {
+      if (keyl != ekl || strncmp(kbptr,key,keyl)) {
+	/* mismatch */
+	return 1;
+      }
     }
   }
   /* set found keybindings if possible */
@@ -169,6 +177,12 @@ static int getIndexRecord(BlobIndex * bi, const char *key, size_t keyl, char **k
     *keybl = ekl;
   }
   return 0;  
+}
+
+static int getIndexRecord(BlobIndex * bi, char *key, size_t keyl, char **keyb, size_t *keybl)
+{
+  // use case-sensitive compare on the key
+  return getIndexRecordCase(bi, key, keyl, keyb, keybl, 0);
 }
 
 void freeBlobIndex(BlobIndex **bip, int all)
@@ -190,13 +204,13 @@ void freeBlobIndex(BlobIndex **bip, int all)
    *bip=NULL;
 }
 
-static int indxLocate(BlobIndex *bi,const char *key)
+static int indxLocateCase(BlobIndex *bi,const char *key,short ignorecase)
 {
    int loc;
    int kl=strlen(key);
    bi->next = 0;
    while (bi->next < bi->dSize) {
-     loc = getIndexRecord(bi,key,kl,NULL,0);
+     loc = getIndexRecordCase(bi,key,kl,NULL,0,ignorecase);
      if (loc < 0) {
        return 0;
      } else if (loc == 0) {
@@ -205,6 +219,11 @@ static int indxLocate(BlobIndex *bi,const char *key)
      }
    }
    return 0;
+}
+
+static int indxLocate(BlobIndex *bi,const char *key) {
+  // use case-sensitive compare on the key
+  return indxLocateCase(bi, key, 0);
 }
 
 void* getFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl)
@@ -483,10 +502,13 @@ void *getBlob(const char *ns, const char *cls, const char *id, int *len)
    char *buf;
    int rc=0;
 
+   // checking for qualifiers should be case-insensitive
+   short ignorecase = (strcmp("qualifiers", cls)) ? 0 : 1;
+
    rc=getIndex(ns,cls,keyl+64,0,&bi);
 
    if (rc) {
-      if (indxLocate(bi,id)) {
+      if (indxLocateCase(bi,id,ignorecase)) {
          bi->fd=fopen(bi->fnd,"rb");
          if (bi->fd==NULL) {
             char *emsg=strerror(errno);

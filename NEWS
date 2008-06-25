@@ -18,6 +18,7 @@ Bugs fixed:
 - 1914077 MI function signatures missing CMPIStatus * parameter
 - 1999175 CMAddContextEntry doesn't update entries, only adds
 - 2001879 sfcb string compares for qualifier name are case-sensitive
+- 1998030 SFCB core dumps during garbage collection
 
 Changes in 1.3.1
 ================

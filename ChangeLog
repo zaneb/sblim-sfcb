@@ -3,6 +3,10 @@
 	* fileRepository.c:
 	Fixed [ 2001879 ] sfcb string compares for qualifier name are case-sensitive
 
+	* support.c:
+	Fixed [ 1998030 ] SFCB core dumps during garbage collection
+	(thanks to Nick Bofferding for helping to track this down)
+	
 2008-06-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* context.c:

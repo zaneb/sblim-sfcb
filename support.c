@@ -37,6 +37,7 @@
 #include "native.h"
 #include "trace.h"
 #include "config.h"
+#include <pthread.h>
 
 #ifdef SFCB_IX86
 #define SFCB_ASM(x) asm(x)
@@ -416,18 +417,18 @@ static void __cleanup_mt(void *ptr)
    _SFCB_EXIT();
 }
 
+static managed_thread *__memInit(int dontforce);
 
 /**
  * Initializes the current thread by adding it to the memory management sytem.
  */
 
-#include <pthread.h>
-
 void uninitGarbageCollector()
 {
-   managed_thread *mt=NULL;   
-   mt = (managed_thread *)
-       CMPI_BrokerExt_Ftab->getThreadSpecific(__mm_key);
+
+   /* do an init (don't force) just in case; otherwise, we risk using garbage */
+   managed_thread *mt =  __memInit(1);
+
    if (mt==NULL) return;
    
    __cleanup_mt(mt);

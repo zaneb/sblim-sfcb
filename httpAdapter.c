@@ -62,6 +62,7 @@ unsigned long exFlags = 0;
 static char *name;
 static int debug;
 static int doBa;
+static int doUdsAuth;
 static int doFork = 0;
 int noChunking = 0;
 int sfcbSSLMode = 0;
@@ -810,7 +811,17 @@ static int doHttpRequest(CommHndl conn_fd)
    }
 #endif
 
-   if (!discardInput && doBa) {
+   int authorized = 0; 
+   if (!discardInput && doUdsAuth) {
+	   struct ucred cr; 
+	   int cl = sizeof(cr); 
+	   if (getsockopt(conn_fd.socket, SOL_SOCKET, SO_PEERCRED, &cr, &cl) == 0) {
+		   if (cr.uid == 0) {
+			   authorized = 1;
+		   }
+	   }
+   }
+   if (!authorized && !discardInput && doBa) {
      if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principal))) {
        char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
        genError(conn_fd, &inBuf, 401, "Unauthorized", more);
@@ -1365,12 +1376,18 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 #else
    struct sockaddr_in sin;
 #endif
+   struct sockaddr_un sun; 
 
-   socklen_t sz,sin_len;
-   int i,ru;
+   socklen_t sz,sin_len,sun_len;
+   int i,ru,rc;
    char *cp;
    long procs, port;
-   int listenFd, connFd;
+   int listenFd=-1, udsListenFd=-1, connFd; 
+   int enableUds=0,enableHttp=0;
+   fd_set httpfds;
+   int maxfdp1; 
+
+   static char *udsPath=NULL;
 
    name = argv[0];
    debug = 1;
@@ -1392,6 +1409,8 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    else {
       if (getControlNum("httpPort", &port))
          port = 5988;
+      if (getControlChars("httpSocketPath", &udsPath)) 
+		 udsPath = "/tmp/sfcbHttpSocket"; 
       hBase=htBase;
       hMax=htMax;
    }
@@ -1402,11 +1421,22 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    } else {
      if (getControlNum("httpProcs", &procs))
        procs = 10;
+     if (getControlBool("enableHttp", &enableHttp))
+       enableHttp=1;
+	 if (getControlBool("enableUds", &enableUds))
+       enableUds=1;
+	 if (!enableUds)
+		 udsPath = NULL; 
+	 if (!enableHttp)
+		 port = -1; 
    }
    initHttpProcCtl(procs,sslMode);
 
    if (getControlBool("doBasicAuth", &doBa))
       doBa=0;
+
+   if (getControlBool("doUdsAuth", &doUdsAuth))
+      doUdsAuth=0;
 
    if (getControlNum("keepaliveTimeout", &keepaliveTimeout))
      keepaliveTimeout = 15;
@@ -1449,11 +1479,12 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
    if (sslMode) mlogf(M_INFO,M_SHOW,"--- %s HTTPS Daemon V" sfcHttpDaemonVersion " started - %d - port %ld\n", 
          name, currentProc,port);
-   else mlogf(M_INFO,M_SHOW,"--- %s HTTP  Daemon V" sfcHttpDaemonVersion " started - %d - port %ld\n", 
-         name, currentProc,port);
+   else mlogf(M_INFO,M_SHOW,"--- %s HTTP  Daemon V" sfcHttpDaemonVersion " started - %d - port %ld, %s\n", 
+         name, currentProc,port,udsPath);
 
 
    if (doBa) mlogf(M_INFO,M_SHOW,"--- Using Basic Authentication\n");
+   if (doUdsAuth) mlogf(M_INFO,M_SHOW,"--- Using Unix Socket Peer Cred Authentication\n");
 
    if (keepaliveTimeout == 0) {
      mlogf(M_INFO,M_SHOW,"--- Keep-alive timeout disabled\n");
@@ -1462,50 +1493,79 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
      mlogf(M_INFO,M_SHOW,"--- Maximum requests per connection: %ld\n",keepaliveMaxRequest);
    }
 
-#ifdef USE_INET6
-   listenFd = socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
-   if (listenFd < 0) { 
-       mlogf(M_INFO,M_SHOW,"--- Using IPv4 address\n");
-       listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+   ru = 1;
+   if (enableUds) {
+      udsListenFd = socket(PF_UNIX, SOCK_STREAM, 0); 
    }
+   if (enableHttp || sslMode) {
+#ifdef USE_INET6
+      listenFd = socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+      if (listenFd < 0) { 
+          mlogf(M_INFO,M_SHOW,"--- Using IPv4 address\n");
+          listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+      }
 #else
-   listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+      listenFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 #endif
+      setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, (char *) &ru, sizeof(ru));
+   }
 
    sin_len = sizeof(sin);
-
-   ru = 1;
-   setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, (char *) &ru, sizeof(ru));
+   sun_len = sizeof(sun); 
 
    memset(&sin,0,sin_len);
+   memset(&sun,0,sun_len);
 
-   if (getControlBool("httpLocalOnly", &httpLocalOnly))
-      httpLocalOnly=0;
+   if (udsListenFd >= 0) {
+     if (getControlChars("httpSocketPath", &udsPath)) {
+         mlogf(M_ERROR,M_SHOW,"--- No unix socket path defined for HTTP\n"); 
+         sleep(1);
+         kill(sfcbPid,3);
+     }
+     sun.sun_family=AF_UNIX;
+     strcpy(sun.sun_path,udsPath);
+   }
+
+   if (listenFd >= 0) {
+      if (getControlBool("httpLocalOnly", &httpLocalOnly))
+	    httpLocalOnly=0;
 
 #ifdef USE_INET6
-   sin.sin6_family = AF_INET6;
-   if (httpLocalOnly)
-     sin.sin6_addr = in6addr_loopback;
-   else
-     sin.sin6_addr = in6addr_any;
-   sin.sin6_port = htons(port);
+     sin.sin6_family = AF_INET6;
+     if (httpLocalOnly)
+	   sin.sin6_addr = in6addr_loopback;
+     else
+	   sin.sin6_addr = in6addr_any;
+     sin.sin6_port = htons(port);
 #else
-   sin.sin_family = AF_INET;
-   if (httpLocalOnly) {
-     char* loopback_int = "127.0.0.1";
-     inet_aton(loopback_int, &sin.sin_addr); /* not INADDR_LOOPBACK ? */
-   }
-   else
-     sin.sin_addr.s_addr = INADDR_ANY;
-   sin.sin_port = htons(port);
+     sin.sin_family = AF_INET;
+     if (httpLocalOnly) {
+	   char* loopback_int = "127.0.0.1";
+	   inet_aton(loopback_int, &sin.sin_addr); /* not INADDR_LOOPBACK ? */
+     }
+     else
+	   sin.sin_addr.s_addr = INADDR_ANY;
+     sin.sin_port = htons(port);
 #endif 
-
-   if (bind(listenFd, (struct sockaddr *) &sin, sin_len) ||
-       listen(listenFd, 0)) {
-      mlogf(M_ERROR,M_SHOW,"--- Cannot listen on port %ld (%s)\n", port, strerror(errno));
-      sleep(1);
-      kill(sfcbPid,3);
    }
+
+  if (listenFd >= 0) {
+     if (bind(listenFd, (struct sockaddr *) &sin, sin_len) ||
+             listen(listenFd, 10)) {
+            mlogf(M_ERROR,M_SHOW,"--- Cannot listen on port %ld (%s)\n", port, strerror(errno));
+            sleep(1);
+            kill(sfcbPid,3);
+     }
+  }
+  if (udsListenFd >= 0) {
+     unlink(udsPath); 
+     if (bind(udsListenFd, (struct sockaddr *) &sun, sun_len) ||
+             listen(udsListenFd, 10)) {
+            mlogf(M_ERROR,M_SHOW,"--- Cannot listen on unix socket %s (%s)\n", udsPath, strerror(errno));
+            sleep(1);
+            kill(sfcbPid,3);
+     }
+  }
 
   if (!debug) {
       int rc = fork();
@@ -1568,23 +1628,56 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
     }
 #endif
 
+   maxfdp1 = (listenFd > udsListenFd? listenFd : udsListenFd) + 1; 
    for (;;) {
-   char *emsg;
-      listen(listenFd, 1);
-      sz = sizeof(sin);
-      if ((connFd = accept(listenFd, (__SOCKADDR_ARG) & sin, &sz))<0) {
+      char *emsg;
+      // listen(listenFd, 1);
+	  FD_ZERO(&httpfds); 
+	  if (listenFd >= 0) {
+         FD_SET(listenFd, &httpfds); 
+	  }
+	  if (udsListenFd >= 0) {
+         FD_SET(udsListenFd, &httpfds); 
+      }
+	  rc = select(maxfdp1, &httpfds, NULL, NULL, NULL); 
+      if (rc < 0) {
          if (errno == EINTR || errno == EAGAIN) {
             if (stopAccepting) break;
             continue;
-         }   
-         emsg=strerror(errno);
-         mlogf(M_ERROR,M_SHOW,"--- accept error %s\n",emsg);
-         _SFCB_ABORT();
+         }
       }
-      _SFCB_TRACE(1, ("--- Processing http request"));
+	  if (listenFd >= 0 && FD_ISSET(listenFd, &httpfds)) {
+		  sz = sin_len; 
+		  if ((connFd = accept(listenFd, (__SOCKADDR_ARG) &sin, &sz))<0) {
+			 if (errno == EINTR || errno == EAGAIN) {
+				if (stopAccepting) break;
+				continue;
+			 }   
+			 emsg=strerror(errno);
+			 mlogf(M_ERROR,M_SHOW,"--- accept error %s\n",emsg);
+			 _SFCB_ABORT();
+		  }
+		  _SFCB_TRACE(1, ("--- Processing http request"));
 
-      handleHttpRequest(connFd);
-      close(connFd);
+		  handleHttpRequest(connFd);
+		  close(connFd);
+	  }
+	  if (udsListenFd >= 0 && FD_ISSET(udsListenFd, &httpfds)) {
+		  sz = sun_len; 
+		  if ((connFd = accept(udsListenFd, (__SOCKADDR_ARG) &sun, &sz))<0) {
+			 if (errno == EINTR || errno == EAGAIN) {
+				if (stopAccepting) break;
+				continue;
+			 }   
+			 emsg=strerror(errno);
+			 mlogf(M_ERROR,M_SHOW,"--- accept error %s\n",emsg);
+			 _SFCB_ABORT();
+		  }
+		  _SFCB_TRACE(1, ("--- Processing http request"));
+
+		  handleHttpRequest(connFd);
+		  close(connFd);
+	  }
    }
    
    remProcCtl();   

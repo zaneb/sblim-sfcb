@@ -1,3 +1,9 @@
+2008-06-27 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c, httpAdapter.c, sfcBroker.c, sfcb.cfg.pre.in:
+	Fixed [ 1978218 ] SFCB support for HTTP over a unix socket
+	(patch by J. Bart Whitely)
+
 2008-06-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
     * interopServerProvider.c 

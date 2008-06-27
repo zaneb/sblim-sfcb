@@ -18,6 +18,11 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+06/27/2008 by J. Bart Whitely, Novell
+-------------------------------------
+[ 1978218 ] SFCB support for HTTP over a unix socket
+
+
 05/07/2008 by Luong Nguyen-Duy, Sun
 -----------------------------------
 [ 1953683 ] allow sfcb to be built to support localconnect only

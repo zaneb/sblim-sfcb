@@ -59,6 +59,7 @@ char * configfile = NULL;
 Control init[] = {
    {"httpPort",         1, "5988"},
    {"enableHttp",       2, "true"},
+   {"enableUds",        2, "true"},
    {"httpProcs",        1, "8"},
    {"httpsPort",        1, "5989"},
    {"enableHttps",      2, "false"},
@@ -78,6 +79,7 @@ Control init[] = {
    {"provProcs",        1, "32"},
    {"basicAuthLib",     0, "sfcBasicAuthentication"},
    {"doBasicAuth",      2, "false"},
+   {"doUdsAuth",        2, "false"},
    
    {"useChunking",      2, "false"},
    {"chunkSize",        1, "50000"},
@@ -100,6 +102,7 @@ Control init[] = {
    {"sslClientCertificate", 0, "ignore" },
    {"certificateAuthLib",   0, "sfcCertificateAuthentication"},
    {"localSocketPath",   0, "/tmp/sfcbLocalSocket"},
+   {"httpSocketPath",   0, "/tmp/sfcbHttpSocket"},
    
    {"traceFile",   0, "stderr"},
    {"traceLevel",   1, "0"},

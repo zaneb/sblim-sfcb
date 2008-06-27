@@ -3,6 +3,7 @@ Changes in 1.3.2preview
 
 New features:
 
+- 1978218 SFCB support for HTTP over a unix socket
 
 Bugs fixed:
 - 1923373 Fixed SFCB GetClass defaults optional IncludeQualifiers=false

@@ -1,3 +1,9 @@
+2008-06-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+    * interopServerProvider.c 
+    Fixed [ 1945374 ] CIM_ObjectManagerCommunicationMechanism.Version not set
+        (2nd fix to set proper version)
+
 2008-06-25 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* fileRepository.c:

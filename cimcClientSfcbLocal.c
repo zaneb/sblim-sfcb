@@ -1338,6 +1338,7 @@ static CMPIConstClass * getClass(
       }
       free(sreq);
       if (rc) CIMCSetStatusWithChars(rc, resp->rc, (char*)resp->object[0].data);
+      free(resp);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);

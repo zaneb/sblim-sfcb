@@ -1,3 +1,9 @@
+2008-06-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	Fixed [ 2002392 ] Memory leaks in sfcb 1.2.5-35f
+	(found by Hari V.)
+
 2008-06-27 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c, httpAdapter.c, sfcBroker.c, sfcb.cfg.pre.in:

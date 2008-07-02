@@ -58,7 +58,6 @@ typedef struct profile {
   char*            AdvertiseTypeDescriptions; /* only if AdvertiseTypes = 1 */
 } Profile;
 
-
 /* ------------------------------------------------------------------------- */
 
 /* checks if an object path is for the /root/interop or /root/pg_interop */
@@ -90,7 +89,9 @@ static CMPIContext* prepareUpcall(CMPIContext *ctx)
 
 /* ------------------------------------------------------------------------- */
 
-static int setProfileProperties(CMPIInstance *in, Profile *prof)
+/* make a getProfileProperties as well?*/
+
+static int setProfileProperties(const CMPIInstance *in, Profile *prof, CMPIStatus *st)
 {
   if (in && prof) {
 
@@ -98,10 +99,8 @@ static int setProfileProperties(CMPIInstance *in, Profile *prof)
     CMSetProperty(in,"RegisteredName",prof->RegisteredName,CMPI_chars);
     CMSetProperty(in,"RegisteredVersion",prof->RegisteredVersion,CMPI_chars);
     CMSetProperty(in,"RegisteredOrganization",(CMPIValue*)&(prof->RegisteredOrganization),CMPI_uint16);
-    //    CMSetProperty(in,"AdvertiseTypes",(CMPIValue*)&(prof->AdvertiseTypes),CMPI_uint16);
 
-    CMPIStatus st;
-    CMPIArray* at = CMNewArray(_broker,1,CMPI_uint16,&st);
+    CMPIArray* at = CMNewArray(_broker,1,CMPI_uint16,st);
     CMSetArrayElementAt(at,0,(CMPIValue*)&(prof->AdvertiseTypes),CMPI_uint16);
     CMSetProperty(in, "AdvertiseTypes", (CMPIValue*)&(at), CMPI_uint16A);
 
@@ -121,7 +120,7 @@ static void initProfiles(
 {
 
   CMPIObjectPath *op;
-  CMPIInstance *ci;
+  const CMPIInstance *ci;
   CMPIContext* ctxLocal;
   CMPIStatus st;
     
@@ -130,7 +129,7 @@ static void initProfiles(
   ctxLocal = prepareUpcall((CMPIContext *)ctx);
 
   /* Add Profile Registration profile */
-  op = CMNewObjectPath(broker,"root/interop","cim_registeredprofile",&st);
+  op = CMNewObjectPath(broker,"root/interop","cim_registeredprofile",&st); 
   ci = CMNewInstance(_broker, 
 		     CMNewObjectPath(_broker, "root/interop", "cim_registeredprofile", &st),
 		     &st);
@@ -142,16 +141,17 @@ static void initProfiles(
   prof->AdvertiseTypes = 3;
 
   CMAddKey(op,"InstanceID",prof->InstanceID,CMPI_chars);
-  setProfileProperties(ci, prof);
+  setProfileProperties(ci, prof, &st);
 
   _broker->bft->createInstance(_broker, ctxLocal, op, ci, &st);
 
   free(prof);   
 
-  // should really if st.rc != 0 or 11...
+  // should really check if st.rc != 0 or 11...
 
   _SFCB_EXIT(); 
 }
+
 
 /* --------------------------------------------------------------------------*/
 /*                       Instance Provider Interface                         */
@@ -253,9 +253,16 @@ CMPIStatus ProfileProviderCreateInstance(
 	const CMPIObjectPath * cop,
 	const CMPIInstance * ci)
 {
-  CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };	
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderCreateInstance");
-  _SFCB_RETURN(st);   
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIContext *ctxLocal;
+
+   _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderCreateInstance");
+  
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   CMReturnObjectPath(rslt, _broker->bft->createInstance(_broker, ctxLocal, cop, ci, &st));
+   CMRelease(ctxLocal);
+    
+   _SFCB_RETURN(st);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -281,8 +288,15 @@ CMPIStatus ProfileProviderDeleteInstance(
 	const CMPIResult * rslt,
 	const CMPIObjectPath * cop)
 {
-  CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
+  CMPIStatus st = { CMPI_RC_OK, NULL };
+  CMPIContext *ctxLocal;
+
   _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderDeleteInstance");
+
+  ctxLocal = prepareUpcall((CMPIContext *)ctx);
+  st = _broker->bft->deleteInstance(_broker, ctxLocal, cop);
+  CMRelease(ctxLocal);
+
   _SFCB_RETURN(st);
 }
 

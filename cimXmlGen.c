@@ -629,18 +629,25 @@ void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refNam
       sb->ft->appendBlock(sb, bTag,bTagLen);
       sb->ft->appendChars(sb, (char *) name->hdl);
       if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"");
-      else if (bTag) {
-        SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
-        if(data->type & CMPI_instance || data->type & CMPI_class) {
-             SFCB_APPENDCHARS_BLOCK(sb, "string");
-        } else {
-         sb->ft->appendChars(sb, dataType(data->type));
-        }
+      else if (bTag) SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
+      if (data->type == CMPI_refA) {
+         SFCB_APPENDCHARS_BLOCK(sb, "reference");
+      }
+      else if(data->type & ~CMPI_ARRAY == CMPI_instance 
+               || data->type & ~CMPI_ARRAY == CMPI_class) {
+         SFCB_APPENDCHARS_BLOCK(sb, "string");
+      } else {
+          sb->ft->appendChars(sb, dataType(data->type));
       }
       SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
       if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
       if (data->state == 0) {
-         SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.ARRAY>\n");
+         if (data->type == CMPI_refA) {
+            SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.REFARRAY>\n");
+         }
+         else {
+            SFCB_APPENDCHARS_BLOCK(sb, "<VALUE.ARRAY>\n");
+         }
          for (j = 0; j < ac; j++) {
             d = CMGetArrayElementAt(ar, j, NULL);
 	    if ((d.state & CMPI_nullValue)==0) {
@@ -651,7 +658,11 @@ void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refNam
 	      }
 	    }
          }
-         SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.ARRAY>\n");
+         if (data->type == CMPI_refA) {
+            SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.REFARRAY>\n");
+         } else {
+            SFCB_APPENDCHARS_BLOCK(sb, "</VALUE.ARRAY>\n");
+         }
       }
    }
    
@@ -674,7 +685,7 @@ void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refNam
       }
       
       else if (*type == '%') {                  
-	 sb->ft->appendBlock(sb, bTag, bTagLen);
+	     sb->ft->appendBlock(sb, bTag, bTagLen);
          sb->ft->appendChars(sb, (char *) name->hdl);
          SFCB_APPENDCHARS_BLOCK(sb, "\" EmbeddedObject=\"object");
          if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"string\">\n");
@@ -689,14 +700,12 @@ void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refNam
      }
       
       else {
-	 sb->ft->appendBlock(sb, bTag, bTagLen);
+	     sb->ft->appendBlock(sb, bTag, bTagLen);
          sb->ft->appendChars(sb, (char *) name->hdl);
          if (param) SFCB_APPENDCHARS_BLOCK(sb, "\" PARAMTYPE=\"");
-         else  if (bTag) {
-            SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
-            sb->ft->appendChars(sb, type);
-            SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
-         }
+         else  if (bTag) SFCB_APPENDCHARS_BLOCK(sb, "\" TYPE=\"");
+         sb->ft->appendChars(sb, type);
+         SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
          if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
          if (data->state == 0) value2xml(*data, sb, 1);
       }

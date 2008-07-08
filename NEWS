@@ -6,6 +6,7 @@ New features:
 - 1978218 SFCB support for HTTP over a unix socket
 
 Bugs fixed:
+- 2001486 SFCB extrinsic method output parameter problems
 - 1923373 Fixed SFCB GetClass defaults optional IncludeQualifiers=false
 - 1928541 Fixed sfcb binary interface memory leak on CMGetObjectPath
 -1946202 getPropQualifier function attempts to free non-malloced mem

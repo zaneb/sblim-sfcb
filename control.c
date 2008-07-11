@@ -117,6 +117,7 @@ void sunsetControl()
       if(init[i].dupped) free(init[i].strValue);
    }
    ct->ft->release(ct);
+   ct=NULL;
 }
 
 int setupControl(char *fn)

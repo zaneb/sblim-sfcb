@@ -1,3 +1,9 @@
+2008-07-11 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c:
+	[ 2015639 ] SFCB SLP registration process crashes after 2nd reg
+	(patch by Nick Bofferding)
+
 2008-07-08 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
     * cimXmlGen.c

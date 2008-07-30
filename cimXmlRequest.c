@@ -271,25 +271,48 @@ UtilStringBuffer *segments2stringBuffer(RespSegment *rs)
    return sb;
 }
 
+static char* xsnprintf(const char* fmt, ...)
+{
+    va_list ap;
+    int len;
+    va_start(ap, fmt);
+    len = vsnprintf(NULL, 0, fmt, ap);
+    va_end(ap);
+    if (len <= 0)
+    {
+        return NULL;
+    }
+    char* str = (char*)malloc(len+1);
+    if (str == NULL)
+    {
+        return NULL;
+    }
+    va_start(ap, fmt);
+    vsnprintf(str, len+1, fmt, ap);
+    va_end(ap);
+    return str;
+}
+
+
 static char *getErrSegment(int rc, char *m)
 {
-   char msg[1024];
+   char *msg;
    char *escapedMsg;
    
    if (m && *m) {
      escapedMsg = XMLEscape(m, NULL);
-       snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n",
+       msg = xsnprintf("<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n",
                 rc, escapedMsg);
        free(escapedMsg);
    }
    else if (rc > 0 && rc < 18) {
-       snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n",
+       msg = xsnprintf("<ERROR CODE=\"%d\" DESCRIPTION=\"%s\"/>\n",
                 rc, cimMsg[rc]);
    }
    else  {
-       snprintf(msg, sizeof(msg), "<ERROR CODE=\"%d\"/>\n", rc);
+       msg = xsnprintf("<ERROR CODE=\"%d\"/>\n", rc);
    }
-   return strdup(msg);
+   return msg; 
 }
 /*
 static char *getErrorSegment(CMPIStatus rc)
@@ -302,13 +325,13 @@ static char *getErrorSegment(CMPIStatus rc)
 */
 char *getErrTrailer(int id, int rc, char *m)
 {
-   char msg[1024];
+   char *msg;
    
-   if (m && *m) snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: %s\r\n",m);
+   if (m && *m) msg = xsnprintf("CIMStatusCodeDescription: %s\r\n",m);
    else if (rc > 0 && rc < 18)
-      snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: %s\r\n",cimMsg[rc]);
-   else snprintf(msg, sizeof(msg), "CIMStatusCodeDescription: *Unknown*\r\n");
-   return strdup(msg);
+      msg = xsnprintf("CIMStatusCodeDescription: %s\r\n",cimMsg[rc]);
+   else msg = strdup("CIMStatusCodeDescription: *Unknown*\r\n");
+   return msg; 
 }
 
 

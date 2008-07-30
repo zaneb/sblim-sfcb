@@ -1,3 +1,9 @@
+2008-07-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlRequest.c:
+	[ 2024019 ] SFCB can't handle large error messages
+	(patch by Bart Whitely)
+	
 2008-07-11 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c:

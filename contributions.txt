@@ -18,6 +18,11 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+07/30/2008 by J. Bart Whitely, Novell
+-------------------------------------
+[ 2024019 ] SFCB can't handle large error messages
+
+
 06/27/2008 by J. Bart Whitely, Novell
 -------------------------------------
 [ 1978218 ] SFCB support for HTTP over a unix socket

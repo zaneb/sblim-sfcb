@@ -26,6 +26,9 @@
 #include "mlog.h"
 
 #ifdef SFCB_DEBUG
+
+#define MAX_MSG_SIZE 1024 /* max length of trace message */
+
 #define _SFCB_TRACE(LEVEL,STR) \
   if ((_sfcb_trace_mask & __traceMask) && (LEVEL<=_sfcb_debug) && (LEVEL>0) ) \
   _sfcb_trace(LEVEL,__FILE__,__LINE__,_sfcb_format_trace STR);

@@ -48,7 +48,6 @@ int _sfcb_debug = 0;
 unsigned long _sfcb_trace_mask = 0;
 char *_SFCB_TRACE_FILE = NULL;
 
-
 TraceId traceIds[]={ 
   {"providerMgr",       TRACE_PROVIDERMGR},
   {"providerDrv",       TRACE_PROVIDERDRV},
@@ -137,9 +136,9 @@ void _sfcb_trace_init()
 char *_sfcb_format_trace(char *fmt, ...)
 {
    va_list ap;
-   char *msg = (char *) malloc(1024);
+   char *msg = (char *) malloc(MAX_MSG_SIZE);
    va_start(ap, fmt);
-   vsnprintf(msg, 1024, fmt, ap);
+   vsnprintf(msg, MAX_MSG_SIZE, fmt, ap);
    va_end(ap);
    return msg;
 }

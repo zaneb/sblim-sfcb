@@ -1,3 +1,8 @@
+2008-08-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* trace.h, trace.c
+	[ 2041967 ] sfcb trace messages have hard-coded size max
+
 2008-07-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlRequest.c:

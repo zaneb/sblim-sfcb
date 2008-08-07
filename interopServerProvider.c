@@ -56,6 +56,7 @@ static CMPIStatus okSt = { CMPI_RC_OK, NULL };
 static char *getSfcbUuid()
 {
    static char *uuid=NULL;
+   static char *u=NULL;
    
    if (uuid==NULL) {
       FILE *uuidFile;
@@ -76,14 +77,14 @@ static char *getSfcbUuid()
          }    
          fclose(uuidFile);
       }
-      else {
+      else if (u==NULL) {
          char hostName[512];
          gethostname(hostName,511);
-         char *u=(char*)malloc(strlen(hostName)+32);
+         u=(char*)malloc(strlen(hostName)+32);
          strcpy(u,"sfcb:NO-UUID-FILE-");
          strcat(u,hostName);
-         return u;
       }  
+      return u; 
    }   
    return uuid;
 }
@@ -372,9 +373,7 @@ static CMPIStatus ObjectManagerProviderEnumInstances(CMPIInstanceMI * mi,
    str[0]=0;
    gethostname(str,511);
    CMSetProperty(ci,"SystemName",str,CMPI_chars);
-   char *name=getSfcbUuid();
    CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
-   free(name);
    CMSetProperty(ci,"GatherStatisticalData",&bul,CMPI_boolean);
    CMSetProperty(ci,"ElementName","sfcb",CMPI_chars);
    CMSetProperty(ci,"Description",PACKAGE_STRING,CMPI_chars);

@@ -1,3 +1,8 @@
+2008-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* interopServerProvider.c:
+	[ 2039216 ] Memory leak in getSfcbUuid
+
 2008-08-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* trace.h, trace.c
@@ -8,7 +13,7 @@
 	* cimXmlRequest.c:
 	[ 2024019 ] SFCB can't handle large error messages
 	(patch by Bart Whitely)
-	
+
 2008-07-11 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c:

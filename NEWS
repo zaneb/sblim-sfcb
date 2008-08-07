@@ -6,11 +6,12 @@ New features:
 - 1978218 SFCB support for HTTP over a unix socket
 
 Bugs fixed:
+- 2039216 Memory leak in getSfcbUuid
 - 2001486 SFCB extrinsic method output parameter problems
 - 1923373 Fixed SFCB GetClass defaults optional IncludeQualifiers=false
 - 1928541 Fixed sfcb binary interface memory leak on CMGetObjectPath
--1946202 getPropQualifier function attempts to free non-malloced mem
--1928541 sfcb binary interface memory leak on CMGetObjectPath
+- 1946202 getPropQualifier function attempts to free non-malloced mem
+- 1928541 sfcb binary interface memory leak on CMGetObjectPath
 - 1970808 sfcb hangs after getinstance requests
 - 1945374 CIM_ObjectManagerCommunicationMechanism.Version not set
 - 1983569 enumerate qualifier call causes qualifier provider to die

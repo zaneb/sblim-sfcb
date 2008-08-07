@@ -86,6 +86,10 @@ static int getChar(XmlBuffer * xb, const char c)
    return 0;
 }
 
+/* skip nulled char and whitespace, 
+   see if we're on a new tag and return a pointer, 
+   or NULL otherwise
+ */
 static char *nextTag(XmlBuffer * xb)
 {
    if (xb->nulledChar) {
@@ -98,6 +102,10 @@ static char *nextTag(XmlBuffer * xb)
    return NULL;
 }
 
+/* compares two strings
+   return 1: n begins with t and following char is alphanumeric
+   return 0: otherwise
+ */
 static int nextEquals(const char *n, const char *t)
 {
    int l = strlen(t);
@@ -109,6 +117,7 @@ static int nextEquals(const char *n, const char *t)
    return 0;
 }
 
+/* scan until we find the end of the tag ('>') */
 static char skipTag(XmlBuffer * xb)
 {
    while (*xb->cur != '>' && xb->last > xb->cur)
@@ -334,12 +343,17 @@ static char *getContent(XmlBuffer * xb)
    char *start = xb->cur,*end, *help;
     if (xb->eTagFound)
       return NULL;
+
+   /* scan through until we hit an '<' or end of buffer*/
    for (; *xb->cur != '<' && xb->cur < xb->last; xb->cur++);
+
+   /* store the char we found, set it to null to use as a marker in the code below */
    xb->nulledChar = *(xb->cur);
    *(xb->cur) = 0;
+
    /* skip leading blanks */
    while (*start && *start<=' ') start++;
-   if (start == NULL) return "";
+   if (start == NULL) return "";  // should check for *start == NULL instead? start==NULL shouldn't happen, ever.
    end=xb->cur;
    /* strip trailing blanks */
    while (*(end-1)<=' ') {
@@ -595,6 +609,7 @@ static int procNameSpace(YYSTYPE * lvalp, ParserControl * parm)
 
 static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
 {
+  //  fprintf(stderr, "+++ in procParamValue\n");
    static XmlElement elm[] = {
       {"NAME"},
       {"PARAMTYPE"},
@@ -616,15 +631,18 @@ static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
                   break;
                }
             }
+	    // is this right?  why isn't reference covered by the types array in the loop above?
             if (lvalp->xtokParamValue.type==0) {
                if (strcasecmp(attr[1].attr, "reference") == 0) 
                   lvalp->xtokParamValue.type = CMPI_ref;
             }
          }
          if (attr[2].attr) {
+	   //        fprintf(stderr, "+++ procParamValue: attr[2].attr is: '%s'\n", attr[2].attr); 
             if(strcasecmp(attr[2].attr, "instance") == 0
                || strcasecmp(attr[2].attr, "object") == 0) {
                lvalp->xtokParamValue.type = CMPI_instance;
+	       //    fprintf(stderr, "+++ procParamValue: set lvalp->xtokParamValue.type to: '%d'\n", lvalp->xtokParamValue.type); 
             } else {
                Throw(NULL, "Invalid value for attribute EmbeddedObject");
             }
@@ -826,7 +844,7 @@ static int procValue(YYSTYPE * lvalp, ParserControl * parm)
    if (tagEquals(parm->xmb, "VALUE")) {
       char *v;
       if (attrsOk(parm->xmb, elm, attr, "VALUE", ZTOK_VALUE)) {
-         v=getContent(parm->xmb);
+         v=getContent(parm->xmb); /* v is a pointer to where the content starts*/
          lvalp->xtokValue.value = v;
          return XTOK_VALUE;
       }
@@ -1431,11 +1449,14 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
          _SFCB_RETURN(0);
       }   
       _SFCB_TRACE(1, ("--- token: %.32s\n",next));
+
+      /* found a tag, reset eTagFound flag, return the token for the tag that was found */
       if (parm->xmb->eTagFound) {
          parm->xmb->eTagFound = 0;
          _SFCB_RETURN(parm->xmb->etag);
       }
 
+      /* found an ending tag, loop from 0-#ofTags, return the token for the matching opening tag */
       if (*next == '/') {
 	for (i = 0, m = sizeof(tags)/sizeof(Tags); i < m; i++) {
             if (nextEquals(next + 1, tags[i].tag) == 1) {
@@ -1446,13 +1467,13 @@ int yylex(YYSTYPE * lvalp, ParserControl * parm)
       }
 
       else {
+	/* skip comment section */
          if (strncmp(parm->xmb->cur, "<!--", 4) == 0) {
             parm->xmb->cur = strstr(parm->xmb->cur, "-->") + 3;
             continue;
          }
          for (i = 0, m = sizeof(tags)/sizeof(Tags); i < m; i++) {
             if (nextEquals(next, tags[i].tag) == 1) {
-   //printf("+++ %d\n",i);
                rc=tags[i].process(lvalp, parm);
                _SFCB_RETURN(rc);
             }

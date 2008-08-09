@@ -1,3 +1,8 @@
+2008-08-08 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	[ 2043672 ] Tighten SSL security for sfcb
+
 2008-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopServerProvider.c:

@@ -1624,6 +1624,13 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
        if (ccVerifyMode != CC_VERIFY_IGNORE &&
 	   SSL_CTX_load_verify_locations(ctx, fnt, NULL) != 1)
 	 intSSLerror("Error locating the client trust store");
+
+       /* SSLv2 is pretty old; no one should be needing it any more */
+       SSL_CTX_set_options(ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | 
+                           SSL_OP_SINGLE_DH_USE); 
+       /* disable weak ciphers */
+       if (SSL_CTX_set_cipher_list(ctx, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH") != 1)
+           intSSLerror("Error setting cipher list (no valid ciphers)"); 
 	      
     }
 #endif

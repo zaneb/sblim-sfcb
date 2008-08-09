@@ -28,6 +28,7 @@ Bugs fixed:
 - 2041967 sfcb trace messages have hard-coded size max
 
 - 2043672 Tighten SSL security for sfcb
+- 2025214 SFCB XML parser needs to unescape newlines
 
 Changes in 1.3.1
 ================

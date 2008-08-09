@@ -3,6 +3,9 @@
 	* httpAdapter.c:
 	[ 2043672 ] Tighten SSL security for sfcb
 
+	* cimXmlParser.c:
+	[ 2025214 ] SFCB XML parser needs to unescape newlines
+
 2008-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopServerProvider.c:

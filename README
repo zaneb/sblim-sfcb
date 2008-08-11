@@ -110,6 +110,7 @@ are already installed on your Linux/Unix system:
 	bison >= 1.85
 	curl >= 7.11.1-1
 	curl-devel >= 7.11.1-1
+    flex
 
 If you want to enable SSL support, the following packages are needed as well:
 

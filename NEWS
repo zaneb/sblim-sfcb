@@ -6,6 +6,7 @@ New features:
 - 1978218 SFCB support for HTTP over a unix socket
 
 Bugs fixed:
+- 2023638 SFCB not considering UTC offset in calculating binary time
 - 2039216 Memory leak in getSfcbUuid
 - 2001486 SFCB extrinsic method output parameter problems
 - 1923373 Fixed SFCB GetClass defaults optional IncludeQualifiers=false

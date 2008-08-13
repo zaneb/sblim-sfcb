@@ -1,3 +1,8 @@
+2008-08-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* datetime.c:
+	[ 2023638 ] SFCB not considering UTC offset in calculating binary time
+
 2008-08-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlGen.c:

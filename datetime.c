@@ -95,14 +95,21 @@ CMPIUint64 chars2bin(const char *string, CMPIStatus * rc)
    CMPIUint64 msecs,secs;
    CMPIBoolean interval;
    char *str;
+   int offset=0;
 
    str = strdup(string);
    interval = (str[21] == ':');
+   if ((str[21] == '+') ||  (str[21] == '-')) {
+      // If we found an offset in the timestamp
+      // convert it to seconds, and save it
+      offset= atoi(str+21) * 60ULL;
+   }
 
 // 0000000000111111111122222  
 // 0123456789012345678901234
 // yyyymmddhhmmss mmmmmmsutc 
 // 20050503104354.000000:000
+// 20080813104354.000000+500
    
    str[21] = 0;
    msecs = strtoull(str+15,NULL,10);
@@ -136,6 +143,8 @@ CMPIUint64 chars2bin(const char *string, CMPIStatus * rc)
 
       msecs=msecs+(secs*1000000ULL);
       msecs += (CMPIUint64) mktime(&tmp) * 1000000ULL;
+      // Add in the offset
+      msecs += offset * 1000000ULL;
    }
 
    free(str);

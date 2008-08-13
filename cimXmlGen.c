@@ -346,7 +346,7 @@ CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, c
      value.array = TrackedCMPIArray(max,t,NULL);
      if (value.array != NULL) {
        for (i=0; i<max; i++) {
-	 v = str2CMPIValue(t, arr->values[i], refarr->values+i,NULL);
+	 v = str2CMPIValue(t, arr->values[i], refarr->values+i,ns);
 	 CMSetArrayElementAt(value.array, i, &v, t); 
        }
        return value;

@@ -7,7 +7,8 @@
 
 	* cimXmlGen.c:
 	Fixed [ 2048875 ] sfcb silently crashes when sent certain EmbeddedObjects
-
+	Fixed [ 2050421 ] Namespace not set for EmbeddedObjects in an XML value array
+	
 2008-08-08 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

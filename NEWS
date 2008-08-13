@@ -32,6 +32,8 @@ Bugs fixed:
 - 2025214 SFCB XML parser needs to unescape newlines
 - 2048875 sfcb silently crashes when sent certain EmbeddedObjects
 
+- 2050421 Namespace not set for EmbeddedObjects in an XML value array
+
 Changes in 1.3.1
 ================
 

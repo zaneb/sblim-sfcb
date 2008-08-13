@@ -27,11 +27,11 @@ Bugs fixed:
 - 2015639 SFCB SLP registration process crashes after 2nd registration
 - 2024019 SFCB can't handle large error messages
 - 2041967 sfcb trace messages have hard-coded size max
-
+- 2039216 Memory leak in getSfcbUuid
 - 2043672 Tighten SSL security for sfcb
 - 2025214 SFCB XML parser needs to unescape newlines
 - 2048875 sfcb silently crashes when sent certain EmbeddedObjects
-
+- 2023638 SFCB not considering UTC offset in calculating binary time
 - 2050421 Namespace not set for EmbeddedObjects in an XML value array
 
 Changes in 1.3.1

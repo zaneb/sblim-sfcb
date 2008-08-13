@@ -294,6 +294,7 @@ CMPIValue makeFromEmbeddedObject(XtokValue value, char *ns)
 {
 	XtokProperty *p = NULL;
 	CMPIValue val;
+	memset(&val, 0, sizeof(CMPIValue));
 	CMPIObjectPath *path;
 	
 	if(value.type == typeValue_Instance) {

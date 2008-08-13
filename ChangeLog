@@ -1,3 +1,8 @@
+2008-08-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlGen.c:
+	Fixed [ 2048875 ] sfcb silently crashes when sent certain EmbeddedObjects
+
 2008-08-08 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

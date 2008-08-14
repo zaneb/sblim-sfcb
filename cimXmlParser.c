@@ -610,7 +610,6 @@ static int procNameSpace(YYSTYPE * lvalp, ParserControl * parm)
 
 static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
 {
-  //  fprintf(stderr, "+++ in procParamValue\n");
    static XmlElement elm[] = {
       {"NAME"},
       {"PARAMTYPE"},
@@ -639,11 +638,22 @@ static int procParamValue(YYSTYPE * lvalp, ParserControl * parm)
             }
          }
          if (attr[2].attr) {
-	   //        fprintf(stderr, "+++ procParamValue: attr[2].attr is: '%s'\n", attr[2].attr); 
             if(strcasecmp(attr[2].attr, "instance") == 0
                || strcasecmp(attr[2].attr, "object") == 0) {
                lvalp->xtokParamValue.type = CMPI_instance;
-	       //    fprintf(stderr, "+++ procParamValue: set lvalp->xtokParamValue.type to: '%d'\n", lvalp->xtokParamValue.type); 
+
+               /* unescape */
+               char *help = parm->xmb->cur;
+               char *end = strstr(help, "</PARAMVALUE");
+               while (help < end) {
+                 if (*help == '&') {
+                   int fewer = xmlUnescape(help, end);
+                   end -= fewer;
+                   memset(end, ' ', fewer);
+                 }
+                 help += 1;
+               }
+
             } else {
                Throw(NULL, "Invalid value for attribute EmbeddedObject");
             }

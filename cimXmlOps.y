@@ -2614,10 +2614,11 @@ localClassPath
 
 
 value
-    : XTOK_VALUE ZTOK_VALUE
+    : XTOK_VALUE instance ZTOK_VALUE    /* not really standard... */
     {
-       $$.value=$1.value;
-       $$.type=typeValue_charP;
+       $$.instance = malloc(sizeof(XtokInstance));
+       $$.instance = memcpy($$.instance, &$2, sizeof(XtokInstance));
+       $$.type=typeValue_Instance;
     }
     | XTOK_VALUE XTOK_CDATA instance ZTOK_CDATA ZTOK_VALUE
     {
@@ -2628,6 +2629,11 @@ value
     | XTOK_VALUE XTOK_CDATA class ZTOK_CDATA ZTOK_VALUE
     {
        $$.type=typeValue_Class;
+    }
+    | XTOK_VALUE ZTOK_VALUE
+    {
+       $$.value=$1.value;
+       $$.type=typeValue_charP;
     }
 ;
 

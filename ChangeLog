@@ -8,7 +8,12 @@
 	* cimXmlGen.c:
 	Fixed [ 2048875 ] sfcb silently crashes when sent certain EmbeddedObjects
 	Fixed [ 2050421 ] Namespace not set for EmbeddedObjects in an XML value array
+
+	* instance.c, objectImpl.c:
 	Fixed [ 2048878 ] sfcb does not implement setObjectPath
+
+	* cimXmlParser.c, cimXmlOps.y:
+	Fixed [ 1918880 ] SFCB - Escaped XML sequences in embedded instances
 	
 2008-08-08 Chris Buccella  <buccella@linux.vnet.ibm.com>
 

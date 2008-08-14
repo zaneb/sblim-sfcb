@@ -34,6 +34,7 @@ Bugs fixed:
 - 2048875 sfcb silently crashes when sent certain EmbeddedObjects
 - 2023638 SFCB not considering UTC offset in calculating binary time
 - 2050421 Namespace not set for EmbeddedObjects in an XML value array
+- 1918880 SFCB - Escaped XML sequences in embedded instances
 
 Changes in 1.3.1
 ================

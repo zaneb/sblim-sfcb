@@ -4,6 +4,7 @@ Changes in 1.3.2preview
 New features:
 
 - 1978218 SFCB support for HTTP over a unix socket
+- 2048878 sfcb does not implement setObjectPath
 
 Bugs fixed:
 - 2023638 SFCB not considering UTC offset in calculating binary time

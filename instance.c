@@ -59,6 +59,7 @@ CMPIObjectPath *internal_new_CMPIObjectPath(int mode, const char *nameSpace,
                                             CMPIStatus * rc);
 extern const char *ClObjectGetClString(ClObjectHdr * hdr, ClString * id);
 extern int sfcb_comp_CMPIValue(CMPIValue *val1, CMPIValue *val2, CMPIType type);
+extern long addClString(ClObjectHdr * hdr, const char *str);
 
 extern CMPIBroker *Broker;
 
@@ -278,6 +279,57 @@ static CMPIStatus __ift_setProperty(const CMPIInstance * instance,
    CMReturn(CMPI_RC_OK);
 }
 
+static CMPIStatus __ift_setObjectPath(CMPIInstance * inst,
+                                      const CMPIObjectPath * cop)
+{
+   CMPIStatus tmp1, tmp2, tmp3;
+   CMPIString *str;
+   const char *ns, *cn;
+   int j;
+   CMPIStatus rc = { CMPI_RC_OK, NULL };
+
+   /* get information out of objectpath */
+   if (cop) {
+      j = CMGetKeyCount(cop, &tmp1);
+      str = CMGetClassName(cop, &tmp2);
+      cn = CMGetCharsPtr(str, NULL);
+      str = CMGetNameSpace(cop, &tmp3);
+      ns = CMGetCharsPtr(str, NULL);
+   }
+
+   /* there SHOULD be an op passed in, otherwise this call is useless.... */
+   else {
+      j=0;
+      //SFCB_ASM("int $3");
+      ns = "*NoNameSpace*";
+      cn = "*NoClassName*";
+      tmp1.rc=tmp2.rc=tmp3.rc=CMPI_RC_OK;
+   }
+
+   if (tmp1.rc != CMPI_RC_OK || tmp2.rc != CMPI_RC_OK || tmp3.rc != CMPI_RC_OK) {
+      rc.rc = CMPI_RC_ERR_FAILED;
+      return rc;
+   }
+   else {
+
+      /* set cn and ns in inst */
+      ClInstance* instance = (ClInstance*)inst->hdl;
+      if (ns) instance->nameSpace.id = addClString(&instance->hdr, ns);
+      if (cn) instance->className.id = addClString(&instance->hdr, cn);
+
+      /* loop over keys, set them in the inst */
+      while (j-- && (tmp1.rc == CMPI_RC_OK)) {
+         CMPIString *keyName;
+         CMPIData tmp = CMGetKeyAt(cop, j, &keyName, &tmp1);
+         __ift_setProperty(inst, CMGetCharsPtr(keyName, NULL),
+                           &tmp.value, tmp.type);
+      }
+      return tmp1;
+   }
+
+   return rc;
+
+}
 
 static CMPIObjectPath *__ift_getObjectPath(const CMPIInstance * instance,
                                            CMPIStatus * rc)
@@ -523,7 +575,8 @@ static CMPIInstanceFT ift = {
    __ift_getPropertyCount,
    __ift_setProperty,
    __ift_getObjectPath,
-   __ift_setPropertyFilter
+   __ift_setPropertyFilter,
+   __ift_setObjectPath
 };
 
 static struct {

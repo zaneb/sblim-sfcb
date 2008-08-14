@@ -177,7 +177,7 @@ static void *ensureClSpace(ClObjectHdr * hdr, ClSection * sct, int size,
 }
 
 
-static long addClString(ClObjectHdr * hdr, const char *str)
+long addClString(ClObjectHdr * hdr, const char *str)
 {
    _SFCB_ENTER(TRACE_OBJECTIMPL, "addClString");
 

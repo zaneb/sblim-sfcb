@@ -264,6 +264,8 @@ static long addClObject(ClObjectHdr * hdr, const void *obj, int size)
 	return(retCode);
 }
 
+
+/* TODO: search for duplicate code between here and addObjectPropertyH() */
 static long addClArray(ClObjectHdr * hdr, CMPIData d)
 {
    _SFCB_ENTER(TRACE_OBJECTIMPL, "addClArray");
@@ -1117,7 +1119,6 @@ int ClObjectLocateProperty(ClObjectHdr * hdr, ClSection * prps, const char *id)
    ClProperty *p;
 
    p=(ClProperty*)getSectionPtr(hdr,prps); 
-
    for (i = 0; i < prps->used; i++) {
       if (strcasecmp(id, ClObjectGetClString(hdr, &(p + i)->id)) == 0)
          return i + 1;
@@ -1232,7 +1233,7 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
    CMPIStatus st;
 
    _SFCB_ENTER(TRACE_OBJECTIMPL, "addObjectPropertyH");
-
+   /* if id is not in the section (prps), add it, increment number of props */
    if ((i = ClObjectLocateProperty(hdr, prps, id)) == 0) {
       p = (ClProperty *) ensureClSpace(hdr, prps, sizeof(*p), 8);
       p = p + (prps->used++);

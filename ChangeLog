@@ -1,12 +1,12 @@
 2008-08-19 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* trace.h:
-	[ 2060748 ] compile fails when --disable-debug configure flag is set
+	Fixed [ 2060748 ] compile fails when --disable-debug configure flag is set
 
 2008-08-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* datetime.c:
-	[ 2023638 ] SFCB not considering UTC offset in calculating binary time
+	Fixed [ 2023638 ] SFCB not considering UTC offset in calculating binary time
 
 2008-08-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
@@ -23,37 +23,37 @@
 2008-08-08 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:
-	[ 2043672 ] Tighten SSL security for sfcb
+	Fixed [ 2043672 ] Tighten SSL security for sfcb
 
 	* cimXmlParser.c:
-	[ 2025214 ] SFCB XML parser needs to unescape newlines
+	Fixed [ 2025214 ] SFCB XML parser needs to unescape newlines
 
 2008-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopServerProvider.c:
-	[ 2039216 ] Memory leak in getSfcbUuid
+	Fixed [ 2039216 ] Memory leak in getSfcbUuid
 
 2008-08-07 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* trace.h, trace.c
-	[ 2041967 ] sfcb trace messages have hard-coded size max
+	Fixed [ 2041967 ] sfcb trace messages have hard-coded size max
 
 2008-07-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlRequest.c:
-	[ 2024019 ] SFCB can't handle large error messages
+	Fixed [ 2024019 ] SFCB can't handle large error messages
 	(patch by Bart Whitely)
 
 2008-07-11 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c:
-	[ 2015639 ] SFCB SLP registration process crashes after 2nd reg
+	Fixed [ 2015639 ] SFCB SLP registration process crashes after 2nd reg
 	(patch by Nick Bofferding)
 
 2008-07-08 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-    * cimXmlGen.c
-    Fixed [2001486] SFCB extrinsic method output parameter problems
+	* cimXmlGen.c
+	Fixed [2001486] SFCB extrinsic method output parameter problems
         (patch from J. Bart Whitely)
 
 2008-06-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -70,8 +70,8 @@
 
 2008-06-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-    * interopServerProvider.c 
-    Fixed [ 1945374 ] CIM_ObjectManagerCommunicationMechanism.Version not set
+	* interopServerProvider.c 
+	Fixed [ 1945374 ] CIM_ObjectManagerCommunicationMechanism.Version not set
         (2nd fix to set proper version)
 
 2008-06-25 Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -101,8 +101,8 @@
 
 2008-06-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-    * indCIMXMLExport.c
-    Fixed [ 1934753 ] indCIMXMLExport.c fails to compile on gcc 4.3
+	* indCIMXMLExport.c
+	Fixed [ 1934753 ] indCIMXMLExport.c fails to compile on gcc 4.3
 
 2008-06-11 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
@@ -115,25 +115,25 @@
 	
 2008-06-10 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-    * qualifierProvider.c
-    Fixed [ 1983569 ] enumerate qualifier call causes qualifier provider to die
-    (Patch by Sven Scheutz)
+	* qualifierProvider.c
+	Fixed [ 1983569 ] enumerate qualifier call causes qualifier provider to die
+	(Patch by Sven Scheutz)
 
 2008-06-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-    * interopServerProvider.c 
-    Fixed [ 1945374 ] CIM_ObjectManagerCommunicationMechanism.Version not set
+	* interopServerProvider.c 
+	Fixed [ 1945374 ] CIM_ObjectManagerCommunicationMechanism.Version not set
 
 2008-05-30 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-    * cimXmlOps.y
-    Fixed [ 1923373 ] SFCB GetClass defaults optional IncludeQualifiers=false
-    (Based on patch from Mike Lisanke)
+	* cimXmlOps.y
+	Fixed [ 1923373 ] SFCB GetClass defaults optional IncludeQualifiers=false
+	(Based on patch from Mike Lisanke)
 
 2008-05-30 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-    * support.c
-    Reversed part of the patch for 1928541 to fix deadlock
+	* support.c
+	Reversed part of the patch for 1928541 to fix deadlock
 
 2008-05-29 Chris Buccella <buccella@linux.vnet.ibm.com>
 
@@ -143,20 +143,19 @@
 
 2008-05-20 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-    * brokerOs.c, instance.c, support.c
-    Fixed [ 1928541 ] sfcb binary interface memory leak on CMGetObjectPath
-    Changed *alloc's of mutexes to use memAlloc/tracked memory
+	* brokerOs.c, instance.c, support.c
+	Fixed [ 1928541 ] sfcb binary interface memory leak on CMGetObjectPath
+	Changed *alloc's of mutexes to use memAlloc/tracked memory
 
 2008-05-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-    * constClass.c
-    Fixed [ 1946202 ] getPropQualifier function attempts to free non-malloced mem
-    (Based on patch from Nicholas Bofferding)
+	* constClass.c
+	Fixed [ 1946202 ] getPropQualifier function attempts to free non-malloced mem
+	(Based on patch from Nicholas Bofferding)
 
 2008-05-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-    * Makefile.am
-    * footprint.pl
+	* Makefile.am, footprint.pl
 	Added makefile rule and supporting script to do 
 	disk and memory footprinting.
 
@@ -179,16 +178,16 @@
 	(patch by Gokulakannan)
 
 2008-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
-    * indCIMXMLExport.c
-    * indCIMXMLHandler.c
-    fixed 1896550: Memory leak in exportIndication
-    (patch by Tim Potter)
+
+	* indCIMXMLExport.c, indCIMXMLHandler.c
+	Fixed 1896550: Memory leak in exportIndication
+	(patch by Tim Potter)
 
 2008-04-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-    * providerDrv.c
-    Fixed 1920539: sfcb crashes in getinstance
-    (patch by Tim Potter)
+	* providerDrv.c
+	Fixed 1920539: sfcb crashes in getinstance
+	(patch by Tim Potter)
 
 2008-04-24 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
@@ -211,7 +210,7 @@
 2008-04-16 Gary Readler  <gdr@us.ibm.com>
 
 	* cimcClientSfcbLocal.c configure.ac enumeration.c providerMgr.c providerMgr.h
-	  sfcbenum.h :
+	  sfcbenum.h:
 	added 1828585: Large Volume Support (LocalConnect)
 
 2008-04-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -225,6 +224,7 @@
 	Fixed 1942130: segfault when array increased by CMSetArrayElementAt
 
 2008-04-09 Sean Swehla
+
 	* Makefile.am, brokerUpc.c, cmpidt.h, cmpift.h, cmpimacs.h, cmpios.h, 
 	cmpipl.h, fileRepository.c, fileRepository.h, internalProvider.c, 
 	interopProvider.c, providerDrv.c, qualifierProvider.c
@@ -334,7 +334,6 @@
 
 	* httpAdapter.c:
 	Fixed 1725489 sfcb sending zero sized chunks in response
-
 
 2008-01-29 Gary Readler <gdr@us.ibm.com>
 

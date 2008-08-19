@@ -634,8 +634,8 @@ void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refNam
       if (data->type == CMPI_refA) {
          SFCB_APPENDCHARS_BLOCK(sb, "reference");
       }
-      else if(data->type & ~CMPI_ARRAY == CMPI_instance 
-               || data->type & ~CMPI_ARRAY == CMPI_class) {
+      else if(((data->type & ~CMPI_ARRAY) == CMPI_instance) 
+               || ((data->type & ~CMPI_ARRAY) == CMPI_class)) {
          SFCB_APPENDCHARS_BLOCK(sb, "string");
       } else {
           sb->ft->appendChars(sb, dataType(data->type));

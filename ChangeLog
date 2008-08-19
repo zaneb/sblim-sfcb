@@ -3,6 +3,9 @@
 	* trace.h:
 	Fixed [ 2060748 ] compile fails when --disable-debug configure flag is set
 
+	* cimXmlGen.c:
+	Fixed a compiler warning ("suggest parenthesis")
+	
 2008-08-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* datetime.c:

@@ -27,8 +27,6 @@
 
 #ifdef SFCB_DEBUG
 
-#define MAX_MSG_SIZE 1024 /* max length of trace message */
-
 #define _SFCB_TRACE(LEVEL,STR) \
   if ((_sfcb_trace_mask & __traceMask) && (LEVEL<=_sfcb_debug) && (LEVEL>0) ) \
   _sfcb_trace(LEVEL,__FILE__,__LINE__,_sfcb_format_trace STR);
@@ -83,22 +81,6 @@ extern void _sfcb_set_trace_mask(int n);
 extern void _sfcb_set_trace_file(char * file);
 extern void _sfcb_trap(int n);
 
-/* for trace output colorization */ 
-#define RESET           0
-#define BRIGHT          1
-#define DIM             2
-#define REVERSE         7
-#define BLACK           0
-#define RED             1
-#define GREEN           2
-#define YELLOW          3
-#define BLUE            4
-#define MAGENTA         5
-#define CYAN            6
-#define WHITE           7
-void changeTextColor(int reset);
-int colorTrace;
-
 #else
 #define _SFCB_TRACE_FUNCTION(n,f)
 #define _SFCB_TRACE(LEVEL,STR)
@@ -122,6 +104,24 @@ typedef struct traceId {
    char *id;
    int code;
 } TraceId;
+
+/* for trace output colorization */ 
+#define RESET           0
+#define BRIGHT          1
+#define DIM             2
+#define REVERSE         7
+#define BLACK           0
+#define RED             1
+#define GREEN           2
+#define YELLOW          3
+#define BLUE            4
+#define MAGENTA         5
+#define CYAN            6
+#define WHITE           7
+void changeTextColor(int reset);
+int colorTrace;
+
+#define MAX_MSG_SIZE 1024 /* max length of trace message */
 
 #define TRACE_PROVIDERMGR       1
 #define TRACE_PROVIDERDRV       2

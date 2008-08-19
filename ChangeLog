@@ -1,3 +1,8 @@
+2008-08-19 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* trace.h:
+	[ 2060748 ] compile fails when --disable-debug configure flag is set
+
 2008-08-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* datetime.c:

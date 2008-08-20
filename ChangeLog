@@ -1,3 +1,8 @@
+2008-08-20 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	Fixed [ 2062904 ] small memory leak after exportIndication
+
 2008-08-19 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* trace.h:

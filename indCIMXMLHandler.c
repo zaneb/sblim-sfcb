@@ -247,6 +247,7 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
       sb=segments2stringBuffer(xs.segments);
       exportIndication((char*)dest->hdl,(char*)sb->ft->getCharPtr(sb), &resp, &msg);
       if (resp) free(resp);
+      if (msg) free(msg);
    }
    
    else {

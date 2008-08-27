@@ -144,7 +144,7 @@ CMPIUint64 chars2bin(const char *string, CMPIStatus * rc)
       msecs=msecs+(secs*1000000ULL);
       msecs += (CMPIUint64) mktime(&tmp) * 1000000ULL;
       // Add in the offset
-      msecs += offset * 1000000ULL;
+      msecs -= offset * 1000000ULL;
    }
 
    free(str);

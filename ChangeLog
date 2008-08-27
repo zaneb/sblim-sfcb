@@ -1,3 +1,9 @@
+2008-08-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* datetime.c:
+	Fixed [ 2023638 ] SFCB not considering UTC offset in calculating binary time
+		Refix due to misinterpretation of the spec.
+
 2008-08-20 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

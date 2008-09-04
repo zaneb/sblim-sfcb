@@ -68,6 +68,9 @@ CMPIInstance ** myGetInstances(CMCIClient *cc, char * path, char * objectname)
                 //printf("Fatal error. CIMOM not running? Connection params ok?\n");
                 printf("--- HTTP-Daemon no longer active. Deregistering service with slp\n");
                 deregisterCIMService();
+                if (status.msg) CMRelease(status.msg);  
+                if (objectpath) CMRelease(objectpath);
+                if (enumeration) CMRelease(enumeration);                                
                 exit(0);
         }
         

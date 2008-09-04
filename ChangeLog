@@ -1,4 +1,9 @@
-2008-08-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2008-09-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimslp.c cimslpCMPI.c:
+	Fixed [ 2093273 ] Fix "cimomConfig" + myGetInstances memory leaks
+
+2008-08-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* datetime.c:
 	Fixed [ 2023638 ] SFCB not considering UTC offset in calculating binary time

@@ -7,6 +7,8 @@ New features:
 - 2048878 sfcb does not implement setObjectPath
 
 Bugs fixed:
+
+- 2093273 Fix "cimomConfig" + myGetInstances memory leaks
 - 2023638 SFCB not considering UTC offset in calculating binary time
 - 2039216 Memory leak in getSfcbUuid
 - 2001486 SFCB extrinsic method output parameter problems

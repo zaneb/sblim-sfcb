@@ -164,7 +164,8 @@ int slpAgent()
 	
 	if(enableHttp) forkSLPAgent(cfgHttp, slpLifeTime, sleepTime);
 	if(enableHttps) forkSLPAgent(cfgHttps, slpLifeTime, sleepTime);
-	
+    freeCFG(&cfgHttp);
+    freeCFG(&cfgHttps);
 	_SFCB_RETURN(0);
 }
 #endif

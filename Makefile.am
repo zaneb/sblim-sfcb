@@ -94,6 +94,12 @@ SLP_LIB =
 SLP_HEADER =
 endif
 
+if SLP_HOSTNAME_LIB
+SLP_HOSTNAME_LIBS = libsfcSlpHostname.la
+else
+SLP_HOSTNAME_LIBS =
+endif
+
 if QUALREP
 QUALREP_LIBS = libsfcQualifierProvider.la
 QUALREP_FILES = qualifier.c
@@ -140,8 +146,9 @@ lib_LTLIBRARIES = \
    libcimcClientSfcbLocal.la \
    $(QUALREP_LIBS) \
    $(SLP_LIBS) \
+   $(SLP_HOSTNAME_LIBS) \
    $(INDICATION_LIBS) \
-   $(PAM_LIBS)
+   $(PAM_LIBS) 
 
 if SLP_ALONE
 SLP_PROGRAMFILES = cimslp
@@ -256,6 +263,9 @@ libsfcHttpAdapter_la_SOURCES = \
 libsfcHttpAdapter_la_LIBADD=-lsfcBrokerCore $(CIMXMLCODEC_LIBS_LINK)
 libsfcHttpAdapter_la_DEPENDENCIES=libsfcBrokerCore.la $(CIMXMLCODEC_LIBS)
 endif
+
+libsfcSlpHostname_la_SOURCES = \
+   sfcSlpHostname.c
 
 libsfcBasicAuthentication_la_SOURCES = \
    sfcBasicAuthentication.c

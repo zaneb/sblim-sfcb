@@ -1,3 +1,9 @@
+2008-09-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am, configure.ac, control.c, cimslpCMPI.c, sfcb.cfg.pre.in
+	Fixed [ 1945390 ] Request for SLP service URL hostname override 
+		Patch from Tyrel Datwyler
+
 2008-09-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimslp.c cimslpCMPI.c:

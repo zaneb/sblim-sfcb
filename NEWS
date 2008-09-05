@@ -5,6 +5,7 @@ New features:
 
 - 1978218 SFCB support for HTTP over a unix socket
 - 2048878 sfcb does not implement setObjectPath
+- 1945390 Request for SLP service URL hostname override 
 
 Bugs fixed:
 

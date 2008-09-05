@@ -75,6 +75,7 @@ Control init[] = {
 #endif
 #ifdef HAVE_SLP
    {"slpRefreshInterval",         1, "600"},
+   {"slpHostnameLib",   0, "sfcSlpHostname"},
 #endif
    {"provProcs",        1, "32"},
    {"basicAuthLib",     0, "sfcBasicAuthentication"},

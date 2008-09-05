@@ -24,15 +24,19 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dlfcn.h>
 
 #include "cimslpCMPI.h"
 #include "cimslpSLP.h"
 #include "cimslpUtil.h"
 #include "trace.h"
-
+#include "config.h"
+#include "control.h"
 
 char * interOpNS;
-
+typedef int (*getSlpHostname)(char **hostname);
+extern void libraryName(const char *dir, const char *location, const char *fullName);
+extern char * configfile;
 
 //helper function ... until better solution is found to get to the
 //interop Namespace
@@ -130,8 +134,29 @@ cimSLPService getSLPData(cimomConfig cfg)
         CMPIInstance **ci;
         CMPIStatus status;
         CMPIConstClass *ccls;
-
         cimSLPService rs; //service which is going to be returned to the calling function
+        char *sn;
+
+#ifdef SLP_HOSTNAME_LIB
+        static void *hostnameLib=NULL;
+        static getSlpHostname gethostname; 
+        char *ln;
+        char dlName[512];
+        int err;
+        
+        err = 1;
+        setupControl(configfile);
+        if (getControlChars("slpHostnamelib", &ln) == 0) {
+           libraryName(NULL,ln,dlName);
+           if ((hostnameLib = dlopen(dlName, RTLD_LAZY))) {
+              gethostname = dlsym(hostnameLib, "_sfcGetSlpHostname");
+              if (gethostname) err = 0;
+           }
+        }
+        sunsetControl();
+        if (err) mlogf(M_ERROR,M_SHOW,"--- SLP Hostname exit %s not found. Defaulting to system hostname.\n",
+              dlName);
+#endif
         
         _SFCB_ENTER(TRACE_SLP, "getSLPData");
         
@@ -163,8 +188,21 @@ cimSLPService getSLPData(cimomConfig cfg)
         //construct the server string
         ci = myGetInstances(cc, interOpNS, "CIM_ObjectManager");
         if(ci) {
-                rs.url_syntax = getUrlSyntax(myGetProperty(ci[0], "SystemName"),
-                                                                        cfg.commScheme, cfg.port);      
+                sn = myGetProperty(ci[0], "SystemName");
+
+#ifdef SLP_HOSTNAME_LIB
+                if (!err) {
+                  char *tmp;
+                  if ((err = gethostname(&tmp))) {
+                     free(sn);
+                     sn = tmp;
+                  } else {
+                     printf("-#- SLP call to %s for hostname failed. Defaulting to system hostname.\n", dlName);
+                  }
+                }
+#endif
+                rs.url_syntax = getUrlSyntax(sn, cfg.commScheme,
+                      cfg.port);
                 rs.service_hi_name = myGetProperty(ci[0], "ElementName");
                 rs.service_hi_description = myGetProperty(ci[0], "Description");
                 rs.service_id = myGetProperty(ci[0], "Name");

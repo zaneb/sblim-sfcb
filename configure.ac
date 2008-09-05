@@ -56,6 +56,10 @@ AC_ARG_ENABLE(slp,
 	[AC_HELP_STRING([--enable-slp],
 		[include slp agent for SFCB - EXPERIMENTAL.])])
 		
+AC_ARG_ENABLE(slp-hostname-lib,
+   [AC_HELP_STRING([--enable-slp-hostname-lib],
+      [aquire hostname for slp registration from external library.])])
+
 AC_ARG_ENABLE(qualifierrep,
 	[AC_HELP_STRING([--disable-qualifierrep],
 		[disable qualifier repository support.])],
@@ -155,6 +159,10 @@ fi
 
 if test "$enable_slp" == "yes"; then
    AC_DEFINE(HAVE_SLP,,[SLP support enabled.])
+fi
+
+if test "$enable_slp_hostname_lib" == "yes"; then
+   AC_DEFINE(SLP_HOSTNAME_LIB,,[SLP Hostname lib enabled])
 fi
 
 if test "$enable_qualifierrep" == "yes"; then
@@ -344,6 +352,7 @@ AM_CONDITIONAL(INDICATIONS,[test "$enable_indications" == "yes"])
 AM_CONDITIONAL(JDBC,[test "$enable_jdbc" == "yes"]) 
 AM_CONDITIONAL(SSL,[test "$enable_ssl" == "yes"]) 
 AM_CONDITIONAL(SLP,[test "$enable_slp" == "yes"]) 
+AM_CONDITIONAL(SLP_HOSTNAME_LIB,[test "$enable_slp_hostname_lib" == "yes"])
 AM_CONDITIONAL(SLP_ALONE,[test "$enable_slp" == "standalone"]) 
 AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"]) 
 AM_CONDITIONAL(PAM,[test "$enable_pam" == "yes"]) 
@@ -366,6 +375,7 @@ echo =================================================================
 echo Configuration Features:
 echo -e "ssl"\\t\\t\\t\\t"${enable_ssl:-no}"
 echo -e "slp"\\t\\t\\t\\t"${enable_slp:-no}"
+echo -e "slp hostname lib"\\t\\t"${enable_slp_hostname_lib:-no}"
 echo -e "jdbc"\\t\\t\\t\\t"${enable_jdbc:-no}"
 echo -e "IPv6"\\t\\t\\t\\t"${enable_ipv6:-no}"
 echo -e "debug"\\t\\t\\t\\t"${enable_debug:-no}"

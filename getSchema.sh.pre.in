@@ -14,7 +14,7 @@ SCHEMAMOF=${CIMSCHEMA_MOF:-cimv217.mof}
 
 # zip file for schema v2.17 (and others) contain subdirectories.  v2.9 does not
 HASSUBDIRS=yes
-if [ $CIMSCHEMA_SUBDIRS = no ]
+if [ "$CIMSCHEMA_SUBDIRS" = "no" ]
 then
     HASSUBDIRS=no
 fi

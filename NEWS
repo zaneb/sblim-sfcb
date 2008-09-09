@@ -40,6 +40,7 @@ Bugs fixed:
 - 1918880 SFCB - Escaped XML sequences in embedded instances
 - 2060748 compile fails when --disable-debug configure flag is set
 - 2062904 small memory leak after exportIndication
+- 2100911 getSchema.sh: line 17: [: =: unary operator expected
 
 Changes in 1.3.1
 ================

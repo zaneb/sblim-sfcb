@@ -1,3 +1,9 @@
+2008-09-09 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* getSchema.pre.in:
+	Fixed [ 2100911 ] getSchema.sh: line 17: [: =: unary operator expected
+	(patch by Narasimha Sharoff)
+
 2008-09-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am, configure.ac, control.c, cimslpCMPI.c, sfcb.cfg.pre.in

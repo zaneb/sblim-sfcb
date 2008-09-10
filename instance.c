@@ -435,7 +435,13 @@ static CMPIStatus __ift_setPropertyFilter(CMPIInstance * instance,
         for (j = 0, m = __ift_getPropertyCount(instance, &st); j < m; j++) {
 	    data = __ift_internal_getPropertyAt(instance, j, &name, &st, 1);
             if(__contained_list((char**)propertyList, name) || __contained_list((char**)keys, name)) {
-            newInstance->ft->setProperty(newInstance, name, &data.value, data.type);
+               if ( (data.state & ~CMPI_keyValue) != 0) {
+                  newInstance->ft->setProperty(
+                     newInstance, name, NULL, data.type);
+               } else {
+                  newInstance->ft->setProperty(
+                     newInstance, name, &data.value, data.type);
+               }
             }
         }
         

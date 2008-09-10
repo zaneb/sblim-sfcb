@@ -1,3 +1,9 @@
+2008-09-10 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* instance.c:
+	Fixed [ 2100707 ] NULL properties in property list returned with value
+	(patch by Alexander Dunfey)
+
 2008-09-09 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* getSchema.pre.in:

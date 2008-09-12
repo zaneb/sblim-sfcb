@@ -573,6 +573,12 @@ providerAutoGroup
 	be executed in the same process unless another group has been specified
   	in the provider registration file. Default: true
 
+slpHostnameLib
+    Specify the name of the library to use to determine the SLP hostname. This
+    will override the default method. You must implement this library based 
+    on the sample provided, sfcSlpHostname.c. You must also specify the 
+    --enable-slp-hostname-lib configure option to enable this support.
+
 sslClientCertificate
 	Specify the way sfcb handles client certificate based authentication. If set to
 	ignore it will not request a certificate from the client. If set to

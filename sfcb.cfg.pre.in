@@ -11,7 +11,6 @@ provProcs:      32
 doBasicAuth:    @SFCB_CONF_DOBASICAUTH@
 doUdsAuth:      true
 basicAuthLib:   @SFCB_CONF_BASICAUTHLIB@
-slpHostnameLib: sfcSlpHostname 
 useChunking:    true
 keepaliveTimeout: 1
 keepaliveMaxRequest: 10

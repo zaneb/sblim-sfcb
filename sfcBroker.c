@@ -587,6 +587,7 @@ int main(int argc, char *argv[])
 
 	   case 'd':
 	       daemon(0, 0);
+	       currentProc=sfcBrokerPid=getpid(); /* req. on some systems */
 	       break;
 
 	   case 'h':

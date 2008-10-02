@@ -3,6 +3,10 @@
 	* indCIMXMLHandler.c:
 	Fixed [ 1877578 ] sfcb appears to leak memory while handling indications
 
+	* sfcBroker.c:
+	Fixed [ 2138163 ] sfcb: Wrong PID when running as daemon
+	(patch by Ingo van Lil)
+	
 2008-09-10 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* instance.c:

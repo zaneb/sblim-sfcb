@@ -775,7 +775,7 @@ static CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIString *cn = CMGetClassName(ref, NULL);
-   CMPIConstClass *cl;
+   CMPIConstClass *cl, *clLocal;
    ClassRegister *cReg;
    int rc;
    void *cid;
@@ -791,7 +791,12 @@ static CMPIStatus ClassProviderGetClass(CMPIClassMI * mi,
 
    cReg->ft->wLock(cReg);
    
-   cl = getClass(cReg, (char *) cn->hdl,&cid);
+   /* Make a cloned copy of the cached results to prevent
+      thread interference. */
+   clLocal = getClass(cReg, (char *) cn->hdl,&cid);
+   cl = clLocal->ft->clone(clLocal, NULL);
+   memLinkInstance((CMPIInstance*)cl);
+
    if (cl) {
       _SFCB_TRACE(1,("--- Class found"));
       CMReturnInstance(rslt, (CMPIInstance *) cl);

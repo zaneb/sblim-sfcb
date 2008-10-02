@@ -246,6 +246,12 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
       xs=exportIndicationReq(ind,strId);
       sb=segments2stringBuffer(xs.segments);
       exportIndication((char*)dest->hdl,(char*)sb->ft->getCharPtr(sb), &resp, &msg);
+
+      CMRelease(sb);
+      /* there's a UtilStringBuffer burried in xs... */
+      RespSegment rs = xs.segments[5];
+      UtilStringBuffer* usb = (UtilStringBuffer*)rs.txt;
+      CMRelease(usb);
       if (resp) free(resp);
       if (msg) free(msg);
    }

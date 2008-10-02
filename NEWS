@@ -42,6 +42,7 @@ Bugs fixed:
 - 2062904 small memory leak after exportIndication
 - 2100911 getSchema.sh: line 17: [: =: unary operator expected
 - 2100707 NULL properties in property list returned with value
+- 1877578 sfcb appears to leak memory while handling indications
 
 Changes in 1.3.1
 ================

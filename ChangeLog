@@ -1,3 +1,8 @@
+2008-10-02 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	Fixed [ 1877578 ] sfcb appears to leak memory while handling indications
+
 2008-09-10 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* instance.c:

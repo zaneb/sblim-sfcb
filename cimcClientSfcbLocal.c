@@ -1581,7 +1581,7 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
    localMode=0;
    close(sock);
    
-   return sfcbSocket;
+   return (rc < 0) ? rc : sfcbSocket;
 }
 
 static void* release(ClientEnv* ce)

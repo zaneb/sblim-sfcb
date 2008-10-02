@@ -44,6 +44,7 @@ Bugs fixed:
 - 2100707 NULL properties in property list returned with value
 - 1877578 sfcb appears to leak memory while handling indications
 - 2138163 sfcb: Wrong PID when running as daemon
+- 2049872 "--- Warning: fd is closed" message from binary intf app
 
 Changes in 1.3.1
 ================

@@ -171,8 +171,8 @@ static int spHandleError(int *s, char *m)
    _SFCB_ENTER(TRACE_MSGQUEUE, "handleError");
    char *emsg=strerror(errno);
    mlogf(M_ERROR,M_SHOW,"%s %d %d-%d %s\n", m, *s, currentProc, errno,emsg);
-   _SFCB_ABORT();
-   return errno;
+   //   _SFCB_ABORT();
+   return -1;
 }
 
 
@@ -223,10 +223,11 @@ static int spGetMsg(int *s, int *from, void *data, unsigned length, MqgStat* mqg
       if (n == 0) {
          char *emsg=strerror(errno);
          mlogf(M_ERROR,M_SHOW,"--- Warning: fd is closed: %s\n",emsg);
-         break;
+	 //  break;
+	 return -1;
       }
 
-      if (r==0) {
+      if (r==0) {  /* true for the first time through the loop */
          cmsg = CMSG_FIRSTHDR(&msg);
          if (cmsg) {
             if (!cmsg->cmsg_type == SCM_RIGHTS) {
@@ -240,7 +241,7 @@ static int spGetMsg(int *s, int *from, void *data, unsigned length, MqgStat* mqg
       }
       
       r+=n;      
-      if (r < ol) continue;
+      if (r < ol) continue; /* continue as long as bytes read is < length */
       break;
    }
    

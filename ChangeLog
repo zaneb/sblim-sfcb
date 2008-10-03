@@ -3,6 +3,9 @@
 	* providerDrv.c:
 	Fixed [ 2064360 ] Internal provider SIGSEGV when calling getProperty
 
+	Fixed [ 2079099 ] SFCB should load providers with RTLD_GLOBAL
+	(patch by Bart Whitely)
+
 2008-10-02 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

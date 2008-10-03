@@ -2598,7 +2598,7 @@ static int doLoadProvider(ProviderInfo *info, char *dlName)
    while (dir) {
      libraryName(dir, (char *) info->location, fullname);
      if (stat(fullname,&stbuf) == 0) {
-       info->library = dlopen(fullname, RTLD_NOW);
+       info->library = dlopen(fullname, RTLD_NOW | RTLD_GLOBAL);
        if (info->library == NULL) {
 	 mlogf(M_ERROR,M_SHOW,"*** dlopen error: %s\n",dlerror());
        } else {

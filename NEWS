@@ -47,6 +47,7 @@ Bugs fixed:
 - 2049872 "--- Warning: fd is closed" message from binary intf app
 - 2143315 Remove unnecessary lines in providerDrv & cimcClient
 - 2064360 Internal provider SIGSEGV when calling getProperty
+- 2079099 SFCB should load providers with RTLD_GLOBAL
 
 Changes in 1.3.1
 ================

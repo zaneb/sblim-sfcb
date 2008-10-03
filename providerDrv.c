@@ -1052,7 +1052,6 @@ static int sendResponse(int requestor, BinResponseHdr * hdr)
 #endif
       default:
          mlogf(M_ERROR,M_SHOW,"--- bad sendResponse request %d\n", hdr->object[i].type);
-         *((char *) (void *) 0) = 0;
          _SFCB_ABORT();
       }
    }

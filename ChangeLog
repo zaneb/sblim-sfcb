@@ -9,6 +9,9 @@
 
 	* cimcClientSfcbLocal.c, msgqueue.c:
 	Fixed [ 2049872 ] "--- Warning: fd is closed" message from binary intf app
+
+	* cimcClientSfcbLocal.c, providerDrv.c:
+	Fixed [ 2143315 ] Remove unnecessary lines in providerDrv & cimcClient
 	
 2008-09-10 Chris Buccella  <buccella@linux.vnet.ibm.com>
 

@@ -1536,7 +1536,6 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
    } msg;
    
    if ((sock=socket(PF_UNIX, SOCK_STREAM, 0))<0) {
-      return -1;
       if (st) {
          st->rc=CMPI_RC_ERR_FAILED;
          st->msg=ce->ft->newString(ce,strerror(errno),NULL);

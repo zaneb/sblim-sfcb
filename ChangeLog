@@ -1,3 +1,8 @@
+2008-10-03 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	Fixed [ 2064360 ] Internal provider SIGSEGV when calling getProperty
+
 2008-10-02 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

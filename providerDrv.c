@@ -1512,6 +1512,9 @@ static BinResponseHdr *getProperty(BinRequestHdr * hdr, ProviderInfo * info,
    ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
+   if (info->propertyMI == NULL) info->propertyMI =
+                 loadPropertyMI(info->providerName, info->library, Broker, ctx);
+
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
    TIMING_START(hdr,info)
    rci = info->propertyMI->ft->getProperty(info->propertyMI, ctx, result, path, (const char*)req->name.data);
@@ -1558,6 +1561,9 @@ static BinResponseHdr *setProperty(BinRequestHdr * hdr, ProviderInfo * info,
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
    
    data = inst->ft->getPropertyAt(inst, 0, &pName, NULL);
+
+   if (info->propertyMI == NULL) info->propertyMI =
+                 loadPropertyMI(info->providerName, info->library, Broker, ctx);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
    TIMING_START(hdr,info)

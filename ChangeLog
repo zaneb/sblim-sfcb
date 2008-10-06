@@ -44,18 +44,18 @@
 
 	* Makefile.am, configure.ac, control.c, cimslpCMPI.c, sfcb.cfg.pre.in
 	Fixed [ 1945390 ] Request for SLP service URL hostname override 
-		Patch from Tyrel Datwyler
+	(patch from Tyrel Datwyler)
 
 2008-09-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* cimslp.c cimslpCMPI.c:
+	* cimslp.c, cimslpCMPI.c:
 	Fixed [ 2093273 ] Fix "cimomConfig" + myGetInstances memory leaks
 
 2008-08-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* datetime.c:
 	Fixed [ 2023638 ] SFCB not considering UTC offset in calculating binary time
-		Refix due to misinterpretation of the spec.
+	Refix due to misinterpretation of the spec.
 
 2008-08-20 Chris Buccella  <buccella@linux.vnet.ibm.com>
 

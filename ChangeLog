@@ -297,7 +297,7 @@
 	interopProvider.c, providerDrv.c, qualifierProvider.c
 	Added 1828500: CMPI 2.0 support
 	
-2008-04-08 Chris Buccella  <chris@thefoot.local>
+2008-04-08 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* array.c:
 	Fixed 1893302: New CMPI arrays not tracked

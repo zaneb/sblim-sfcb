@@ -9,6 +9,7 @@ New features:
 
 Bugs fixed:
 
+- 2101035 classProvider core dumps under slp/CIM client load 
 - 2093273 Fix "cimomConfig" + myGetInstances memory leaks
 - 2023638 SFCB not considering UTC offset in calculating binary time
 - 2039216 Memory leak in getSfcbUuid

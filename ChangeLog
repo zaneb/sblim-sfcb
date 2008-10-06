@@ -1,3 +1,8 @@
+2008-10-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* classProviderGz.c
+	Fixed [2101035] classProvider core dumps under slp/CIM client load 
+
 2008-10-03 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c:

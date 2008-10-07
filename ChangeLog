@@ -1,3 +1,8 @@
+2008-10-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am configure.ac all files under sfcb/test
+	Fixed [2150019] sfcb test suite
+
 2008-10-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* classProviderGz.c

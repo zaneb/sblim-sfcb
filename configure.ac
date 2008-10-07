@@ -325,11 +325,6 @@ else
 fi
 AC_SUBST(INIT_STYLE)
 
-# Checks for subdirectories
-if test -d $srcdir/test; then
-   AC_CONFIG_SUBDIRS([test])
-fi
-
 # Check for doxygen for generating documentation
 if test "$enable_docs" = "yes"; then
    AC_CHECK_PROG(DOXYGEN,doxygen,[doxygen])
@@ -368,7 +363,7 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
 		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
 		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre 
-		 sfcb-dox.conf])
+		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile])
 AC_OUTPUT
 
 echo =================================================================

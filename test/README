@@ -1,0 +1,22 @@
+This directory contains the SFCB automated test suite. It is based on the test
+facility provided by automake:
+    http://www.gnu.org/software/automake/manual/automake.html#Tests
+
+The test suite is invoked via "make check". Currently it requires that 
+sfcb is installed and running.
+
+Testcases can be either scripts or C code. Scripts just need to be added
+to the TESTS variable in the appropriate place. C code will need to have 
+the executable name added to TESTS and check_PROGRAMS. As well as a rule 
+created to build it named <executable>_SOURCES.
+
+Testcases should return 0 on success and 1 for failure, the special return 
+value of 77 causes the testcase result to be ignored. This feature allows 
+tests to be ignored in certain conditions.
+
+Testcases listed in the XFAIL_TESTS variable are ones that are expected to 
+fail. Therefore the test results are reversed. 
+
+The environment variable "SFCBTDIR" will be set to the full path of the 
+root test directory (sfcb/test) during the test run. 
+

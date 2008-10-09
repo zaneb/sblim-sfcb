@@ -150,7 +150,7 @@ static int genRequest(CurlData *cd, char *url, char **msg)
         return 1;
     }    
     
-    if (!supportsSSL(cd) && strncasecmp(url,"https:",6)) {
+    if (!supportsSSL(cd) && (strncasecmp(url,"https:",6) == 0)) {
         *msg=strdup("This curl library does not support https urls.");
         return 2;
     }    

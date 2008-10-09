@@ -1,3 +1,9 @@
+2008-10-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLExport.c
+	Fixed [2028194] Failure in generating indication 
+		(patch by Luong Nguyen-Duy)
+
 2008-10-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am configure.ac all files under sfcb/test

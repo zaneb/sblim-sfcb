@@ -9,6 +9,7 @@ Bugs fixed:
 
 - 2028194 Failure in generating indication
 - 2027392 Bug in Query processing
+- 2158198 syslog call incorrect
 
 Changes in 1.3.2
 ================

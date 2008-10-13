@@ -75,6 +75,7 @@ static int running=0;
 static long keepaliveTimeout=15;
 static long keepaliveMaxRequest=10;
 static long numRequest;
+struct timeval httpSelectTimeout = {5, 0};  /* 5 sec. timeout for select() before read() */
 
 #if defined USE_SSL
 static SSL_CTX *ctx;
@@ -339,21 +340,36 @@ static void genError(CommHndl conn_fd, Buffer * b, int status, char *title,
 
 static int readData(CommHndl conn_fd, char *into, int length)
 {
-   int c = 0, r;
+   int c = 0, r, isReady;
+   fd_set httpfds;
+   FD_ZERO(&httpfds);
+   FD_SET(conn_fd.socket,&httpfds);
 
    while (c < length) {
+      isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpSelectTimeout);
+      if (isReady == 0) {
+         c = -1;
+         break;
+      }
       r = commRead(conn_fd, into + c, length - c);
       if (r < 0 && (errno == EINTR || errno == EAGAIN)) {
          continue;
+      }
+      /* r==0 is a success condition for read(), but the loop should complete prior to this */
+      else if (r == 0) {
+         mlogf(M_INFO,M_SHOW,"--- commRead hit EOF sooner than expected\n");
+         c = -2;
+	 break;
       }
       c += r;
    }
    return c;
 }
 
-static void getPayload(CommHndl conn_fd, Buffer * b)
+static int getPayload(CommHndl conn_fd, Buffer * b)
 {
    int c = b->length - b->ptr;
+   int rc = 0;
    b->content = (char *) malloc(b->content_length + 8);
    if (c) memcpy(b->content, (b->data) + b->ptr, c);
 
@@ -362,8 +378,9 @@ static void getPayload(CommHndl conn_fd, Buffer * b)
      c = b->content_length;
    }
 
-   readData(conn_fd, (b->content) + c, b->content_length - c);
+   rc = readData(conn_fd, (b->content) + c, b->content_length - c);
    *((b->content) + b->content_length) = 0;
+   return rc;
 }
 
 void dumpResponse(RespSegments * rs)
@@ -582,30 +599,36 @@ static ChunkFunctions httpChunkFunctions = {
 #define hdrBufsize 5000
 #define hdrLimmit 5000
 
-static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
+static int getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
 {
    int first=1,total=0,isReady;
-   struct timeval httpTimeout;
    fd_set httpfds;
    int state=0;
    
    FD_ZERO(&httpfds);
    FD_SET(conn_fd.socket,&httpfds);
-   httpTimeout.tv_sec=5;
-   httpTimeout.tv_usec=0;
-   isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpTimeout);
-   if (isReady == 0) return 3;
 	
    for (;;) {
+      isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpSelectTimeout);
+      if (isReady == 0) return 3;
+
       char buf[hdrBufsize];
       int r = commRead(conn_fd, buf, sizeof(buf));
       
       if (r < 0 && (errno == EINTR || errno == EAGAIN)) continue;
-      if (r <= 0) break;
+      if (r == 0) {
+	if (strstr(b->data, "\r\n\r\n") == NULL &&
+	    strstr(b->data, "\n\n") == NULL) {
+	     mlogf(M_ERROR,M_SHOW,"-#- HTTP header ended prematurely\n");
+      	     state = 3;
+	 break; 
+	 }
+      }
       
       add2buffer(b, buf, r);
       total+=r;
-//      fprintf(stderr,"+++ buf: >%s<\n",buf);
+
+      /* on first run through, ensure that this is a POST req. */
       if (r && first) {
          if (strncasecmp(buf,cmd,strlen(cmd)) != 0) { 
 	   /* not what we expected - still continue to read to
@@ -614,7 +637,8 @@ static int  getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
 	 }
          first=0;
       }
-      
+
+      /* success condition: end of header */
       if (strstr(b->data, "\r\n\r\n") != NULL ||
           strstr(b->data, "\n\n") != NULL) {
          break;
@@ -688,7 +712,7 @@ static int doHttpRequest(CommHndl conn_fd)
    int badReq = 0;
 
    rc=getHdrs(conn_fd, &inBuf,"POST ");
-   
+
    if (rc==1) { 
       genError(conn_fd, &inBuf, 501, "Not Implemented", NULL);
       /* we continue to parse headers and empty the socket
@@ -851,7 +875,13 @@ static int doHttpRequest(CommHndl conn_fd)
    len += hl =
        sprintf(hdr, "<!-- xml -->\n<!-- auth: %s -->\n", inBuf.authorization);
 
-   getPayload(conn_fd, &inBuf);
+   rc = getPayload(conn_fd, &inBuf);
+   if (rc < 0) {
+      genError(conn_fd, &inBuf, 400, "Bad Request", NULL);
+      _SFCB_TRACE(1, ("--- exiting after request timeout."));
+      commClose(conn_fd);
+      exit(1);
+   }
    if (discardInput) {
      free(hdr);
      freeBuffer(&inBuf);
@@ -1293,12 +1323,10 @@ static void handleHttpRequest(int connFd)
 	    /* still in handshake */
 	    FD_ZERO(&httpfds);
 	    FD_SET(connFd,&httpfds);
-	    httpTimeout.tv_sec=5;
-	    httpTimeout.tv_usec=0;
 	    if (sslerr == SSL_ERROR_WANT_WRITE) {
-	      isReady = select(connFd+1,NULL,&httpfds,NULL,&httpTimeout);
+	      isReady = select(connFd+1,NULL,&httpfds,NULL,&httpSelectTimeout);
 	    } else {
-	      isReady = select(connFd+1,&httpfds,NULL,NULL,&httpTimeout);
+	      isReady = select(connFd+1,&httpfds,NULL,NULL,&httpSelectTimeout);
 	    }
 	    if (isReady == 0) {
 	      intSSLerror("Timeout error accepting SSL connection");

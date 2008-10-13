@@ -1,3 +1,9 @@
+2008-10-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	Fixed [ 2164750 ] sfcb does not handle some malformed HTTP requests 
+	correctly
+
 2008-10-10 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* mlog.c

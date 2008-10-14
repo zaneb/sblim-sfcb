@@ -306,6 +306,10 @@ Options:
                 SFCB will only support local connection. Http server will not 
                 be built. Default=no
 
+        --enable-unittest
+                Enables the Unit Test portion of the SFCB testsuite.
+                Default=no
+
 
 9. Downloading the CIM Schema
 =============================

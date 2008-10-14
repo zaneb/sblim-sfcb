@@ -105,6 +105,10 @@ AC_ARG_ENABLE(ipv6,
 	[AC_HELP_STRING([--enable-ipv6],
 		[include ipv6 support for SFCB.])])
 
+AC_ARG_ENABLE(unittest,
+	[AC_HELP_STRING([--enable-unittest],
+		[include unit tests.])])
+
 # Size checks
 AC_CHECK_SIZEOF(void*)
 AC_CHECK_SIZEOF(int)
@@ -163,6 +167,12 @@ fi
 
 if test "$enable_slp_hostname_lib" == "yes"; then
    AC_DEFINE(SLP_HOSTNAME_LIB,,[SLP Hostname lib enabled])
+fi
+
+if test "$enable_unittest" == "yes"; then
+   AC_DEFINE(UNITTEST,,[Unittest enabled])
+   UNITTEST_DIR=unittest
+   AC_SUBST(UNITTEST_DIR)
 fi
 
 if test "$enable_qualifierrep" == "yes"; then
@@ -363,7 +373,7 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
 		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
 		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre 
-		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile])
+		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile] test/unittest/Makefile)
 AC_OUTPUT
 
 echo =================================================================
@@ -380,6 +390,7 @@ echo -e "Documentation"\\t\\t\\t"${enable_docs:-no}"
 echo -e "PAM authentication"\\t\\t"${enable_pam:-no}"
 echo -e "local connect only "\\t\\t"${enable_local_connect_only}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
+echo -e "unittest"\\t\\t\\t"${enable_unittest:-no}"
 echo =================================================================
 echo
 echo "sfcb configuration complete.  you may now run 'make'"

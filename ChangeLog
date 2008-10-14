@@ -1,3 +1,9 @@
+2008-10-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/Makefile.am configure.ac sfcb/test/unittest/Makefile.am
+	Fixed [2150019] sfcb test suite, added optional unittest 
+		structure.
+
 2008-10-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

@@ -64,7 +64,8 @@ IDENT_CHAR [A-Za-z_]
 
 
 \n.* {
-	strcpy(linebuf, yytext+1);//save next line	
+	strncpy(linebuf, yytext+1, MAXBUF);//save next line	
+        linebuf[MAXBUF - 1] = '\0'; // make sure the string is null terminated
 	lineno++;
 	tokenpos = 0;
 	yyless(1);//alles außer dem \n zum erneuten Scannen zurückgeben

@@ -1,3 +1,8 @@
+2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* msgqueue.c
+	Fixed [2169514] spRcvMsg doesn't check malloc return
+
 2008-10-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* test/Makefile.am configure.ac sfcb/test/unittest/Makefile.am

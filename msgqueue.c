@@ -290,6 +290,9 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    
    if (*length) {
       *data = malloc(spMsg.totalSize + 8);
+      if(*data == NULL) {
+        return spHandleError(s, em);
+      }
       do {
          if ((spGetMsg(s, NULL, *data, *length, mqg)) == -1)
             return spHandleError(s, em);

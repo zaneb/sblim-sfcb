@@ -1,3 +1,9 @@
+2008-10-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlParser.c:
+	Fixed [ 2169527 ] Some XML parsing error strings do not have sufficient
+	space
+
 2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* msgqueue.c

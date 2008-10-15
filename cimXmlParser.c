@@ -42,7 +42,7 @@ typedef struct tags {
 } Tags;
 
 
-
+/* TODO: be more graceful than just exit()  */
 static void Throw(XmlBuffer * xb, char *msg)
 {
    printf("*** Error: %s\n", msg);
@@ -281,13 +281,15 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
       return 1;
    }
 
-   ptr = (char *) alloca(strlen(tag) + strlen(msg2) + 48);
+   /* build error message for Throw(): "Bad attribute list for: <TAG>: <chars...> */
+   ptr = (char*)alloca(strlen(msg2) + strlen(tag) + sizeof(char)*2 + strlen(word));
    strcpy(ptr, msg2);
    strcat(ptr, tag);
    strcat(ptr, ": ");
-   strncpy(word, xb->cur, 10);
-   strcat(ptr, word);
-   strcat(ptr, tag);
+   /* ensure we have at least 10 chars left in the XML */
+   int wlen = (xb->cur < (xb->last - 10)) ? 10 : (xb->last - xb->cur); 
+   strncpy(word, xb->cur, wlen);
+   strncat(ptr, word, wlen);
    Throw(xb, ptr);
    return -1;
 }

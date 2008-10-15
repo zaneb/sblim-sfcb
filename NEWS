@@ -13,6 +13,7 @@ Bugs fixed:
 - 2164750 sfcb does not handle some malformed HTTP requests correctly
 - 2169514 spRcvMsg doesn't check malloc return
 - 2169527 Some XML parsing error strings do not have sufficient space
+- 2169532 sprintf doesn't check size of buffer
 
 Changes in 1.3.2
 ================

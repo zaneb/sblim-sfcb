@@ -52,7 +52,7 @@ int localClientMode=0;        /**< flag determining whether local client connect
 void *loadLibib(const char *libname)
 {
    char filename[255];
-   sprintf(filename, "lib%s.so", libname);
+   snprintf(filename, 255, "lib%s.so", libname);
    return dlopen(filename, RTLD_LAZY);
 }
 
@@ -61,7 +61,7 @@ static void *getGenericEntryPoint(void *library, const char *ptype)
 {
    char entry_point[255];
    void *sym;
-   sprintf(entry_point, "_Generic_Create_%sMI", ptype);
+   snprintf(entry_point, 255, "_Generic_Create_%sMI", ptype);
    sym = dlsym(library, entry_point);
    return sym;
 }
@@ -72,7 +72,7 @@ static void *getFixedEntryPoint(const char *provider,
 {
    char entry_point[255];
    void *sym;
-   sprintf(entry_point, "%s_Create_%sMI", provider, ptype);
+   snprintf(entry_point, 255, "%s_Create_%sMI", provider, ptype);
    sym = dlsym(library, entry_point);
    return sym;
 }
@@ -366,7 +366,7 @@ int memAdd(void *ptr, int *memId);
 void *tool_mm_load_lib(const char *libname)
 {
    char filename[255];
-   sprintf(filename, "lib%s.so", libname);
+   snprintf(filename, 255, "lib%s.so", libname);
    return dlopen(filename, RTLD_LAZY);
 }
 
@@ -919,7 +919,7 @@ void dumpTiming(int pid)
    
    if (collectStat==0) return;
    
-   sprintf(buffer,"/proc/%d/stat",pid);
+   snprintf(buffer, 4096, "/proc/%d/stat",pid);
    f=fopen(buffer,"r");
    l=fread(buffer,1,4095,f);
    fclose(f);   

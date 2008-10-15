@@ -35,7 +35,7 @@
 
 char * interOpNS;
 typedef int (*getSlpHostname)(char **hostname);
-extern void libraryName(const char *dir, const char *location, const char *fullName);
+extern void libraryName(const char *dir, const char *location, const char *fullName, int buf_size);
 extern char * configfile;
 
 //helper function ... until better solution is found to get to the
@@ -147,7 +147,7 @@ cimSLPService getSLPData(cimomConfig cfg)
         err = 1;
         setupControl(configfile);
         if (getControlChars("slpHostnamelib", &ln) == 0) {
-           libraryName(NULL,ln,dlName);
+           libraryName(NULL,ln,dlName, 512);
            if ((hostnameLib = dlopen(dlName, RTLD_LAZY))) {
               gethostname = dlsym(hostnameLib, "_sfcGetSlpHostname");
               if (gethostname) err = 0;

@@ -6,6 +6,11 @@
 
 2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
+	* cimslpCMPI.c, httpAdapter.c, providerDrv.c, support.c
+	Fixed [2169532] sprintf doesn't check size of buffer
+
+2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
 	* msgqueue.c
 	Fixed [2169514] spRcvMsg doesn't check malloc return
 

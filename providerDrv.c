@@ -175,40 +175,40 @@ typedef CMPIStatus (*deActivateFilterPreV1)
    const CMPISelectExp* se, const  char *ns, const CMPIObjectPath* op, CMPIBoolean last);
 
 
-void libraryName(const char *dir, const char *location, char *fullName)
+void libraryName(const char *dir, const char *location, char *fullName, int buf_size)
 {
 #if defined(CMPI_PLATFORM_WIN32_IX86_MSVC)
   if (dir) {
-    sprintf(fullName,"%s\\%s.dll",dir,location);
+    snprintf(fullName, buf_size, "%s\\%s.dll",dir,location);
   } else {
-    sprintf(fullName,"%s.dll",location);
+    snprintf(fullName, buf_size, "%s.dll",location);
   }
 #elif defined(CMPI_PLATFORM_LINUX_GENERIC_GNU)
   if (dir) {
-   sprintf(fullName,"%s/lib%s.so",dir,location);
+    snprintf(fullName, buf_size, "%s/lib%s.so",dir,location);
   } else {
-    sprintf(fullName,"lib%s.so",location);
+    snprintf(fullName, buf_size, "lib%s.so",location);
   }
 #elif defined(CMPI_OS_HPUX)
   if (dir) {
-   sprintf(fullName,"%s/lib%s.so",dir,location);
+    snprintf(fullName, buf_size, "%s/lib%s.so",dir,location);
   } else {
-    sprintf(fullName,"lib%s.so",location);
+    snprintf(fullName, buf_size, "lib%s.so",location);
   }
 #elif defined(CMPI_OS_OS400)
   if (dir) {
-   strcpy(fullName, location);
+    strcpy(fullName, location);
 #elif defined(CMPI_OS_DARWIN)
   if (dir) {
-   sprintf(fullName,"%s/lib%s.dylib",dir,location);
+    snprintf(fullName, buf_size, "%s/lib%s.dylib",dir,location);
   } else {
-    sprintf(fullName,"lib%s.dylib",location);
+    snprintf(fullName, buf_size, "lib%s.dylib",location);
   }
 #else
   if (dir) {
-   sprintf(fullName,"%s/lib%s.so",dir,location);
+    snprintf(fullName, buf_size, "%s/lib%s.so",dir,location);
   } else {
-    sprintf(fullName,"lib%s.so",location);
+    snprintf(fullName, buf_size, "lib%s.so",location);
   }
 #endif
 }
@@ -2319,10 +2319,11 @@ int initProvider(ProviderInfo *info, unsigned int sessionId)
 }
 
 
-static int doLoadProvider(ProviderInfo *info, char *dlName)
+static int doLoadProvider(ProviderInfo *info, char *dlName, int dlName_length)
 {
    char *dirs,*dir,*dirlast, *dircpy;
    char *fullname;
+   int fullname_max_length = 0;
    struct stat stbuf;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "doLoadProvider");
@@ -2333,14 +2334,15 @@ static int doLoadProvider(ProviderInfo *info, char *dlName)
    }
    
 
-   libraryName(NULL, (char *) info->location, dlName);
+   libraryName(NULL, (char *) info->location, dlName, dlName_length);
    
    dircpy = strdup(dirs);
-   fullname = malloc(strlen(dircpy)+strlen(dlName)+2); /* sufficient */
+   fullname_max_length = strlen(dircpy)+strlen(dlName)+2; /* sufficient */
+   fullname = malloc(fullname_max_length);
    dir=strtok_r(dircpy," \t",&dirlast);
    info->library = NULL;
    while (dir) {
-     libraryName(dir, (char *) info->location, fullname);
+     libraryName(dir, (char *) info->location, fullname, fullname_max_length);
      if (stat(fullname,&stbuf) == 0) {
        info->library = dlopen(fullname, RTLD_NOW | RTLD_GLOBAL);
        if (info->library == NULL) {
@@ -2390,7 +2392,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
    info->providerSockets = providerSockets;
    info->provIds.ids = hdr->provId;
 
-   switch (doLoadProvider(info,dlName)) {
+   switch (doLoadProvider(info,dlName, 512)) {
    case -1: {
       char msg[740];
       sprintf(msg, "*** Failed to load %s for %s\n", dlName,
@@ -2546,7 +2548,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
       if (pInfo && pInfo->library==NULL) { 
          char dlName[512];
          mlogf(M_INFO,M_SHOW,"--- Reloading provider\n");
-         doLoadProvider(pInfo,dlName);
+         doLoadProvider(pInfo,dlName, 512);
       }  
       
       if (pInfo && pInfo->initialized == 0) {

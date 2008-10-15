@@ -52,7 +52,7 @@
  #define GetMax(f)   (GetLo15b((f)))
  #define IsMallocedMax(x) (GetHi1b((x)))
 
- #define CLALIGN 4
+ #define CLALIGN sizeof(void*)
  #define CLEXTRA 0
  
  #define ALIGN(x,y) (x == 0 ? 0 : ((((x-1)/y)+1)*y))

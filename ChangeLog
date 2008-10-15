@@ -4,6 +4,10 @@
 	Fixed [ 2169527 ] Some XML parsing error strings do not have sufficient
 	space
 
+	* objectImpl.h:
+	Fixed [ 2168834 ] sfcbmof unaligned access when installing sblim-sfcb
+	(Fix found by Bart Whitely)
+	
 2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* cimslpCMPI.c, httpAdapter.c, providerDrv.c, support.c

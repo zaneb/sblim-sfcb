@@ -120,22 +120,6 @@ static void notSupported(int *requestor, OperationHdr * req)
    free(req);
 }
 
-/*
-static void handleSigterm(int sig)
-{
-   mlogf(M_ERROR,M_SHOW, "%s: exiting due to signal %d\n", "provider", sig);
-   exit(1);
-}
-
-static void handleSigSegv(int sig)
-{
-   mlogf(M_ERROR,M_SHOW, "()%d): exiting due to a SIGSEGV signal %d - %s(%d)\n",
-           currentProc, sig, __FILE__, __LINE__);
-   abort();
-}
-*/
-
-
 /* -------------
  * ---
  *      Instance Provider support

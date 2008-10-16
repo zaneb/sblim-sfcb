@@ -653,7 +653,7 @@ void localConnectServer()
    static struct sockaddr_un clientAddr,serverAddr;
    int nsocket,ssocket;
    unsigned int cl, notDone=1;
-   char *path,cMsg[264];
+   char *path;
    
    struct _msg {
       unsigned int size;
@@ -708,8 +708,8 @@ void localConnectServer()
       read(nsocket, &msg.oper, msg.size);
       
       if (msg.size!=0) {
-         sprintf(cMsg,"--- Local Client connect - pid: %d user: %s\n",msg.pid,msg.id);
-         mlogf(M_INFO,M_SHOW,cMsg);
+         mlogf(M_INFO,M_SHOW,"--- Local Client connect - pid: %d user: %s\n",
+            msg.pid,msg.id);
          spSendCtlResult(&nsocket, &sfcbSockets.send, MSG_X_LOCAL, 0, 0, 0);
       }
       else notDone=0;   

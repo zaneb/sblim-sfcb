@@ -1762,7 +1762,7 @@ static int ccValidate(X509 *certificate, char ** principal, int mode)
     }
   } else {
     mlogf(M_ERROR,M_SHOW,
-	  "--- Certificate authentication exit not configured\n",dlName);	
+	  "--- Certificate authentication exit not configured\n");	
   }
   _SFCB_RETURN(result);
 }

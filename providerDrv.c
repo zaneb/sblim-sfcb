@@ -2395,7 +2395,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
    switch (doLoadProvider(info,dlName, 512)) {
    case -1: {
       char msg[740];
-      sprintf(msg, "*** Failed to load %s for %s\n", dlName,
+      snprintf(msg,739,"*** Failed to load %s for %s\n", dlName,
               info->providerName);
       mlogf(M_ERROR,M_SHOW,msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
@@ -2404,7 +2404,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
    }
    case -2:  {
       char msg[740];
-      sprintf(msg, "*** Inconsistent provider registration for %s (1)\n",
+      snprintf(msg,739,"*** Inconsistent provider registration for %s (1)\n",
               info->providerName);
       mlogf(M_ERROR,M_SHOW,msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);

@@ -1,3 +1,8 @@
+2008-10-16 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* httpAdapter.c mlog.c msgqueue.c providerDrv.c providerMgr.c
+	Fixed [2172023] mlogf call cleanups
+
 2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* sqlLexer.l
@@ -23,7 +28,7 @@
 	* msgqueue.c
 	Fixed [2169514] spRcvMsg doesn't check malloc return
 
-2008-10-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2008-10-14 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* test/Makefile.am configure.ac sfcb/test/unittest/Makefile.am
 	Fixed [2150019] sfcb test suite, added optional unittest 

@@ -1,3 +1,8 @@
+2008-10-16 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* control.c, httpAdapter.c
+	Fixed [ 2172888 ] http content-length is not constrained
+
 2008-10-16 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c mlog.c msgqueue.c providerDrv.c providerMgr.c

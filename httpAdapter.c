@@ -779,6 +779,14 @@ static int doHttpRequest(CommHndl conn_fd)
          cp = &hdr[15];
          cp += strspn(cp, " \t");
          inBuf.content_length = atol(cp);
+         int maxLen;
+         getControlNum("httpMaxContentLength", &maxLen);
+         if((maxLen) && (inBuf.content_length > maxLen)) {
+            genError(conn_fd, &inBuf, 413, "Request Entity Too Large", NULL);
+            _SFCB_TRACE(1, ("--- exiting: content-length too big"));      
+            commClose(conn_fd);
+            exit(1);
+         }
       }
       else if (strncasecmp(hdr, "Content-Type:", 13) == 0) {
          cp = &hdr[13];

@@ -109,6 +109,7 @@ Control init[] = {
    {"traceLevel",   1, "0"},
    {"traceMask",   1, "0"},
 
+   {"httpMaxContentLength",	1,	"0"},
 };
 
 void sunsetControl()

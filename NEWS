@@ -17,6 +17,7 @@ Bugs fixed:
 - 2168834 sfcbmof unaligned access when installing sblim-sfcb
 - 2169607 sqlLexer assumes line lengths under MAXBUF
 - 2172023 mlogf call cleanups
+- 2172888 http content-length is not constrained
 
 Changes in 1.3.2
 ================

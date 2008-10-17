@@ -1,3 +1,8 @@
+2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* indCIMXMLExport.c
+	Fixed [ 2175426 ] possible int overflow
+
 2008-10-16 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* control.c, httpAdapter.c

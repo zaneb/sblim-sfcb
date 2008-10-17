@@ -1,3 +1,9 @@
+2008-10-17 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/xmltest/xmltest.sh removed test/xmltest/*.OK 
+		added test/xmltest/*.lines
+	Fixed [2175401] xml tests too verbose
+
 2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* msgqueue.c

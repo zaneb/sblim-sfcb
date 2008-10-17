@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<IMETHODRESPONSE NAME="EnumerateClasses">
+<CLASS NAME="CIM_ManagedElement">
+<CLASS NAME="CIM_Indication">
+</CIM>

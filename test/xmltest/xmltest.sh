@@ -39,6 +39,7 @@ for xmlfile in `ls *xml`
 do
    _TEST=${xmlfile%.xml}
    _TESTOK=$_TEST.OK
+   _TESTLINES=$_TEST.lines
    _TESTRESULT=$_TEST.result
    #_TESTNAME=${_TEST##$TESTDIR/}
    _TESTNAME=$_TEST
@@ -57,15 +58,36 @@ do
    fi
 
    # Compare the response XML against the expected XML for differences
-   if ! diff --brief $_TESTOK $_TESTRESULT > /dev/null; then
-      echo "FAILED output not as expected"
-      _RC=1;
-      continue
+   # Either using a full copy of the expected output (testname.OK)
+   if [ -f $_TESTOK ] ; then
+        if ! diff --brief $_TESTOK $_TESTRESULT > /dev/null; then
+            echo "FAILED output not as expected"
+            _RC=1;
+            continue
 
-   # We got the expected response XML
-   else
-      echo "PASSED"
-      rm -f $_TESTRESULT
+        # We got the expected response XML
+        else
+            echo "PASSED"
+            rm -f $_TESTRESULT
+        fi
+   fi
+   # or a file containing individual lines that must be found (testname.lines)
+   if [ -f $_TESTLINES ] ; then
+        passed=0
+        while read line 
+        do
+            if ! grep --q "$line" $_TESTRESULT  ; then
+                echo "FAILED line not found in result:"
+                echo "\t$line"
+                passed=1
+                _RC=1;
+            fi
+        done < $_TESTLINES
+        if [ $passed -eq 0 ] ;  then
+            echo "PASSED"
+            rm -f $_TESTRESULT
+        fi
+            
    fi
 done
 

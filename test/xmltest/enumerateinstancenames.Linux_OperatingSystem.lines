@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+<IMETHODRESPONSE NAME="EnumerateInstanceNames">
+<INSTANCENAME CLASSNAME="Linux_OperatingSystem">
+<KEYBINDING NAME="CSCreationClassName">
+<KEYVALUE VALUETYPE="string">Linux_ComputerSystem</KEYVALUE>
+</CIM>

@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stddef.h>
 
 
 extern unsigned long exFlags;
@@ -621,7 +622,7 @@ int getControlChars(char *id, char **val);
 
 void stopLocalConnectServer()
 {
-   static struct sockaddr_un serverAddr;
+   static struct sockaddr_un *serverAddr;
    int sock,size=0;
    unsigned long int l;
    char *path;
@@ -635,11 +636,13 @@ void stopLocalConnectServer()
       return;
    }
    
-   serverAddr.sun_family=AF_UNIX;
-   strcpy(serverAddr.sun_path,path);
+   socklen_t serverAddrLen = offsetof(struct sockaddr_un, sun_path) +
+                             strlen(path) + 1;
+   serverAddr = alloca(serverAddrLen);
+   serverAddr->sun_family=AF_UNIX;
+   strcpy(serverAddr->sun_path,path);
    
-   if (connect(sock,(const struct sockaddr*)&serverAddr,
-      sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
+   if (connect(sock,(const struct sockaddr*)serverAddr, serverAddrLen)<0) {
       perror("connect error");
       return;
    }
@@ -650,7 +653,7 @@ void stopLocalConnectServer()
 
 void localConnectServer()
 {
-   static struct sockaddr_un clientAddr,serverAddr;
+   static struct sockaddr_un clientAddr,*serverAddr;
    int nsocket,ssocket;
    unsigned int cl, notDone=1;
    char *path;
@@ -667,18 +670,20 @@ void localConnectServer()
    if (getControlChars("localSocketPath", &path)!=0) {
       mlogf(M_INFO,M_SHOW,"--- localConnectServer failed to start\n");
    }
-      
+
    if ((ssocket=socket(PF_UNIX, SOCK_STREAM, 0))<0) {
       perror("socket creation error");
       return;
    }
    
-   serverAddr.sun_family=AF_UNIX;
-   strcpy(serverAddr.sun_path,path);
+   socklen_t serverAddrLen = offsetof(struct sockaddr_un, sun_path) +
+                             strlen(path) + 1;
+   serverAddr = alloca(serverAddrLen);
+   serverAddr->sun_family=AF_UNIX;
+   strcpy(serverAddr->sun_path,path);
    unlink(path);
    
-   if (bind(ssocket,(const struct sockaddr*)&serverAddr,
-      sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
+   if (bind(ssocket,(const struct sockaddr*)serverAddr, serverAddrLen)<0) {
       perror("bind error");
       return;
    }
@@ -688,12 +693,12 @@ void localConnectServer()
    do {
      // sfcbSockets.send;
       cl=sizeof(clientAddr);
-      if ((nsocket=accept(ssocket,(struct sockaddr*)&serverAddr,&cl))<0) {
+      if ((nsocket=accept(ssocket,(struct sockaddr*)serverAddr,&cl))<0) {
          perror("accept error");
 
          /* Being interrupted isn't necessarily bad; try once more */
          if (errno == EINTR) {
-           if ((nsocket=accept(ssocket,(struct sockaddr*)&serverAddr,&cl))<0) {
+           if ((nsocket=accept(ssocket,(struct sockaddr*)serverAddr,&cl))<0) {
              perror("accept error (2)");
              return;
            }

@@ -1,5 +1,10 @@
 2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
+	* msgqueue.c
+	Fixed [ 2175507 ] sockaddr_un not allocated for localconnect server
+
+2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
 	* indCIMXMLExport.c
 	Fixed [ 2175426 ] possible int overflow
 

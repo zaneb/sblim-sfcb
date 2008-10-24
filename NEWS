@@ -21,6 +21,7 @@ Bugs fixed:
 - 2175426 possible int overflow
 - 2175507 sockaddr_un not allocated for localconnect server
 - 2175401 xml tests too verbose
+- 2158091 sfcb modules belong in private dir
 
 Changes in 1.3.2
 ================

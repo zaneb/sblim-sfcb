@@ -96,7 +96,7 @@ Control init[] = {
    {"sslCertificateFilePath", 0, SFCB_CONFDIR "/server.pem"},
 
    {"registrationDir", 0, SFCB_STATEDIR "/registration"},
-   {"providerDirs", 3, SFCB_LIBDIR " " SFCB_LIBDIR "/cmpi" }, /* 3: unstripped */
+   {"providerDirs", 3, SFCB_LIBDIR " " CMPI_LIBDIR " " LIBDIR}, /* 3: unstripped */
 
    {"enableInterOp", 2, "true"},
    {"sslClientTrustStore", 0, SFCB_CONFDIR "/client.pem"},

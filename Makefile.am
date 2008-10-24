@@ -27,6 +27,8 @@ sfcbconfdir=$(sysconfdir)/sfcb
 sfcbstatedir=$(localstatedir)/lib/sfcb
 initdir=$(sysconfdir)/init.d
 pamdir=$(sysconfdir)/pam.d
+sfcblibdir=$(libdir)/sfcb
+cmpilibdir=$(libdir)/cmpi
 
 MANFILES=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
 	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 man/sfcbuuid.1 \
@@ -38,7 +40,9 @@ AM_YFLAGS=-d
 
 AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfdir)\" \
 	-DSFCB_STATEDIR=\"$(sfcbstatedir)\" \
-	-DSFCB_LIBDIR=\"$(libdir)\" \
+	-DSFCB_LIBDIR=\"$(sfcblibdir)\" \
+	-DCMPI_LIBDIR=\"$(cmpilibdir)\" \
+	-DLIBDIR=\"$(libdir)\" \
 	-DSFCB_BINARY=\"$(sbindir)/sfcbd\" \
 	-I$(srcdir)/sfcUtil \
 	@SFCB_CPPFLAGS@ \
@@ -127,7 +131,7 @@ else
     PAM_LIBS =
 endif
 
-lib_LTLIBRARIES = \
+sfcblib_LTLIBRARIES = \
    libsfcUtil.la \
    libsfcBrokerCore.la \
    libsfcFileRepository.la \

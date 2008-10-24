@@ -20,5 +20,5 @@ sslClientTrustStore: @sysconfdir@/sfcb/client.pem
 sslClientCertificate: ignore
 certificateAuthLib:   sfcCertificateAuthentication
 registrationDir: @localstatedir@/lib/sfcb/registration
-providerDirs: @libdir@ @libdir@/cmpi
+providerDirs: @libdir@/sfcb @libdir@ @libdir@/cmpi
 enableInterOp:  true

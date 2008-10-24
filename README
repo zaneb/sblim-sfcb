@@ -482,7 +482,7 @@ file /usr/local/etc/sfcb/sfcb.cfg. For example:
 	sslKeyFilePath: /usr/local/etc/sfcb/file.pem
 	sslCertificateFilePath: /usr/local/etc/sfcb/server.pem
 	registrationDir: /usr/local/var/lib/sfcb/registration
-	providerDirs: /usr/local/lib /usr/local/lib/cmpi
+	providerDirs: /usr/local/lib/sfcb /usr/local/lib /usr/local/lib/cmpi
 
 Config Option Descriptions
 --------------------------
@@ -627,7 +627,7 @@ SBLIM providers include:
 PATH=/usr/local/bin:/usr/local/sbin
 	Path to the sfcbd daemon and utilities.
 
-LD_LIBRARY_PATH=/usr/local/lib
+LD_LIBRARY_PATH=/usr/local/lib/sfcb
 	Path to the sfcb runtime libraries. Note: the path to the SBLIM
 	provider libraries is specified in the sfcb configuration file and 
 	therefore does not need to be on the global LD_LIBRARY_PATH. 
@@ -1567,7 +1567,7 @@ included in the slp advertisement.
 /usr/local/var/lib/sfcb/stage/regs/*
 	Registration info for all installed providers.
 
-/usr/local/lib/libsfc*
+/usr/local/lib/sfcb/libsfc*
 	Binaries for sfcb runtime libraries.
 
 /usr/local/lib/cmpi/*

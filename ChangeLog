@@ -1,3 +1,8 @@
+2008-10-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am control.c sfcb.cfg.pre.in
+	Fixed [2158091] sfcb modules belong in private dir
+
 2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* httpAdapter.c

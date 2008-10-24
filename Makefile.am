@@ -498,7 +498,7 @@ if SSL
 endif
 
 footprint:
-	@flist='$(sbin_PROGRAMS) $(bin_PROGRAMS) $(lib_LTLIBRARIES) $(dist_sfcbdata_SCRIPTS) $(init_SCRIPTS) $(man1_MANS) $(dist_man1_MANS) $(dist_pam_DATA) $(dist_sfcbdata_DATA) $(sfcbconf_DATA) $(sfcbdoc_DATA) '; \
+	@flist='$(sbin_PROGRAMS) $(bin_PROGRAMS) $(sfcblib_LTLIBRARIES) $(dist_sfcbdata_SCRIPTS) $(init_SCRIPTS) $(man1_MANS) $(dist_man1_MANS) $(dist_pam_DATA) $(dist_sfcbdata_DATA) $(sfcbconf_DATA) $(sfcbdoc_DATA) '; \
 	rm -f "MANIFEST"; \
 	for p in $$flist; do \
 		f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \

@@ -22,6 +22,7 @@ Bugs fixed:
 - 2175507 sockaddr_un not allocated for localconnect server
 - 2175401 xml tests too verbose
 - 2158091 sfcb modules belong in private dir
+- 2193250 No data in http request causes segfault.
 
 Changes in 1.3.2
 ================

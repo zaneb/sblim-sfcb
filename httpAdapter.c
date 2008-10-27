@@ -617,12 +617,13 @@ static int getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
       
       if (r < 0 && (errno == EINTR || errno == EAGAIN)) continue;
       if (r == 0) {
-	if (strstr(b->data, "\r\n\r\n") == NULL &&
-	    strstr(b->data, "\n\n") == NULL) {
-	     mlogf(M_ERROR,M_SHOW,"-#- HTTP header ended prematurely\n");
-      	     state = 3;
-	 break; 
-	 }
+        if (b->size == 0 || 
+           (strstr(b->data, "\r\n\r\n") == NULL &&
+            strstr(b->data, "\n\n") == NULL)) {
+	        mlogf(M_ERROR,M_SHOW,"-#- HTTP header ended prematurely\n");
+      	    state = 3;
+	        break; 
+	    }
       }
       
       add2buffer(b, buf, r);

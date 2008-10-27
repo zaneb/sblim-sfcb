@@ -1,3 +1,8 @@
+2008-10-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* httpAdapter.c
+		Fixed [ 2193250 ] No data in http request causes segfault.
+
 2008-10-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am control.c sfcb.cfg.pre.in

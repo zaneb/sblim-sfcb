@@ -226,12 +226,12 @@ static void stopBroker(void *p)
    stopLocalConnectServer();
    
    for(;;) {
-      waitTime.tv_sec=time(NULL)+5;
-      waitTime.tv_nsec=0;
 
       if (adaptersStopped==0) {
          pthread_mutex_lock(&sdMtx);
-         if (sa==0) mlogf(M_INFO,M_SHOW,"--- Stopping adapters\n");
+         waitTime.tv_sec=time(NULL)+5;
+         waitTime.tv_nsec=0;
+         if (sa==0) fprintf(stderr,"--- Stopping adapters\n");
          sa++;
          if (stopNextAdapter()) {
             rc=pthread_cond_timedwait(&sdCnd,&sdMtx,&waitTime);
@@ -245,7 +245,9 @@ static void stopBroker(void *p)
       
       if (adaptersStopped) {
          pthread_mutex_lock(&sdMtx);
-         if (sp==0) mlogf(M_INFO,M_SHOW,"--- Stopping providers\n");
+         waitTime.tv_sec=time(NULL)+5;
+         waitTime.tv_nsec=0;
+         if (sp==0)  fprintf(stderr,"--- Stopping providers\n");
          sp++;
          if (stopNextProc()) {
             rc=pthread_cond_timedwait(&sdCnd,&sdMtx,&waitTime);
@@ -265,9 +267,8 @@ static void stopBroker(void *p)
    
    if (restartBroker) {
       char *emsg=strerror(errno);
-      mlogf(M_INFO,M_SHOW,"---\n");   
       execvp("sfcbd",restartArgv);
-      mlogf(M_ERROR,M_SHOW,"--- execv for restart problem: %s\n",emsg);
+      fprintf(stderr,"--- execv for restart problem: %s\n",emsg);
       abort();
    }
 
@@ -303,7 +304,7 @@ static void handleSigquit(int sig)
    pthread_attr_t tattr;
    
    if (sfcBrokerPid==currentProc) {    
-      mlogf(M_INFO,M_SHOW, "--- Winding down %s\n", processName);
+      fprintf(stderr,"--- Winding down %s\n", processName);
       pthread_attr_init(&tattr);
       pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
       pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
@@ -319,7 +320,7 @@ static void handleSigHup(int sig)
   
    if (sfcBrokerPid==currentProc) {    
       restartBroker=1;
-      mlogf(M_INFO,M_SHOW, "--- Restarting %s\n", processName);
+      fprintf(stderr,"--- Restarting %s\n", processName);
       pthread_attr_init(&tattr);
       pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
       pthread_create(&t, &tattr, (void *(*)(void *))stopBroker,NULL);
@@ -353,7 +354,7 @@ static void handleSigChld(int sig)
 //         mlogf(M_INFO,M_SHOW,"sigchild %d\n",pid);
         if (testStartedAdapter(pid,&left)) { 
             if (left==0) {
-               mlogf(M_INFO,M_SHOW,"--- Adapters stopped\n");
+               fprintf(stderr,"--- Adapters stopped\n");
                adaptersStopped=1;
             }   
             pthread_attr_init(&tattr);
@@ -362,7 +363,7 @@ static void handleSigChld(int sig)
          }
          else if (testStartedProc(pid,&left)) {
             if (left==0) {
-               mlogf(M_INFO,M_SHOW,"--- Providers stopped\n");
+               fprintf(stderr,"--- Providers stopped\n");
                providersStopped=1;
             }   
             pthread_attr_init(&tattr);
@@ -379,7 +380,7 @@ static void handleSigterm(int sig)
 {
 
    if (!terminating) {
-      mlogf(M_ERROR,M_SHOW, "--- %s - %d exiting due to signal %d\n", processName, currentProc, sig);
+      fprintf(stderr,"--- %s - %d exiting due to signal %d\n", processName, currentProc, sig);
       dumpTiming(currentProc);
    }   
    terminating=1; 
@@ -391,13 +392,13 @@ static void handleSigterm(int sig)
 
 static void handleSigSegv(int sig)
 {
-   mlogf(M_ERROR,M_SHOW, "-#- %s - %d exiting due to a SIGSEGV signal\n",
+   fprintf(stderr,"-#- %s - %d exiting due to a SIGSEGV signal\n",
            processName, currentProc);
 }
 /*
 static void handleSigAbort(int sig)
 {
-   mlogf(M_INFO,M_SHOW, "%s: exiting due to a SIGABRT signal - %d\n", processName, currentProc);
+   fprintf(stderr,"%s: exiting due to a SIGABRT signal - %d\n", processName, currentProc);
    kill(0, SIGTERM);
 }
 */

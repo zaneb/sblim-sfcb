@@ -23,6 +23,7 @@ Bugs fixed:
 - 2175401 xml tests too verbose
 - 2158091 sfcb modules belong in private dir
 - 2193250 No data in http request causes segfault.
+- 2185304 SFCB doesn't shut down properly a good portion of the time. 
 
 Changes in 1.3.2
 ================

@@ -1,3 +1,9 @@
+2008-10-29 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* sfcBroker.c
+		Fixed [ 2185304 ] SFCB doesn't shut down properly a good 
+		portion of the time. 
+
 2008-10-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c

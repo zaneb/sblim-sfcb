@@ -18,6 +18,28 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+10/30/2008 by Klaus Kampf, Novell
+---------------------------------
+[ 2192049 ] Potential memory leak in providerDrv.c
+[ 2189206 ] duplicate call CMNewObjectPath to profileProvider.c
+
+
+10/09/2008 by Luong Nguyen-Duy, Sun
+-----------------------------------
+[2027392] Bug in Query processing
+[2028194] Failure in generating indication 
+
+
+10/03/2008 by J. Bart Whitely, Novell
+-------------------------------------
+[ 2079099 ] SFCB should load providers with RTLD_GLOBAL
+
+
+10/02/2008 by Ingo van Lil, AMI
+-------------------------------
+[ 2138163 ] sfcb: Wrong PID when running as daemon
+
+
 09/09/2008 by Alexander Dunfey, VMWare
 --------------------------------------
 [ 2100707 ] NULL properties in property list returned with value

@@ -10,6 +10,12 @@
 	
 2008-10-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* Makefile.am configure.ac
+		Fixed [ 2192030 ] adapt to autoconf 2.63, automake 1.10
+			(patch from Klaus Kämpf)
+
+2008-10-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* providerMgr.c providerDrv.c
 		Fixed [ 2192049 ] Potential memory leak in providerDrv.c 
 			:forkProvider() (patch from Klaus Kämpf)

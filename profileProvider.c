@@ -130,9 +130,7 @@ static void initProfiles(
 
   /* Add Profile Registration profile */
   op = CMNewObjectPath(broker,"root/interop","cim_registeredprofile",&st); 
-  ci = CMNewInstance(_broker, 
-		     CMNewObjectPath(_broker, "root/interop", "cim_registeredprofile", &st),
-		     &st);
+  ci = CMNewInstance(broker, op, &st);
   Profile* prof = (Profile*)malloc(sizeof(Profile));
   prof->InstanceID = "CIM:SFCB_PR";
   prof->RegisteredOrganization = 2;
@@ -143,7 +141,7 @@ static void initProfiles(
   CMAddKey(op,"InstanceID",prof->InstanceID,CMPI_chars);
   setProfileProperties(ci, prof, &st);
 
-  _broker->bft->createInstance(_broker, ctxLocal, op, ci, &st);
+  broker->bft->createInstance(broker, ctxLocal, op, ci, &st);
 
   free(prof);   
 

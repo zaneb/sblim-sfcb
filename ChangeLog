@@ -1,3 +1,9 @@
+2008-10-30 Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* profileProvider.c:
+	Fixed [ 2189206 ] duplicate call CMNewObjectPath to profileProvider.c
+	(patch by Klaus Kampf)
+
 2008-10-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerMgr.c providerDrv.c

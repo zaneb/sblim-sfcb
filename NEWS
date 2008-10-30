@@ -25,6 +25,7 @@ Bugs fixed:
 - 2193250 No data in http request causes segfault.
 - 2185304 SFCB doesn't shut down properly a good portion of the time. 
 - 2192049 Potential memory leak in providerDrv.c:forkProvider()
+- 2189206 duplicate call CMNewObjectPath to profileProvider.c
 
 Changes in 1.3.2
 ================

@@ -1,3 +1,9 @@
+2008-10-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* providerMgr.c providerDrv.c
+		Fixed [ 2192049 ] Potential memory leak in providerDrv.c 
+			:forkProvider() (patch from Klaus Kämpf)
+
 2008-10-29 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* sfcBroker.c

@@ -676,10 +676,12 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
 
       resp = invokeProvider(&binCtx);
       resp->rc--;
-      if (resp->rc) {
-         *msg = strdup((char *) resp->object[0].data);
-      }
+      if (msg) {
+        if (resp->rc) {
+          *msg = strdup((char *) resp->object[0].data);
+        }
       else *msg = NULL;
+      }
 
       rc=resp->rc;
       _SFCB_TRACE(1, ("--- rc: %d", resp->rc));

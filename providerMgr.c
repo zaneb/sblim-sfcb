@@ -355,7 +355,6 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
    unsigned long count,n;
    ProviderInfo *info;
    int dmy = 0, rc,indFound=0;
-   char *msg = NULL;
    CMPIStatus st = {CMPI_RC_OK, NULL};
 
    providers = lookupProviders(type,className,nameSpace,&st);
@@ -367,7 +366,7 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
       for (info = providers->ft->getFirst(providers); info;
            info = providers->ft->getNext(providers), n--) {
          if (info->type!=FORCE_PROVIDER_NOTFOUND &&
-             (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
+             (rc = forkProvider(info, req, NULL)) == CMPI_RC_OK) {
             _SFCB_TRACE(1,("--- responding with  %s %p %d",info->providerName,info,count));
             spSendCtlResult(requestor, &info->providerSockets.send,
                 MSG_X_PROVIDER, count--, getProvIds(info).ids, req->options);
@@ -379,7 +378,6 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
             };
             spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
                NULL, req->options);
-            if (msg) free(msg);
 	    break;
          }
       }
@@ -398,7 +396,6 @@ static void findProvider(long type, int *requestor, OperationHdr * req)
    char *className = (char *) req->className.data;
    char *nameSpace = (char *) req->nameSpace.data;
    ProviderInfo *info;
-   char *msg=NULL;
    int rc;
    CMPIStatus st;
 
@@ -406,14 +403,13 @@ static void findProvider(long type, int *requestor, OperationHdr * req)
    
    if ((info = lookupProvider(type,className,nameSpace,&st)) != NULL) {
       if (info->type!=FORCE_PROVIDER_NOTFOUND &&
-          (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
+          (rc = forkProvider(info, req, NULL)) == CMPI_RC_OK) {
          spSendCtlResult(requestor, &info->providerSockets.send, MSG_X_PROVIDER,
             0, getProvIds(info).ids, req->options);
       }                   
       else {
          spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND, 0, 
             NULL, req->options);
-         if (msg) free(msg);
       }
    }
    else {
@@ -583,7 +579,6 @@ static void assocProviderList(int *requestor, OperationHdr * req)
    long count = 0;
    ProviderInfo *info;
    int dmy = 0, rc;
-   char *msg=NULL;
 
    if (className==NULL || *className == 0)
       className = "$ASSOCCLASSES$";
@@ -595,7 +590,7 @@ static void assocProviderList(int *requestor, OperationHdr * req)
          for (info = providers->ft->getFirst(providers); info;
               info = providers->ft->getNext(providers)) {
             if (info->type!=FORCE_PROVIDER_NOTFOUND &&
-                (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
+                (rc = forkProvider(info, req, NULL)) == CMPI_RC_OK) {
                _SFCB_TRACE(1,("--- responding with  %s %p %d",info->providerName,info,count));
                spSendCtlResult(requestor, &info->providerSockets.send,
                   MSG_X_PROVIDER, count--, getProvIds(info).ids, req->options);
@@ -603,10 +598,8 @@ static void assocProviderList(int *requestor, OperationHdr * req)
             else {
                spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND,
                   0, NULL, req->options);
-               if (msg) free(msg);
 	       break;
             }
-
          }
       }
       else {
@@ -618,7 +611,7 @@ static void assocProviderList(int *requestor, OperationHdr * req)
       /* When there is no provider for an assocClass we do not want to produce
        * an error message. So we return the default provider and expect it
        * to produce a nice and empty result */
-      if((rc = forkProvider(defaultProvInfoPtr, req, &msg)) == CMPI_RC_OK) {
+      if((rc = forkProvider(defaultProvInfoPtr, req, NULL)) == CMPI_RC_OK) {
          _SFCB_TRACE(1,("--- responding with  %s %p %d",
                         defaultProvInfoPtr->providerName,
                         defaultProvInfoPtr,count));
@@ -689,10 +682,8 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
 
 static void classProvider(int *requestor, OperationHdr * req)
 {
-   char *msg;
-
    _SFCB_ENTER(TRACE_PROVIDERMGR, "classProvider");
-   forkProvider(classProvInfoPtr, req, &msg);
+   forkProvider(classProvInfoPtr, req, NULL);
    _SFCB_TRACE(1,("--- result %d-%lu to with %d-%lu",
       *requestor,getInode(*requestor),
       classProvInfoPtr->providerSockets.send,
@@ -700,16 +691,13 @@ static void classProvider(int *requestor, OperationHdr * req)
    
    spSendCtlResult(requestor, &classProvInfoPtr->providerSockets.send, MSG_X_PROVIDER,
       0, getProvIds(classProvInfoPtr).ids, req->options);
-                                   
    _SFCB_EXIT();
 }
 
 static void qualiProvider(int *requestor, OperationHdr * req)
 {
-   char *msg;
-   
    _SFCB_ENTER(TRACE_PROVIDERMGR, "qualiProvider");
-   forkProvider(qualiProvInfoPtr, req, &msg);
+   forkProvider(qualiProvInfoPtr, req, NULL);
    _SFCB_TRACE(1,("--- result %d-%lu to with %d-%lu",   
       *requestor,getInode(*requestor),
       qualiProvInfoPtr->providerSockets.send,
@@ -722,7 +710,6 @@ static void qualiProvider(int *requestor, OperationHdr * req)
 
 static void methProvider(int *requestor, OperationHdr * req)
 {
-   char *msg=NULL;
    int rc;
    char *className = (char *) req->className.data;
    char *nameSpace = (char *) req->nameSpace.data;
@@ -733,7 +720,7 @@ static void methProvider(int *requestor, OperationHdr * req)
       classProvider(requestor, req);
    else if ((info = getMethodProvider(className,nameSpace)) != NULL) {
       if (info->type!=FORCE_PROVIDER_NOTFOUND &&
-          (rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
+          (rc = forkProvider(info, req, NULL)) == CMPI_RC_OK) {
          _SFCB_TRACE(1,("--- responding with  %s %p",info->providerName,info));
          spSendCtlResult(requestor, &info->providerSockets.send, MSG_X_PROVIDER,
             0, getProvIds(info).ids, req->options);
@@ -741,7 +728,6 @@ static void methProvider(int *requestor, OperationHdr * req)
       else {
          spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND,
             0, NULL, req->options);
-         if (msg) free(msg);
       }
    }
    else
@@ -757,32 +743,30 @@ static int _methProvider(BinRequestContext * ctx, OperationHdr * req)
    char *nameSpace = (char *) req->nameSpace.data;
    ProviderInfo *info;
    int rc;
-   char *msg;
 
    ctx->chunkedMode=ctx->xmlAs=0;
    if (strcmp(className, "$ClassProvider$") == 0) {
-      forkProvider(classProvInfoPtr, req, &msg);
+      forkProvider(classProvInfoPtr, req, NULL);
       ctx->provA.ids = getProvIds(classProvInfoPtr);
       ctx->provA.socket = classProvInfoPtr->providerSockets.send;
       ctx->pAs=NULL;
       _SFCB_RETURN(MSG_X_PROVIDER); 
    }
    else if (strcmp(className, "$InterOpProvider$") == 0) {
-      forkProvider(interOpProvInfoPtr, req, &msg);
+      forkProvider(interOpProvInfoPtr, req, NULL);
       ctx->provA.ids = getProvIds(interOpProvInfoPtr);
       ctx->provA.socket = interOpProvInfoPtr->providerSockets.send;
       ctx->pAs=NULL;
       _SFCB_RETURN(MSG_X_PROVIDER);
    }
    else if ((info = getMethodProvider(className,nameSpace)) != NULL) {
-      if ((rc = forkProvider(info, req, &msg)) == CMPI_RC_OK) {
+      if ((rc = forkProvider(info, req, NULL)) == CMPI_RC_OK) {
          ctx->provA.ids = getProvIds(info);
          ctx->provA.socket = info->providerSockets.send;
          ctx->pAs=NULL; 
          _SFCB_RETURN(MSG_X_PROVIDER);
       }
       else {
-         free(msg);
          _SFCB_RETURN(MSG_X_PROVIDER_NOT_FOUND);
       }
    }
@@ -1308,7 +1292,6 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    BinRequestContext binCtx;
    OperationHdr req = { OPS_GetClass, 2 };
    int irc;
-   char *msg;
    
    path = NewCMPIObjectPath(ns, cn, st);
    sreq.objectPath = setObjectPathMsgSegment(path);
@@ -1317,7 +1300,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    req.nameSpace = setCharsMsgSegment((char *) ns);
    req.className = setCharsMsgSegment((char *) cn);
 
-   forkProvider(classProvInfoPtr, &req, &msg);
+   forkProvider(classProvInfoPtr, &req, NULL);
    
    memset(&binCtx,0,sizeof(BinRequestContext));
    binCtx.oHdr = &req;

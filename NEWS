@@ -4,6 +4,7 @@ Changes in 1.3.3
 New features:
 
 - 2150019 sfcb test suite 
+- 2192073 Add thread information to trace output
 
 Bugs fixed:
 

@@ -33,6 +33,7 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "config.h"
 
 /* ---------------------------------------------------------------------------*/
@@ -175,12 +176,12 @@ void _sfcb_trace(int level, char *file, int line, char *msg)
 
    if (colorTrace) {
      changeTextColor(0);
-     fprintf(ferr, "[%i] [%s] %d --- %s(%i) : %s\n", level, tm, currentProc, file,
+     fprintf(ferr, "[%i] [%s] %d/%p --- %s(%i) : %s\n", level, tm, currentProc, (void *)pthread_self(), file,
 	     line, msg);
      changeTextColor(1);
    }
    else {
-     fprintf(ferr, "[%i] [%s] %d --- %s(%i) : %s\n", level, tm, currentProc, file,
+     fprintf(ferr, "[%i] [%s] %d/%p --- %s(%i) : %s\n", level, tm, currentProc, (void *)pthread_self(), file,
 	     line, msg);
    }
 

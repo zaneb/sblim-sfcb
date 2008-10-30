@@ -4,6 +4,10 @@
 	Fixed [ 2189206 ] duplicate call CMNewObjectPath to profileProvider.c
 	(patch by Klaus Kampf)
 
+	* trace.c:
+	Fixed [ 2192073 ] Add thread information to trace output
+	(patch by Klaus Kampf)
+	
 2008-10-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerMgr.c providerDrv.c

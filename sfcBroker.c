@@ -723,12 +723,12 @@ int main(int argc, char *argv[])
    else
        exFlags = exFlags | 2;
 
-   if ((enableInterOp && pSockets < 2 ) || pSockets < 1) {
+   if ((enableInterOp && pSockets < 4 ) || pSockets < 3) {
      /* adjusting provider number */
      if (enableInterOp) {
-       pSockets = 2;
+       pSockets = 4;
      } else {
-       pSockets = 1;
+       pSockets = 3;
      }
      mlogf(M_INFO,M_SHOW,
 	   "--- Max provider process number adjusted to %d\n", pSockets);

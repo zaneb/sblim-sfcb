@@ -18,11 +18,17 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+10/31/2008 by Klaus Kampf, Novell
+---------------------------------
+[ 2189234 ] provProcMax can be too low
+
+
 10/30/2008 by Klaus Kampf, Novell
 ---------------------------------
 [ 2192049 ] Potential memory leak in providerDrv.c
 [ 2189206 ] duplicate call CMNewObjectPath to profileProvider.c
 [ 2192073 ] Add thread information to trace output
+
 
 10/09/2008 by Luong Nguyen-Duy, Sun
 -----------------------------------

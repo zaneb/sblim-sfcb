@@ -711,6 +711,11 @@ void localConnectServer()
       
       read(nsocket, &msg.size, sizeof(msg.size));
       read(nsocket, &msg.oper, msg.size);
+      int maxMsgSize = sizeof(struct _msg) - offsetof(struct _msg, oper);
+      if (msg.size > maxMsgSize) {
+	mlogf(M_INFO,M_SHOW,"--- localConnectServer: message size %d > max %d\n", maxMsgSize);
+	abort();
+      }
       
       if (msg.size!=0) {
          mlogf(M_INFO,M_SHOW,"--- Local Client connect - pid: %d user: %s\n",

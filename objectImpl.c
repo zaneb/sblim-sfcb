@@ -1299,6 +1299,9 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
             _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
             
          if (d.type != CMPI_chars) {
+            if (d.type != CMPI_string) {
+               _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
+	    }
             replaceClString(hdr, (long)od.value.chars, "");
             (p + i - 1)->data = d;
          }
@@ -1316,6 +1319,9 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       
       else if (od.type == CMPI_dateTime && (d.state & CMPI_nullValue) == 0) {
          char chars[26];
+         if (d.type != CMPI_dateTime) {
+           _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
+	 }
          dateTime2chars(d.value.dateTime, NULL, chars);
 	 if (od.value.chars) {
 	   (p + i - 1)->data = d;
@@ -1330,6 +1336,9 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
 
       else if (od.type == CMPI_ref && (d.state & CMPI_nullValue) == 0) {
          char chars[4096] = { 0 };
+         if (d.type != CMPI_ref) {
+           _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
+	 }
          sfcb_pathToChars(d.value.ref, &st, chars);
 	 if (od.value.chars) {   
 	   (p + i - 1)->data = d;
@@ -1343,6 +1352,9 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
       }
       
       else if ((od.type & CMPI_ARRAY) && (d.state & CMPI_nullValue) == 0) {
+        if (!(d.type & CMPI_ARRAY)) {
+           _SFCB_RETURN(-CMPI_RC_ERR_TYPE_MISMATCH);
+	}
 	if (od.value.array) {
 	  (p + i - 1)->data = d;
 	  replaceClArray(hdr, (long)od.value.array, d);

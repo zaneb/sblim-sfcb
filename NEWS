@@ -30,6 +30,7 @@ Bugs fixed:
 - 2192030 adapt to autoconf 2.63, automake 1.10
 - 2189234 provProcMax can be too low
 - 2192058 Potential buffer overflow in msgqueue.c:localConnectServer
+- 2210462 Memory Corruption in CMSetProperty()
 
 Changes in 1.3.2
 ================

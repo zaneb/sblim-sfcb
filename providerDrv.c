@@ -380,8 +380,8 @@ void* providerIdleThread()
          if (pInfo) {
             proc=curProvProc;
             if (proc) {
-               semAcquireUnDo(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
-               if ((val=semGetValue(sfcbSem,(proc->id*3)+provProcInuseId+provProcBaseId))==0) {            
+               semAcquireUnDo(sfcbSem,PROV_GUARD(proc->id));
+               if ((val=semGetValue(sfcbSem,PROV_INUSE(proc->id)))==0) {            
                   if ((now-proc->lastActivity)>provTimeoutInterval) {
                      ctx = native_new_CMPIContext(MEM_TRACKED,NULL);
                      noBreak=0;
@@ -416,7 +416,7 @@ void* providerIdleThread()
                      }
                   }
                }
-               semRelease(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
+               semRelease(sfcbSem,PROV_GUARD(proc->id));
             }      
          }
       }
@@ -536,9 +536,9 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
      for (i = 0; i < provProcMax; i++) {
        if ((provProc+i) && provProc[i].pid &&
            provProc[i].group && strcmp(provProc[i].group,info->group)==0) {
-         semAcquire(sfcbSem,(provProc[i].id*3)+provProcGuardId+provProcBaseId);
-         semRelease(sfcbSem,(provProc[i].id*3)+provProcInuseId+provProcBaseId);
-         semRelease(sfcbSem,(provProc[i].id*3)+provProcGuardId+provProcBaseId);
+         semAcquire(sfcbSem,PROV_GUARD(provProc[i].id));
+         semRelease(sfcbSem,PROV_INUSE(provProc[i].id));
+         semRelease(sfcbSem,PROV_GUARD(provProc[i].id));
          info->pid=provProc[i].pid;
          info->providerSockets=provProc[i].providerSockets;
          _SFCB_TRACE(1,("--- Process %d shared by %s and %s",provProc[i].pid,info->providerName,
@@ -593,12 +593,12 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
             info->proc=*proc;
             info->pid=currentProc; 
                          
-            semSetValue(sfcbSem,((*proc)->id*3)+provProcGuardId+provProcBaseId,0);
-            semSetValue(sfcbSem,((*proc)->id*3)+provProcInuseId+provProcBaseId,0);
-            semSetValue(sfcbSem,((*proc)->id*3)+provProcAliveId+provProcBaseId,0);
-            semReleaseUnDo(sfcbSem,((*proc)->id*3)+provProcAliveId+provProcBaseId);
-            semReleaseUnDo(sfcbSem,((*proc)->id*3)+provProcInuseId+provProcBaseId);
-            semRelease(sfcbSem,((*proc)->id*3)+provProcGuardId+provProcBaseId);
+            semSetValue(sfcbSem,PROV_GUARD((*proc)->id),0);
+            semSetValue(sfcbSem,PROV_INUSE((*proc)->id),0);
+            semSetValue(sfcbSem,PROV_ALIVE((*proc)->id),0);
+            semReleaseUnDo(sfcbSem,PROV_ALIVE((*proc)->id));
+            semReleaseUnDo(sfcbSem,PROV_INUSE((*proc)->id));
+            semRelease(sfcbSem,PROV_GUARD((*proc)->id));
             
             processProviderInvocationRequests(info->providerName);
             _SFCB_RETURN(0);
@@ -628,15 +628,15 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
 
    if (info->pid ) {
       proc=info->proc;
-      semAcquire(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
-      if ((val=semGetValue(sfcbSem,(proc->id*3)+provProcAliveId+provProcBaseId))) {
-         semRelease(sfcbSem,(proc->id*3)+provProcInuseId+provProcBaseId);
-         semRelease(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
+      semAcquire(sfcbSem,PROV_GUARD(proc->id));
+      if ((val=semGetValue(sfcbSem,PROV_ALIVE(proc->id)))) {
+         semRelease(sfcbSem,PROV_INUSE(proc->id));
+         semRelease(sfcbSem,PROV_GUARD(proc->id));
          _SFCB_TRACE(1, ("--- Provider %s still loaded",info->providerName));
          _SFCB_RETURN(CMPI_RC_OK)
       }
 
-      semRelease(sfcbSem,(proc->id*3)+provProcGuardId+provProcBaseId);
+      semRelease(sfcbSem,PROV_GUARD(proc->id));
       _SFCB_TRACE(1, ("--- Provider has been unloaded prevously, will reload"));
       
       info->pid=0;
@@ -2381,7 +2381,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
    BinResponseHdr *resp;
    char dlName[512];
 
-   _SFCB_TRACE(1, ("--- Loading Provide %s %s %s", (char *) req->className.data,
+   _SFCB_TRACE(1, ("--- Loading provider %s %s %s", (char *) req->className.data,
                 (char *) req->provName.data, (char *) req->libName.data));
 
    info = (ProviderInfo *) calloc(1, sizeof(*info));
@@ -2522,7 +2522,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
    int i,requestor=0,initRc=0;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "processProviderInvocationRequestsThread");
- 
+
    for (i = 0; i < req->count; i++)
       if (req->object[i].length)
          req->object[i].data=(void*)((long)req->object[i].data+(char*)req);
@@ -2571,7 +2571,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
    }
    
    else {
-      _SFCB_TRACE(1, ("--- Provider request for %s %p %x",
+      _SFCB_TRACE(1, ("--- Provider request for op:%s pInfo:%p prov:%x",
         opsName[req->operation],pInfo,req->provId));
 
       if (req->flags & FL_chunked) requestor=parms->requestor;
@@ -2677,7 +2677,7 @@ void processProviderInvocationRequests(char *name)
 
    debugMode=pauseProvider(name);
    for (;;) {
-      _SFCB_TRACE(1, ("--- Waiting for provider request to %d-%lu",
+      _SFCB_TRACE(1, ("--- Waiting for provider request to R%d-%lu",
                    providerSockets.receive,getInode(providerSockets.receive)));
       parms = (Parms *) malloc(sizeof(*parms));
       
@@ -2687,7 +2687,7 @@ void processProviderInvocationRequests(char *name)
 	int debug_break = 0;
          if (rc!=0)mlogf(M_ERROR,M_SHOW,"oops\n");               
 
-         _SFCB_TRACE(1, ("--- Got something %d-%p on %d-%lu", 
+         _SFCB_TRACE(1, ("--- Got something op:%d-prov:%p on R%d-%lu", 
             parms->req->operation,parms->req->provId,
             providerSockets.receive,getInode(providerSockets.receive)));
 

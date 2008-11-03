@@ -1,3 +1,9 @@
+2008-11-03 Sean Swehla  <smswehla@linux.vnet.ibm.com>
+
+	* msgqueue.c msgqueue.h providerDrv.c providerMgr.c:
+	Fixed [ 2192041 ] cleanup semaphore array access
+	(with help from Klaus Kampf)
+
 2008-11-03  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* objectImpl.c:

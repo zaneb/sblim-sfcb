@@ -31,6 +31,7 @@ Bugs fixed:
 - 2189234 provProcMax can be too low
 - 2192058 Potential buffer overflow in msgqueue.c:localConnectServer
 - 2210462 Memory Corruption in CMSetProperty()
+- 2192041 cleanup semaphore array access
 
 Changes in 1.3.2
 ================

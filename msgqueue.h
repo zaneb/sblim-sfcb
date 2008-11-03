@@ -157,14 +157,28 @@ extern char *provPauseStr;
 extern int noHttpPause;
 extern char *httpPauseStr;
 
-#define httpGuardId 0
-#define httpProcsId 1
-#define shttpGuardId 2
-#define shttpProcsId 3
-#define provProcBaseId 4
-#define provProcGuardId 0
-#define provProcInuseId 1
-#define provProcAliveId 2
+/* relative Ids within the semaphore set */
+/* static ids */
+#define HTTP_GUARD_ID 0
+#define HTTP_PROCS_ID 1
+#define SHTTP_GUARD_ID 2
+#define SHTTP_PROCS_ID 3
+/* PROV_PROC_BASE_ID must be updated if the number of id's
+ * in the above block changes. */
+#define PROV_PROC_BASE_ID 4
+
+/* constants for calculating per process ids */
+#define PROV_PROC_GUARD_ID 0
+#define PROV_PROC_INUSE_ID 1
+#define PROV_PROC_ALIVE_ID 2
+/* PROV_PROC_NUM_SEMS must be updated if the number of
+ * PROV_PROC_*_IDs changes above */
+#define PROV_PROC_NUM_SEMS 3
+
+/* simplify calculation of process specific id */
+#define PROV_GUARD(id) (((id)*(int)(PROV_PROC_NUM_SEMS))+PROV_PROC_GUARD_ID+PROV_PROC_BASE_ID)
+#define PROV_INUSE(id) (((id)*(int)(PROV_PROC_NUM_SEMS))+PROV_PROC_INUSE_ID+PROV_PROC_BASE_ID)
+#define PROV_ALIVE(id) (((id)*(int)(PROV_PROC_NUM_SEMS))+PROV_PROC_ALIVE_ID+PROV_PROC_BASE_ID)
 
 extern ComSockets *sPairs;
 extern int ptBase,htBase,stBase,htMax,stMax;

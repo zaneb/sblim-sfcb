@@ -131,20 +131,20 @@ int initSem(int https, int shttps, int provs)
    }
 
    sun.val=1;
-   semctl(sfcbSem,httpGuardId,SETVAL,sun);
+   semctl(sfcbSem,HTTP_GUARD_ID,SETVAL,sun);
    sun.val=https;
-   semctl(sfcbSem,httpProcsId,SETVAL,sun);
+   semctl(sfcbSem,HTTP_PROCS_ID,SETVAL,sun);
    sun.val=1;
-   semctl(sfcbSem,shttpGuardId,SETVAL,sun);
+   semctl(sfcbSem,SHTTP_GUARD_ID,SETVAL,sun);
    sun.val=shttps;
-   semctl(sfcbSem,shttpProcsId,SETVAL,sun);
+   semctl(sfcbSem,SHTTP_PROCS_ID,SETVAL,sun);
    
    for (i=0; i<provs; i++) {
       sun.val=1;
-      semctl(sfcbSem,(i*3)+provProcGuardId+provProcBaseId,SETVAL,sun);
+      semctl(sfcbSem,PROV_GUARD(i),SETVAL,sun);
       sun.val=0;
-      semctl(sfcbSem,(i*3)+provProcInuseId+provProcBaseId,SETVAL,sun);
-      semctl(sfcbSem,(i*3)+provProcAliveId+provProcBaseId,SETVAL,sun);
+      semctl(sfcbSem,PROV_INUSE(i),SETVAL,sun);
+      semctl(sfcbSem,PROV_ALIVE(i),SETVAL,sun);
    }      
    return 0;   
 }

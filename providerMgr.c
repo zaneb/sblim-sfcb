@@ -890,10 +890,10 @@ static void setInuseSem(void *id)
 
    ids.ids=id;
 
-   semAcquire(sfcbSem,(ids.procId*3)+provProcGuardId+provProcBaseId);
-   semAcquire(sfcbSem,(ids.procId*3)+provProcInuseId+provProcBaseId);
-   semReleaseUnDo(sfcbSem,(ids.procId*3)+provProcInuseId+provProcBaseId);
-   semRelease(sfcbSem,(ids.procId*3)+provProcGuardId+provProcBaseId);
+   semAcquire(sfcbSem,PROV_GUARD(ids.procId));
+   semAcquire(sfcbSem,PROV_INUSE(ids.procId));
+   semReleaseUnDo(sfcbSem,PROV_INUSE(ids.procId));
+   semRelease(sfcbSem,PROV_GUARD(ids.procId));
    _SFCB_EXIT();
 }
 

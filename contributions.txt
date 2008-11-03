@@ -18,6 +18,11 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+11/03/2008 by Mike Brasher, Inova
+---------------------------------
+[ 2210462 ] Memory Corruption in CMSetProperty()
+
+
 10/31/2008 by Klaus Kampf, Novell
 ---------------------------------
 [ 2189234 ] provProcMax can be too low

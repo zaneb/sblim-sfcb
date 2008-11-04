@@ -32,6 +32,7 @@ Bugs fixed:
 - 2192058 Potential buffer overflow in msgqueue.c:localConnectServer
 - 2210462 Memory Corruption in CMSetProperty()
 - 2192041 cleanup semaphore array access
+- 2143287 Memory leak in getInstance up-call
 
 Changes in 1.3.2
 ================

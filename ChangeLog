@@ -10,6 +10,10 @@
 	Fixed [ 2210462 ] Memory Corruption in CMSetProperty()
 	(patch by Mike Brasher)
 
+	* brokerUpc.c:
+	Fixed [ 2143287 ] Memory leak in getInstance up-call
+	(found by J. Bart Whitely)
+	
 2008-11-03 Sean Swehla  <smswehla@linux.vnet.ibm.com>
 
 	* msgqueue.c:

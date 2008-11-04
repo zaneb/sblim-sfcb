@@ -500,6 +500,7 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
             r = native_result2array(result);
             if (st.rc==0) 
                inst=CMGetArrayElementAt(r, 0, NULL).value.inst;
+	    if (sreq) free(sreq);
             return inst;   
          }
       }

@@ -1423,7 +1423,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    int i,ru,rc;
    char *cp;
    long procs, port;
-   int listenFd=-1, udsListenFd=-1, connFd; 
+   int listenFd=-1, connFd; 
    int enableHttp=0;
    fd_set httpfds;
    int maxfdp1; 
@@ -1431,6 +1431,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 #ifdef HAVE_UDS
    static char *udsPath=NULL;
    int enableUds=0;
+   int  udsListenFd=-1;
 #endif
 
    name = argv[0];
@@ -1694,7 +1695,6 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
     }
 #endif
 
-//MCS hmmmm?
 #ifdef HAVE_UDS
    maxfdp1 = (listenFd > udsListenFd? listenFd : udsListenFd) + 1; 
 #else

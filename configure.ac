@@ -110,6 +110,10 @@ AC_ARG_ENABLE(unittest,
 	[AC_HELP_STRING([--enable-unittest],
 		[include unit tests.])])
 
+AC_ARG_ENABLE(uds,
+	[AC_HELP_STRING([--enable-uds],
+		[Enable UDS authentication.])])
+
 # Size checks
 AC_CHECK_SIZEOF(void*)
 AC_CHECK_SIZEOF(int)
@@ -175,6 +179,11 @@ if test "$enable_unittest" == "yes"; then
    UNITTEST_DIR=unittest
    AC_SUBST(UNITTEST_DIR)
 fi
+
+if test "$enable_uds" == "yes"; then
+   AC_DEFINE(HAVE_UDS,,[UDS authentication enabled])
+fi
+
 
 if test "$enable_qualifierrep" == "yes"; then
    LOAD_QUALIFIER_PROVIDER=
@@ -392,6 +401,7 @@ echo -e "PAM authentication"\\t\\t"${enable_pam:-no}"
 echo -e "local connect only "\\t\\t"${enable_local_connect_only}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
 echo -e "unittest"\\t\\t\\t"${enable_unittest:-no}"
+echo -e "uds"\\t\\t\\t\\t"${enable_uds:-no}"
 echo =================================================================
 echo
 echo "sfcb configuration complete.  you may now run 'make'"

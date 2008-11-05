@@ -62,7 +62,9 @@ unsigned long exFlags = 0;
 static char *name;
 static int debug;
 static int doBa;
+#ifdef HAVE_UDS
 static int doUdsAuth;
+#endif
 static int doFork = 0;
 int noChunking = 0;
 int sfcbSSLMode = 0;
@@ -845,6 +847,7 @@ static int doHttpRequest(CommHndl conn_fd)
 #endif
 
    int authorized = 0; 
+#ifdef HAVE_UDS
    if (!discardInput && doUdsAuth) {
 	   struct ucred cr; 
 	   int cl = sizeof(cr); 
@@ -854,6 +857,7 @@ static int doHttpRequest(CommHndl conn_fd)
 		   }
 	   }
    }
+#endif
    if (!authorized && !discardInput && doBa) {
      if (!(inBuf.authorization && baValidate(inBuf.authorization,&inBuf.principal))) {
        char more[]="WWW-Authenticate: Basic realm=\"cimom\"\r\n";
@@ -1420,11 +1424,14 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    char *cp;
    long procs, port;
    int listenFd=-1, udsListenFd=-1, connFd; 
-   int enableUds=0,enableHttp=0;
+   int enableHttp=0;
    fd_set httpfds;
    int maxfdp1; 
 
+#ifdef HAVE_UDS
    static char *udsPath=NULL;
+   int enableUds=0;
+#endif
 
    name = argv[0];
    debug = 1;
@@ -1446,8 +1453,10 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    else {
       if (getControlNum("httpPort", &port))
          port = 5988;
+#ifdef HAVE_UDS
       if (getControlChars("httpSocketPath", &udsPath)) 
 		 udsPath = "/tmp/sfcbHttpSocket"; 
+#endif
       hBase=htBase;
       hMax=htMax;
    }
@@ -1460,10 +1469,12 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
        procs = 10;
      if (getControlBool("enableHttp", &enableHttp))
        enableHttp=1;
+#ifdef HAVE_UDS
 	 if (getControlBool("enableUds", &enableUds))
        enableUds=1;
 	 if (!enableUds)
 		 udsPath = NULL; 
+#endif
 	 if (!enableHttp)
 		 port = -1; 
    }
@@ -1472,8 +1483,10 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    if (getControlBool("doBasicAuth", &doBa))
       doBa=0;
 
+#ifdef HAVE_UDS
    if (getControlBool("doUdsAuth", &doUdsAuth))
       doUdsAuth=0;
+#endif
 
    if (getControlNum("keepaliveTimeout", &keepaliveTimeout))
      keepaliveTimeout = 15;
@@ -1516,12 +1529,15 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 
    if (sslMode) mlogf(M_INFO,M_SHOW,"--- %s HTTPS Daemon V" sfcHttpDaemonVersion " started - %d - port %ld\n", 
          name, currentProc,port);
+#ifdef HAVE_UDS
    else mlogf(M_INFO,M_SHOW,"--- %s HTTP  Daemon V" sfcHttpDaemonVersion " started - %d - port %ld, %s\n", 
          name, currentProc,port,udsPath);
-
+#endif
 
    if (doBa) mlogf(M_INFO,M_SHOW,"--- Using Basic Authentication\n");
+#ifdef HAVE_UDS
    if (doUdsAuth) mlogf(M_INFO,M_SHOW,"--- Using Unix Socket Peer Cred Authentication\n");
+#endif
 
    if (keepaliveTimeout == 0) {
      mlogf(M_INFO,M_SHOW,"--- Keep-alive timeout disabled\n");
@@ -1531,9 +1547,11 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    }
 
    ru = 1;
+#ifdef HAVE_UDS
    if (enableUds) {
       udsListenFd = socket(PF_UNIX, SOCK_STREAM, 0); 
    }
+#endif
    if (enableHttp || sslMode) {
 #ifdef USE_INET6
       listenFd = socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
@@ -1553,6 +1571,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    memset(&sin,0,sin_len);
    memset(&sun,0,sun_len);
 
+#ifdef HAVE_UDS
    if (udsListenFd >= 0) {
      if (getControlChars("httpSocketPath", &udsPath)) {
          mlogf(M_ERROR,M_SHOW,"--- No unix socket path defined for HTTP\n"); 
@@ -1562,6 +1581,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
      sun.sun_family=AF_UNIX;
      strcpy(sun.sun_path,udsPath);
    }
+#endif
 
    if (listenFd >= 0) {
       if (getControlBool("httpLocalOnly", &httpLocalOnly))
@@ -1594,6 +1614,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
             kill(sfcbPid,3);
      }
   }
+#ifdef HAVE_UDS
   if (udsListenFd >= 0) {
      unlink(udsPath); 
      if (bind(udsListenFd, (struct sockaddr *) &sun, sun_len) ||
@@ -1603,6 +1624,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
             kill(sfcbPid,3);
      }
   }
+#endif
 
   if (!debug) {
       int rc = fork();
@@ -1672,7 +1694,12 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
     }
 #endif
 
+//MCS hmmmm?
+#ifdef HAVE_UDS
    maxfdp1 = (listenFd > udsListenFd? listenFd : udsListenFd) + 1; 
+#else
+   maxfdp1 = listenFd + 1; 
+#endif
    for (;;) {
       char *emsg;
       // listen(listenFd, 1);
@@ -1680,9 +1707,11 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 	  if (listenFd >= 0) {
          FD_SET(listenFd, &httpfds); 
 	  }
+#ifdef HAVE_UDS
 	  if (udsListenFd >= 0) {
          FD_SET(udsListenFd, &httpfds); 
       }
+#endif
 	  rc = select(maxfdp1, &httpfds, NULL, NULL, NULL); 
       if (rc < 0) {
          if (errno == EINTR || errno == EAGAIN) {
@@ -1706,6 +1735,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 		  handleHttpRequest(connFd);
 		  close(connFd);
 	  }
+#ifdef HAVE_UDS
 	  if (udsListenFd >= 0 && FD_ISSET(udsListenFd, &httpfds)) {
 		  sz = sun_len; 
 		  if ((connFd = accept(udsListenFd, (__SOCKADDR_ARG) &sun, &sz))<0) {
@@ -1722,6 +1752,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 		  handleHttpRequest(connFd);
 		  close(connFd);
 	  }
+#endif
    }
    
    remProcCtl();   

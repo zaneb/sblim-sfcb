@@ -542,7 +542,10 @@ int main(int argc, char *argv[])
    int c, i;
    long tmask = 0, sslMode=0,sslOMode=0, tracelevel=0;
    char * tracefile = NULL;
-   int enableUds=0,enableHttp=0,enableHttps=0,useChunking=0,doBa=0,enableInterOp=0,httpLocalOnly=0;
+#ifdef HAVE_UDS
+   int enableUds=0;
+#endif
+   int enableHttp=0,enableHttps=0,useChunking=0,doBa=0,enableInterOp=0,httpLocalOnly=0;
    long dSockets,sSockets,pSockets;
    char *pauseStr;
 
@@ -667,15 +670,21 @@ int main(int argc, char *argv[])
    if (getControlBool("enableHttp", &enableHttp))
       enableHttp=1;
 
+#ifdef HAVE_UDS
    if (getControlBool("enableUds", &enableUds))
       enableUds=1;
+#endif
       
 #if defined USE_SSL
    if (getControlBool("enableHttps", &enableHttps))
       enableHttps=0;
 
    sslMode=enableHttps;
+#ifdef HAVE_UDS
    sslOMode=sslMode & !enableHttp & !enableUds;
+#else
+   sslOMode=sslMode & !enableHttp;
+#endif
 #else
    mlogf(M_INFO,M_SHOW,"--- SSL not configured\n");
    enableHttps=0;

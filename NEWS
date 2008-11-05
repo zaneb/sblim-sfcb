@@ -33,6 +33,7 @@ Bugs fixed:
 - 2210462 Memory Corruption in CMSetProperty()
 - 2192041 cleanup semaphore array access
 - 2143287 Memory leak in getInstance up-call
+- 2192053 _methProvider return value not checked propery
 
 Changes in 1.3.2
 ================

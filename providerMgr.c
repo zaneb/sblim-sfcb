@@ -1398,7 +1398,7 @@ int isChild(const char *ns, const char *parent, const char* child)
 
    irc = _methProvider(&binCtx, &req);
 
-   if (irc) {
+   if (irc == MSG_X_PROVIDER) {
       localInvokeMethod(&binCtx, path, "ischild", in, &out, &rc,0);
       irc=(rc.rc==CMPI_RC_OK);
    }
@@ -1428,7 +1428,7 @@ static int startUpProvider(const char* ns, const char *name)
 
    irc = _methProvider(&binCtx, &req);
 
-   if (irc) {
+   if (irc == MSG_X_PROVIDER) {
       localInvokeMethod(&binCtx, path, "_startup", in, &out, &rc, 1);
       irc=(rc.rc==CMPI_RC_OK);
    }
@@ -1464,7 +1464,7 @@ static UtilList *_getConstClassChildren(const char *ns, const char *cn)
 
    irc = _methProvider(&binCtx, &req);
 
-   if (irc) {
+   if (irc == MSG_X_PROVIDER) {
       data = localInvokeMethod(&binCtx, path, "getchildren", in, &out, &rc, 0);
       if (out) {
          ar = CMGetArg(out, "children", &rc).value.array;
@@ -1506,7 +1506,7 @@ static UtilList *_getAssocClassNames(const char *ns)
    memset(&binCtx,0,sizeof(BinRequestContext));
    irc = _methProvider(&binCtx, &req);
 
-   if (irc) {
+   if (irc == MSG_X_PROVIDER) {
       data = localInvokeMethod(&binCtx, path, "getassocs", in, &out, &rc,0);
       if (out) {
          ar = CMGetArg(out, "assocs", &rc).value.array;

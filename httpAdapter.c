@@ -850,7 +850,7 @@ static int doHttpRequest(CommHndl conn_fd)
 #ifdef HAVE_UDS
    if (!discardInput && doUdsAuth) {
 	   struct ucred cr; 
-	   int cl = sizeof(cr); 
+	   socklen_t cl = sizeof(cr); 
 	   if (getsockopt(conn_fd.socket, SOL_SOCKET, SO_PEERCRED, &cr, &cl) == 0) {
 		   if (cr.uid == 0) {
 			   authorized = 1;

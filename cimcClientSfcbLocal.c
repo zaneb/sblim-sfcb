@@ -29,7 +29,7 @@
 
  
 #define CIMCSetStatusWithChars(st,rcp,chars) \
-      { if (st) { (st)->rc=(rcp); \
+      { if (st != NULL) { (st)->rc=(rcp); \
         (st)->msg=NewCMPIString((chars),NULL); }}
         
 #define NewCMPIString sfcb_native_new_CMPIString

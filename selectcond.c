@@ -36,7 +36,7 @@ typedef struct native_selectcond {
    int type;
 } NativeSelectCond;
 
-static NativeSelectCond *__new_cond();
+static NativeSelectCond *__new_cond(int mode, CMPIArray *conds, int type, CMPIStatus * rc);
 
 
 /*****************************************************************************/

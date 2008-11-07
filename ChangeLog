@@ -1,3 +1,11 @@
+2008-11-07  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c httpAdapter.c httpComm.c
+		objectImplSwapI32toP32.c queryParser.y selectcond.c
+		selectcond.c sfcbdumpP32onI32.c:
+		Fixed [ 2168840 ] Fix various compiler warnings.
+		(patch from J. Bart Whitely)
+
 2008-11-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* configure.ac httpAdapter.c sfcBroker.c:

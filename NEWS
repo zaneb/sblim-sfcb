@@ -5,6 +5,7 @@ New features:
 
 - 2150019 sfcb test suite 
 - 2192073 Add thread information to trace output
+- 2226259 Make UDS Authentication optional
 
 Bugs fixed:
 
@@ -34,7 +35,7 @@ Bugs fixed:
 - 2192041 cleanup semaphore array access
 - 2143287 Memory leak in getInstance up-call
 - 2192053 _methProvider return value not checked propery
-- 2226259 Make UDS Authentication optional
+- 2168840 Fix various compiler warnings.
 
 Changes in 1.3.2
 ================

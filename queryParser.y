@@ -71,7 +71,7 @@
 #define YYLEX_PARAM parm
 #define YYERROR_VERBOSE 1 
  
-extern int yylex();
+extern int yylex(void *);
 extern void sfcQueryErr(char*,char*,char*);
 extern void yyError(char*);
 extern void yyerror(char*);

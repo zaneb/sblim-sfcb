@@ -122,7 +122,7 @@ void commFlush(CommHndl hndl)
 
 #if defined USE_SSL
    if (hndl.bio) {
-     BIO_flush(hndl.bio);
+     (void)BIO_flush(hndl.bio);
    } else
 #endif     
      if (hndl.file) {

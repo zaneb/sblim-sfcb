@@ -130,7 +130,7 @@ int main(int argc, char * argv[])
 	  } else if (bswap_32(clv.size) != sizeof(CLP32_ClVersionRecord)) {
 	    rc = 1;
 	    fprintf(stderr, "%s: version record size mismatch, is %d expected %d\n",
-		    SCHEMA_NAME, bswap_32(clv.size), sizeof(CLP32_ClVersionRecord));
+		    SCHEMA_NAME, bswap_32(clv.size), (int)sizeof(CLP32_ClVersionRecord));
 	    state = REC_QUIT;
 	  } else  {
 	    printf("%s: Size of version record: %d, version: %hx\n", 
@@ -149,7 +149,7 @@ int main(int argc, char * argv[])
 	  } else if (bswap_32(coh.size) < sizeof(CLP32_ClObjectHdr)) {
 	    rc = 1;
 	    fprintf(stderr, "%s: header record size mismatch, is %d expected at least %d\n",
-		    SCHEMA_NAME, bswap_32(coh.size), sizeof(CLP32_ClObjectHdr));
+		    SCHEMA_NAME, bswap_32(coh.size), (int)sizeof(CLP32_ClObjectHdr));
 	    state = REC_QUIT;
 	  } else {
 	    printf("%s: Header size: %d, type: %hx\n",
@@ -216,8 +216,8 @@ int main(int argc, char * argv[])
 	  if ((numRead=read(fdSchema, fillBuf+sizeof(CLP32_ClObjectHdr), numFill)) != numFill) {
 	    rc = 1;
 	    fprintf(stderr, "%s: structure record short, is %d expected %d\n",
-		    SCHEMA_NAME, numRead + sizeof(CLP32_ClObjectHdr),
-		    numFill + sizeof(CLP32_ClObjectHdr));
+		    SCHEMA_NAME, numRead + (int)sizeof(CLP32_ClObjectHdr),
+		    numFill + (int)sizeof(CLP32_ClObjectHdr));
 	    state = REC_QUIT;
 	  } else {
 	    state = fillState;
@@ -381,7 +381,7 @@ static int dumpArrayBuffer(const CLP32_ClObjectHdr *hdr, const char *prefix)
 	for (i=0; i < bswap_16(ab->iUsed); i++) {
 	  printf("%s ab[%3d]=(%hx,%hx,%016llx)\n",prefix,i,
 		 bswap_16(ab->buf[bswap_32(index[i])].type), bswap_16(ab->buf[bswap_32(index[i])].state),
-		 bswap_64(ab->buf[bswap_32(index[i])].value.uint64));
+		 (unsigned long long)bswap_64(ab->buf[bswap_32(index[i])].value.uint64));
 	}
       }
     } else {
@@ -391,7 +391,7 @@ static int dumpArrayBuffer(const CLP32_ClObjectHdr *hdr, const char *prefix)
     }
   } else {
     fprintf(stderr,"%s invalid array buffer offset %d, must be < %d\n",
-	    prefix,abs(bswap_32(hdr->arrayBufOffset)),bswap_32(hdr->size) + sizeof(CLP32_ClArrayBuf));
+	    prefix,abs(bswap_32(hdr->arrayBufOffset)),bswap_32(hdr->size) + (int)sizeof(CLP32_ClArrayBuf));
     rc = 2;
   }
   return rc;

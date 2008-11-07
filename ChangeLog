@@ -1,3 +1,9 @@
+2008-11-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+		Fixed [ 2193250 ] No data in http request causes segfault.
+			Don't generate error entries.
+
 2008-11-07  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c httpAdapter.c httpComm.c

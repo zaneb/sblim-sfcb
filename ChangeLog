@@ -1,3 +1,10 @@
+2008-11-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimXmlParser.c test/unittest/xmlUnescape.c 
+		test/unittest/Makefile.am:
+		Fixed [ 2169807 ] XML parser does not handle all character references
+			(patch from Norm Paxton)
+
 2008-11-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am configure.ac:

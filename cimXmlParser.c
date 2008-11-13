@@ -323,22 +323,97 @@ static struct _xmlescape {
     { "&amp;", '&', 5 },
     { "&gt;", '>', 4 },
     { "&lt;", '<', 4 },
-    { "&#x20;", ' ', 6 },
-    { "&#xa;", '\n', 5 },
 };
+
+// arbitrary - esc chars are only valid in format &#<dec> or &#x<hex>
+#define MAX_UNESC_CHAR_LEN 10
 
 static int xmlUnescape(char *buf, char *end)
 {
-  int i;
-  for (i=0; i < sizeof(xmlEscapeTab)/sizeof(struct _xmlescape);i++) {
-    if (end-buf >= xmlEscapeTab[i].len && 
-	strncmp(buf,xmlEscapeTab[i].escaped,xmlEscapeTab[i].len) == 0) {
-      *buf = xmlEscapeTab[i].unescaped;
-      memmove(buf+1,buf+xmlEscapeTab[i].len,end-buf-xmlEscapeTab[i].len+1);
-      return xmlEscapeTab[i].len-1;
+    char escchar[MAX_UNESC_CHAR_LEN] = {0};
+    char *semiloc = NULL;
+    char *amploc = NULL;
+
+    semiloc = strchr((char *)(buf+2), ';');
+    if (semiloc==NULL)
+    {
+        // either malformed escape sequence, or non-escape sequence
+        // we didn't do anything, return 0
+        return 0;
     }
-  }
-  return 0;
+    // now see if I have another & before the first semicolon-
+    // if I do, either this is not an escape sequence, or it's mal-formed
+    amploc = strchr((char *)(buf+2), '&');
+    if (amploc && (amploc < semiloc))
+    {
+        // either malformed escape sequence, or non-escape sequence
+        // we didn't do anything, return 0
+        return 0;
+    }
+    if (semiloc-buf > MAX_UNESC_CHAR_LEN) 
+    {
+        // if there's more than 10 characters in the unescaped string, then
+        // it is either not an escaped char or it is malformed...  just return
+        return 0;
+    }
+
+    if (buf[1] == '#')
+    {
+        // got a generic escaped character:  should follow format:
+        // &#x<hex> or &#<dec>
+        // copy from original string, skipping '&#'
+        strncpy(escchar, buf+2, (int)(semiloc-buf-2));
+
+        int unescchar = 0;
+        int charlen = 0;
+        int diflen = 0; // total unescaped char len, with &#<x><val>;
+        if (escchar[0]=='x' || escchar[0]=='X')
+        {
+            // expecting a hex number, convert accordingly
+            charlen=strlen(escchar)-1;//x
+            diflen = charlen+4; //&#x and ;
+            if (0 == sscanf(&escchar[1], "%x", &unescchar))
+            {
+                // couldn't convert hex number - malformed
+                return 0;
+            }
+        }
+        else
+        {
+            // expecting a decimal number, convert accordingly
+            charlen=strlen(escchar);
+            diflen = charlen+3; //&# and ;
+            if (0 == sscanf(escchar, "%d", &unescchar))
+            {
+                // couldn't convert decimal number - malformed
+                return 0;
+            }
+        }
+        // move the unescaped character to first position
+        *buf = unescchar;
+        // now move rest of string, after the escaped character we just converted, to follow
+        // newly placed unescaped character
+        memmove(buf+1, buf+diflen,(int)(end-buf-diflen+1));
+        // and return the number of characters we removed from the total string len
+        return diflen-1;
+    }
+    else
+    {
+        int i=0;
+        // expecting a known/defined escape character, ie &lt;
+        strncpy(escchar, buf, (int)(semiloc-buf+1));
+        for (i=0; i < sizeof(xmlEscapeTab)/sizeof(struct _xmlescape);i++) 
+        {
+            if (strncmp(escchar, xmlEscapeTab[i].escaped, xmlEscapeTab[i].len) == 0)
+            {
+                *buf = xmlEscapeTab[i].unescaped;
+                memmove(buf+1,buf+xmlEscapeTab[i].len,end-buf-xmlEscapeTab[i].len+1);
+                //return the number of characters we removed
+                return xmlEscapeTab[i].len-1;
+            }
+        }
+    }
+    return 0;
 }
 
 static char *getContent(XmlBuffer * xb)

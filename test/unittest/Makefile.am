@@ -10,9 +10,12 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
+AM_LDFLAGS=-L"$(top_builddir)/.libs"
 
-TESTS = 
+TESTS = xmlUnescape
 
-#check_PROGRAMS = mlog
+xmlUnescape_SOURCES = xmlUnescape.c
+xmlUnescape_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter
 
-#mlog_SOURCES=mlog.c
+check_PROGRAMS = xmlUnescape
+

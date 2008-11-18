@@ -1,3 +1,11 @@
+2008-11-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimXmlParser.c cimcClientSfcbLocal.c configure.ac test/Makefile.am 
+		test/wbemcli/Makefile.am test/wbmecli/check_errors.pl:
+		Fixed [ 2042150 ] Mismatched CMPI error code and error message
+			(patch from Tyrel Datwyler)
+		Added optional wbemcli test directory
+
 2008-11-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimXmlParser.c test/unittest/xmlUnescape.c 

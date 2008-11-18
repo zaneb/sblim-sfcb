@@ -375,31 +375,38 @@ static RespSegments ctxErrResponse(RequestHdr * hdr,
 {
    MsgXctl *xd = ctx->ctlXdata;
    char msg[256];
+   CMPIrc err;
 
    switch (ctx->rc) {
    case MSG_X_NOT_SUPPORTED:
       hdr->errMsg = strdup("Operation not supported yy");
+      err = CMPI_RC_ERR_NOT_SUPPORTED;
       break;
    case MSG_X_INVALID_CLASS:
       hdr->errMsg = strdup("Class not found");
+      err = CMPI_RC_ERR_INVALID_CLASS;
       break;
    case MSG_X_INVALID_NAMESPACE:
       hdr->errMsg = strdup("Invalid namespace");
+      err = CMPI_RC_ERR_INVALID_NAMESPACE;
       break;
    case MSG_X_PROVIDER_NOT_FOUND:
       hdr->errMsg = strdup("Provider not found or not loadable");
+      err = CMPI_RC_ERR_NOT_FOUND;
       break;
    case MSG_X_FAILED:
       hdr->errMsg = strdup(xd->data);
+      err = CMPI_RC_ERR_FAILED; 
       break;
    default:
       sprintf(msg, "Internal error - %d\n", ctx->rc);
       hdr->errMsg = strdup(msg);
+      err = CMPI_RC_ERR_FAILED;
    }
    if (meth) return
-      methodErrResponse(hdr,getErrSegment(CMPI_RC_ERR_INVALID_CLASS,hdr->errMsg));
+      methodErrResponse(hdr,getErrSegment(err,hdr->errMsg));
    return
-      iMethodErrResponse(hdr,getErrSegment(CMPI_RC_ERR_INVALID_CLASS,hdr->errMsg));
+      iMethodErrResponse(hdr,getErrSegment(err,hdr->errMsg));
 };
 
 

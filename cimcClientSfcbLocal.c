@@ -269,6 +269,7 @@ static void ctxErrResponse( BinRequestContext * ctx, CMPIStatus *rc)
    switch (ctx->rc) {
    case MSG_X_NOT_SUPPORTED:
       m = "Operation not supported yy";
+      r = CMPI_RC_ERR_NOT_SUPPORTED;
       break;
    case MSG_X_INVALID_CLASS:
       m = "Class not found";

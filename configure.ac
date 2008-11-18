@@ -109,6 +109,10 @@ AC_ARG_ENABLE(unittest,
 	[AC_HELP_STRING([--enable-unittest],
 		[include unit tests.])])
 
+AC_ARG_ENABLE(wctest,
+	[AC_HELP_STRING([--enable-wctest],
+		[include wbemcli based tests.])])
+
 AC_ARG_ENABLE(uds,
 	[AC_HELP_STRING([--enable-uds],
 		[Enable UDS authentication.])])
@@ -177,6 +181,12 @@ if test "$enable_unittest" == "yes"; then
    AC_DEFINE(UNITTEST,,[Unittest enabled])
    UNITTEST_DIR=unittest
    AC_SUBST(UNITTEST_DIR)
+fi
+
+if test "$enable_wctest" == "yes"; then
+   AC_DEFINE(WCTEST,,[wbemcli tests enabled])
+   WCTEST_DIR=wbemcli
+   AC_SUBST(WCTEST_DIR)
 fi
 
 if test "$enable_uds" == "yes"; then
@@ -382,7 +392,7 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
 		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
 		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre 
-		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile] test/unittest/Makefile)
+		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile test/wbemcli/Makefile test/unittest/Makefile])
 AC_OUTPUT
 
 echo =================================================================
@@ -400,6 +410,7 @@ echo -e "PAM authentication"\\t\\t"${enable_pam:-no}"
 echo -e "local connect only "\\t\\t"${enable_local_connect_only}"
 echo -e "default instance properties"\\t"${enable_default_properties}"
 echo -e "unittest"\\t\\t\\t"${enable_unittest:-no}"
+echo -e "wctest"\\t\\t\\t\\t"${enable_wctest:-no}"
 echo -e "uds"\\t\\t\\t\\t"${enable_uds:-no}"
 echo =================================================================
 echo

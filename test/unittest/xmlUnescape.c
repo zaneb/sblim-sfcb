@@ -1,3 +1,8 @@
+/*
+ * For 2169807: XML parser does not handle all character references
+ *
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

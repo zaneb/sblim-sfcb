@@ -317,6 +317,8 @@ Options:
         --enable-uds
                 Enables UDS authentication for the http server.
                 Default=no
+                This option may require the GNU_SOURCE compiler flag if
+                building under glibc 2.8+. (CFLAGS=-D_GNU_SOURCE ./configure)
 
 
 9. Downloading the CIM Schema

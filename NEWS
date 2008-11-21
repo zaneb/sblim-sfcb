@@ -39,7 +39,9 @@ Bugs fixed:
 - 2169807 XML parser does not handle all character references
 - 2042150 Mismatched CMPI error code and error message
 - 2021888 Bug in creating CIM instance
+- 2192023 sfcb deadlocks on nsHt initialization
 
+>>>>>>> 1.317
 
 Changes in 1.3.2
 ================

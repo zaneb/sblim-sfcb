@@ -1,3 +1,9 @@
+2008-11-21 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* classProviderGz.c:
+	Fixed [ 2192023 ] sfcb deadlocks on nsHt initialization
+	(patch from Klaus Kaempf)
+
 2008-11-21 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* instance.c:

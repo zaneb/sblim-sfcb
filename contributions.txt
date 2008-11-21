@@ -18,6 +18,10 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
+11/21/2008 by Klaus Kaempf, Novell
+----------------------------------
+[ 2192023 ] sfcb deadlocks on nsHt initialization
+
 11/03/2008 by Mike Brasher, Inova
 ---------------------------------
 [ 2210462 ] Memory Corruption in CMSetProperty()

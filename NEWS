@@ -38,6 +38,8 @@ Bugs fixed:
 - 2168840 Fix various compiler warnings.
 - 2169807 XML parser does not handle all character references
 - 2042150 Mismatched CMPI error code and error message
+- 2021888 Bug in creating CIM instance
+
 
 Changes in 1.3.2
 ================

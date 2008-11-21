@@ -719,6 +719,12 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
    else {
       instance.instance.hdl = ClInstanceNew(ns, cn);
 
+#ifdef HAVE_DEFAULT_PROPERTIES
+   if(!override) {
+      instFillDefaultProperties(&instance,ns,cn);
+   }
+#endif
+
       while (j-- && (tmp1.rc == CMPI_RC_OK)) {
          CMPIString *keyName;
          CMPIData tmp = CMGetKeyAt(cop, j, &keyName, &tmp1);
@@ -731,12 +737,6 @@ CMPIInstance *internal_new_CMPIInstance(int mode, const CMPIObjectPath * cop,
    tInst=memAddEncObj(mode, &instance, sizeof(instance),&state);
    tInst->mem_state=state;
    tInst->refCount=0;
-   
-#ifdef HAVE_DEFAULT_PROPERTIES
-   if(!override) {
-      instFillDefaultProperties(tInst,ns,cn);
-   }
-#endif
 
    return (CMPIInstance*)tInst;
 }

@@ -1,3 +1,9 @@
+2008-11-21 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* instance.c:
+		[ 2021888 ] Bug in creating CIM instance
+			Patch from Luong Nguyen-Duy
+
 2008-11-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimXmlParser.c cimcClientSfcbLocal.c configure.ac test/Makefile.am 

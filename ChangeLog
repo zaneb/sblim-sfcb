@@ -1,3 +1,9 @@
+2008-12-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* support.c:
+	Fixed [ 2391132 ] Check for empty string in decode64
+	(patch by J. Bart Whitely)
+
 2008-11-21 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* classProviderGz.c:

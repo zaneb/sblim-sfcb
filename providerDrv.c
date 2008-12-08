@@ -2399,7 +2399,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
       char msg[740];
       snprintf(msg,739,"*** Failed to load %s for %s\n", dlName,
               info->providerName);
-      mlogf(M_ERROR,M_SHOW,msg);
+      mlogf(M_ERROR,M_SHOW,"%s",msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
       free(info);
       _SFCB_RETURN(resp);
@@ -2408,7 +2408,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
       char msg[740];
       snprintf(msg,739,"*** Inconsistent provider registration for %s (1)\n",
               info->providerName);
-      mlogf(M_ERROR,M_SHOW,msg);
+      mlogf(M_ERROR,M_SHOW,"%s",msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
       free(info);
       _SFCB_RETURN(resp);
@@ -2565,7 +2565,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
       char msg[1024];
       snprintf(msg,1023, "*** Inconsistent provider registration for %s (2)\n",
               pInfo->providerName);
-      mlogf(M_ERROR,M_SHOW,msg);
+      mlogf(M_ERROR,M_SHOW,"%s",msg);
       _SFCB_TRACE(1, (msg));
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
    }

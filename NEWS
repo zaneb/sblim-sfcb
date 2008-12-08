@@ -41,6 +41,7 @@ Bugs fixed:
 - 2021888 Bug in creating CIM instance
 - 2192023 sfcb deadlocks on nsHt initialization
 - 2391132 Check for empty string in decode64
+- 2390100 mlogf called with unsafe arguments
 
 
 Changes in 1.3.2

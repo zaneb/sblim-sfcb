@@ -1,3 +1,9 @@
+2008-12-08 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* providerDrv.c
+	[ 2390100 ] mlogf called with unsafe arguments
+	(patch by J. Bart Whitely)
+
 2008-12-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* support.c:

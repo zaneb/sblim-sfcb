@@ -1,3 +1,9 @@
+2008-12-12 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimslpSLP.c 
+	[ 2390523 ] buffer overrun in cimslpSLP.c
+	(patch by John Powell)
+
 2008-12-08 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerDrv.c

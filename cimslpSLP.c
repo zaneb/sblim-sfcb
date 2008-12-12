@@ -99,6 +99,7 @@ char* buildAttrStringFromArray(char * name, char ** value, char * attrstring)
 {
 	int length=0;
 	int i;
+	int finalAttrLen=0;
 
 
 	if(value == NULL) {
@@ -108,6 +109,12 @@ char* buildAttrStringFromArray(char * name, char ** value, char * attrstring)
 	for(i = 0; value[i] != NULL; i++) {
 		length += strlen(value[i]);
 	}
+
+   //Account for the comma delimiters which will be inserted into the string between
+	//each element in the array, one per value array entry. Err on the side of caution
+	//and still count the trailing comma, though it will be clobbered by the final ")"
+	//at the very end.
+   length += i;
 
 	length = length + strlen(attrstring) + strlen(name) + 5;
 
@@ -129,8 +136,18 @@ char* buildAttrStringFromArray(char * name, char ** value, char * attrstring)
 		strcat(attrstring, value[i]);
 		strcat(attrstring, ",");
 	}
-	attrstring[strlen(attrstring) - 1] = '\0';
-	strcat(attrstring, ")");
+	//Includes the trailing ",", which must be replaced by a ")" followed by a NULL
+	//string delimiter.
+   finalAttrLen = strlen(attrstring);
+	attrstring[finalAttrLen - 1] = ')';
+   attrstring[finalAttrLen] = '\0';
+
+   if (finalAttrLen + 1 > size) {
+      //buffer overrun. Better to abort here rather than discovering a heap curruption later
+      printf("--- Error:  Buffer overrun in %s. Content size: %d  Buffer size: %d\n",
+				 "buildAttrStringFromArray", finalAttrLen + 1, size);
+      abort();
+   }
 
 	return attrstring;
 

@@ -1,3 +1,9 @@
+2008-12-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* support.h:
+	[ 2433594 ] sfcb causing 'unaligned access' errors on IA64
+	(patch by Klaus Kampf)
+
 2008-12-12 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimslpSLP.c 

@@ -43,7 +43,7 @@ Bugs fixed:
 - 2391132 Check for empty string in decode64
 - 2390100 mlogf called with unsafe arguments
 - 2390523 buffer overrun in cimslpSLP.c
-
+- 2433594 sfcb causing 'unaligned access' errors on IA64
 
 
 Changes in 1.3.2

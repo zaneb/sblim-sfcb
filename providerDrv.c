@@ -814,6 +814,7 @@ static int sendResponse(int requestor, BinResponseHdr * hdr)
 int sendResponseChunk(CMPIArray *r,int requestor, CMPIType type)
 {
    int i, count;
+   int rslt;
    BinResponseHdr *resp;
       
    _SFCB_ENTER(TRACE_PROVIDERDRV, "sendResponseChunk");
@@ -831,7 +832,9 @@ int sendResponseChunk(CMPIArray *r,int requestor, CMPIType type)
       else resp->object[i] =
           setObjectPathMsgSegment(CMGetArrayElementAt(r, i, NULL).value.ref);
 
-   _SFCB_RETURN(sendResponse(requestor, resp));
+   rslt = sendResponse(requestor, resp);
+   free(resp);
+   _SFCB_RETURN(rslt);
 }
 
 static BinResponseHdr *errorResp(CMPIStatus * rci)
@@ -2635,28 +2638,27 @@ static void *processProviderInvocationRequestsThread(void *prms)
 int pauseProvider(char *name)
 {
    int rc=0;
-   char *n;
-  
+   char *n, *m;
    if (noProvPause) return 0;
-   if (provPauseStr==NULL) return 0;
+   if (provPauseStr == NULL) return 0;
    else {
-      if (provPauseStr) {
-         char *p;
-         p=provPauseStr=strdup(provPauseStr);
-         while (*p) { *p=tolower(*p); p++; }
-      }
-   }   
-   if (provPauseStr) {
+      char *p;
+      p=m=strdup(provPauseStr);
+      while (*p) { *p=tolower(*p); p++; }
+   }
+   if (name) {
       char *p;
       int l=strlen(name);
-      p=n=strdup(name);      
+      p=n=strdup(name);
       while (*p) { *p=tolower(*p); p++; }
-      if ((p=strstr(provPauseStr,n))!=NULL) {
-         if ((p==provPauseStr || *(p-1)==',') && (p[l]==',' || p[l]==0)) rc=1;
+      if ((p=strstr(m,n))!=NULL) {
+         if ((p == m || *(p-1) == ',') && (p[l]==',' || p[l]==0)) rc=1;
       }
-      free(p);
+      free(m);
+      free(n);
       return rc;
-  }
+   }
+   free(m);
    noProvPause=1;
    return 0;
 }

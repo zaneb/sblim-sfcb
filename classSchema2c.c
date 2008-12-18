@@ -235,6 +235,9 @@ static ClassRegister *newClassRegister(char *fname, char *ns)
             if (strcmp(cr->vr->id,"sfcb-rep")) {
                mlogf(M_ERROR,M_SHOW,"--- %s contains invalid version record - directory skipped\n",fin);
 	       fclose(in);
+               free(cr);
+               free(buf);
+               free(vrp);
                return NULL;
             }   
             vRec=0;
@@ -250,6 +253,11 @@ static ClassRegister *newClassRegister(char *fname, char *ns)
             mlogf(M_ERROR,M_SHOW,"--- %s contains unsupported object implementation format (%d) - directory skipped\n",
                fin,v);
 	    fclose(in);
+            free(cr);
+            free(buf);
+            if (vrp) { 
+                 free(vrp);
+            }
             return NULL;
          }
 
@@ -272,6 +280,8 @@ static ClassRegister *newClassRegister(char *fname, char *ns)
       else {
          mlogf(M_ERROR,M_SHOW,"--- %s contains invalid record(s) - directory skipped\n",fin);
 	 fclose(in);
+         free(cr);
+         free(buf);
          return NULL;
       }
    }

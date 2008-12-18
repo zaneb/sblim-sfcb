@@ -45,6 +45,7 @@ Bugs fixed:
 - 2390523 buffer overrun in cimslpSLP.c
 - 2433594 sfcb causing 'unaligned access' errors on IA64
 - 2316307 SFCB segfaults on missing instance file
+- 2390515 Fix multiple resource leaks in SFCB detected by Coverity
 
 Changes in 1.3.2
 ================

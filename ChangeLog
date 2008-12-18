@@ -1,3 +1,10 @@
+2008-12-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimXmlRequest.c cimslpCMPI.c classProvider.c classSchema2c.c
+	  providerDrv.c sfcbdump.c sfcbdumpP32onI32.c:
+	[ 2390515 ] Fix multiple resource leaks in SFCB detected by Coverity
+	(patch by John Powell)
+
 2008-12-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* fileRepository.c:

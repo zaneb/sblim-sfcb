@@ -308,6 +308,7 @@ char ** myGetRegProfiles(CMPIInstance **instances, CMCIClient *cc)
     objectpath = instances[i]->ft->getObjectPath(instances[i], &status);
     if(status.rc) {
       //no object path ??
+      free(retArr);
       _SFCB_RETURN(NULL);
     }
     objectpath->ft->setNameSpace(objectpath, interOpNS);
@@ -426,7 +427,10 @@ char * transformValue(char* cssf, CMPIConstClass * ccls, char * propertyName)
                         free(valuestr);
                         ele = CMGetArrayElementAt(arr, j, NULL);
                         valuestr = value2Chars(eletyp, &ele.value);
-                        if(j == n) _SFCB_RETURN(cssf); //nothing found, probably "NULL" -> return it
+                        if(j == n) {
+                             free(valuestr);
+                             _SFCB_RETURN(cssf); //nothing found, probably "NULL" -> return it
+                        } 
                         j++;
                 }
                 free(valuestr);

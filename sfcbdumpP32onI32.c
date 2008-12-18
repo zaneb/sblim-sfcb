@@ -414,10 +414,15 @@ static int dumpProperties(const CLP32_ClClass *cls, const char *prefix)
 	     prefix, bswap_16(cls->properties.used), bswap_16(cls->properties.max));
       if (detail_properties) {
 	prefixbuf = malloc(strlen(prefix) + strlen(" -- Property[999]:") + 2);
+        if (prefixbuf == NULL) {
+           fprintf(stderr, "out of memory\n");
+           return 1;
+        }
 	for (i=0; i < bswap_16(cls->properties.used); i++) {
 	  sprintf(prefixbuf,"%s -- Property[%3d]:",prefix,i);
 	  dumpString(&cls->hdr,&cp[i].id,prefixbuf);
 	}
+        free(prefixbuf);
       }
     } else {
       fprintf(stderr,"%s to many property entries %d\n",
@@ -449,10 +454,15 @@ static int dumpQualifiers(const CLP32_ClClass *cls, const char *prefix)
 	     prefix, bswap_16(cls->qualifiers.used), bswap_16(cls->qualifiers.max));
       if (detail_qualifiers) {
 	prefixbuf = malloc(strlen(prefix) + strlen(" -- Qualifier[999]:") + 2);
+        if (prefixbuf == NULL) {
+           fprintf(stderr, "out of memory\n");
+           return 1;
+        }
 	for (i=0; i < bswap_16(cls->qualifiers.used); i++) {
 	  sprintf(prefixbuf,"%s -- Qualifier[%3d]:",prefix,i);
 	  dumpString(&cls->hdr,&cq[i].id,prefixbuf);
 	}
+        free(prefixbuf);
       }
     } else {
       fprintf(stderr,"%s to many qualifier entries %d\n",
@@ -484,10 +494,15 @@ static int dumpMethods(const CLP32_ClClass *cls, const char *prefix)
 	     prefix, bswap_16(cls->methods.used), bswap_16(cls->methods.max));
       if (detail_methods) {
 	prefixbuf = malloc(strlen(prefix) + strlen(" -- Method[999]:") + 2);
+        if (prefixbuf == NULL) {
+           fprintf(stderr, "out of memory\n");
+           return 1;
+        }
 	for (i=0; i < bswap_16(cls->methods.used); i++) {
 	  sprintf(prefixbuf,"%s -- Method[%3d]:",prefix,i);
 	  dumpString(&cls->hdr,&cm[i].id,prefixbuf);
 	}
+        free(prefixbuf);
       }
     } else {
       fprintf(stderr,"%s to many method entries %d\n",

@@ -779,6 +779,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    CMPIObjectPath *path;
    CMPIConstClass cls;
    ClClass *cl;
+   ClClass *tmp;
    int irc;
    BinRequestContext binCtx;
    BinResponseHdr *resp;
@@ -892,7 +893,9 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
       }
    }
    
+   tmp = cl;
    cl = ClClassRebuildClass(cl,NULL); 
+   free(tmp);
    cls=initConstClass(cl);
 
    sreq.principal = setCharsMsgSegment(ctx->principal);

@@ -44,6 +44,10 @@
 
 #define BASE "repository"
 
+#define fdHandleError(bi) \
+   mlogf(M_ERROR,M_SHOW,"*** Repository error for %s\n",bi->fnd); \
+   freeBlobIndex(&bi,1);
+
 char *repfn=NULL;
 
 static char *getRepDir()
@@ -233,6 +237,11 @@ void* getFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl)
 
    if (getIndexRecord(bi,NULL,0,keyb,keybl) == 0) {
      bi->fd=fopen(bi->fnd,"rb");
+     if (bi->fd==NULL) {
+       fdHandleError(bi);
+       *len = 0;
+       return (void*)buf;
+     }
      fseek(bi->fd,bi->bofs,SEEK_SET);
      buf=(char*)malloc(bi->blen+8);
      fread(buf,bi->blen,1,bi->fd);
@@ -402,7 +411,7 @@ int addBlob(const char *ns, const char * cls, char *id, void *blob, int len)
 
    if (bi->dSize==0) {
       bi->fd=fopen(bi->fnd,"wb");
-      if (bi->fd==NULL) { freeBlobIndex(&bi,1); return -1; }
+      if (bi->fd==NULL) { fdHandleError(bi); return -1; }
       fwrite(blob,len,1,bi->fd);
       fclose(bi->fd);
       bi->fd=NULL;
@@ -422,15 +431,17 @@ int addBlob(const char *ns, const char * cls, char *id, void *blob, int len)
 
       if (indxLocate(bi,id)) {
          bi->fd=fopen(bi->fnd,"rb");
-         fseek(bi->fd,0,SEEK_END);
-         bi->dlen=ftell(bi->fd);
-         es=sprintf(idxe,"    %zd %s %d %lu\r\n",strlen(id),id,len,bi->dlen);
-         ep=sprintf(idxe,"%d",es);
-         idxe[ep]=' ';
-
-         memcpy(bi->index+bi->dSize,idxe,es);
-         bi->dSize+=es;
-         rebuild(bi,id,blob,len);
+         if (bi->fd==NULL) { fdHandleError(bi); return -1; }
+         else {
+            fseek(bi->fd,0,SEEK_END);
+            bi->dlen=ftell(bi->fd);
+            es=sprintf(idxe,"    %zd %s %d %lu\r\n",strlen(id),id,len,bi->dlen);
+            ep=sprintf(idxe,"%d",es);
+            idxe[ep]=' ';
+            memcpy(bi->index+bi->dSize,idxe,es);
+            bi->dSize+=es;
+            rebuild(bi,id,blob,len);
+         }
       }
 
       else {
@@ -469,11 +480,14 @@ int deleteBlob(const char *ns, const char * cls, const char *id)
    if (rc) {
       if (indxLocate(bi,id)) {
          bi->fd=fopen(bi->fnd,"rb");
-         fseek(bi->fd,0,SEEK_END);
-         bi->dlen=ftell(bi->fd);
-         rebuild(bi,id,NULL,0);
-         freeBlobIndex(&bi,1);
-         return 0;
+         if (bi->fd==NULL) { fdHandleError(bi); return -1; }
+         else {
+            fseek(bi->fd,0,SEEK_END);
+            bi->dlen=ftell(bi->fd);
+            rebuild(bi,id,NULL,0);
+            freeBlobIndex(&bi,1);
+            return 0;
+         }
       }
    }
    freeBlobIndex(&bi,1);
@@ -511,8 +525,8 @@ void *getBlob(const char *ns, const char *cls, const char *id, int *len)
       if (indxLocateCase(bi,id,ignorecase)) {
          bi->fd=fopen(bi->fnd,"rb");
          if (bi->fd==NULL) {
+            fdHandleError(bi);
             char *emsg=strerror(errno);
-            mlogf(M_ERROR,M_SHOW,"*** Repository error for %s\n",bi->fnd);
             mlogf(M_ERROR,M_SHOW,"Repository error: %s\n",emsg);
             exit(5);
          }

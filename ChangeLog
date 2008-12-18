@@ -1,3 +1,9 @@
+2008-12-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* fileRepository.c:
+	[ 2316307 ] SFCB segfaults on missing instance file
+	(based on patch by Kristi Schettler)
+	
 2008-12-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* support.h:

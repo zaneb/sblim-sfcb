@@ -54,9 +54,18 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 
+#ifdef HAVE_SYS_FSUID_H
+#include <sys/fsuid.h>
+#endif
+
 #include "httpComm.h"
 #include "sfcVersion.h"
 #include "control.h"
+
+#ifdef HAVE_UDS
+#include <grp.h>
+#include <sys/stat.h>
+#endif
 
 unsigned long exFlags = 0;
 static char *name;
@@ -849,13 +858,14 @@ static int doHttpRequest(CommHndl conn_fd)
    int authorized = 0; 
 #ifdef HAVE_UDS
    if (!discardInput && doUdsAuth) {
-	   struct ucred cr; 
-	   socklen_t cl = sizeof(cr); 
-	   if (getsockopt(conn_fd.socket, SOL_SOCKET, SO_PEERCRED, &cr, &cl) == 0) {
-		   if (cr.uid == 0) {
-			   authorized = 1;
-		   }
-	   }
+       struct sockaddr_un sun; 
+       sun.sun_family = 0; 
+       socklen_t cl = sizeof(sun); 
+       int rc = getpeername(conn_fd.socket, (struct sockaddr*)&sun, &cl); 
+       if (rc == 0 && sun.sun_family == AF_UNIX) {
+           /* Already authenticated via permissions on unix socket */
+           authorized = 1;
+       }
    }
 #endif
    if (!authorized && !discardInput && doBa) {
@@ -1618,11 +1628,37 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 #ifdef HAVE_UDS
   if (udsListenFd >= 0) {
      unlink(udsPath); 
+
+     size_t gbuflen = sysconf(_SC_GETGR_R_SIZE_MAX); 
+     char gbuf[gbuflen]; 
+     struct group* pgrp = NULL; 
+     struct group grp; 
+     gid_t oldfsgid = 0; 
+
+     int rc = getgrnam_r("sfcb", &grp, gbuf, gbuflen, &pgrp); 
+     if (rc == 0 && pgrp)
+     {
+#ifdef HAVE_SYS_FSUID_H
+         oldfsgid = setfsgid(pgrp->gr_gid); 
+#else
+         oldfsgid = setegid(pgrp->gr_gid); 
+#endif
+     }
+     mode_t oldmask = umask(0007); 
      if (bind(udsListenFd, (struct sockaddr *) &sun, sun_len) ||
              listen(udsListenFd, 10)) {
             mlogf(M_ERROR,M_SHOW,"--- Cannot listen on unix socket %s (%s)\n", udsPath, strerror(errno));
             sleep(1);
             kill(sfcbPid,3);
+     }
+     umask(oldmask); 
+     if (pgrp)
+     {
+#ifdef HAVE_SYS_FSUID_H
+         setfsgid(oldfsgid); 
+#else
+         setegid(oldfsgid); 
+#endif
      }
   }
 #endif

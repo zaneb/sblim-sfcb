@@ -6,6 +6,7 @@ New features:
 - 2150019 sfcb test suite 
 - 2192073 Add thread information to trace output
 - 2226259 Make UDS Authentication optional
+- 2412189 More flexible access control with unix socket connections
 
 Bugs fixed:
 

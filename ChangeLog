@@ -1,5 +1,11 @@
 2008-12-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* httpAdapter.c pam/sfcb: 
+	[ 2412189 ] More flexible access control with unix socket connections
+	(patch by J. Bart Whitely)
+
+2008-12-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* cimXmlRequest.c cimslpCMPI.c classProvider.c classSchema2c.c
 	  providerDrv.c sfcbdump.c sfcbdumpP32onI32.c:
 	[ 2390515 ] Fix multiple resource leaks in SFCB detected by Coverity

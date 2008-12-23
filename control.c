@@ -110,6 +110,7 @@ Control init[] = {
    {"traceMask",   1, "0"},
 
    {"httpMaxContentLength",	1,	"0"},
+   {"maxMsgLen",	1,	"10000000"},
 };
 
 void sunsetControl()

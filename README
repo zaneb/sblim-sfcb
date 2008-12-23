@@ -484,6 +484,7 @@ file /usr/local/etc/sfcb/sfcb.cfg. For example:
 	enableHttps:    false
 	httpsProcs:     8
 	provProcs:      32
+    maxMsgLen:      10000000
 	doBasicAuth:    false
 	basicAuthLib:   sfcBasicAuthentication
 	useChunking:    true
@@ -527,6 +528,11 @@ provProcs
 	point if a new incoming request requires loading a new provider,
 	then one of the existing providers will first be automatically
         unloaded. Default=32 
+
+maxMsgLen
+    Maximum size in bytes of received messages. Messages larger than
+    this size will be rejected.
+    Default=10000000
 
 doBasicAuth
 	Perform basic authentication on the client userid (obtained from the

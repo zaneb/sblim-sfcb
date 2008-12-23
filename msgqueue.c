@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stddef.h>
+#include "control.h"
 
 
 extern unsigned long exFlags;
@@ -262,6 +263,7 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    static char *em = "rcvMsg receiving from";
    MqgStat imqg;
    int fromfd;
+   long int maxlen;
 
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRcvMsg");
    _SFCB_TRACE(1, ("--- Receiving from %d", *s));
@@ -284,11 +286,18 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
 
    _SFCB_TRACE(1, ("--- Received info segment %d bytes", sizeof(spMsg)));
 
+   getControlNum("maxMsgLen", &maxlen);
    *length = spMsg.totalSize;
 
    mqg->rdone=1;
    mqg->eintr=0;
    
+   // Ensure that the message length isn't excessive. 
+   if (*length > maxlen) {
+      mlogf(M_ERROR,M_SHOW,"--- spRcvMsg max message length exceeded, %lu bytes from %d\n",
+        *length, *s);
+      return -1;
+   }
    if (*length) {
       *data = malloc(spMsg.totalSize + 8);
       if(*data == NULL) {

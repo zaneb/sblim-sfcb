@@ -8,6 +8,7 @@ httpsPort:      5989
 enableHttps:    @SFCB_CONF_HTTPS@
 httpsProcs:     8
 provProcs:      32
+maxMsgLen:      10000000
 doBasicAuth:    @SFCB_CONF_DOBASICAUTH@
 doUdsAuth:      true
 basicAuthLib:   @SFCB_CONF_BASICAUTHLIB@

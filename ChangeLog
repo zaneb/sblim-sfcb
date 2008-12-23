@@ -1,3 +1,8 @@
+2008-12-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* control.c msgqueue.c sfcb.cfg.pre.in:
+		[ 2407344 ] Message size should be checked for a reasonable value. 
+
 2008-12-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c pam/sfcb: 

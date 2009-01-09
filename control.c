@@ -211,6 +211,11 @@ int getControlChars(char *id, char **val)
 {
    Control *ctl;
    int rc = -1;
+
+   if (ct == NULL) { 
+     setupControl(configfile);
+   }
+
    if ((ctl = ct->ft->get(ct, id))) {
       if (ctl->type == 0 || ctl->type == 3) {
          *val = ctl->strValue;
@@ -226,6 +231,11 @@ int getControlNum(char *id, long *val)
 {
    Control *ctl;
    int rc = -1;
+
+   if (ct == NULL) {
+     setupControl(configfile);
+   }
+
    if ((ctl = ct->ft->get(ct, id))) {
       if (ctl->type == 1) {
 	*val = strtol(ctl->strValue,NULL,0);

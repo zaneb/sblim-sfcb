@@ -1,3 +1,8 @@
+2009-01-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c:
+	[ 2494774 ] getControlChars/getControlNum calls sometimes segfault
+
 2008-12-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* control.c msgqueue.c sfcb.cfg.pre.in:

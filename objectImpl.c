@@ -611,6 +611,10 @@ static char *datatypeToString(CMPIData * d, char **array)
    case CMPI_chars:
    case CMPI_string:
       return "string";
+   case CMPI_real64:
+      return "real64";
+   case CMPI_real32:
+      return "real32";
    case CMPI_sint64:
       return "sint64";
    case CMPI_uint64:
@@ -629,26 +633,83 @@ static char *datatypeToString(CMPIData * d, char **array)
       return "sint8";
    case CMPI_boolean:
       return "boolean";
+   case CMPI_char16:
+      return "char16";
    case CMPI_ref:
-      return "reference";
+      return "ref";
+   case CMPI_instance:
+      return "instance";
    case CMPI_dateTime:
       return "dateTime";
+   default:
+      return "unknownType";
    }
-   return "*??*";
 }
 
 static char *dataValueToString(ClObjectHdr * hdr, CMPIData * d)
 {
    static char *True = "true", *False = "false";
+   // Allocate for the biggest numeric type we'll get, if 
+   // we get a char type, it's reallocated below.
+   char *retval=malloc(sizeof(d->value.real64));
    switch (d->type) {
-   case CMPI_chars:
-      return (char *) ClObjectGetClString(hdr, (ClString *) & d->value.chars);
-   case CMPI_sint32:
-      return "sint32";
-   case CMPI_boolean:
-      return d->value.boolean ? True : False;
+       case CMPI_chars:
+          {
+             char *ret = (char *) ClObjectGetClString(hdr, (ClString *) & d->value.chars);
+             if (ret) {
+                 retval=realloc(retval,sizeof(ret));
+                 strcpy(retval, ret); }
+             else
+                 return "\"\"";
+          }
+          break;
+       case CMPI_char16:
+          {
+             char *ret = (char *) ClObjectGetClString(hdr, (ClString *) & d->value.char16);
+             if (ret) {
+                 retval=realloc(retval,sizeof(ret));
+                 strcpy (retval, ret); }
+             else
+                 return "\"\"";
+          }
+          break;
+       case CMPI_real64:
+          sprintf(retval, "%lf", d->value.real64);
+          break;
+       case CMPI_real32:
+          sprintf(retval, "%f", d->value.real32);
+          break;
+       case CMPI_sint64:
+          sprintf(retval, "%lld", d->value.sint64);
+          break;
+       case CMPI_sint32:
+          sprintf(retval, "%d", d->value.sint32);
+          break;
+       case CMPI_sint16:
+          sprintf(retval, "%d", d->value.sint16);
+          break;
+       case CMPI_sint8:
+          sprintf(retval, "%d", d->value.sint8);
+          break;
+       case CMPI_uint64:
+          sprintf(retval, "%llu", d->value.uint64);
+          break;
+       case CMPI_uint32:
+          sprintf(retval, "%u", d->value.uint32);
+          break;
+       case CMPI_uint16:
+          sprintf(retval, "%u", d->value.uint16);
+          break;
+       case CMPI_uint8:
+          sprintf(retval, "%u", d->value.uint8);
+          break;
+       case CMPI_boolean:
+          strcpy(retval, d->value.boolean ? True : False);
+          break;
+       default:
+          strcpy(retval, "***??***");
    }
-   return "*??*";
+   return retval;
 }
 
 
@@ -784,8 +845,10 @@ static char *addQualifierToString(stringControl * sc, ClObjectHdr * hdr,
    cat2string(sc, ClObjectGetClString(hdr, &q->id));
    if (q->data.state != CMPI_nullValue) {
       cat2string(sc, "(");
-      cat2string(sc, dataValueToString(hdr, &q->data));
+      char * val=dataValueToString(hdr, &q->data);
+      cat2string(sc, val);
       cat2string(sc, ")");
+      free(val);
    }
    if (sb & 1) cat2string(sc, "]");
    return sc->str + o;
@@ -1149,6 +1212,9 @@ static char *addPropertyToString(stringControl * sc, ClObjectHdr * hdr,
    ClQualifier *q;
    char *array = NULL;
 
+   if (p->data.state && CMPI_nullValue)
+       return NULL;
+
    q = (ClQualifier *) ClObjectGetClSection(hdr, &p->qualifiers);
    if ((l = p->qualifiers.used)) {
       for (i = 0; i < l; sb = 0, i++) {
@@ -1159,14 +1225,22 @@ static char *addPropertyToString(stringControl * sc, ClObjectHdr * hdr,
       cat2string(sc, "\n");
    }
 
+
    cat2string(sc, " ");
    cat2string(sc, datatypeToString(&p->data, &array));
    cat2string(sc, " ");
    cat2string(sc, ClObjectGetClString(hdr, &p->id));
    if (array) cat2string(sc, array);
    cat2string(sc, " = ");
-   cat2string(sc, dataValueToString(hdr,&p->data));     
+
+   char *val = dataValueToString(hdr,&p->data);
+   if (val == NULL || *val == 0)
+       cat2string(sc, "\"\"");
+   else
+       cat2string(sc, val);
+
    cat2string(sc, ";\n");
+   free(val);
    return sc->str + o;
 }
 
@@ -1770,6 +1844,14 @@ ClInstance *ClInstanceNew(const char *ns, const char *cn)
    return newInstanceH(ns, cn);
 }
 
+ClInstance *ClInstanceNewFromMof(const char *ns, const char *cn)
+{
+   ClInstance *inst = newInstanceH(ns, cn);
+   if (inst)
+       inst->hdr.flags |= HDR_FromMof;
+   return inst;
+}
+
 static long sizeInstanceH(ClObjectHdr * hdr, ClInstance * inst)
 {
    long sz = sizeof(*inst);
@@ -1855,7 +1937,7 @@ char *ClInstanceToString(ClInstance * inst)
 
    p = (ClProperty *) ClObjectGetClSection(&inst->hdr, &inst->properties);
    for (i = 0, l = inst->properties.used; i < l; i++) {
-      addPropertyToString(&sc, &inst->hdr, p + i);
+      addPropertyToString(&sc, &inst->hdr, (p+i));
    }
 
    cat2string(&sc, "};\n");

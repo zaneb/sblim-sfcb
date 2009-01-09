@@ -41,6 +41,7 @@
 #include "mlog.h"
 #include "control.h"
 
+char *repfn=NULL;
 
 #define BASE "repository"
 
@@ -48,7 +49,12 @@
    mlogf(M_ERROR,M_SHOW,"*** Repository error for %s\n",bi->fnd); \
    freeBlobIndex(&bi,1);
 
-char *repfn=NULL;
+void useAlternateRepository(const char *inAltRepos)
+{
+   int keyl=strlen(inAltRepos)+1;
+   repfn=(char*)malloc(keyl);
+   strncpy(repfn,inAltRepos,keyl);
+}
 
 static char *getRepDir()
 {

@@ -143,6 +143,7 @@ typedef struct {
     #define HDR_ContainsEmbeddedObject 4
     #define HDR_StrBufferMalloced 16
     #define HDR_ArrayBufferMalloced 32 
+    #define HDR_FromMof 64
    #endif
    unsigned short type;
    #ifndef SETCLPFX
@@ -456,6 +457,7 @@ extern int ClClassGetMethParameterAt(ClClass *cls, ClMethod *m, int pid, CMPIPar
 extern int ClClassGetMethParamQualifierAt(ClClass * cls, ClParameter *parm, int id, CMPIData *d, char **name);
 extern int isInstance(const CMPIInstance *ci);
 extern ClInstance *ClInstanceNew(const char *ns, const char *cn);
+extern ClInstance *ClInstanceNewFromMof(const char *ns, const char *cn);
 extern unsigned long ClSizeInstance(ClInstance *inst);
 extern ClInstance *ClInstanceRebuild(ClInstance *inst, void *area);
 extern void ClInstanceRelocateInstance(ClInstance *inst);

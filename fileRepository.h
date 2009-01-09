@@ -24,7 +24,7 @@
 #ifndef _FILEREPOSITORY_
 #define _FILEREPOSITORY_
 
-#define BASE "repository"
+//#define BASE "repository"
 
 typedef struct blobIndex {
    int freed;
@@ -49,4 +49,11 @@ extern int existingNameSpace(const char *ns);
 extern void* getFirst(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
 extern void* getNext(BlobIndex *bi, int *len, char** keyb, size_t *keybl);
 
+/*
+NOTE: useAlternateRepository must be called prior to
+      calling any other functions from fileRepository.h
+*/
+// override 'repository' option from sfcb.cfg...  full path to repository dir
+extern void useAlternateRepository(const char *inAltRepos);
+    
 #endif

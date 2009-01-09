@@ -2,10 +2,10 @@
 
 usage() 
 {
-    echo "usage: $0 [-h] [-f] [-c cimschemadir] [-s stagingdir] [-r registrationdir] " 1>&2 
+    echo "usage: $0 [-h] [-f] [-i] [-c cimschemadir] [-s stagingdir] [-r registrationdir] " 1>&2 
 }
 
-args=`getopt fhs:r:c:X: $*`
+args=`getopt fhis:r:c:X: $*`
 rc=$?
 
 if [ $rc = 127 ]
@@ -27,6 +27,8 @@ do
 	  shift;;
       -f) force=1
 	  shift;;
+      -i) ignore_instances=1
+	  shift;;
       -X) xformat="-b $2"
 	  shift 2;;
       -s) stagingdir=$2
@@ -46,6 +48,7 @@ then
     usage
     echo -e "\t-h display help message"
     echo -e "\t-f force repository creation"
+    echo -e "\t-i do not migrate instances from previous repository (default=do migrate)"
     echo -e "\t-X create repository in non-native format as specifed by argument"
     echo -e "\t-s specify staging directory [@localstatedir@/lib/sfcb/stage]"
     echo -e "\t-r specify repository directory [@localstatedir@/lib/sfcb/registration]"
@@ -57,9 +60,14 @@ fi
 
 if [ -z "$force" ]
 then 
-    echo Setting up sfcb Repository, Class and Provider Registration
+    echo Setting up sfcb Repository, Class, and Provider Registration
     echo Your old repository and registration data will be deleted
-    echo Do you want to proceed "(type yes to continue)"
+    echo -n "(static instances will "
+    if [ $ignore_instances ]
+    then    echo -n "NOT "
+    fi
+    echo "be saved)"
+    echo Do you want to proceed? "(type yes to continue)"
 
     read response
 
@@ -138,6 +146,7 @@ then
     fi
     
     # Compile all staged namespace directories
+    instmigfile=/tmp/sfcbinst.mof
     mofsubdirs=`find $stagingdir/mofs/* -type d -print 2> /dev/null`
     if ls $stagingdir/mofs/*.mof > /dev/null 2>&1
     then
@@ -152,11 +161,37 @@ then
 	    namespace=`echo $mofdir | sed s?$stagingdir/mofs/??`
 	    repositorydir=$registrationdir/repository/
 	    [ -d $repositorydir ] || mkdir -p $repositorydir
-	    if ! sfcbmof -d $repositorydir -n $namespace -o classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $mofdir/*.mof $globalmofs
+
+        #grab all non-mof static instances, output to /tmp/sfcbinst.mof
+        if [ -z "$ignore_instances" ]
+        then
+            rm -f $instmigfile 2> /dev/null
+            #get class names (from filenames), ignoring specific files, from repos.previous, as it's already been moved
+            if [ -e $registrationdir/repository.previous/$namespace/ ]
+            then
+                static_inst_files=`ls $registrationdir/repository.previous/$namespace/ -I classSchemas -I qualifiers -I *.idx` > /dev/null 2>&1
+                for instfile in $static_inst_files
+                do
+                    sfcbinst2mof -n $namespace -c $instfile -o $instmigfile -r $registrationdir/repository.previous/ -g ${DESTDIR}@sysconfdir@/sfcb/sfcb.cfg 2> /dev/null
+                done
+            fi
+        fi
+        if [ -e $instmigfile ]
+        then
+            instmigopt="-m $instmigfile"
+        else
+            instmigopt=""
+        fi
+	    if ! sfcbmof -d $repositorydir -n $namespace -o classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $instmigopt $mofdir/*.mof $globalmofs
 	    then
-		echo Failed compiling the MOF files. >&2
-		exit 1
+            rm -f $instmigfile 2> /dev/null
+		    echo Failed compiling the MOF files. >&2
+		    exit 1
 	    fi
+        if [ -e $instmigfile ]
+        then
+            rm -f $instmigfile 2> /dev/null
+        fi
 	fi
     done
 

@@ -49,6 +49,7 @@ Bugs fixed:
 - 2390515 Fix multiple resource leaks in SFCB detected by Coverity
 - 2407344 Message size should be checked for a reasonable value
 - 2494774 getControlChars/getControlNum calls sometimes segfault
+- 2140807 Indication subscriptions don't persist across sfcbrepos
 
 Changes in 1.3.2
 ================

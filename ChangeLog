@@ -1,3 +1,10 @@
+2009-01-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am fileRepository.c fileRepository.h objectImpl.c
+	  objectImpl.h sfcbrepos.sh.in sfcbinst2mof.c(new file):
+	[ 2140807 ] Indication subscriptions don't persist across sfcbrepos
+	(patch by Norm Paxton)
+
 2009-01-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c:
@@ -6,7 +13,7 @@
 2008-12-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* control.c msgqueue.c sfcb.cfg.pre.in:
-		[ 2407344 ] Message size should be checked for a reasonable value. 
+	[ 2407344 ] Message size should be checked for a reasonable value. 
 
 2008-12-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 

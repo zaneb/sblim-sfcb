@@ -50,6 +50,7 @@ Bugs fixed:
 - 2407344 Message size should be checked for a reasonable value
 - 2494774 getControlChars/getControlNum calls sometimes segfault
 - 2140807 Indication subscriptions don't persist across sfcbrepos
+- 2521173 DST being handled incorrectly
 
 Changes in 1.3.2
 ================

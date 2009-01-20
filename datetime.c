@@ -92,6 +92,16 @@ static CMPIDateTime *__dtft_clone(const CMPIDateTime * dt, CMPIStatus * rc)
 
 CMPIUint64 chars2bin(const char *string, CMPIStatus * rc)
 {
+/**
+ * \brief chars2bin(): Converts a string time to microseconds since epoch.
+ *
+ * includes the offset in the result, but uses the local timezone
+ * and DST settings. string is of the form:
+ *   yyyymmddhhmmss mmmmmmsutc 
+ *   20050503104354.000000:000
+ *   20080813104354.000000+500
+ * the : indicates that it is an interval.
+*/
    CMPIUint64 msecs,secs;
    CMPIBoolean interval;
    char *str;
@@ -105,11 +115,6 @@ CMPIUint64 chars2bin(const char *string, CMPIStatus * rc)
       offset= atoi(str+21) * 60ULL;
    }
 
-// 0000000000111111111122222  
-// 0123456789012345678901234
-// yyyymmddhhmmss mmmmmmsutc 
-// 20050503104354.000000:000
-// 20080813104354.000000+500
    
    str[21] = 0;
    msecs = strtoull(str+15,NULL,10);
@@ -154,6 +159,11 @@ CMPIUint64 chars2bin(const char *string, CMPIStatus * rc)
 
 static void bin2chars(CMPIUint64 msecs, CMPIBoolean interval, CMPIStatus * rc, char *str_time)
 {
+/** /brief bin2chars(): Converts microseconds since epoch to a string time.
+ *
+ *  Uses the current timezone as the basis for the conversion, but will determine
+ *  if DST was in effect at the time in the input.
+*/
    time_t secs = msecs / 1000000ULL;
    unsigned long usecs = msecs % 1000000ULL;
 
@@ -188,7 +198,7 @@ static void bin2chars(CMPIUint64 msecs, CMPIBoolean interval, CMPIStatus * rc, c
       tzset();
 
       snprintf(us_utc_time, 11, "%6.6ld%+4.3ld",
-               usecs, (daylight != 0) * 60 - timezone / 60);
+               usecs, (tm_time.tm_isdst != 0) * 60 - timezone / 60);
 
       strftime(str_time, 26, "%Y%m%d%H%M%S.", &tm_time);
 

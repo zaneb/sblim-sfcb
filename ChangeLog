@@ -1,3 +1,8 @@
+2009-01-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* datetime.c
+	[ 2521173 ] DST being handled incorrectly
+
 2009-01-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am fileRepository.c fileRepository.h objectImpl.c

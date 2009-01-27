@@ -51,6 +51,7 @@ Bugs fixed:
 - 2494774 getControlChars/getControlNum calls sometimes segfault
 - 2140807 Indication subscriptions don't persist across sfcbrepos
 - 2521173 DST being handled incorrectly
+- 2531609 CIM_ListenerDestinationCIMXML not enforcing "Required"
 
 Changes in 1.3.2
 ================

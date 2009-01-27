@@ -131,19 +131,41 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
       _SFCB_RETURN(st); 
    }
 
+   CMPIInstance* ciLocal = CMClone(ci, NULL);
+
+   CMPIString* dest = CMGetProperty(ciLocal, "destination", &st).value.string;
+   if (dest == NULL || CMGetCharPtr(dest) == NULL) {
+     setStatus(&st,CMPI_RC_ERR_FAILED,"Destination property not found; is required");
+     _SFCB_RETURN(st);              
+   }
+   else { /* if no scheme is given, assume http (as req. for param by mof) */
+     char* ds = CMGetCharPtr(dest);
+     if (strchr(ds, ':') == NULL) {
+       char* prefix = "http:";
+       int n = strlen(ds)+strlen(prefix);
+       char* newdest = (char*)malloc(n*sizeof(char));
+       strcpy(newdest, prefix);
+       strcat(newdest, ds);
+       CMSetProperty(ciLocal, "destination", newdest, CMPI_chars);
+       free(newdest);
+     }
+   }
+   dest = CMGetProperty(ciLocal, "destination", &st).value.string;
+
             CMPIString *str=CDToString(_broker,cop,NULL);
             CMPIString *ns=CMGetNameSpace(cop,NULL);
             _SFCB_TRACE(1,("--- handler %s %s",(char*)ns->hdl,(char*)str->hdl));
             
    in=CMNewArgs(_broker,NULL);
-   CMAddArg(in,"handler",&ci,CMPI_instance);
+   CMAddArg(in,"handler",&ciLocal,CMPI_instance);
    CMAddArg(in,"key",&cop,CMPI_ref);
    op=CMNewObjectPath(_broker,"root/interop","cim_indicationsubscription",&st);
    rv=CBInvokeMethod(_broker,ctx,op,"_addHandler",in,out,&st);
 
    if (st.rc==CMPI_RC_OK) 
-      st=InternalProviderCreateInstance(NULL,ctx,rslt,cop,ci);
-      
+      st=InternalProviderCreateInstance(NULL,ctx,rslt,cop,ciLocal);
+
+   CMRelease(ciLocal);
    _SFCB_RETURN(st);
 }
 

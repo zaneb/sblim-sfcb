@@ -1,3 +1,8 @@
+2009-01-26  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 2531609 ] CIM_ListenerDestinationCIMXML not enforcing "Required"
+
 2009-01-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* datetime.c

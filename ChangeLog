@@ -1,3 +1,8 @@
+2009-01-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c, providerMgr.c:
+	[ 2550426 ] Concurrency issue with LocalConnect
+
 2009-01-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c

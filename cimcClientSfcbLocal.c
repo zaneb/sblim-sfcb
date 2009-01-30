@@ -1519,10 +1519,17 @@ extern int getControlChars(char *, char **);
 extern int setupControl(char *fn);
 extern int errno;
 
+static int localConnectCount = 0;
+static pthread_mutex_t lcc_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+#define CONNECT_LOCK()   pthread_mutex_lock(&lcc_mutex)
+#define CONNECT_UNLOCK() pthread_mutex_unlock(&lcc_mutex)
+#define CONNECT_UNLOCK_RETURN(rc) { pthread_mutex_unlock(&lcc_mutex); return (rc);}
+
 int localConnect(ClientEnv* ce, CMPIStatus *st) 
 {
    static struct sockaddr_un serverAddr;
-   int sock,rc,sfcbSocket;
+   int sock,rc=0,sfcbSocket;
    void *idData;
    unsigned long int l;
    char *user;
@@ -1536,58 +1543,84 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
       char id[64];
    } msg;
    
-   if ((sock=socket(PF_UNIX, SOCK_STREAM, 0))<0) {
-      if (st) {
+   CONNECT_LOCK();  
+   if (localConnectCount == 0) {
+     if ((sock=socket(PF_UNIX, SOCK_STREAM, 0))<0) {
+       if (st) {
          st->rc=CMPI_RC_ERR_FAILED;
          st->msg=ce->ft->newString(ce,strerror(errno),NULL);
-      }
-      return -1;
-   }
-   
-   if (socketName==NULL) {
-      setupControl(NULL);
-      rc=getControlChars("localSocketPath", &socketName);    
-      sunsetControl();
-      if (rc) {
+       }
+       CONNECT_UNLOCK_RETURN(-1);
+     }
+     
+     if (socketName==NULL) {
+       setupControl(NULL);
+       rc=getControlChars("localSocketPath", &socketName);    
+       sunsetControl();
+       if (rc) {
+	 if (st) {
+	   st->rc=CMPI_RC_ERR_FAILED;
+	   st->msg=ce->ft->newString(ce,"failed to open sfcb local socket",NULL);
+	 }
          fprintf(stderr,"--- Failed to open sfcb local socket (%d)\n",rc);
-         return -2;
-      }
-   }   
-
-   serverAddr.sun_family=AF_UNIX;
-   strcpy(serverAddr.sun_path,socketName);
-   
-   if (connect(sock,(struct sockaddr*)&serverAddr,
-      sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
-      if (st) {
+	 close(sock);
+	 CONNECT_UNLOCK_RETURN(-2);
+       }
+     }   
+     
+     serverAddr.sun_family=AF_UNIX;
+     strcpy(serverAddr.sun_path,socketName);
+     
+     if (connect(sock,(struct sockaddr*)&serverAddr,
+		 sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {
+       if (st) {
          st->rc=CMPI_RC_ERR_FAILED;
          st->msg=ce->ft->newString(ce,strerror(errno),NULL);
-      }
-      return -1;
+       }
+       close(sock);
+       CONNECT_UNLOCK_RETURN(-1);
+     }
+   
+     msg.size=sizeof(msg)-sizeof(msg.size);
+     msg.oper=1;
+     msg.pid=getpid();
+     user=getenv("USER");
+     strncpy(msg.id, (user) ? user : "", sizeof(msg.id)-1);
+     msg.id[sizeof(msg.id)-1]=0;
+     
+     l=write(sock, &msg, sizeof(msg)); 
+     
+     rc = spRecvCtlResult(&sock, &sfcbSocket,&idData, &l);
+     if (rc < 0 || sfcbSocket <= 0) {
+       if (st) {
+         st->rc=CMPI_RC_ERR_FAILED;
+         st->msg=ce->ft->newString(ce,"failed to get socket fd for local connect",NULL);
+       }
+       fprintf(stderr,"--- Failed to get socket fd for local connect (%d, %d, %lu)\n", rc, sfcbSocket, l);
+       close(sock);
+       CONNECT_UNLOCK_RETURN(-3);
+     }
+     sfcbSockets.send=sfcbSocket;
+
+     close(sock);
    }
-   
-   msg.size=sizeof(msg)-sizeof(msg.size);
-   msg.oper=1;
-   msg.pid=getpid();
-   user=getenv("USER");
-   strncpy(msg.id, (user) ? user : "", sizeof(msg.id)-1);
-   msg.id[sizeof(msg.id)-1]=0;
-   
-   l=write(sock, &msg, sizeof(msg)); 
-   
-   rc = spRecvCtlResult(&sock, &sfcbSocket,&idData, &l);
-  
-   sfcbSockets.send=sfcbSocket;
+   localConnectCount += 1;
+   CONNECT_UNLOCK();
    localMode=0;
-   close(sock);
    
-   return (rc < 0) ? rc : sfcbSocket;
+   return (rc == 0) ? rc : sfcbSocket;
 }
 
 static void* release(ClientEnv* ce)
 {
    void *lib=ce->hdl;
-   close(sfcbSockets.send);
+   CONNECT_LOCK();
+   if (localConnectCount > 0) localConnectCount -= 1;
+   if (localConnectCount == 0) {
+     close(sfcbSockets.send);
+     sfcbSockets.send = -1;
+   }
+   CONNECT_UNLOCK();
    free(ce);
    uninitGarbageCollector();
    return lib;

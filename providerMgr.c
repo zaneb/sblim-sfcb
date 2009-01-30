@@ -907,7 +907,7 @@ static void setInuseSem(void *id)
 int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
 {
    unsigned long int l;
-   int rc, i, x;
+   int rc=0, i, x;
    char *buf;
    ProvAddr *as;
    ComSockets sockets;
@@ -935,8 +935,16 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
    
    _SFCB_TRACE(1,("--- Sending mgr request - to %d from %d", sfcbSockets.send,
                 sockets.send)); 
-   spSendReq(&sfcbSockets.send, &sockets.send, buf, l, localMode);   
+   rc = spSendReq(&sfcbSockets.send, &sockets.send, buf, l, localMode);   
    free(buf);
+
+   if (rc < 0) {
+      mlogf(M_ERROR,M_SHOW,"--- spSendReq/spSendMsg failed to send on %d (%d)\n", sfcbSockets.send, rc);
+      ctx->rc = rc;
+      close (sockets.send);
+      close (sockets.receive);
+      return rc;
+   }
 
    _SFCB_TRACE(1, ("--- Sending mgr request done"));
    

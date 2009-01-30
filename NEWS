@@ -53,6 +53,7 @@ Bugs fixed:
 - 2521173 DST being handled incorrectly
 - 2531609 CIM_ListenerDestinationCIMXML not enforcing "Required"
 - 2390533 Memory leak in httpAdapter.c
+- 2550426 Concurrency issue with LocalConnect
 
 Changes in 1.3.2
 ================

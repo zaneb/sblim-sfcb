@@ -392,7 +392,8 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
 		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
 		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre 
-		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile test/wbemcli/Makefile test/unittest/Makefile])
+		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile 
+		 test/wbemcli/Makefile test/unittest/Makefile test/finaltest/Makefile])
 AC_OUTPUT
 
 echo =================================================================

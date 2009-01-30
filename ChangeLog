@@ -1,3 +1,9 @@
+2009-01-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* configure.ac test/Makefile.am test/finaltest/Makefile.am
+	  test/finaltest/finalcheck.sh:
+	Added confirmation of all test success
+
 2009-01-26  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

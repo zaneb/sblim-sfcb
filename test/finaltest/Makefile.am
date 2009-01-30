@@ -10,10 +10,5 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-# Make this base dir available to testcases
-TESTS_ENVIRONMENT = SFCBTDIR=`pwd`
-
-SUBDIRS = . commands xmltest $(WCTEST_DIR) $(UNITTEST_DIR) finaltest
-
-TESTS = running.sh 
+TESTS = finalcheck.sh 
 

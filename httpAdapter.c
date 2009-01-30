@@ -276,11 +276,13 @@ static void handleSigUsr1(int sig)
 
 static void freeBuffer(Buffer * b)
 {
-   Buffer emptyBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
+   Buffer emptyBuf = { NULL, NULL, 0, 0, 0, 0, 0 , NULL, NULL, NULL, NULL, NULL, NULL, NULL};
    if (b->data)
       free(b->data);
    if (b->content)
       free(b->content);
+   if (b->principal)
+      free(b->principal);
    *b=emptyBuf;   
 }
 
@@ -891,6 +893,7 @@ static int doHttpRequest(CommHndl conn_fd)
      }
      _SFCB_TRACE(1, ("--- exiting after missing content length."));      
      commClose(conn_fd);
+     freeBuffer(&inBuf);
      exit(1);
    }
 

@@ -52,6 +52,7 @@ Bugs fixed:
 - 2140807 Indication subscriptions don't persist across sfcbrepos
 - 2521173 DST being handled incorrectly
 - 2531609 CIM_ListenerDestinationCIMXML not enforcing "Required"
+- 2390533 Memory leak in httpAdapter.c
 
 Changes in 1.3.2
 ================

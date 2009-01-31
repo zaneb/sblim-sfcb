@@ -3,6 +3,9 @@
 	* cimcClientSfcbLocal.c, providerMgr.c:
 	[ 2550426 ] Concurrency issue with LocalConnect
 
+	* msgqueue.c:
+	[ 2550880 ] sfcb sometimes hangs when processing large messages
+	
 2009-01-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c

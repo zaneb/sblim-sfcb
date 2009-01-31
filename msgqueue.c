@@ -215,7 +215,7 @@ static int spGetMsg(int *s, int *from, void *data, unsigned length, MqgStat* mqg
             _SFCB_TRACE(1, (" Receive interrupted %d",currentProc));
             if (mqg) {
                mqg->teintr=1;
-               return 0;
+               return r;
             }
             continue;
          }
@@ -264,6 +264,7 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    MqgStat imqg;
    int fromfd;
    long int maxlen;
+   int partRecvd = 0, totalRecvd = 0;
 
    _SFCB_ENTER(TRACE_MSGQUEUE, "spRcvMsg");
    _SFCB_TRACE(1, ("--- Receiving from %d", *s));
@@ -303,9 +304,11 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
       if(*data == NULL) {
         return spHandleError(s, em);
       }
+      partRecvd = totalRecvd = 0;
       do {
-         if ((spGetMsg(s, NULL, *data, *length, mqg)) == -1)
+         if ((partRecvd = spGetMsg(s, NULL, *data + totalRecvd, *length - totalRecvd, mqg)) == -1)
             return spHandleError(s, em);
+         totalRecvd += partRecvd;
          if (mqg->teintr) mqg->eintr=1;    
       } while (mqg->teintr) ;       
       _SFCB_TRACE(1, ("--- Received data segment %d bytes", *length));
@@ -319,9 +322,11 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    if (spMsg.xtra == MSG_X_EXTENDED_CTL_MSG) {
       *data = malloc(256);
       *length = 256;
+      partRecvd = totalRecvd = 0;
       do {
-         if ((spGetMsg(s, NULL, *data, *length, mqg)) == -1)
+         if ((partRecvd = spGetMsg(s, NULL, *data + totalRecvd, *length - totalRecvd, mqg)) == -1)
             return spHandleError(s, em);
+         totalRecvd += partRecvd;
          if (mqg->teintr) mqg->eintr=1;    
       } while (mqg->teintr) ;       
    }

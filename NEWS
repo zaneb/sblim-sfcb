@@ -55,6 +55,7 @@ Bugs fixed:
 - 2390533 Memory leak in httpAdapter.c
 - 2550426 Concurrency issue with LocalConnect
 - 2550880 sfcb sometimes hangs when processing large messages
+- 2192062 providerMgr doesn't check forkProvider() return values
 
 Changes in 1.3.2
 ================

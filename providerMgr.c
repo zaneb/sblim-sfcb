@@ -625,6 +625,14 @@ static void assocProviderList(int *requestor, OperationHdr * req)
          MSG_X_PROVIDER, count--, getProvIds(defaultProvInfoPtr).ids,
                                                        req->options);
       }
+     else 
+       {
+	 /* Oops, even creation of the default provider failed */
+	 mlogf(M_ERROR,M_SHOW,"--- forkProvider failed for defaultProvider\n");
+	 /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+	  NULL, req->options); */
+	 _SFCB_ABORT();
+       }     
    }
    _SFCB_EXIT();
 }
@@ -688,8 +696,17 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
 
 static void classProvider(int *requestor, OperationHdr * req)
 {
+  int rc;
    _SFCB_ENTER(TRACE_PROVIDERMGR, "classProvider");
-   forkProvider(classProvInfoPtr, req, NULL);
+   rc = forkProvider(classProvInfoPtr, req, NULL);
+   if (rc != CMPI_RC_OK)
+    {
+      mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in classProvider\n");
+      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+               NULL, req->options); */
+      _SFCB_ABORT();
+    }
+  
    _SFCB_TRACE(1,("--- result %d-%lu to with %d-%lu",
       *requestor,getInode(*requestor),
       classProvInfoPtr->providerSockets.send,
@@ -702,8 +719,16 @@ static void classProvider(int *requestor, OperationHdr * req)
 
 static void qualiProvider(int *requestor, OperationHdr * req)
 {
+   int rc;
    _SFCB_ENTER(TRACE_PROVIDERMGR, "qualiProvider");
-   forkProvider(qualiProvInfoPtr, req, NULL);
+   rc = forkProvider(qualiProvInfoPtr, req, NULL);
+   if (rc != CMPI_RC_OK)
+    {
+      mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in qualiProvider\n");
+      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+               NULL, req->options); */
+      _SFCB_ABORT();
+    }
    _SFCB_TRACE(1,("--- result %d-%lu to with %d-%lu",   
       *requestor,getInode(*requestor),
       qualiProvInfoPtr->providerSockets.send,
@@ -725,6 +750,7 @@ static void methProvider(int *requestor, OperationHdr * req)
    if (strcmp(className, "$ClassProvider$") == 0)
       classProvider(requestor, req);
    else if ((info = getMethodProvider(className,nameSpace)) != NULL) {
+      rc = CMPI_RC_OK;
       if (info->type!=FORCE_PROVIDER_NOTFOUND &&
           (rc = forkProvider(info, req, NULL)) == CMPI_RC_OK) {
          _SFCB_TRACE(1,("--- responding with  %s %p",info->providerName,info));
@@ -732,7 +758,12 @@ static void methProvider(int *requestor, OperationHdr * req)
             0, getProvIds(info).ids, req->options);
       }                   
       else {
-         spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND,
+	if (rc != CMPI_RC_OK)
+	  {
+	    mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in methProvider\n");
+	  }
+	
+	  spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND,
             0, NULL, req->options);
       }
    }
@@ -741,6 +772,7 @@ static void methProvider(int *requestor, OperationHdr * req)
          NULL, req->options);
    _SFCB_EXIT();
 }
+
 
 static int _methProvider(BinRequestContext * ctx, OperationHdr * req)
 {
@@ -752,14 +784,28 @@ static int _methProvider(BinRequestContext * ctx, OperationHdr * req)
 
    ctx->chunkedMode=ctx->xmlAs=0;
    if (strcmp(className, "$ClassProvider$") == 0) {
-      forkProvider(classProvInfoPtr, req, NULL);
+      rc = forkProvider(classProvInfoPtr, req, NULL);
+      if (rc != CMPI_RC_OK)
+        {
+	  mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in _methProvider (%s)\n", className);
+      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+               NULL, req->options); */
+	  _SFCB_ABORT();
+        }
       ctx->provA.ids = getProvIds(classProvInfoPtr);
       ctx->provA.socket = classProvInfoPtr->providerSockets.send;
       ctx->pAs=NULL;
       _SFCB_RETURN(MSG_X_PROVIDER); 
    }
    else if (strcmp(className, "$InterOpProvider$") == 0) {
-      forkProvider(interOpProvInfoPtr, req, NULL);
+      rc = forkProvider(interOpProvInfoPtr, req, NULL);
+      if (rc != CMPI_RC_OK)
+        {
+	  mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in _methProvider (%s)\n", className);
+      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+               NULL, req->options); */
+	  _SFCB_ABORT();
+        }
       ctx->provA.ids = getProvIds(interOpProvInfoPtr);
       ctx->provA.socket = interOpProvInfoPtr->providerSockets.send;
       ctx->pAs=NULL;
@@ -772,10 +818,14 @@ static int _methProvider(BinRequestContext * ctx, OperationHdr * req)
          ctx->pAs=NULL; 
          _SFCB_RETURN(MSG_X_PROVIDER);
       }
-      else {
+      else { 
+	 mlogf(M_ERROR,M_SHOW,"--- _methProvider NOT FOUND\n");
+      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+               NULL, req->options); */
          _SFCB_RETURN(MSG_X_PROVIDER_NOT_FOUND);
       }
    }
+   mlogf(M_ERROR,M_SHOW,"--- _methProvider INVALID\n");
    _SFCB_RETURN(MSG_X_INVALID_CLASS);
 }
 
@@ -831,7 +881,7 @@ void processProviderMgrRequests()
    _SFCB_ENTER(TRACE_PROVIDERMGR, "processProviderMgrRequests");
 
    startUpProvider("root/interop","$ClassProvider$");
-   
+
 #ifdef SFCB_INCL_INDICATION_SUPPORT
    if (interOpProvInfoPtr!=forceNoProvInfoPtr) {
      sleep(2);
@@ -1314,8 +1364,15 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    req.nameSpace = setCharsMsgSegment((char *) ns);
    req.className = setCharsMsgSegment((char *) cn);
 
-   forkProvider(classProvInfoPtr, &req, NULL);
-   
+   irc = forkProvider(classProvInfoPtr, &req, NULL);
+   if (irc != CMPI_RC_OK) 
+    {
+      mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in _getConstClass(%s:%s)\n", ns, cn);
+      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+               NULL, req->options); */
+      _SFCB_ABORT();
+    }
+  
    memset(&binCtx,0,sizeof(BinRequestContext));
    binCtx.oHdr = &req;
    binCtx.bHdr = &sreq.hdr;

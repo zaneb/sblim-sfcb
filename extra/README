@@ -1,0 +1,6 @@
+This directory contains patches that are useful for testing,
+debugging, or development purposes, but do not make sense to be
+included as part of the standard SFCB distribution.
+
+A comment at the head of each file provides a description of the added
+functionality.

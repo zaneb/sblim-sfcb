@@ -155,4 +155,7 @@ extern int idleThreadId;
 extern int terminating;
 
 #endif
+#ifdef UNITTEST
+extern int trace_test();
+#endif
 

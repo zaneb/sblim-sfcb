@@ -12,12 +12,15 @@ MAINTAINERCLEANFILES = Makefile.in
 
 AM_LDFLAGS=-L"$(top_builddir)/.libs"
 
-TESTS = xmlUnescape newCMPIInstance 
+TESTS = xmlUnescape newCMPIInstance EmbeddedTests
 
-check_PROGRAMS = xmlUnescape newCMPIInstance
+check_PROGRAMS = xmlUnescape newCMPIInstance EmbeddedTests
 
 xmlUnescape_SOURCES = xmlUnescape.c
 xmlUnescape_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter
 
 newCMPIInstance_SOURCES = newCMPIInstance.c
 newCMPIInstance_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter
+
+EmbeddedTests_SOURCES = EmbeddedTests.c 
+EmbeddedTests_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter

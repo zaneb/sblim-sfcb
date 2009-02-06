@@ -240,3 +240,36 @@ sigHandler *setSignal(int sn, sigHandler * sh, int flags)
 
    return oldh.sa_handler;
 }
+
+#ifdef UNITTEST
+// Embedded unittest routine
+int trace_test()
+{
+    int fail=0;
+    _sfcb_trace_start(1);
+    if (_sfcb_debug < 1 ) {
+        printf("  _sfcb_trace_start() test failed.\n");
+        fail=1;
+    }
+    _sfcb_trace_stop();
+    if (_sfcb_debug != 0  ) {
+        printf("  _sfcb_trace_stop() test failed.\n");
+        fail=1;
+    }
+    _sfcb_trace_init();
+    if (_SFCB_TRACE_FILE = NULL  ) {
+        printf("  _sfcb_trace_init() test failed.\n");
+        fail=1;
+    }
+    int num=99;
+    char *msg=_sfcb_format_trace("%s %d","Test message",num);
+    if (strcmp(msg,"Test message 99")) {
+        printf("  _sfcb_format_trace() test failed, message=%s.\n",msg);
+        fail=1;
+    }
+    
+    
+    return fail;
+}
+#endif
+

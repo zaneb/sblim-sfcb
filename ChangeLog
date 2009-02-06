@@ -1,5 +1,10 @@
 2009-02-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* test/unittest/Makefile.am, trace.h, trace.c:
+	Initial framework for embedded unittest
+
+2009-02-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* providerMgr.c:
 	[ 2192062 ] providerMgr doesn't check forkProvider() return values
 	(patch from Klaus Kämpf)

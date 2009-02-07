@@ -3,8 +3,9 @@ TARGETDIR=${1:-.}
 HOSTNAME=`uname -n`
 DO_SERVER=yes
 DO_CLIENT=yes
+DIR=`mktemp -d /var/tmp/sfcb.XXXXXX` || exit 1
 
-trap "rm -f /var/tmp/key.pem /var/tmp/cert.pem /var/tmp/ssl.cnf" exit
+trap "rm -rf $DIR" exit
 
 echo "Generating SSL certificates in $TARGETDIR"
 
@@ -27,7 +28,7 @@ then
     exit 0
 fi
 
-cat > /var/tmp/ssl.cnf <<EOF
+cat > $DIR/ssl.cnf <<EOF
 [req]
 distinguished_name=user_dn
 prompt=no
@@ -38,20 +39,20 @@ emailAddress=root@$HOSTNAME
 EOF
 
 openssl req -x509 -days 365 -newkey rsa:2048 \
-   -nodes -config /var/tmp/ssl.cnf   \
-   -keyout /var/tmp/key.pem -out /var/tmp/cert.pem
+   -nodes -config $DIR/ssl.cnf   \
+   -keyout $DIR/key.pem -out $DIR/cert.pem
 
-chmod 700 /var/tmp/*.pem
+chmod 700 $DIR/*.pem
 
 if [ $DO_SERVER = yes ]
 then
-    cp /var/tmp/cert.pem $TARGETDIR/server.pem
-    cp /var/tmp/key.pem $TARGETDIR/file.pem
+    cp $DIR/cert.pem $TARGETDIR/server.pem
+    cp $DIR/key.pem $TARGETDIR/file.pem
     chmod 400 $TARGETDIR/server.pem $TARGETDIR/file.pem
 fi
 
 if [ $DO_CLIENT = yes ]
 then
-    cp /var/tmp/cert.pem $TARGETDIR/client.pem
+    cp $DIR/cert.pem $TARGETDIR/client.pem
     chmod 400 $TARGETDIR/client.pem
 fi

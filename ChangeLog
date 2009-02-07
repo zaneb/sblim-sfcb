@@ -1,9 +1,16 @@
-2009-02-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2009-02-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* test/unittest/Makefile.am, trace.h, trace.c:
+	* genSslCert.sh:
+	[ 2561165 ] The genSslCert.sh SSL certificate setup has tempfile races. 
+	(patch from Klaus Kämpf)
+
+2009-02-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/unittest/Makefile.am, test/unittest/EmbeddedTests.c,
+	  trace.h, trace.c:
 	Initial framework for embedded unittest
 
-2009-02-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2009-02-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerMgr.c:
 	[ 2192062 ] providerMgr doesn't check forkProvider() return values

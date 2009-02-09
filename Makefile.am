@@ -46,10 +46,15 @@ AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfdir)\" \
 	-I$(srcdir)/sfcUtil \
 	@SFCB_CPPFLAGS@ \
         @SFCB_CMPI_PLATFORM@ 
-AM_CFLAGS=@SFCB_CFLAGS@
 AM_LDFLAGS=@SFCB_LDFLAGS@
 
 SUBDIRS=. $(MOFC_DIR) test
+
+if GCOV
+AM_CFLAGS=@SFCB_CFLAGS@ -ftest-coverage -fprofile-arcs
+else
+AM_CFLAGS=@SFCB_CFLAGS@
+endif
 
 if INDICATIONS
 INDICATION_LIBS = libsfcIndCIMXMLHandler.la

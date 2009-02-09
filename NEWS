@@ -7,6 +7,7 @@ New features:
 - 2192073 Add thread information to trace output
 - 2226259 Make UDS Authentication optional
 - 2412189 More flexible access control with unix socket connections
+- 2581295 Add GNU code coverage tool support for SFCB.
 
 Bugs fixed:
 

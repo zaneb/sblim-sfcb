@@ -31,6 +31,10 @@ AC_CONFIG_SRCDIR([providerDrv.c])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
 
+AC_ARG_ENABLE(gcov,
+	[AC_HELP_STRING([--enable-gcov],
+		[enable gcov for code coverage analysis.])])
+
 AC_ARG_ENABLE(debug,
 	[AC_HELP_STRING([--disable-debug],
 		[disable debug mode for SFCB.])],
@@ -153,6 +157,10 @@ AC_SUBST(CIMSCHEMA_SUBDIRS)
 
 AC_DISABLE_STATIC
 
+if test "$enable_gcov" == "yes"; then
+   SFCB_CPPFLAGS="-D SFCB_GCOV $SFCB_CPPFLAGS"
+fi
+
 if test "$enable_debug" == "yes"; then
    SFCB_CPPFLAGS="-D SFCB_DEBUG $SFCB_CPPFLAGS"
 fi
@@ -237,7 +245,7 @@ case $host_os in
 		;;
      linux*)	SFCB_CMPI_PLATFORM="-D CMPI_PLATFORM_LINUX_GENERIC_GNU"
 		SFCB_CMPI_OS="-D CMPI_OS_LINUX"
-		SFCB_CFLAGS="-Wall -fno-strict-aliasing -fsigned-char $SFCB_CFLAGS"
+                SFCB_CFLAGS="-Wall -fno-strict-aliasing -fsigned-char $SFCB_CFLAGS"
 		;;
      hpux*)	SFCB_CMPI_PLATFORM="-D CMPI_OS_HPUX"
 		case $host_arch in
@@ -286,6 +294,11 @@ else
 fi
 
 AC_SUBST(LOAD_INDICATION_PROVIDER)
+
+if test "$enable_gcov" = "yes"; then 
+   AC_CHECK_LIB(gcc,main)
+   AC_CHECK_LIB(gcov,main)
+fi
 
 if test "$enable_ssl" = "yes"; then
    AC_CHECK_LIB(ssl,main)
@@ -382,6 +395,7 @@ AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"])
 AM_CONDITIONAL(PAM,[test "$enable_pam" == "yes"]) 
 AM_CONDITIONAL(DOCS,[test "$enable_docs" == "yes"])
 AM_CONDITIONAL(IPV6,[test "$enable_ipv6" == "yes"])
+AM_CONDITIONAL(GCOV,[test "$enable_gcov" == "yes"])
 AM_CONDITIONAL(LOCAL_CONNECT_NO_INDICATION,[test "$enable_local_connect_only" == "yes" -a "$enable_indications" == "no"])
 AM_CONDITIONAL(LOCAL_CONNECT_ONLY,[test "$enable_local_connect_only" == "yes"])
 
@@ -398,21 +412,23 @@ AC_OUTPUT
 
 echo =================================================================
 echo Configuration Features:
-echo -e "ssl"\\t\\t\\t\\t"${enable_ssl:-no}"
-echo -e "slp"\\t\\t\\t\\t"${enable_slp:-no}"
-echo -e "slp hostname lib"\\t\\t"${enable_slp_hostname_lib:-no}"
-echo -e "jdbc"\\t\\t\\t\\t"${enable_jdbc:-no}"
-echo -e "IPv6"\\t\\t\\t\\t"${enable_ipv6:-no}"
-echo -e "debug"\\t\\t\\t\\t"${enable_debug:-no}"
-echo -e "indications"\\t\\t\\t"${enable_indications}"
-echo -e "qualifierrep"\\t\\t\\t"${enable_qualifierrep:-no}"
-echo -e "Documentation"\\t\\t\\t"${enable_docs:-no}"
-echo -e "PAM authentication"\\t\\t"${enable_pam:-no}"
-echo -e "local connect only "\\t\\t"${enable_local_connect_only}"
-echo -e "default instance properties"\\t"${enable_default_properties}"
-echo -e "unittest"\\t\\t\\t"${enable_unittest:-no}"
-echo -e "wctest"\\t\\t\\t\\t"${enable_wctest:-no}"
-echo -e "uds"\\t\\t\\t\\t"${enable_uds:-no}"
+echo -e \\t"ssl"\\t\\t\\t\\t"${enable_ssl:-no}"
+echo -e \\t"slp"\\t\\t\\t\\t"${enable_slp:-no}"
+echo -e \\t"slp hostname lib"\\t\\t"${enable_slp_hostname_lib:-no}"
+echo -e \\t"jdbc"\\t\\t\\t\\t"${enable_jdbc:-no}"
+echo -e \\t"IPv6"\\t\\t\\t\\t"${enable_ipv6:-no}"
+echo -e \\t"indications"\\t\\t\\t"${enable_indications}"
+echo -e \\t"qualifierrep"\\t\\t\\t"${enable_qualifierrep:-no}"
+echo -e \\t"Documentation"\\t\\t\\t"${enable_docs:-no}"
+echo -e \\t"PAM authentication"\\t\\t"${enable_pam:-no}"
+echo -e \\t"local connect only "\\t\\t"${enable_local_connect_only}"
+echo -e \\t"default instance properties"\\t"${enable_default_properties}"
+echo -e \\t"uds"\\t\\t\\t\\t"${enable_uds:-no}"
+echo Test Features:
+echo -e \\t"unittest"\\t\\t\\t"${enable_unittest:-no}"
+echo -e \\t"wctest"\\t\\t\\t\\t"${enable_wctest:-no}"
+echo -e \\t"debug"\\t\\t\\t\\t"${enable_debug:-no}"
+echo -e \\t"gcov"\\t\\t\\t\\t"${enable_gcov:-no}"
 echo =================================================================
 echo
 echo "sfcb configuration complete.  you may now run 'make'"

@@ -1,3 +1,9 @@
+2009-02-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am, configure.ac:
+	[ 2581295 ] Add GNU code coverage tool support for SFCB.
+	(patch from Surendra Kodali)
+
 2009-02-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* genSslCert.sh:

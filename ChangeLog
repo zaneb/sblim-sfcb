@@ -1,3 +1,8 @@
+2009-02-11 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am:
+	[ 2583170 ] Add test rule including gcov 
+
 2009-02-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am, configure.ac:

@@ -269,9 +269,29 @@ static void handleSigChld(int sig)
    errno = oerrno;
 }
 
+static void stopProc(void *p)
+{
+//   printf("--- %s draining %d\n",processName,running);
+   for (;;) {
+      if (running==0) {
+         mlogf(M_INFO,M_SHOW,"--- %s terminating %d\n",processName,getpid());
+         exit(0);
+      }   
+      sleep(1);
+   }   
+}
+
 static void handleSigUsr1(int sig)
 {
-   stopAccepting=1;
+   pthread_t t;
+   pthread_attr_t tattr;
+
+   if (stopAccepting == 0) {
+     stopAccepting=1;
+     pthread_attr_init(&tattr);
+     pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);      
+     pthread_create(&t, &tattr, (void *(*)(void *))stopProc,NULL);
+   }
 }
 
 static void freeBuffer(Buffer * b)
@@ -1752,9 +1772,9 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
       }
 #endif
 	  rc = select(maxfdp1, &httpfds, NULL, NULL, NULL); 
+	  if (stopAccepting) break;
       if (rc < 0) {
          if (errno == EINTR || errno == EAGAIN) {
-            if (stopAccepting) break;
             continue;
          }
       }
@@ -1762,7 +1782,6 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 		  sz = sin_len; 
 		  if ((connFd = accept(listenFd, (__SOCKADDR_ARG) &sin, &sz))<0) {
 			 if (errno == EINTR || errno == EAGAIN) {
-				if (stopAccepting) break;
 				continue;
 			 }   
 			 emsg=strerror(errno);
@@ -1779,7 +1798,6 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 		  sz = sun_len; 
 		  if ((connFd = accept(udsListenFd, (__SOCKADDR_ARG) &sun, &sz))<0) {
 			 if (errno == EINTR || errno == EAGAIN) {
-				if (stopAccepting) break;
 				continue;
 			 }   
 			 emsg=strerror(errno);
@@ -1796,15 +1814,9 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
    
    remProcCtl();   
    
-//   printf("--- %s draining %d\n",processName,running);
-   for (;;) {
-      if (running==0) {
-         mlogf(M_INFO,M_SHOW,"--- %s terminating %d\n",processName,getpid());
-         exit(0);
-      }   
-      sleep(1);
-   }   
-
+   while (1) {
+     sleep(5);
+   }
 }
 
 #if defined USE_SSL

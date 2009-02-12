@@ -707,22 +707,15 @@ void localConnectServer()
    do {
      // sfcbSockets.send;
       cl=sizeof(clientAddr);
-      if ((nsocket=accept(ssocket,(struct sockaddr*)serverAddr,&cl))<0) {
-         perror("accept error");
-
-         /* Being interrupted isn't necessarily bad; try once more */
-         if (errno == EINTR) {
-           if ((nsocket=accept(ssocket,(struct sockaddr*)serverAddr,&cl))<0) {
-             perror("accept error (2)");
-             return;
-           }
-         }
-         /* any other error, just return (should probably be more graceful) */
-         else {
-           return;
-         }
+      do {
+        nsocket = accept(ssocket,(struct sockaddr*)serverAddr,&cl);
+      } while((nsocket < 0) &&
+              (errno == EINTR));
+      if(nsocket < 0) {
+        mlogf(M_INFO, M_QUIET, "--- localConnectServer: error accepting connection: %s", strerror(errno));
+        return;
       }
-      
+
       read(nsocket, &msg.size, sizeof(msg.size));
       read(nsocket, &msg.oper, msg.size);
       int maxMsgSize = sizeof(struct _msg) - offsetof(struct _msg, oper);

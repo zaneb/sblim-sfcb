@@ -60,6 +60,7 @@ Bugs fixed:
 - 2192062 providerMgr doesn't check forkProvider() return values
 - 2561165 The genSslCert.sh SSL certificate setup has tempfile races. 
 - 2551127 httpAdapter may not terminate
+- 2590121 localConnectServer only retries once after interrupt
 
 Changes in 1.3.2
 ================

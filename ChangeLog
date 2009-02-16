@@ -1,29 +1,30 @@
 2009-02-12  Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* msgqueue.c:
-	[ 2590121 ] localConnectServer only retries once after interrupt
+	Fixed [ 2590121 ] localConnectServer only retries once after interrupt
 
 2009-02-11  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:
-	[ 2551127 ] httpAdapter may not terminate
+	Fixed [ 2551127 ] httpAdapter may not terminate
 	(patch by Viktor Mihajlovski)
 
 2009-02-11 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am:
-	[ 2583170 ] Add test rule including gcov 
+	Fixed [ 2583170 ] Add test rule including gcov 
 
 2009-02-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am, configure.ac:
-	[ 2581295 ] Add GNU code coverage tool support for SFCB.
+	Fixed [ 2581295 ] Add GNU code coverage tool support for SFCB.
 	(patch from Surendra Kodali)
 
 2009-02-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* genSslCert.sh:
-	[ 2561165 ] The genSslCert.sh SSL certificate setup has tempfile races. 
+	Fixed [ 2561165 ] The genSslCert.sh SSL certificate setup has tempfile 
+	races. 
 	(patch from Klaus Kämpf)
 
 2009-02-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
@@ -35,21 +36,21 @@
 2009-02-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerMgr.c:
-	[ 2192062 ] providerMgr doesn't check forkProvider() return values
+	Fixed [ 2192062 ] providerMgr doesn't check forkProvider() return values
 	(patch from Klaus Kämpf)
 
 2009-01-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c, providerMgr.c:
-	[ 2550426 ] Concurrency issue with LocalConnect
+	Fixed [ 2550426 ] Concurrency issue with LocalConnect
 
 	* msgqueue.c:
-	[ 2550880 ] sfcb sometimes hangs when processing large messages
+	Fixed [ 2550880 ] sfcb sometimes hangs when processing large messages
 	
 2009-01-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c:
-	[ 2390533 ] Memory leak in httpAdapter.c
+	Fixed [ 2390533 ] Memory leak in httpAdapter.c
 	(patch from John Powell)
 
 2009-01-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
@@ -61,65 +62,68 @@
 2009-01-26  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:
-	[ 2531609 ] CIM_ListenerDestinationCIMXML not enforcing "Required"
+	Fixed [ 2531609 ] CIM_ListenerDestinationCIMXML not enforcing "Required"
 
 2009-01-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* datetime.c
-	[ 2521173 ] DST being handled incorrectly
+	Fixed [ 2521173 ] DST being handled incorrectly
 
 2009-01-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* Makefile.am fileRepository.c fileRepository.h objectImpl.c
-	  objectImpl.h sfcbrepos.sh.in sfcbinst2mof.c(new file):
-	[ 2140807 ] Indication subscriptions don't persist across sfcbrepos
+	* Makefile.am, fileRepository.c, fileRepository.h, objectImpl.c,
+	  objectImpl.h, sfcbrepos.sh.in, sfcbinst2mof.c(new file):
+	Fixed [ 2140807 ] Indication subscriptions don't persist across 
+	sfcbrepos
 	(patch by Norm Paxton)
 
 2009-01-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c:
-	[ 2494774 ] getControlChars/getControlNum calls sometimes segfault
+	Fixed [ 2494774 ] getControlChars/getControlNum calls sometimes segfault
 
 2008-12-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* control.c msgqueue.c sfcb.cfg.pre.in:
-	[ 2407344 ] Message size should be checked for a reasonable value. 
+	* control.c, msgqueue.c, sfcb.cfg.pre.in:
+	Fixed [ 2407344 ] Message size should be checked for a reasonable value. 
 
 2008-12-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* httpAdapter.c pam/sfcb: 
-	[ 2412189 ] More flexible access control with unix socket connections
+	* httpAdapter.c, pam/sfcb: 
+	Fixed [ 2412189 ] More flexible access control with unix socket 
+	connections
 	(patch by J. Bart Whitely)
 
 2008-12-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* cimXmlRequest.c cimslpCMPI.c classProvider.c classSchema2c.c
-	  providerDrv.c sfcbdump.c sfcbdumpP32onI32.c:
-	[ 2390515 ] Fix multiple resource leaks in SFCB detected by Coverity
+	* cimXmlRequest.c, cimslpCMPI.c, classProvider.c, classSchema2c.c,
+	  providerDrv.c, sfcbdump.c, sfcbdumpP32onI32.c:
+	Fixed [ 2390515 ] Fix multiple resource leaks in SFCB detected by 
+	Coverity
 	(patch by John Powell)
 
 2008-12-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* fileRepository.c:
-	[ 2316307 ] SFCB segfaults on missing instance file
+	Fixed [ 2316307 ] SFCB segfaults on missing instance file
 	(based on patch by Kristi Schettler)
 	
 2008-12-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* support.h:
-	[ 2433594 ] sfcb causing 'unaligned access' errors on IA64
+	Fixed [ 2433594 ] sfcb causing 'unaligned access' errors on IA64
 	(patch by Klaus Kampf)
 
 2008-12-12 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimslpSLP.c 
-	[ 2390523 ] buffer overrun in cimslpSLP.c
+	Fixed [ 2390523 ] buffer overrun in cimslpSLP.c
 	(patch by John Powell)
 
 2008-12-08 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerDrv.c
-	[ 2390100 ] mlogf called with unsafe arguments
+	Fixed [ 2390100 ] mlogf called with unsafe arguments
 	(patch by J. Bart Whitely)
 
 2008-12-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -137,54 +141,55 @@
 2008-11-21 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* instance.c:
-		[ 2021888 ] Bug in creating CIM instance
-			Patch from Luong Nguyen-Duy
+	Fixed [ 2021888 ] Bug in creating CIM instance
+	(patch from Luong Nguyen-Duy)
 
 2008-11-18 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* cimXmlParser.c cimcClientSfcbLocal.c configure.ac test/Makefile.am 
-		test/wbemcli/Makefile.am test/wbmecli/check_errors.pl:
-		Fixed [ 2042150 ] Mismatched CMPI error code and error message
-			(patch from Tyrel Datwyler)
-		Added optional wbemcli test directory
+	* cimXmlParser.c, cimcClientSfcbLocal.c, configure.ac, test/Makefile.am, 
+	test/wbemcli/Makefile.am, test/wbmecli/check_errors.pl:
+	Fixed [ 2042150 ] Mismatched CMPI error code and error message
+	(patch from Tyrel Datwyler)
+
+	Added optional wbemcli test directory
 
 2008-11-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* cimXmlParser.c test/unittest/xmlUnescape.c 
-		test/unittest/Makefile.am:
-		Fixed [ 2169807 ] XML parser does not handle all character references
-			(patch from Norm Paxton)
+	* cimXmlParser.c, test/unittest/xmlUnescape.c, 
+	test/unittest/Makefile.am:
+	Fixed [ 2169807 ] XML parser does not handle all character references
+	(patch from Norm Paxton)
 
 2008-11-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* Makefile.am configure.ac:
-		Reverted [ 2192030 ] adapt to autoconf 2.63, automake 1.10
-			Patch causes problems with older versions
+	* Makefile.am, configure.ac:
+	Reverted [ 2192030 ] adapt to autoconf 2.63, automake 1.10
+	Patch causes problems with older versions
 
 2008-11-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c:
-		Fixed [ 2193250 ] No data in http request causes segfault.
-			Don't generate error entries.
+	Fixed [ 2193250 ] No data in http request causes segfault.
+	Don't generate error entries.
 
 2008-11-07  Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* cimcClientSfcbLocal.c httpAdapter.c httpComm.c
-		objectImplSwapI32toP32.c queryParser.y selectcond.c
-		selectcond.c sfcbdumpP32onI32.c:
-		Fixed [ 2168840 ] Fix various compiler warnings.
-		(patch from J. Bart Whitely)
+	* cimcClientSfcbLocal.c, httpAdapter.c, httpComm.c,
+	objectImplSwapI32toP32.c, queryParser.y, selectcond.c,selectcond.c,
+	sfcbdumpP32onI32.c:
+	Fixed [ 2168840 ] Fix various compiler warnings.
+	(patch from J. Bart Whitely)
 
 2008-11-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* configure.ac httpAdapter.c sfcBroker.c:
-		Fixed [ 2226259 ] Make UDS Authentication optional
+	* configure.ac, httpAdapter.c, sfcBroker.c:
+	Fixed [ 2226259 ] Make UDS Authentication optional
 
 2008-11-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerMgr.c:
-		Fixed [ 2192053 ] _methProvider return value not checked propery
-			(patch from Klaus Kämpf)
+	Fixed [ 2192053 ] _methProvider return value not checked propery
+	(patch from Klaus Kämpf)
 
 2008-11-03 Sean Swehla  <smswehla@linux.vnet.ibm.com>
 
@@ -227,67 +232,68 @@
 	
 2008-10-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* Makefile.am configure.ac
-		Fixed [ 2192030 ] adapt to autoconf 2.63, automake 1.10
-			(patch from Klaus Kämpf)
+	* Makefile.am, configure.ac
+	Fixed [ 2192030 ] adapt to autoconf 2.63, automake 1.10
+	(patch from Klaus Kämpf)
 
 2008-10-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* providerMgr.c providerDrv.c
-		Fixed [ 2192049 ] Potential memory leak in providerDrv.c 
-			:forkProvider() (patch from Klaus Kämpf)
+	* providerMgr.c, providerDrv.c
+	Fixed [ 2192049 ] Potential memory leak in 
+	providerDrv.c: forkProvider() 
+	(patch from Klaus Kämpf)
 
 2008-10-29 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* sfcBroker.c
-		Fixed [ 2185304 ] SFCB doesn't shut down properly a good 
-		portion of the time. 
+	* sfcBroker.c:
+	Fixed [ 2185304 ] SFCB doesn't shut down properly a good 
+	portion of the time. 
 
 2008-10-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* httpAdapter.c
-		Fixed [ 2193250 ] No data in http request causes segfault.
+	* httpAdapter.c:
+	Fixed [ 2193250 ] No data in http request causes segfault.
 
 2008-10-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* Makefile.am control.c sfcb.cfg.pre.in
-	Fixed [2158091] sfcb modules belong in private dir
+	* Makefile.am, control.c, sfcb.cfg.pre.in":
+	Fixed [ 2158091 ] sfcb modules belong in private dir
 
 2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* httpAdapter.c
+	* httpAdapter.c:
 	Corrected data type for maxLen (See [ 2172888 ])
 
 2008-10-17 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* test/xmltest/xmltest.sh removed test/xmltest/*.OK 
-		added test/xmltest/*.lines
-	Fixed [2175401] xml tests too verbose
+	* test/xmltest/xmltest.sh, test/xmltest/*.OK (removed), 
+	test/xmltest/*.lines (new):
+	Fixed [ 2175401 ] xml tests too verbose
 
 2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* msgqueue.c
+	* msgqueue.c:
 	Fixed [ 2175507 ] sockaddr_un not allocated for localconnect server
 
 2008-10-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* indCIMXMLExport.c
+	* indCIMXMLExport.c:
 	Fixed [ 2175426 ] possible int overflow
 
 2008-10-16 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* control.c, httpAdapter.c
+	* control.c, httpAdapter.c:
 	Fixed [ 2172888 ] http content-length is not constrained
 
 2008-10-16 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* httpAdapter.c mlog.c msgqueue.c providerDrv.c providerMgr.c
-	Fixed [2172023] mlogf call cleanups
+	* httpAdapter.c, mlog.c, msgqueue.c, providerDrv.c, providerMgr.c:
+	Fixed [ 2172023 ] mlogf call cleanups
 
 2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* sqlLexer.l
-	Fixed [2169607] sqlLexer assumes line lengths under MAXBUF
+	* sqlLexer.l:
+	Fixed [ 2169607 ] sqlLexer assumes line lengths under MAXBUF
 
 2008-10-15 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
@@ -301,19 +307,18 @@
 	
 2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* cimslpCMPI.c, httpAdapter.c, providerDrv.c, support.c
-	Fixed [2169532] sprintf doesn't check size of buffer
+	* cimslpCMPI.c, httpAdapter.c, providerDrv.c, support.c:
+	Fixed [ 2169532 ] sprintf doesn't check size of buffer
 
 2008-10-15 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* msgqueue.c
-	Fixed [2169514] spRcvMsg doesn't check malloc return
+	* msgqueue.c:
+	Fixed [ 2169514 ] spRcvMsg doesn't check malloc return
 
 2008-10-14 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* test/Makefile.am configure.ac sfcb/test/unittest/Makefile.am
-	Fixed [2150019] sfcb test suite, added optional unittest 
-		structure.
+	* test/Makefile.am, configure.ac, sfcb/test/unittest/Makefile.am:
+	Fixed [2150019] sfcb test suite, added optional unittest structure.
 
 2008-10-13 Chris Buccella  <buccella@linux.vnet.ibm.com>
 
@@ -323,30 +328,30 @@
 
 2008-10-10 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* mlog.c
-	Fixed [2158198] syslog call incorrect
+	* mlog.c:
+	Fixed [ 2158198 ] syslog call incorrect
 
 2008-10-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* providerDrv.c
-	Fixed [2027392] Bug in Query processing
-		(patch by Luong Nguyen-Duy)
+	* providerDrv.c:
+	Fixed [ 2027392 ] Bug in Query processing
+	(patch by Luong Nguyen-Duy)
 
 2008-10-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* indCIMXMLExport.c
+	* indCIMXMLExport.c:
 	Fixed [2028194] Failure in generating indication 
-		(patch by Luong Nguyen-Duy)
+	(patch by Luong Nguyen-Duy)
 
 2008-10-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* Makefile.am configure.ac all files under sfcb/test
-	Fixed [2150019] sfcb test suite
+	* Makefile.am, configure.ac, /test/*
+	Fixed [ 2150019 ] sfcb test suite
 
 2008-10-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* classProviderGz.c
-	Fixed [2101035] classProvider core dumps under slp/CIM client load 
+	* classProviderGz.c:
+	Fixed [ 2101035 ] classProvider core dumps under slp/CIM client load 
 
 2008-10-03 Chris Buccella  <buccella@linux.vnet.ibm.com>
 

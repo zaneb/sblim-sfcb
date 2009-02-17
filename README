@@ -306,12 +306,10 @@ Options:
                 SFCB will only support local connection. Http server will not 
                 be built. Default=no
 
-        --enable-unittest
-                Enables the Unit Test portion of the SFCB testsuite.
-                Default=no
-
-        --enable-wctest
-                Enables the wbemcli enabled tests in the SFCB testsuite.
+        --enable-tests[=TESTS]
+                Enables the test suite with the listed tests. If no tests are
+                listed, all tests are enabled.
+                Valid tests are "commands,unit,xml,wbemcli,gcov"
                 Default=no
 
         --enable-uds
@@ -319,9 +317,6 @@ Options:
                 Default=no
                 This option may require the GNU_SOURCE compiler flag if
                 building under glibc 2.8+. (CFLAGS=-D_GNU_SOURCE ./configure)
-
-        --enable-gcov
-                Enables Gcov code coverage measurements.
 
 
 9. Downloading the CIM Schema

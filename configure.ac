@@ -31,10 +31,6 @@ AC_CONFIG_SRCDIR([providerDrv.c])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
 
-AC_ARG_ENABLE(gcov,
-	[AC_HELP_STRING([--enable-gcov],
-		[enable gcov for code coverage analysis.])])
-
 AC_ARG_ENABLE(debug,
 	[AC_HELP_STRING([--disable-debug],
 		[disable debug mode for SFCB.])],
@@ -109,13 +105,9 @@ AC_ARG_ENABLE(ipv6,
 	[AC_HELP_STRING([--enable-ipv6],
 		[include ipv6 support for SFCB.])])
 
-AC_ARG_ENABLE(unittest,
-	[AC_HELP_STRING([--enable-unittest],
-		[include unit tests.])])
-
-AC_ARG_ENABLE(wctest,
-	[AC_HELP_STRING([--enable-wctest],
-		[include wbemcli based tests.])])
+AC_ARG_ENABLE(tests,
+	[AC_HELP_STRING([--enable-tests(=TESTS)],
+		[Enable listed tests. If none are listed, all are enabled.])])
 
 AC_ARG_ENABLE(uds,
 	[AC_HELP_STRING([--enable-uds],
@@ -157,10 +149,6 @@ AC_SUBST(CIMSCHEMA_SUBDIRS)
 
 AC_DISABLE_STATIC
 
-if test "$enable_gcov" == "yes"; then
-   SFCB_CPPFLAGS="-D SFCB_GCOV $SFCB_CPPFLAGS"
-fi
-
 if test "$enable_debug" == "yes"; then
    SFCB_CPPFLAGS="-D SFCB_DEBUG $SFCB_CPPFLAGS"
 fi
@@ -185,17 +173,78 @@ if test "$enable_slp_hostname_lib" == "yes"; then
    AC_DEFINE(SLP_HOSTNAME_LIB,,[SLP Hostname lib enabled])
 fi
 
-if test "$enable_unittest" == "yes"; then
-   AC_DEFINE(UNITTEST,,[Unittest enabled])
-   UNITTEST_DIR=unittest
-   AC_SUBST(UNITTEST_DIR)
+
+# Check and configure requested tests.
+if test "$enable_tests" == "yes"; then
+    # This means all tests should be on
+    enable_tests="unit,gcov,wbemcli,xml,commands"
 fi
 
-if test "$enable_wctest" == "yes"; then
-   AC_DEFINE(WCTEST,,[wbemcli tests enabled])
-   WCTEST_DIR=wbemcli
-   AC_SUBST(WCTEST_DIR)
+OLDIFS="$IFS"
+IFS=","
+for testcase in $enable_tests;
+do
+    case $testcase in
+        gcov)
+            test_gcov=yes;;
+        wbemcli)
+            test_wbemcli=yes;;
+        unit|unittest)
+            test_unit=yes;;
+        xml|xmltest)
+            test_xml=yes;;
+        commands|command|cmd|cmds)
+            test_cmd=yes;;
+        *)
+            echo "Unknown testcase $testcase";;
+    esac
+        
+done
+IFS="$OLDIFS"
+AM_CONDITIONAL(TEST_ENABLED,[test "$enable_tests"])
+AM_CONDITIONAL(UNITTEST,[test "$test_unit" == "yes"])
+AM_CONDITIONAL(GCOV,[test "$test_gcov" == "yes"])
+AM_CONDITIONAL(WCTEST,[test "$test_wbemcli" == "yes"])
+AM_CONDITIONAL(XMLTEST,[test "$test_xml" == "yes"])
+AM_CONDITIONAL(CMDTEST,[test "$test_cmd" == "yes"])
+
+if [test "$enable_tests"]; then
+    # The order of TEST_SUBDIRS determines test
+    # execution order.
+    TEST_SUBDIRS="."
+    AC_CONFIG_FILES([test/finaltest/Makefile])
+    # Enable the various tests
+    if [test "$test_cmd" == "yes"]; then
+        TEST_SUBDIRS="$TEST_SUBDIRS commands"
+        AC_CONFIG_FILES([test/commands/Makefile])
+    fi
+
+    if [test "$test_wbemcli" == "yes"]; then
+        TEST_SUBDIRS="$TEST_SUBDIRS wbemcli"
+        AC_CONFIG_FILES([test/wbemcli/Makefile])
+    fi
+
+    if [test "$test_xml" == "yes"]; then
+        TEST_SUBDIRS="$TEST_SUBDIRS xmltest"
+        AC_CONFIG_FILES([test/xmltest/Makefile])
+    fi
+
+    if [test "$test_unit" == "yes"]; then
+        TEST_SUBDIRS="$TEST_SUBDIRS unittest"
+        AC_CONFIG_FILES([test/unittest/Makefile])
+        AC_DEFINE(UNITTEST,,[Unittest enabled])
+    fi
+
+    TEST_SUBDIRS="$TEST_SUBDIRS finaltest"
+    AC_SUBST(TEST_SUBDIRS)
 fi
+
+if [test "$test_gcov" == "yes"]; then
+    AC_CHECK_LIB(gcc,main)
+    AC_CHECK_LIB(gcov,main)
+    SFCB_CPPFLAGS="-D SFCB_GCOV $SFCB_CPPFLAGS"
+fi
+# End of test configuration 
 
 if test "$enable_uds" == "yes"; then
    AC_DEFINE(HAVE_UDS,,[UDS authentication enabled])
@@ -295,11 +344,6 @@ fi
 
 AC_SUBST(LOAD_INDICATION_PROVIDER)
 
-if test "$enable_gcov" = "yes"; then 
-   AC_CHECK_LIB(gcc,main)
-   AC_CHECK_LIB(gcov,main)
-fi
-
 if test "$enable_ssl" = "yes"; then
    AC_CHECK_LIB(ssl,main)
    SFCB_CONF_HTTPS=true
@@ -395,7 +439,6 @@ AM_CONDITIONAL(QUALREP,[test "$enable_qualifierrep" == "yes"])
 AM_CONDITIONAL(PAM,[test "$enable_pam" == "yes"]) 
 AM_CONDITIONAL(DOCS,[test "$enable_docs" == "yes"])
 AM_CONDITIONAL(IPV6,[test "$enable_ipv6" == "yes"])
-AM_CONDITIONAL(GCOV,[test "$enable_gcov" == "yes"])
 AM_CONDITIONAL(LOCAL_CONNECT_NO_INDICATION,[test "$enable_local_connect_only" == "yes" -a "$enable_indications" == "no"])
 AM_CONDITIONAL(LOCAL_CONNECT_ONLY,[test "$enable_local_connect_only" == "yes"])
 
@@ -406,29 +449,25 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
 		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
 		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre 
-		 sfcb-dox.conf test/Makefile test/xmltest/Makefile test/commands/Makefile 
-		 test/wbemcli/Makefile test/unittest/Makefile test/finaltest/Makefile])
+		 sfcb-dox.conf test/Makefile])
 AC_OUTPUT
 
 echo =================================================================
 echo Configuration Features:
-echo -e \\t"ssl"\\t\\t\\t\\t"${enable_ssl:-no}"
-echo -e \\t"slp"\\t\\t\\t\\t"${enable_slp:-no}"
-echo -e \\t"slp hostname lib"\\t\\t"${enable_slp_hostname_lib:-no}"
-echo -e \\t"jdbc"\\t\\t\\t\\t"${enable_jdbc:-no}"
-echo -e \\t"IPv6"\\t\\t\\t\\t"${enable_ipv6:-no}"
-echo -e \\t"indications"\\t\\t\\t"${enable_indications}"
-echo -e \\t"qualifierrep"\\t\\t\\t"${enable_qualifierrep:-no}"
-echo -e \\t"Documentation"\\t\\t\\t"${enable_docs:-no}"
-echo -e \\t"PAM authentication"\\t\\t"${enable_pam:-no}"
-echo -e \\t"local connect only "\\t\\t"${enable_local_connect_only}"
-echo -e \\t"default instance properties"\\t"${enable_default_properties}"
-echo -e \\t"uds"\\t\\t\\t\\t"${enable_uds:-no}"
-echo Test Features:
-echo -e \\t"unittest"\\t\\t\\t"${enable_unittest:-no}"
-echo -e \\t"wctest"\\t\\t\\t\\t"${enable_wctest:-no}"
-echo -e \\t"debug"\\t\\t\\t\\t"${enable_debug:-no}"
-echo -e \\t"gcov"\\t\\t\\t\\t"${enable_gcov:-no}"
+echo -e "ssl"\\t\\t\\t\\t"${enable_ssl:-no}"
+echo -e "slp"\\t\\t\\t\\t"${enable_slp:-no}"
+echo -e "slp hostname lib"\\t\\t"${enable_slp_hostname_lib:-no}"
+echo -e "jdbc"\\t\\t\\t\\t"${enable_jdbc:-no}"
+echo -e "IPv6"\\t\\t\\t\\t"${enable_ipv6:-no}"
+echo -e "indications"\\t\\t\\t"${enable_indications}"
+echo -e "qualifierrep"\\t\\t\\t"${enable_qualifierrep:-no}"
+echo -e "Documentation"\\t\\t\\t"${enable_docs:-no}"
+echo -e "PAM authentication"\\t\\t"${enable_pam:-no}"
+echo -e "local connect only "\\t\\t"${enable_local_connect_only}"
+echo -e "default instance properties"\\t"${enable_default_properties}"
+echo -e "uds"\\t\\t\\t\\t"${enable_uds:-no}"
+echo -e "tests"\\t\\t\\t\\t"${enable_tests:-no}"
+echo -e "debug"\\t\\t\\t\\t"${enable_debug:-no}"
 echo =================================================================
 echo
 echo "sfcb configuration complete.  you may now run 'make'"

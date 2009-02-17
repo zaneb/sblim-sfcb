@@ -1,3 +1,8 @@
+2009-02-17 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am, configure.ac, test/Makefile.am:
+	Fixed 2610487 ] Make test suite optional
+
 2009-02-12  Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* msgqueue.c:

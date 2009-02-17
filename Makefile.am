@@ -512,6 +512,7 @@ footprint:
 	done;\
 	./footprint.pl;
 
+if TEST_ENABLED
 testprep:
 if GCOV
 	mkdir -p ./coverage
@@ -527,6 +528,7 @@ if GCOV
 endif
 
 test: testprep check testreport
+endif
 
 postinstall: install-cimschema create-sslkeys
 	test -f $(DESTDIR)$(sfcbstatedir)/registration/providerRegister || $(INSTALL_DATA) $(DESTDIR)$(sfcbstatedir)/stage/default.reg $(DESTDIR)$(sfcbstatedir)/registration/providerRegister 

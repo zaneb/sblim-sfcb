@@ -61,6 +61,7 @@ Bugs fixed:
 - 2561165 The genSslCert.sh SSL certificate setup has tempfile races. 
 - 2551127 httpAdapter may not terminate
 - 2590121 localConnectServer only retries once after interrupt
+- 2610487 Make test suite optional
 
 Changes in 1.3.2
 ================

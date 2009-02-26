@@ -111,6 +111,7 @@ void processFile(char *fn, FILE *in, FILE *out)
       }
    }
    free(fn);
+   fclose(in);
 }
 
 int main(int argc, char *argv[])
@@ -138,8 +139,10 @@ int main(int argc, char *argv[])
    if (in) processFile(strdup(fn),in,stdout);
    else {
       fprintf(stderr,"file %s not found\n",fn);
-      return 1;
+      err=1;
    }
    
+   if (*path)  free(path);
+   if (*fn) free(fn);
    return err;
 }

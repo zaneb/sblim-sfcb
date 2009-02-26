@@ -1,5 +1,11 @@
 2009-02-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* mofpp.c:
+	Fixed [ 2592304 ] Memory leak in mofpp.c file.
+	(patch from Surendra kodali)
+
+2009-02-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* Makefile.am, test/stageschema.sh, test/schema/*.mof:
 	Optionally install test classes during postinstall step
 

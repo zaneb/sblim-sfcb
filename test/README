@@ -20,3 +20,5 @@ fail. Therefore the test results are reversed.
 The environment variable "SFCBTDIR" will be set to the full path of the 
 root test directory (sfcb/test) during the test run. 
 
+Any mof files that are placed in the "schema" directory will be added
+to the root/cimv2 namespace at sfcb postinstall time.

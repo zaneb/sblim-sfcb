@@ -111,7 +111,6 @@ typedef struct thrdInfo {
 	CMPIStatus * rc ;
 } thrdInfo ;
       
-void sfcb_native_array_increase_size(const CMPIArray *, CMPICount);
 static CMPIEnumeration * enumInstances(Client *,CMPIObjectPath *,	CMPIFlags,char **,CMPIStatus *);
                   void * enumInstancesThrd( thrdInfo * ) ;
 static CMPIEnumeration * enumInstanceNames(Client *,CMPIObjectPath *,CMPIStatus *);

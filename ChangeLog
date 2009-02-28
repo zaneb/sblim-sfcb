@@ -1,3 +1,8 @@
+2009-02-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	Fixed [ 2649381 ] Unused fucntion definition in cimcClientSfcbLocal
+
 2009-02-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* mofpp.c:

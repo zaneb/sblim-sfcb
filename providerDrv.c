@@ -2125,7 +2125,7 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    resp->rc=1;
 
    _SFCB_TRACE(1, ("---  pid: %d activFilters %p",currentProc,activFilters));
-   if (activFilters==NULL) _SFCB_RETURN(resp); 
+   if (info->indicationMI==NULL || activFilters==NULL) _SFCB_RETURN(resp); 
 
    for (se = activFilters; se; se = se->next) {
       if (se->filterId == req->filterId) {

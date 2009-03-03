@@ -5,6 +5,7 @@ Bugs fixed:
 
 - 2592304 Memory leak in mofpp.c file.
 - 2649381 Unused fucntion definition in cimcClientSfcbLocal
+- 2658399 Crash in providerDrv.c with NULL indicationMI
 
 Changes in 1.3.3
 ================

@@ -1,3 +1,9 @@
+2009-02-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	Fixed [ 2658399 ] Crash in providerDrv.c with NULL indicationMI
+	(patch from J. Bart Whiteley)
+
 2009-02-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c:

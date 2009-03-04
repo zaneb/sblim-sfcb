@@ -1,4 +1,10 @@
-2009-02-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+2009-03-03 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am:
+	Fixed [ 2615815 ] clean target is not able to clean code coverage reports.
+	(based on patch from Surendra kodali)
+
+2009-03-03 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerDrv.c:
 	Fixed [ 2658399 ] Crash in providerDrv.c with NULL indicationMI

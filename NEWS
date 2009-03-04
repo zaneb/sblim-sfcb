@@ -6,6 +6,7 @@ Bugs fixed:
 - 2592304 Memory leak in mofpp.c file.
 - 2649381 Unused fucntion definition in cimcClientSfcbLocal
 - 2658399 Crash in providerDrv.c with NULL indicationMI
+- 2615815 clean target is not able to clean code coverage reports.
 
 Changes in 1.3.3
 ================

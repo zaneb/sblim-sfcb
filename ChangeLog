@@ -1,3 +1,8 @@
+2009-03-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlOps.y:
+	Fixed [ 2663804 ] sfcb can segfault while parsing large arrays
+
 2009-03-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* brokerUpc.c:

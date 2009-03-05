@@ -43,6 +43,12 @@
 #define YYLEX_PARAM parm
 #define YYERROR_VERBOSE 1
 
+
+/* assumed max number of elements; used for initial malloc */
+#define VALUEARRAY_MAX_START 32
+#define VALUEREFARRAY_MAX_START 32
+#define KEYBINDING_MAX_START 12
+
 extern int yyerror(char*);
 extern int yylex (void *lvalp, ParserControl *parm);
 
@@ -2656,12 +2662,16 @@ valueList
         value
         {
           $$.next=1;
-          $$.max=64;
-          $$.values=(XtokValue*)malloc(sizeof(XtokValue)*64);
+          $$.max=VALUEARRAY_MAX_START;
+          $$.values=(XtokValue*)malloc(sizeof(XtokValue)*($$.max));
           $$.values[0]=$1;
         }
         | valueList value
         {
+          if ($$.next == $$.max) { /* max was hit; let's bump it up 50% */
+            $$.max = (int)($$.max * ((float)3)/2);
+            $$.values=(XtokValue*)realloc(($$.values), sizeof(XtokValue)*($$.max));
+          }
           $$.values[$$.next]=$2;
           $$.next++;
         }
@@ -2696,12 +2706,16 @@ valueRefList
     : valueReference
     {
        $$.next=1;
-       $$.max=64;
-       $$.values=(XtokValueReference*)malloc(sizeof(XtokValueReference)*64);
+       $$.max=VALUEREFARRAY_MAX_START;
+       $$.values=(XtokValueReference*)malloc(sizeof(XtokValueReference)*($$.max));
        $$.values[0]=$1;
     }
     | valueRefList valueReference
     {
+       if ($$.next == $$.max) { /* max was hit; let's bump it up 50% */
+         $$.max = (int)($$.max * ((float)3)/2);
+         $$.values=(XtokValueReference*)realloc(($$.values), sizeof(XtokValueReference)*($$.max));
+       }
        $$.values[$$.next]=$2;
        $$.next++;
     }
@@ -2745,8 +2759,8 @@ keyBindings
     : keyBinding
     {
        $$.next=1;
-       $$.max=16;
-       $$.keyBindings=(XtokKeyBinding*)calloc(16,sizeof(XtokKeyBinding));
+       $$.max=KEYBINDING_MAX_START;
+       $$.keyBindings=(XtokKeyBinding*)calloc(($$.max),sizeof(XtokKeyBinding));
        $$.keyBindings[0].name=$1.name;
        $$.keyBindings[0].value=$1.value;
        $$.keyBindings[0].type=$1.type;
@@ -2754,6 +2768,10 @@ keyBindings
     }
     | keyBindings keyBinding
     {
+       if ($$.next == $$.max) { /* max was hit; let's bump it up 50% */
+         $$.max = (int)($$.max * ((float)3)/2);
+         $$.keyBindings=(XtokKeyBinding*)realloc(($$.keyBindings), sizeof(XtokKeyBinding)*($$.max));
+       }
        $$.keyBindings[$$.next].name=$2.name;
        $$.keyBindings[$$.next].value=$2.value;
        $$.keyBindings[$$.next].type=$2.type;

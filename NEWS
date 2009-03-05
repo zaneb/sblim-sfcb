@@ -19,6 +19,7 @@ New features:
 - 2412189 More flexible access control with unix socket connections
 - 2581295 Add GNU code coverage tool support for SFCB.
 - 2583170 Add test rule including gcov 
+- 2155441 need support for associators/references upcalls
 
 Bugs fixed:
 

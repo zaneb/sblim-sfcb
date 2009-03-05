@@ -1,3 +1,8 @@
+2009-03-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* brokerUpc.c:
+	Fixed [ 2155441 ] need support for associators/references upcalls
+
 2009-03-03 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am:

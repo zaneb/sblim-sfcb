@@ -221,8 +221,12 @@ static void setContext(BinRequestContext * binCtx, OperationHdr * oHdr,
    memset(binCtx,0,sizeof(BinRequestContext));
    oHdr->nameSpace = setCharsMsgSegment((char *)
                           ClObjectPathGetNameSpace((ClObjectPath *) cop->hdl));
-   oHdr->className = setCharsMsgSegment((char *)
+   if (oHdr->type < OPS_Associators || oHdr->type > OPS_ReferenceNames) {
+      oHdr->className = setCharsMsgSegment((char *)
                           ClObjectPathGetClassName((ClObjectPath *) cop->hdl));
+   } else {
+      oHdr->className = setCharsMsgSegment(NULL);
+   }
    ctxData=CMGetContextEntry(ctx,CMPIPrincipal,NULL);
    if (ctxData.value.string) {
      bHdr->object[0] = setCharsMsgSegment(CMGetCharPtr(ctxData.value.string));

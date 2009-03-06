@@ -135,7 +135,7 @@ void initDbpProcCtl(int p)
    
    sun.val=0;
    for (i=1; i<=p; i++)
-      semctl(dbpProcSem,p,SETVAL,sun);
+      semctl(dbpProcSem,i,SETVAL,sun);
 
    if ((dbpWorkSem=semget(dbpWorkSemKey,1,0600))!=-1) 
       semctl(dbpWorkSem,0,IPC_RMID,sun);

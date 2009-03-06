@@ -4,6 +4,10 @@
 	Fixed [ 2669147 ] Incorrect pointer assignment in providerRegister
 	(found by Gnanasekar)
 
+	* httpAdapter.c, dbpAdapter.c:
+	Fixed [ 2669283 ] httpProcSem incorrectly initialized
+	(found by Gnanasekar)
+	
 2009-03-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlOps.y:

@@ -173,7 +173,7 @@ void initHttpProcCtl(int p, int sslmode)
    
    sun.val=0;
    for (i=1; i<=p; i++)
-      semctl(httpProcSem,p,SETVAL,sun);
+      semctl(httpProcSem,i,SETVAL,sun);
 
    if ((httpWorkSem=semget(httpWorkSemKey,1,0600))!=-1) 
       semctl(httpWorkSem,0,IPC_RMID,sun);

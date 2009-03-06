@@ -122,7 +122,7 @@ ProviderRegister *newProviderRegister(char *fn)
 
    ProviderRegister *br = (ProviderRegister *) malloc(sizeof(ProviderRegister) +
                                                       sizeof(ProviderBase));
-   ProviderBase *bb = (ProviderBase *) br + 1;
+   ProviderBase *bb = (ProviderBase *) (br + 1);
    
    setupControl(configfile);
 

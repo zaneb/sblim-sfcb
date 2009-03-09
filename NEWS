@@ -10,6 +10,7 @@ Bugs fixed:
 - 2663804 sfcb can segfault while parsing large arrays
 - 2669147 Incorrect pointer assignment in providerRegister
 - 2669283 httpProcSem incorrectly initialized
+- 2559054 sfcb: sfcbmofpp doesn't recognize "//" comments
 
 Changes in 1.3.3
 ================

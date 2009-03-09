@@ -89,24 +89,50 @@ void processFile(char *fn, FILE *in, FILE *out)
          }
       }
       else {
-         if (comment) {
-            s=rec;
+         s = rec;
+
+         if (comment == 1) {
+            if ((e=strstr(s,"\r\n"))) {
+               strcpy(s,e+2);
+               comment=0;
+            } else if ((e=strstr(s,"\n"))) {
+               strcpy(s,e+1);
+               comment=0;
+            }
+         } else if (comment == 2) {
             if ((e=strstr(s,"*/"))) {
                strcpy(s,e+2);
                comment=0;
             }
-            else continue;
-         }
-         while ((s=strstr(rec,"/*"))) {
-            if ((e=strstr(s+2,"*/"))) {
-               strcpy(s,e+2);
-            }
-            else {
-               *s=0;
-               comment=1;
-               break;
+            else { 
+               continue;
             }
          }
+
+         while ((s = strstr(s,"/"))) {
+            if (*(s+1) == '/') {
+               if ((e = strstr(s+2,"\r\n"))) {
+                  strcpy(s,e+2);
+               } else if ((e = strstr(s+2,"\n"))) {
+                  strcpy(s,e+1);
+               } else {
+                  *s = 0;
+                  comment = 1;
+                  break;
+               }
+            } else if (*(s+1) == '*') {
+               if ((e = strstr(s+2,"*/"))) {
+                  strcpy(s,e+2);
+               } else {
+                  *s = 0;
+                  comment = 2;
+                  break;
+               }
+            } else {
+               s++;
+            }
+         }
+
          fprintf(out,"%s",rec);
       }
    }

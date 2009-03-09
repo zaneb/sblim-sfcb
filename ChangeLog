@@ -1,3 +1,9 @@
+2009-03-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* mofpp.c:
+	Fixed [ 2559054 ] sfcb: sfcbmofpp doesn't recognize "//" comments
+	(patch by Tyrel Datwyler)
+
 2009-03-06  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerRegister.c:

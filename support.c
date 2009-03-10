@@ -88,10 +88,10 @@ typedef CMPIInstanceMI *(*FIXED_InstanceMI) (CMPIBroker * broker,
 
 
 CMPIInstanceMI *loadInstanceMI(const char *provider, void *library,
-                                     CMPIBroker * broker, CMPIContext * ctx)
+                                     CMPIBroker * broker, CMPIContext * ctx, 
+                                     CMPIStatus * status)
 {
    CMPIInstanceMI *mi; 
-   CMPIStatus status = {CMPI_RC_OK, NULL};
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadInstanceMI");
    
@@ -102,18 +102,18 @@ CMPIInstanceMI *loadInstanceMI(const char *provider, void *library,
          getFixedEntryPoint(provider, library, "Instance");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
-	mi=(f) (broker, ctx, &status);
-	if (mi && status.rc == CMPI_RC_OK)
+	mi=(f) (broker, ctx, status);
+	if (mi && status->rc == CMPI_RC_OK)
          _SFCB_RETURN(mi);
       }   
-      _SFCB_RETURN((CMPIInstanceMI*)(void*)-1);
+      _SFCB_RETURN(NULL); 
    }
    if (broker) {
-     mi=(g) (broker, ctx, provider, &status);
-     if (mi && status.rc == CMPI_RC_OK)
+     mi=(g) (broker, ctx, provider, status);
+     if (mi && status->rc == CMPI_RC_OK)
         _SFCB_RETURN(mi);
    }
-   _SFCB_RETURN((CMPIInstanceMI*)(void*)-1);
+   _SFCB_RETURN(NULL); 
 };
 
 
@@ -129,10 +129,10 @@ typedef CMPIAssociationMI *(*FIXED_AssociationMI) (CMPIBroker * broker,
 CMPIAssociationMI *loadAssociationMI(const char *provider,
                                            void *library,
                                            CMPIBroker * broker,
-                                           CMPIContext * ctx)
+                                           CMPIContext * ctx,
+                                           CMPIStatus * status)
 {
    CMPIAssociationMI *mi; 
-   CMPIStatus status = {CMPI_RC_OK, NULL};
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadAssociationMI");
    
@@ -144,18 +144,18 @@ CMPIAssociationMI *loadAssociationMI(const char *provider,
          getFixedEntryPoint(provider, library, "Association");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
-	mi=(f) (broker, ctx, &status);
-	if (mi && status.rc == CMPI_RC_OK)
+	mi=(f) (broker, ctx, status);
+	if (mi && status->rc == CMPI_RC_OK)
 	  _SFCB_RETURN(mi);
       }   
-      _SFCB_RETURN((CMPIAssociationMI*)(void*)-1);
+      _SFCB_RETURN(NULL); 
    }
    if (broker) {
-     mi=(g) (broker, ctx, provider, &status);
-     if (mi && status.rc == CMPI_RC_OK)
+     mi=(g) (broker, ctx, provider, status);
+     if (mi && status->rc == CMPI_RC_OK)
        _SFCB_RETURN(mi);
    }
-   _SFCB_RETURN((CMPIAssociationMI*)(void*)-1);
+   _SFCB_RETURN(NULL); 
 };
 
 
@@ -169,10 +169,10 @@ typedef CMPIMethodMI *(*FIXED_MethodMI) (CMPIBroker * broker,
 
 
 CMPIMethodMI *loadMethodMI(const char *provider, void *library,
-                                 CMPIBroker * broker, CMPIContext * ctx)
+                                 CMPIBroker * broker, CMPIContext * ctx,
+                                 CMPIStatus * status)
 {
    CMPIMethodMI *mi; 
-   CMPIStatus status = {CMPI_RC_OK, NULL};
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadMethodMI");
    
@@ -183,18 +183,18 @@ CMPIMethodMI *loadMethodMI(const char *provider, void *library,
           (FIXED_MethodMI) getFixedEntryPoint(provider, library,"Method");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
-	mi=(f)(broker, ctx, &status);
-	if (mi && status.rc == CMPI_RC_OK)
+	mi=(f)(broker, ctx, status);
+	if (mi && status->rc == CMPI_RC_OK)
 	  _SFCB_RETURN(mi);
       }   
-      _SFCB_RETURN((CMPIMethodMI*)(void*)-1);
+      _SFCB_RETURN(NULL); 
    }
    if (broker)  {
-     mi=(g)(broker,ctx, provider, &status);
-     if (mi && status.rc == CMPI_RC_OK)
+     mi=(g)(broker,ctx, provider, status);
+     if (mi && status->rc == CMPI_RC_OK)
        _SFCB_RETURN(mi);
    }
-   _SFCB_RETURN((CMPIMethodMI*)(void*)-1);
+   _SFCB_RETURN(NULL); 
 }
 
 
@@ -207,10 +207,10 @@ typedef CMPIPropertyMI *(*FIXED_PropertyMI) (CMPIBroker * broker,
 					     CMPIStatus * status);
 
 CMPIPropertyMI *loadPropertyMI(const char *provider, void *library,
-                                     CMPIBroker * broker, CMPIContext * ctx)
+                                     CMPIBroker * broker, CMPIContext * ctx,
+                                     CMPIStatus * status)
 {
    CMPIPropertyMI *mi; 
-   CMPIStatus status = {CMPI_RC_OK, NULL};
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadPropertyMI");
 
@@ -222,19 +222,19 @@ CMPIPropertyMI *loadPropertyMI(const char *provider, void *library,
                                                      "Property");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
-	mi=(f)(broker, ctx, &status);
-	if (mi && status.rc == CMPI_RC_OK)
+	mi=(f)(broker, ctx, status);
+	if (mi && status->rc == CMPI_RC_OK)
 	  _SFCB_RETURN(mi);
       }   
-      _SFCB_RETURN((CMPIPropertyMI*)(void*)-1);
+      _SFCB_RETURN(NULL); 
    }
 
    if (broker)  {
-     mi=(g)(broker,ctx, provider, &status);
-     if (mi && status.rc == CMPI_RC_OK)
+     mi=(g)(broker,ctx, provider, status);
+     if (mi && status->rc == CMPI_RC_OK)
        _SFCB_RETURN(mi);
    }
-   _SFCB_RETURN((CMPIPropertyMI*)(void*)-1);
+   _SFCB_RETURN(NULL); 
 };
 
 
@@ -249,10 +249,10 @@ typedef CMPIIndicationMI *(*FIXED_IndicationMI) (CMPIBroker * broker,
 
 CMPIIndicationMI *loadIndicationMI(const char *provider,
                                          void *library,
-                                         CMPIBroker * broker, CMPIContext * ctx)
+                                         CMPIBroker * broker, CMPIContext * ctx,
+                                         CMPIStatus * status)
 {
    CMPIIndicationMI *mi; 
-   CMPIStatus status = {CMPI_RC_OK, NULL};
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadIndicationMI");
 
@@ -265,19 +265,19 @@ CMPIIndicationMI *loadIndicationMI(const char *provider,
                                                        "Indication");
       if (f == NULL) _SFCB_RETURN(NULL);
       if (broker) {
-	mi=(f)(broker, ctx, &status);
-	if (mi && status.rc == CMPI_RC_OK)
+	mi=(f)(broker, ctx, status);
+	if (mi && status->rc == CMPI_RC_OK)
 	  _SFCB_RETURN(mi);
       }   
-      _SFCB_RETURN((CMPIIndicationMI*)(void*)-1);
+      _SFCB_RETURN(NULL); 
    }
 
    if (broker)  {
-     mi=(g)(broker,ctx, provider, &status);
-     if (mi && status.rc == CMPI_RC_OK)
+     mi=(g)(broker,ctx, provider, status);
+     if (mi && status->rc == CMPI_RC_OK)
        _SFCB_RETURN(mi);
    }
-   _SFCB_RETURN((CMPIIndicationMI*)(void*)-1);
+   _SFCB_RETURN(NULL); 
 };
 
 
@@ -288,10 +288,10 @@ typedef CMPIClassMI *(*FIXED_ClassMI) (CMPIBroker * broker,
 
 CMPIClassMI *loadClassMI(const char *provider,
                                          void *library,
-                                         CMPIBroker * broker, CMPIContext * ctx)
+                                         CMPIBroker * broker, CMPIContext * ctx,
+                                         CMPIStatus * status)
 {
    CMPIClassMI *mi; 
-   CMPIStatus status = {CMPI_RC_OK, NULL};
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadClassMI");
    FIXED_ClassMI f =
@@ -300,11 +300,11 @@ CMPIClassMI *loadClassMI(const char *provider,
    if (f == NULL) _SFCB_RETURN(NULL);
    
    if (broker)  {
-     mi=(f)(broker,ctx, &status);
-     if (mi && status.rc == CMPI_RC_OK)
+     mi=(f)(broker,ctx, status);
+     if (mi && status->rc == CMPI_RC_OK)
        _SFCB_RETURN(mi);
    }
-   _SFCB_RETURN((CMPIClassMI*)(void*)-1);
+   _SFCB_RETURN(NULL); 
 };
 
 typedef CMPIQualifierDeclMI *(*FIXED_QualifierDeclMI) (CMPIBroker * broker,
@@ -313,10 +313,10 @@ typedef CMPIQualifierDeclMI *(*FIXED_QualifierDeclMI) (CMPIBroker * broker,
 
 CMPIQualifierDeclMI *loadQualifierDeclMI(const char *provider,
                                          void *library,
-                                         CMPIBroker * broker, CMPIContext * ctx)
+                                         CMPIBroker * broker, CMPIContext * ctx,
+                                         CMPIStatus * status)
 {
    CMPIQualifierDeclMI *mi; 
-   CMPIStatus status = {CMPI_RC_OK, NULL};
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "loadQualifierDeclMI");
    FIXED_QualifierDeclMI f =
@@ -325,11 +325,11 @@ CMPIQualifierDeclMI *loadQualifierDeclMI(const char *provider,
    if (f == NULL) _SFCB_RETURN(NULL);
    
    if (broker)  {
-     mi=(f)(broker,ctx, &status);
-     if (mi && status.rc == CMPI_RC_OK)
+     mi=(f)(broker,ctx, status);
+     if (mi && status->rc == CMPI_RC_OK)
        _SFCB_RETURN(mi);
    }
-   _SFCB_RETURN((CMPIQualifierDeclMI*)(void*)-1);
+   _SFCB_RETURN(NULL); 
 };
 
 /****************************************************************************/
@@ -963,3 +963,25 @@ double timevalDiff(struct timeval *sv, struct timeval *ev)
    return e-s;
 }
    
+char* sfcb_snprintf(const char* fmt, ...)
+{
+    va_list ap;
+    int len;
+    va_start(ap, fmt);
+    len = vsnprintf(NULL, 0, fmt, ap);
+    va_end(ap);
+    if (len <= 0)
+    {
+        return NULL;
+    }
+    char* str = (char*)malloc(len+1);
+    if (str == NULL)
+    {
+        return NULL;
+    }
+    va_start(ap, fmt);
+    vsnprintf(str, len+1, fmt, ap);
+    va_end(ap);
+    return str;
+}
+

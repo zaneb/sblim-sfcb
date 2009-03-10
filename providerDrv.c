@@ -429,89 +429,119 @@ void* providerIdleThread()
 }
 
 
-static int getInstanceMI(ProviderInfo *info, CMPIInstanceMI **mi, CMPIContext *ctx)
+static CMPIStatus getInstanceMI(ProviderInfo *info, CMPIInstanceMI **mi, CMPIContext *ctx)
 {
-    int rc;
+   CMPIStatus st = { CMPI_RC_OK, NULL }; 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getInstanceMI");
    
    if (info->instanceMI == NULL) info->instanceMI =
-          loadInstanceMI(info->providerName, info->library, Broker, ctx);
-   *mi = info->instanceMI;
-   rc = info->instanceMI ? 1 : 0;
-   _SFCB_RETURN(rc);
+          loadInstanceMI(info->providerName, info->library, Broker, ctx, &st);
+   if (info->instanceMI == NULL && st.rc == CMPI_RC_OK) {
+     st.rc = CMPI_RC_ERR_FAILED; 
+   }
+   else {
+     *mi = info->instanceMI;
+   }
+   _SFCB_RETURN(st);
 }
 
-static int getAssociationMI(ProviderInfo *info, CMPIAssociationMI **mi, CMPIContext *ctx)
+static CMPIStatus getAssociationMI(ProviderInfo *info, CMPIAssociationMI **mi, CMPIContext *ctx)
 {
-   int rc;
+   CMPIStatus st = { CMPI_RC_OK, NULL }; 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getAssociationMI");
     
    if (info->associationMI == NULL) info->associationMI =
-          loadAssociationMI(info->providerName, info->library, Broker, ctx);
-   *mi = info->associationMI;
-   rc = info->associationMI ? 1 : 0;
-   _SFCB_RETURN(rc);
+          loadAssociationMI(info->providerName, info->library, Broker, ctx, 
+                            &st);
+   if (info->associationMI == NULL && st.rc == CMPI_RC_OK) {
+     st.rc = CMPI_RC_ERR_FAILED; 
+   }
+   else {
+     *mi = info->associationMI;
+   }
+   _SFCB_RETURN(st);
 }
 
-static int getIndicationMI(ProviderInfo *info, CMPIIndicationMI **mi, CMPIContext *ctx)
+static CMPIStatus getIndicationMI(ProviderInfo *info, CMPIIndicationMI **mi, CMPIContext *ctx)
 {
-   int rc;
+    CMPIStatus st = { CMPI_RC_OK, NULL }; 
     _SFCB_ENTER(TRACE_PROVIDERDRV, "getIndicationMI");
     
    if (info->indicationMI == NULL) info->indicationMI =
-          loadIndicationMI(info->providerName, info->library, Broker, ctx);
-   *mi = info->indicationMI;
-   rc = info->indicationMI ? 1 : 0;
-   _SFCB_RETURN(rc);
+          loadIndicationMI(info->providerName, info->library, Broker, ctx, &st);
+   if (info->indicationMI == NULL && st.rc == CMPI_RC_OK) {
+     st.rc = CMPI_RC_ERR_FAILED; 
+   }
+   else {
+     *mi = info->indicationMI;
+   }
+   _SFCB_RETURN(st);
 }
 
-static int getMethodMI(ProviderInfo *info, CMPIMethodMI **mi, CMPIContext *ctx)
+static CMPIStatus getMethodMI(ProviderInfo *info, CMPIMethodMI **mi, CMPIContext *ctx)
 {
-   int rc;
+   CMPIStatus st = { CMPI_RC_OK, NULL }; 
     _SFCB_ENTER(TRACE_PROVIDERDRV, "getMethodMI");
     
    if (info->methodMI == NULL) info->methodMI =
-          loadMethodMI(info->providerName, info->library, Broker, ctx);
-   *mi = info->methodMI;
-   rc = info->methodMI ? 1 : 0;
-   _SFCB_RETURN(rc);
+          loadMethodMI(info->providerName, info->library, Broker, ctx, &st);
+   if (info->methodMI == NULL && st.rc == CMPI_RC_OK) {
+     st.rc = CMPI_RC_ERR_FAILED; 
+   }
+   else {
+     *mi = info->methodMI;
+   }
+   _SFCB_RETURN(st);
 }
 
-static int getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
+static CMPIStatus getClassMI(ProviderInfo *info, CMPIClassMI **mi, CMPIContext *ctx)
 {
-   int rc;
+   CMPIStatus st = { CMPI_RC_OK, NULL }; 
     _SFCB_ENTER(TRACE_PROVIDERDRV, "getClassMI");
     
    if (info->classMI == NULL) info->classMI =
-          loadClassMI(info->providerName, info->library, Broker, ctx);
-   *mi = info->classMI;
-   rc = info->classMI ? 1 : 0;
-   _SFCB_RETURN(rc);
+          loadClassMI(info->providerName, info->library, Broker, ctx, &st);
+   if (info->classMI == NULL && st.rc == CMPI_RC_OK) {
+     st.rc = CMPI_RC_ERR_FAILED; 
+   }
+   else {
+     *mi = info->classMI;
+   }
+   _SFCB_RETURN(st);
 }
 
-static int getPropertyMI(ProviderInfo *info, CMPIPropertyMI **mi, CMPIContext *ctx)
+static CMPIStatus getPropertyMI(ProviderInfo *info, CMPIPropertyMI **mi, CMPIContext *ctx)
 {
-   int rc;
+   CMPIStatus st = { CMPI_RC_OK, NULL }; 
     _SFCB_ENTER(TRACE_PROVIDERDRV, "getPropertyMI");
     
    if (info->propertyMI == NULL) info->propertyMI =
-          loadPropertyMI(info->providerName, info->library, Broker, ctx);
-   *mi = info->propertyMI;
-   rc = info->propertyMI ? 1 : 0;
-   _SFCB_RETURN(rc);
+          loadPropertyMI(info->providerName, info->library, Broker, ctx, &st);
+   if (info->propertyMI == NULL && st.rc == CMPI_RC_OK) {
+     st.rc = CMPI_RC_ERR_FAILED; 
+   }
+   else {
+     *mi = info->propertyMI;
+   }
+   _SFCB_RETURN(st);
 }
 
 #ifdef HAVE_QUALREP
-static int getQualifierDeclMI(ProviderInfo *info, CMPIQualifierDeclMI **mi, CMPIContext *ctx)
+static CMPIStatus getQualifierDeclMI(ProviderInfo *info, CMPIQualifierDeclMI **mi, CMPIContext *ctx)
 {
-   int rc;
+   CMPIStatus st = { CMPI_RC_OK, NULL }; 
     _SFCB_ENTER(TRACE_PROVIDERDRV, "getQualiferMI");
     
    if (info->qualifierDeclMI == NULL) info->qualifierDeclMI =
-          loadQualifierDeclMI(info->providerName, info->library, Broker, ctx);
-   *mi = info->qualifierDeclMI;
-   rc = info->qualifierDeclMI ? 1 : 0;
-   _SFCB_RETURN(rc);
+          loadQualifierDeclMI(info->providerName, info->library, Broker, ctx, 
+                               &st);
+   if (info->qualifierDeclMI == NULL && st.rc == CMPI_RC_OK) {
+     st.rc = CMPI_RC_ERR_FAILED; 
+   }
+   else {
+     *mi = info->qualifierDeclMI;
+   }
+   _SFCB_RETURN(st);
 }
 #endif
 
@@ -1262,7 +1292,8 @@ static BinResponseHdr *getProperty(BinRequestHdr * hdr, ProviderInfo * info,
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
 
    if (info->propertyMI == NULL) info->propertyMI =
-                 loadPropertyMI(info->providerName, info->library, Broker, ctx);
+                 loadPropertyMI(info->providerName, info->library, Broker, ctx,
+                                &rci); 
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
    TIMING_START(hdr,info)
@@ -1312,7 +1343,8 @@ static BinResponseHdr *setProperty(BinRequestHdr * hdr, ProviderInfo * info,
    data = inst->ft->getPropertyAt(inst, 0, &pName, NULL);
 
    if (info->propertyMI == NULL) info->propertyMI =
-                 loadPropertyMI(info->providerName, info->library, Broker, ctx);
+                 loadPropertyMI(info->providerName, info->library, Broker, ctx,
+                                &rci);
 
    _SFCB_TRACE(1, ("--- Calling provider %s",info->providerName));
    TIMING_START(hdr,info)
@@ -2267,11 +2299,24 @@ static BinResponseHdr *opNotSupported(BinRequestHdr * hdr, ProviderInfo * info, 
 }
 
 
+void appendStr(char **base, const char* str, const char* arg)
+{
+    if (*base == NULL) {
+        *base = sfcb_snprintf("%s %s", str, arg); 
+    }
+    else {
+        char* tmp = sfcb_snprintf("%s; %s %s", *base, str, arg); 
+        free(*base); 
+        *base = tmp; 
+    }
+}
 
-int initProvider(ProviderInfo *info, unsigned int sessionId)
+int initProvider(ProviderInfo *info, unsigned int sessionId, char** errorStr)
 {
    CMPIInstanceMI *mi = NULL;
    int rc=0;
+   CMPIStatus st; 
+   char* errstr = NULL; 
    unsigned int flgs=0;
    CMPIContext *ctx = native_new_CMPIContext(MEM_TRACKED,info);
    
@@ -2289,36 +2334,82 @@ int initProvider(ProviderInfo *info, unsigned int sessionId)
      
      
      if (info->type & INSTANCE_PROVIDER) {
-       rc |= (getInstanceMI(info, &mi, ctx) != 1);
+         st = getInstanceMI(info, &mi, ctx); 
+         rc |= st.rc; 
+         if (st.rc != CMPI_RC_OK && st.msg != NULL) {
+            appendStr(&errstr, "Error from Instance MI Factory:", 
+                      CMGetCharsPtr(st.msg,NULL)); 
+         }
      }   
      if (info->type & ASSOCIATION_PROVIDER) {
-       rc |= (getAssociationMI(info, (CMPIAssociationMI **) & mi, ctx) != 1);
+         st = getAssociationMI(info, (CMPIAssociationMI **) & mi, ctx); 
+         rc |= st.rc; 
+         if (st.rc != CMPI_RC_OK && st.msg != NULL) {
+             appendStr(&errstr, "Error from Association MI Factory:", 
+                      CMGetCharsPtr(st.msg,NULL)); 
+         }
      }   
      if (info->type & METHOD_PROVIDER) {
-       rc |= (getMethodMI(info, (CMPIMethodMI **) & mi, ctx) != 1);
+         st = getMethodMI(info, (CMPIMethodMI **) & mi, ctx); 
+         rc |= st.rc; 
+         if (st.rc != CMPI_RC_OK && st.msg != NULL) {
+             appendStr(&errstr, "Error from Method MI Factory:", 
+                      CMGetCharsPtr(st.msg,NULL)); 
+         }
      }   
      if (info->type & INDICATION_PROVIDER) {
-       rc |= (getIndicationMI(info, (CMPIIndicationMI **) & mi, ctx) != 1);
+         st = getIndicationMI(info, (CMPIIndicationMI **) & mi, ctx); 
+         rc |= st.rc; 
+         if (st.rc != CMPI_RC_OK && st.msg != NULL) {
+             appendStr(&errstr, "Error from Indication MI Factory:", 
+                      CMGetCharsPtr(st.msg,NULL)); 
+         }
      }   
      if (info->type & CLASS_PROVIDER) {
-       rc |= (getClassMI(info, (CMPIClassMI **) & mi, ctx) != 1);
+         st = getClassMI(info, (CMPIClassMI **) & mi, ctx); 
+         rc |= st.rc; 
+         if (st.rc != CMPI_RC_OK && st.msg != NULL) {
+             appendStr(&errstr, "Error from Class MI Factory:", 
+                      CMGetCharsPtr(st.msg,NULL)); 
+         }
      }
      if (info->type & PROPERTY_PROVIDER) {
-       rc |= (getPropertyMI(info, (CMPIPropertyMI **) & mi, ctx) != 1);
+         st = getPropertyMI(info, (CMPIPropertyMI **) & mi, ctx); 
+         rc |= st.rc; 
+         if (st.rc != CMPI_RC_OK && st.msg != NULL) {
+             appendStr(&errstr, "Error from Property MI Factory:", 
+                      CMGetCharsPtr(st.msg,NULL)); 
+         }
      }
 #ifdef HAVE_QUALREP   
      if (info->type & QUALIFIER_PROVIDER) {
-       rc |= (getQualifierDeclMI(info, (CMPIQualifierDeclMI **) & mi, ctx) != 1);
+         st = getQualifierDeclMI(info, (CMPIQualifierDeclMI **) & mi, ctx); 
+         rc |= st.rc; 
+         if (st.rc != CMPI_RC_OK && st.msg != NULL) {
+             appendStr(&errstr, "Error from Qualifier MI Factory:", 
+                      CMGetCharsPtr(st.msg,NULL)); 
+         }
      }
 #endif   
      
      if (rc) {
        rc = -2;
+       if (errstr != NULL) {
+          *errorStr = sfcb_snprintf("Error initializing provider %s from %s for class %s.  %s", 
+                           info->providerName, info->location, 
+                           info->className, errstr);
+       }
+       else {
+          *errorStr = sfcb_snprintf("Error initializing provider %s from %s for class %s.", 
+                           info->providerName, info->location, info->className);
+       }
      } else {
        info -> initialized = 1;
+       *errorStr = NULL;
      }
      pthread_mutex_unlock(&info->initMtx);
    }
+   if (errstr != NULL) free(errstr); 
 
    _SFCB_RETURN(rc);
 }
@@ -2523,6 +2614,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
    Parms *parms = (Parms *) prms;
    BinRequestHdr *req = parms->req;
    int i,requestor=0,initRc=0;
+   char* errstr = NULL; 
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "processProviderInvocationRequestsThread");
 
@@ -2557,7 +2649,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
       }  
       
       if (pInfo && pInfo->initialized == 0) {
-	initRc=initProvider(pInfo,req->sessionId);
+	initRc=initProvider(pInfo,req->sessionId, &errstr);
 	_SFCB_TRACE(1, ("--- Provider initialization rc %d",initRc));
       }
 
@@ -2565,12 +2657,11 @@ static void *processProviderInvocationRequestsThread(void *prms)
    else pInfo = NULL;
 
    if (initRc) {
-      char msg[1024];
-      snprintf(msg,1023, "*** Inconsistent provider registration for %s (2)\n",
-              pInfo->providerName);
-      mlogf(M_ERROR,M_SHOW,"%s",msg);
-      _SFCB_TRACE(1, (msg));
-      resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
+      mlogf(M_ERROR,M_SHOW,"%s",errstr);
+      _SFCB_TRACE(1, (errstr));
+      resp = errorCharsResp(CMPI_RC_ERR_FAILED, errstr);
+	  free (errstr); 
+	  errstr = NULL; 
    }
    
    else {

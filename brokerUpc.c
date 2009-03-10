@@ -56,7 +56,8 @@ extern CMPIObjectPath *TrackedCMPIObjectPath(const char *nameSpace,
                                       const char *className, CMPIStatus * rc);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
-extern int initProvider(ProviderInfo *info, unsigned int sessionId);
+extern int initProvider(ProviderInfo *info, unsigned int sessionId,
+                        char** errorStr);
 
 
 void closeProviderContext(BinRequestContext * ctx);
@@ -323,6 +324,8 @@ static CMPIEnumeration *genericEnumRequest(const CMPIBroker * broker,
    CMPIArray *ar = NULL;
    BinRequestHdr *bhdrTmp=NULL;
    CMPIObjectPath *copLocalCall;
+   char* errstr = NULL; 
+   int initrc = 0; 
    int irc, c, i=-1;
 
    _SFCB_ENTER(TRACE_UPCALLS, "genericEnumRequest");
@@ -382,36 +385,44 @@ static CMPIEnumeration *genericEnumRequest(const CMPIBroker * broker,
                   local=1;
                   
 		  if (pInfo->initialized == 0) {
-		    initProvider(pInfo,binCtx.bHdr->sessionId);
+		    initrc = initProvider(pInfo,binCtx.bHdr->sessionId, &errstr); 
 		  }
-		  switch(optype) {
-		    case OPS_Associators:
-		      rci = pInfo->associationMI->ft->associators(pInfo->associationMI,
-		                      context, result, copLocalCall, assocclass,
-		                      resultclass, role, resultrole, props);
-		      break;
-		    case OPS_AssociatorNames:
-		      rci = pInfo->associationMI->ft->associatorNames(pInfo->associationMI,
-		                      context, result, copLocalCall, assocclass,
-		                      resultclass, role, resultrole);
-		      break;
-            case OPS_References:
-              rci = pInfo->associationMI->ft->references(pInfo->associationMI,
-                              context, result, copLocalCall, resultclass,
-                              role, props);
-              break;
-            case OPS_ReferenceNames:
-              rci = pInfo->associationMI->ft->referenceNames(pInfo->associationMI,
-                              context, result, copLocalCall, resultclass, role);
-              break;
-		    case OPS_EnumerateInstances:
-		      rci = pInfo->instanceMI->ft->enumerateInstances(pInfo->instanceMI,
-		                      context, result, copLocalCall, props);
-		      break;
-		    case OPS_EnumerateInstanceNames:
-		      rci = pInfo->instanceMI->ft->enumerateInstanceNames(pInfo->instanceMI,
-		                      context, result, copLocalCall);		                      
-		      break;
+		  if (initrc != 0) {
+		     rci.msg = sfcb_native_new_CMPIString(errstr, NULL, 0);
+			 free (errstr); 
+			 errstr = NULL; 
+			 rci.rc = CMPI_RC_ERR_FAILED; 
+		  }
+		  else {
+	    	  switch(optype) {
+	    		case OPS_Associators:
+	    		  rci = pInfo->associationMI->ft->associators(pInfo->associationMI,
+	    						  context, result, copLocalCall, assocclass,
+	    						  resultclass, role, resultrole, props);
+	    		  break;
+	    		case OPS_AssociatorNames:
+	    		  rci = pInfo->associationMI->ft->associatorNames(pInfo->associationMI,
+	    						  context, result, copLocalCall, assocclass,
+	    						  resultclass, role, resultrole);
+	    		  break;
+	    		case OPS_References:
+	    		  rci = pInfo->associationMI->ft->references(pInfo->associationMI,
+	    						  context, result, copLocalCall, resultclass,
+	    						  role, props);
+	    		  break;
+	    		case OPS_ReferenceNames:
+	    		  rci = pInfo->associationMI->ft->referenceNames(pInfo->associationMI,
+	    						  context, result, copLocalCall, resultclass, role);
+	    		  break;
+	    		case OPS_EnumerateInstances:
+	    		  rci = pInfo->instanceMI->ft->enumerateInstances(pInfo->instanceMI,
+	    						  context, result, copLocalCall, props);
+	    		  break;
+	    		case OPS_EnumerateInstanceNames:
+	    		  rci = pInfo->instanceMI->ft->enumerateInstanceNames(pInfo->instanceMI,
+	    						  context, result, copLocalCall);		                      
+	    		  break;
+	    	  }
 		  }
                   lockUpCall(broker);
                   if (rci.rc == CMPI_RC_OK) cpyResult(result, ar, &c);  
@@ -464,6 +475,8 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
    CMPIInstance *inst = NULL,*tInst=NULL;
    int irc, ps, sreqSize=sizeof(GetInstanceReq);
    ProviderInfo *pInfo;
+   char* errstr = NULL; 
+   int initrc = 0; 
    const char **p=props;
 
    _SFCB_ENTER(TRACE_UPCALLS, "getInstance");
@@ -497,8 +510,17 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
             CMPIArray *r;
             unlockUpCall(broker);
 	    if (pInfo->initialized == 0) {
-	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	      initrc = initProvider(pInfo,binCtx.bHdr->sessionId, &errstr);
 	    }
+	    if (initrc != 0) {
+	        if (rc) {
+	            rc->rc = CMPI_RC_ERR_FAILED; 
+	            rc->msg = sfcb_native_new_CMPIString(errstr, NULL, 0);
+			}
+	        free(errstr);
+	        return NULL; 
+		}
+		else {
             st = pInfo->instanceMI->ft->getInstance(pInfo->instanceMI,context,result,cop,props);
             if (rc) *rc=st;
             r = native_result2array(result);
@@ -506,6 +528,7 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
                inst=CMGetArrayElementAt(r, 0, NULL).value.inst;
 	    if (sreq) free(sreq);
             return inst;   
+         }
          }
       }
 
@@ -548,6 +571,8 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
    OperationHdr oHdr = { OPS_CreateInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIObjectPath *op = NULL,*tOp=NULL;
+   char* errstr = NULL; 
+   int initrc = 0; 
    int irc;
    ProviderInfo *pInfo;
 
@@ -573,14 +598,24 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
             CMPIArray *r;
             unlockUpCall(broker);
 	    if (pInfo->initialized == 0) {
-	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	      initrc = initProvider(pInfo,binCtx.bHdr->sessionId, &errstr);
 	    }
-            st = pInfo->instanceMI->ft->createInstance(pInfo->instanceMI,context,result,cop,inst);
-            if (rc) *rc=st;
-            r = native_result2array(result);
-            if (st.rc==0) 
-               op=CMGetArrayElementAt(r, 0, NULL).value.ref;
-            return op;   
+            if (initrc != 0) {
+	            if (rc) {
+	                rc->rc = CMPI_RC_ERR_FAILED; 
+	                rc->msg = sfcb_native_new_CMPIString(errstr, NULL, 0);
+			    }
+	            free(errstr);
+	            return NULL; 
+			}
+			else {
+                st = pInfo->instanceMI->ft->createInstance(pInfo->instanceMI,context,result,cop,inst);
+                if (rc) *rc=st;
+                r = native_result2array(result);
+                if (st.rc==0) 
+                   op=CMGetArrayElementAt(r, 0, NULL).value.ref;
+                return op;   
+            }
          }
       }
       
@@ -619,6 +654,8 @@ static CMPIStatus modifyInstance(const CMPIBroker * broker,
    ModifyInstanceReq *sreq=NULL;
    OperationHdr oHdr = { OPS_ModifyInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   int initrc = 0; 
+   char* errstr = NULL; 
    int ps,irc,sreqSize=sizeof(ModifyInstanceReq); //-sizeof(MsgSegment);
    ProviderInfo *pInfo;
 
@@ -651,12 +688,21 @@ static CMPIStatus modifyInstance(const CMPIBroker * broker,
             CMPIResult *result = native_new_CMPIResult(0,1,NULL);
             unlockUpCall(broker);
 	    if (pInfo->initialized == 0) {
-	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	      initrc = initProvider(pInfo,binCtx.bHdr->sessionId, &errstr);
 	    }
+	    if (initrc != 0) {
+	        st.rc = CMPI_RC_ERR_FAILED; 
+	        st.msg = sfcb_native_new_CMPIString(errstr, NULL, 0);
+	        free(errstr);
+            if (sreq) free(sreq);
+	        return st; 
+		}
+		else {
             st = pInfo->instanceMI->ft->modifyInstance(pInfo->instanceMI,context,result,cop,inst,props);
             if (sreq) free(sreq);
             return st;   
          }
+		 }
       }
       
          resp = invokeProvider(&binCtx);
@@ -684,6 +730,8 @@ static CMPIStatus deleteInstance(const CMPIBroker * broker,
    DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, 2);
    OperationHdr oHdr = { OPS_DeleteInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
+   int initrc = 0; 
+   char* errstr = NULL; 
    int irc;
    ProviderInfo *pInfo;
 
@@ -706,10 +754,18 @@ static CMPIStatus deleteInstance(const CMPIBroker * broker,
             CMPIResult *result = native_new_CMPIResult(0,1,NULL);
             unlockUpCall(broker);
 	    if (pInfo->initialized == 0) {
-	      initProvider(pInfo,binCtx.bHdr->sessionId);
+	      initrc = initProvider(pInfo,binCtx.bHdr->sessionId, &errstr);
 	    }
+	    if (initrc != 0) {
+		    st.rc = CMPI_RC_ERR_FAILED; 
+	        st.msg = sfcb_native_new_CMPIString(errstr, NULL, 0);
+	        free(errstr);
+	        return st; 
+		}
+		else {
             st = pInfo->instanceMI->ft->deleteInstance(pInfo->instanceMI,context,result,cop);
             return st;   
+		}
          }
       }
       
@@ -741,6 +797,8 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
    CMPIStatus st = { CMPI_RC_OK, NULL },rci = { CMPI_RC_OK, NULL};
    CMPIEnumeration *enm = NULL;
    CMPIArray *ar = NULL;
+   int initrc = 0; 
+   char* errstr = NULL; 
    int irc, i, c;
 
    _SFCB_ENTER(TRACE_UPCALLS, "execQuery");
@@ -771,14 +829,23 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
                   local=1;
                   unlockUpCall(broker);
 		  if (pInfo->initialized == 0) {
-		    initProvider(pInfo,binCtx.bHdr->sessionId);
+		    initrc = initProvider(pInfo,binCtx.bHdr->sessionId, &errstr);
 		  }
+		  if (initrc != 0) {
+		      st.rc = CMPI_RC_ERR_FAILED; 
+	          st.msg = sfcb_native_new_CMPIString(errstr, NULL, 0);
+	          free(errstr);
+              lockUpCall(broker);
+	          break; 
+		  }
+		  else {
                   rci = pInfo->instanceMI->ft->execQuery(
                      pInfo->instanceMI, context, result, cop, query, lang);
                   lockUpCall(broker);
                   if (rci.rc == CMPI_RC_OK) cpyResult(result, ar, &c);  
                   else st=rci; 
                   break;
+               }
                }
             } 
             if (local) continue;  

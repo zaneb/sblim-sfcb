@@ -1,3 +1,8 @@
+2009-03-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	Fixed [ 2591758 ] EOF Exception when running DefineSystem
+
 2009-03-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* brokerUpc.c, cimXmlRequest.c, providerDrv.c, support.c, support.h:

@@ -12,6 +12,7 @@ Bugs fixed:
 - 2669283 httpProcSem incorrectly initialized
 - 2559054 sfcb: sfcbmofpp doesn't recognize "//" comments
 - 2646746 SFCB crashes if provider MI factory functions return NULL
+- 2591758 EOF Exception when running DefineSystem
 
 Changes in 1.3.3
 ================

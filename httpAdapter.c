@@ -489,6 +489,7 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
          }
       }
    }
+   commWrite(conn_fd, end, strlen(end)); /* prevent Java Client EOF error */
    commFlush(conn_fd);
    
    _SFCB_EXIT();

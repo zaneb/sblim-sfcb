@@ -1,3 +1,9 @@
+2009-03-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/xmltest/associatorNames.OK test/xmltest/enumerateQualifiers.OK
+	  test/xmltest/getQualifier.OK:
+	Fixed tests for [ 2591758 ] EOF Exception when running DefineSystem
+
 2009-03-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

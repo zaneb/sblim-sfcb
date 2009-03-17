@@ -1381,18 +1381,16 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
 
    binCtx.provA.socket = classProvInfoPtr->providerSockets.send;
-   irc = MSG_X_PROVIDER;
 
-   if (irc) {
-      _SFCB_TRACE(1, ("--- Invoking ClassProvider for %s %s",ns,cn));
-      resp = invokeProvider(&binCtx);
-      resp->rc--;
-      st->rc=resp->rc;
-      if (resp->rc == CMPI_RC_OK) {
-         ccl = relocateSerializedConstClass(resp->object[0].data);
-         ccl = ccl->ft->clone(ccl, NULL);
-      }
+   _SFCB_TRACE(1, ("--- Invoking ClassProvider for %s %s",ns,cn));
+   resp = invokeProvider(&binCtx);
+   resp->rc--;
+   st->rc=resp->rc;
+   if (resp->rc == CMPI_RC_OK) {
+      ccl = relocateSerializedConstClass(resp->object[0].data);
+      ccl = ccl->ft->clone(ccl, NULL);
    }
+
    _SFCB_TRACE(1, ("--- Invoking ClassProvider for %s %s rc: %d",ns,cn,resp->rc));
    
    path->ft->release(path);

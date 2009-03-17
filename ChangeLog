@@ -1,3 +1,9 @@
+2009-03-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerMgr.c:
+	Fixed [ 2688353 ] Unnecessary condition in providerMgr.c
+	(based on patch from Pratyusha Doddapaneni)
+	
 2009-03-13 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* test/xmltest/associatorNames.OK test/xmltest/enumerateQualifiers.OK

@@ -163,7 +163,7 @@ cimSLPService getSLPData(cimomConfig cfg)
         memset(&rs, 0, sizeof(cimSLPService));
 
         cc = cmciConnect2(cfg.cimhost,
-                                        cfg.commScheme,
+                                        "SfcbLocal",
                                         cfg.port,
                                         cfg.cimuser,
                                         cfg.cimpassword,

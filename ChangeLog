@@ -1,3 +1,8 @@
+2009-03-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimslpCMPI.c:
+	Fixed [ 2692030 ] sfcb's SLP client should use LocalConnect interface
+
 2009-03-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerMgr.c:

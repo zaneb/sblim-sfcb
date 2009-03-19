@@ -194,7 +194,9 @@ QLOperation* newGeOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
 QLOperation* newEqOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
 QLOperation* newNeOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
 QLOperation* newIsaOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
- 
+QLOperation* newLikeOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+QLOperation* newNotLikeOperation(QLStatement*,QLOperand* lo, QLOperand* ro);
+
 QLOperation* newAndOperation(QLStatement*,QLOperation* lo, QLOperation* ro); 
 QLOperation* newOrOperation(QLStatement*,QLOperation* lo, QLOperation* ro); 
 QLOperation* newNotOperation(QLStatement*,QLOperation* lo);
@@ -264,3 +266,9 @@ struct qlControl {
 extern QLStatement *parseQuery(int mode, const char *query, const char *lang, const char *sns, int *rc);
 
 #endif
+
+#ifdef UNITTEST
+extern int queryOperation_test();
+#endif
+
+

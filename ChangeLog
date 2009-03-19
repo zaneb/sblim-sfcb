@@ -1,3 +1,10 @@
+2009-03-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* queryLexer.l, queryOperation.c, queryOperation.h, queryParser.y
+	  test/unittest/EmbeddedTests.c, test/unittest/Makefile.am:
+	Fixed [ 2141249 ] WQL parser needs to suppor the LIKE syntax
+		(patch from Shashi Uli)
+
 2009-03-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimslpCMPI.c:

@@ -129,6 +129,10 @@ IDENT_CHAR [A-Za-z_]
     return TOK_IS;
 }
 
+[Ll][Ii][Kk][Ee] {
+    return TOK_LIKE;
+}
+
 [-+]?{POSITIVE_DECIMAL_DIGIT}{DECIMAL_DIGIT}* {
 
     yylval.intValue = strtol(yytext, (char**)0, 10);

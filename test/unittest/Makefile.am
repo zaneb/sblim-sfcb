@@ -24,3 +24,4 @@ newCMPIInstance_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter
 
 EmbeddedTests_SOURCES = EmbeddedTests.c 
 EmbeddedTests_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter
+

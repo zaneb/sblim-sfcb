@@ -144,6 +144,7 @@ extern QLOperand* newNameQueryOperand(QLStatement *qs, char* val);
 %token <intValue> TOK_SELECT
 %token <intValue> TOK_WHERE
 %token <intValue> TOK_FROM
+%token <intValue> TOK_LIKE
 
 %token <intValue> TOK_UNEXPECTED_CHAR
 
@@ -352,6 +353,14 @@ comparisonPredicate
     | comparisonTerm TOK_ISA classId
     {
        $$=newIsaOperation(QS,$1,$3);
+    }
+    | comparisonTerm TOK_LIKE comparisonTerm
+    {
+       $$=newLikeOperation(QS,$1,$3);
+    }
+    | comparisonTerm TOK_NOT TOK_LIKE comparisonTerm
+    {
+       $$=newNotLikeOperation(QS,$1,$3);
     }
 
 nullPredicate

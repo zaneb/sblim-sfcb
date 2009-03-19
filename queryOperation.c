@@ -20,6 +20,7 @@
 */
 
 
+
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
@@ -28,6 +29,7 @@
 #include "queryOperation.h"
 #include "mlog.h"
 #include "instance.h"
+#include "config.h"
 
 extern CMPIArray *TrackedCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);
 extern void sfcb_native_array_increase_size(CMPIArray * array, CMPICount increment);
@@ -948,8 +950,6 @@ QLOperation* newIsNotNullOperation(QLStatement *qs, QLOperand* lo)
    op->ft=&qlIsNotNullOperationFt;
    return op;
 }
-
-
  
 
 
@@ -1218,8 +1218,146 @@ QLOperationFt qlIsaOperationFt={
    binIsBinaryOperation
 }; 
 
+int match_re(char *str, char *re)
+{
+    /* Allowed syntax for the partial RE matching
+      - '%123' - string which ends with '123'
+      - '123%' - string that begins with '123' 
+      - '%123%' - string that contains '123'
+       This is to match the WQL syntax with microsoft */
+    int rc = 0;
+    if (re==NULL || str==NULL || re[0]=='\0' || str[0]=='\0')
+        return 0;
+    int re_len = strlen(re);
+    char *str_to_match = (char *)malloc(re_len+1);
+    if (re[0] == '%') {
+        strcpy(str_to_match, &re[1]);
+        if (re[re_len-1] == '%') 
+        {
+            /* trailing % - substring match is sufficient */
+            str_to_match[re_len-2] = '\0';
+            rc = (strstr(str, str_to_match) != NULL ? 1 : 0);
+        }
+        else
+        {
+            /* no trailing %, exact match for the end of the string is required */
+            char *tmp = strstr(str, str_to_match);
+            if (tmp) 
+                rc = (strcmp(tmp, str_to_match) == 0 ? 1 : 0);
+            else
+                rc = 0;
+        }
+    }
+    else
+    {
+        strcpy(str_to_match, re);
+        if (re[re_len-1] == '%')
+        {
+            /* trailing % - exact loadmatch for beginning is required */
+            str_to_match[re_len-1] = '\0';
+            rc= (strncmp(str, str_to_match, strlen(str_to_match)) == 0 ? 1 : 0);
+        }
+        else
+        {
+            /* no %s, exact match is required */
+            rc = (strcmp(str, str_to_match) == 0 ? 1 : 0);
+        }
+    }
+    free (str_to_match);
+    return rc;
+}
 
+static int _likeEvaluate(QLOperation *op, QLPropertySource* source) 
+{
+   char *sov,*ov;
+   QLOpd type;
 
+   CMPIValue v=getPropValue(op->lhod, source, &type);
+   sov = v.chars;
+   type=op->rhod->type;
+   if (type==QL_PropertyName) 
+      ov=getPropValue(op->rhod, source, &type).chars;
+   else 
+       ov=op->rhod->charsVal;
+   if (type==QL_Chars && sov && ov)
+   {
+       int rc = match_re(sov, ov);
+       return (rc);
+   }
+   return 0;
+}
+
+char * likeToString(QLOperation *op) 
+{
+   char str[512];
+   strcpy(str,op->lhod->ft->toString(op->lhod));
+   strcat(str,"QL_LIKE ");
+   strcat(str,(op->rhod ? op->rhod->ft->toString(op->rhod) : "--"));
+   return strdup(str); 
+}
+
+QLOp likeOperation(QLOperation *op) 
+{
+   return QL_LIKE;
+}
+
+QLOperationFt qlLikeOperationFt={
+   _likeEvaluate,
+   evaluate,
+   likeToString,
+   likeOperation,
+   binTraverse,
+   relEliminateNots,
+   NULL,
+   NULL,
+   binIsBinaryOperation
+}; 
+
+static int _notLikeEvaluate(QLOperation *op, QLPropertySource* source) 
+{
+   char *sov,*ov;
+   QLOpd type;
+
+   CMPIValue v=getPropValue(op->lhod, source, &type);
+   sov = v.chars;
+   type=op->rhod->type;
+   if (type==QL_PropertyName) 
+      ov=getPropValue(op->rhod, source, &type).chars;
+   else 
+       ov=op->rhod->charsVal;
+   if (type==QL_Chars && sov && ov)
+   {
+       int rc = match_re(sov, ov);
+       return (rc == 0);
+   }
+   return 0;
+}
+
+char * notLikeToString(QLOperation *op) 
+{
+   char str[512];
+   strcpy(str,op->lhod->ft->toString(op->lhod));
+   strcat(str,"QL_NOT_LIKE ");
+   strcat(str,(op->rhod ? op->rhod->ft->toString(op->rhod) : "--"));
+   return strdup(str); 
+}
+
+QLOp notLikeOperation(QLOperation *op) 
+{
+   return QL_NOT_LIKE;
+}
+
+QLOperationFt qlNotLikeOperationFt={
+   _notLikeEvaluate,
+   evaluate,
+   notLikeToString,
+   notLikeOperation,
+   binTraverse,
+   relEliminateNots,
+   NULL,
+   NULL,
+   binIsBinaryOperation
+}; 
 
 QLOperation* newLtOperation(QLStatement *qs, QLOperand* lo, QLOperand* ro)
 {
@@ -1292,4 +1430,66 @@ QLOperation* newIsaOperation(QLStatement *qs, QLOperand* lo, QLOperand* ro)
    return op;
 }
 
+QLOperation* newLikeOperation(QLStatement *qs, QLOperand* lo, QLOperand* ro)
+{
+   QLOperation *op=qsAllocNew(qs,QLOperation);
+   op->lhod=lo;
+   op->rhod=ro;
+   op->opr=QL_LIKE;
+   op->ft=&qlLikeOperationFt;
+   return op;
+}
 
+QLOperation* newNotLikeOperation(QLStatement *qs, QLOperand* lo, QLOperand* ro)
+{
+   QLOperation *op=qsAllocNew(qs,QLOperation);
+   op->lhod=lo;
+   op->rhod=ro;
+   op->opr=QL_NOT_LIKE;
+   op->ft=&qlNotLikeOperationFt;
+   return op;
+}
+
+
+#ifdef UNITTEST
+int queryOperation_test()
+{
+/* Internal unit test */
+    //Test match_re()
+    char *str="123456";
+    char *re="%345%";
+    int rc;
+    int fail=0;
+    rc=match_re(str,re);
+    if (rc==0) {
+        printf("match_re() failed test %s, rc=%d\n",re,rc);
+        fail=1;
+    }
+    re="%999%";
+    rc=match_re(str,re);
+    if (rc!=0) {
+        printf("match_re() failed test %s, rc=%d\n",re,rc);
+        fail=1;
+    }
+    re="%456";
+    rc=match_re(str,re);
+    if (rc==0) {
+        printf("match_re() failed test %s, rc=%d\n",re,rc);
+        fail=1;
+    }
+    re="123%";
+    rc=match_re(str,re);
+    if (rc==0) {
+        printf("match_re() failed test %s, rc=%d\n",re,rc);
+        fail=1;
+    }
+    re="123456";
+    rc=match_re(str,re);
+    if (rc==0) {
+        printf("match_re() failed test %s, rc=%d\n",re,rc);
+        fail=1;
+    }
+
+    return fail;
+}
+#endif

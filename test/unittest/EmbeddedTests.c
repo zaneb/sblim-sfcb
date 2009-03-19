@@ -20,6 +20,7 @@
 
 // Include the header file for each embedded test routine.
 #include "trace.h"
+#include "queryOperation.h"
 
 int main(void)
 {
@@ -28,9 +29,12 @@ int main(void)
     int rc;
     printf("  Performing embedded unit tests ...\n");
     
-    // Check trace.c
     printf("  Testing trace.c ...\n");
     rc=trace_test();
+    if (rc != 0) fail=1;
+
+    printf("  Testing queryOperation.c ...\n");
+    rc=queryOperation_test();
     if (rc != 0) fail=1;
 
     // Return the overall results.

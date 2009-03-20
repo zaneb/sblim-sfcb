@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4700" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="CreateInstance">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="NewInstance">
+          <INSTANCE CLASSNAME="TEST_Person" >
+            <QUALIFIER NAME="Version" TYPE="string" TOSUBCLASS="false" TRANSLATABLE="true">
+              <VALUE>1.0.0</VALUE>
+            </QUALIFIER>
+            <QUALIFIER NAME="Description" TYPE="string" TOINSTANCE="true" TRANSLATABLE="true">
+              <VALUE>&#32;Class that defines a person.</VALUE>
+            </QUALIFIER>
+            <PROPERTY NAME="name"  CLASSORIGIN="TEST_Person" TYPE="string">
+              <QUALIFIER NAME="key" TYPE="boolean" OVERRIDABLE="false" TOINSTANCE="true">
+                <VALUE>TRUE</VALUE>
+              </QUALIFIER>
+              <VALUE>Michael</VALUE>
+            </PROPERTY>
+          </INSTANCE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+

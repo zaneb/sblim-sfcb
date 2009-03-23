@@ -716,7 +716,7 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
       rc=resp->rc;
       _SFCB_TRACE(1, ("--- rc: %d", resp->rc));
       
-      free(resp);
+      if(resp) free(resp);
       _SFCB_RETURN(rc);
    }
    _SFCB_RETURN(CMPI_RC_ERR_FAILED);
@@ -863,7 +863,7 @@ int sendResponseChunk(CMPIArray *r,int requestor, CMPIType type)
           setObjectPathMsgSegment(CMGetArrayElementAt(r, i, NULL).value.ref);
 
    rslt = sendResponse(requestor, resp);
-   free(resp);
+   if(resp) free(resp);
    _SFCB_RETURN(rslt);
 }
 
@@ -2696,12 +2696,11 @@ static void *processProviderInvocationRequestsThread(void *prms)
 	if (req->operation == OPS_LoadProvider && resp->rc == 2)
 	  exit(-1);
       }
+      free(resp);
    }  
     
    tool_mm_flush();
    
-   free(resp);
-
    if (pInfo && idleThreadStartHandled==0) {
       if (idleThreadStartHandled==0 && req->operation != OPS_PingProvider) {
          if (pInfo->unload==0) {

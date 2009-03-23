@@ -1,3 +1,9 @@
+2009-03-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* providerMgr.c, providerDrv.c:
+	Fixed [ 2705902 ] Deallocating NULL response headers
+	(based on patch from Pratayusa)
+
 2009-03-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* queryLexer.l, queryOperation.c, queryOperation.h, queryParser.y

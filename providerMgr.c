@@ -1336,7 +1336,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    
    unlockUpCall(Broker);
 
-   free(resp);
+   if(resp) free(resp);
    if(!localMode){
   	close(binCtx.provA.socket);
    }
@@ -1394,7 +1394,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    _SFCB_TRACE(1, ("--- Invoking ClassProvider for %s %s rc: %d",ns,cn,resp->rc));
    
    path->ft->release(path);
-   free(resp);
+   if(resp) free(resp);
 
    _SFCB_RETURN(ccl);
 }

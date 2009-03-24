@@ -17,6 +17,7 @@ Bugs fixed:
 - 2692030 sfcb's SLP client should use LocalConnect interface
 - 2141249 WQL parser needs to suppor the LIKE syntax
 - 2705902 Deallocating NULL response headers
+- 2172888 http content-length is not constrained (revised)
 
 Changes in 1.3.3
 ================

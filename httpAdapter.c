@@ -127,7 +127,9 @@ typedef int (*Authenticate)(char* principal, char* pwd);
 
 typedef struct _buffer {
    char *data, *content;
-   int length, size, ptr, content_length,trailers;
+   int length, size, ptr;
+   unsigned int content_length;
+   int trailers;
    char *httpHdr, *authorization, *content_type, *host, *useragent;
    char *principal;
    char *protocol;
@@ -401,7 +403,7 @@ static int readData(CommHndl conn_fd, char *into, int length)
 
 static int getPayload(CommHndl conn_fd, Buffer * b)
 {
-   int c = b->length - b->ptr;
+   unsigned int c = b->length - b->ptr;
    int rc = 0;
    b->content = (char *) malloc(b->content_length + 8);
    if (c) memcpy(b->content, (b->data) + b->ptr, c);
@@ -722,7 +724,8 @@ static int doHttpRequest(CommHndl conn_fd)
    Buffer inBuf = { NULL, NULL, 0, 0, 0, 0, 0 ,0};
    RespSegments response;
    static RespSegments nullResponse = { NULL, 0, 0, NULL, { {0, NULL} } };
-   int len, hl, rc,uset=0;
+   unsigned long len;
+   int hl, rc,uset=0;
    char *hdr, *path;
    int discardInput=0;
    MsgSegment msgs[2];
@@ -741,7 +744,7 @@ static int doHttpRequest(CommHndl conn_fd)
    inBuf.authorization = "";
    inBuf.protocol="HTTP/1.1";
    inBuf.content_type = NULL;
-   inBuf.content_length = -1;
+   inBuf.content_length = UINT_MAX;
    inBuf.host = NULL;
    inBuf.useragent = "";
    int badReq = 0;
@@ -813,15 +816,27 @@ static int doHttpRequest(CommHndl conn_fd)
       else if (strncasecmp(hdr, "Content-Length:", 15) == 0) {
          cp = &hdr[15];
          cp += strspn(cp, " \t");
-         inBuf.content_length = atol(cp);
-         long maxLen;
-         getControlNum("httpMaxContentLength", &maxLen);
-         if((maxLen) && (inBuf.content_length > maxLen)) {
+         if (cp[0] == '-') {
+           genError(conn_fd, &inBuf, 400, "Negative Content-Length", NULL);
+           _SFCB_TRACE(1, ("--- exiting: content-length too big"));
+           commClose(conn_fd);
+           exit(1);
+         }
+         unsigned long clen = strtoul(cp, NULL, 0);
+         unsigned int maxLen;
+         if (getControlUNum("httpMaxContentLength", &maxLen) != 0) {
+           genError(conn_fd, &inBuf, 501, "Server misconfigured (httpMaxContentLength)", NULL);
+           _SFCB_TRACE(1, ("--- exiting: bad config httpMaxContentLength"));
+           commClose(conn_fd);
+           exit(1);
+         }
+         if((clen >= UINT_MAX) || ((maxLen) && (clen > maxLen))) {
             genError(conn_fd, &inBuf, 413, "Request Entity Too Large", NULL);
             _SFCB_TRACE(1, ("--- exiting: content-length too big"));      
             commClose(conn_fd);
             exit(1);
          }
+         inBuf.content_length = clen;
       }
       else if (strncasecmp(hdr, "Content-Type:", 13) == 0) {
          cp = &hdr[13];
@@ -908,7 +923,7 @@ static int doHttpRequest(CommHndl conn_fd)
    }
 
    len = inBuf.content_length;
-   if (len < 0) {
+   if (len == 0) {
      if (!discardInput) {
         genError(conn_fd, &inBuf, 411, "Length Required", NULL);
      }

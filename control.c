@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <limits.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -109,7 +110,7 @@ Control init[] = {
    {"traceLevel",   1, "0"},
    {"traceMask",   1, "0"},
 
-   {"httpMaxContentLength",	1,	"0"},
+   {"httpMaxContentLength", 1, "100000000"},
    {"maxMsgLen",	1,	"10000000"},
 };
 
@@ -245,6 +246,24 @@ int getControlNum(char *id, long *val)
    }
    *val = 0;
    return rc;
+}
+
+int getControlUNum(char *id, unsigned int *val)
+{
+ Control *ctl;
+ int rc = -1;
+ if ((ctl = ct->ft->get(ct, id))) {
+   if (ctl->type == 1 && isdigit(ctl->strValue[0])) {
+     unsigned long tmp = strtoul(ctl->strValue,NULL,0);
+     if (tmp < UINT_MAX) {
+       *val = tmp;
+       return 0;
+     }
+ }
+   rc = -2;
+ }
+ *val = 0;
+ return rc;
 }
 
 int getControlBool(char *id, int *val)

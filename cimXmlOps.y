@@ -710,7 +710,8 @@ paramValues
 paramValue
     : XTOK_PARAMVALUE ZTOK_PARAMVALUE
     {
-       $1.value.value=NULL;
+       $$.value.value=NULL;
+       $$.type=-1;
     }   
     | XTOK_PARAMVALUE value ZTOK_PARAMVALUE
     {

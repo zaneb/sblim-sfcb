@@ -1,3 +1,9 @@
+2009-03-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c, cimXmlOps.y:
+	Fixed [ 2591758 ] EOF Exception when running DefineSystem
+	Reversed orignal "fix"; issue was an XML parsing problem
+	
 2009-03-24 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* control.c, control.h, httpAdapter.c

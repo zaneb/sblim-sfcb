@@ -45,7 +45,6 @@ extern CMPIObjectPath *relocateSerializedObjectPath(void *area);
 extern CMPIInstance *relocateSerializedInstance(void *area);
 extern CMPIArgs *relocateSerializedArgs(void *area);
 
-extern CMPIString *NewCMPIString(const char*, CMPIStatus*);
 extern CMPIObjectPath *NewCMPIObjectPath(const char*ns, const char* cn, CMPIStatus*);
 extern CMPIInstance *NewCMPIInstance(CMPIObjectPath * cop, CMPIStatus * rc);
 extern CMPIArray *NewCMPIArray(CMPICount size, CMPIType type, CMPIStatus * rc);

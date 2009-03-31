@@ -129,7 +129,6 @@ extern CMPISelectExp *NewCMPISelectExp(const char *queryString, const char *lang
            const char *sns, CMPIArray ** projection, CMPIStatus * rc);
 NativeSelectExp *activFilters=NULL;
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
-extern CMPIString *NewCMPIString(const char *ptr, CMPIStatus * rc);
 
 static ProviderProcess *provProc=NULL,*curProvProc=NULL;
 static int provProcMax=0;

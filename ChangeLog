@@ -1,3 +1,9 @@
+2009-03-31  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c, cimcClientSfcbLocal.c
+	Fixed [ 2708675 ] unused function definition in providerDrv.c
+	(fix by Surendra Kodali)
+
 2009-03-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c, cimXmlOps.y:

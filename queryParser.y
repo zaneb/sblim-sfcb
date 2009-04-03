@@ -360,7 +360,7 @@ comparisonPredicate
     }
     | comparisonTerm TOK_NOT TOK_LIKE comparisonTerm
     {
-       $$=newNotLikeOperation(QS,$1,$3);
+       $$=newNotLikeOperation(QS,$1,$4);
     }
 
 nullPredicate

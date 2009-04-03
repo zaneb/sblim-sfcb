@@ -1,3 +1,9 @@
+2009-04-03 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* queryParser.y
+	[ 2141249 ] WQL parser needs to suppor the LIKE syntax
+	(fix error/warning from previous patch
+
 2009-03-31  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c, cimcClientSfcbLocal.c

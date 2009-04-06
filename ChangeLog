@@ -1,3 +1,9 @@
+2009-04-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* classProvider.c, classProviderGz.c:
+	[ 2727841 ] Memory Leak is in gatherNameSpaces in classProvider
+	( based on patch from Shigeyoshi Hashi)
+
 2009-04-03 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* queryParser.y

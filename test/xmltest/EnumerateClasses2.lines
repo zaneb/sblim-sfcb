@@ -1,0 +1,54 @@
+<CLASS NAME="Reef_LogicalVolume">
+<PROPERTY NAME="key" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="storageFacilityImageMTMS" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="volumeType" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="logicalVolumeNum" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="logicalSubsystem" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="lssGroup" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="addressGroup" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="aliasVolumeGroup" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="origBaseLogVolNum" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="userName" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="segPool" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="dataType" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="dynamicSegAlloc" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="dataSharingAllowed" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="overridDefPriority" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="defPriorityOverVal" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="ckdPriorityOffset" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="requestedCapacity" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="capacity" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="deviceMTM" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="ckdVolumeSerialNum" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="accessState" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="dataState" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="configurationState" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="creationDate" TYPE="sint32">
+</PROPERTY>
+<PROPERTY NAME="codeLevel" TYPE="string">
+</PROPERTY>
+</CLASS>

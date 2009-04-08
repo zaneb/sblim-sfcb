@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4700" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="DeleteQualifier">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="QualifierName">
+          <VALUE>SampleQualifier</VALUE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>

@@ -1,3 +1,9 @@
+2009-04-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* pam/sfcb:
+	[ 2762848 ] pam/sfcb reduced logging in syslog
+	(patch by Chad Smith)
+
 2009-04-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* classProvider.c, classProviderGz.c:

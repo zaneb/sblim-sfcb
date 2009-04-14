@@ -1,3 +1,9 @@
+2009-04-14 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am, configure.ac, wbemcatX, man/wbemcatX.1.pre.in:
+	Multi protocol version of wbemcat
+	(code from Sean Swehla)
+
 2009-04-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* pam/sfcb:

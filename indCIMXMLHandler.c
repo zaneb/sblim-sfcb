@@ -37,7 +37,6 @@
 extern void closeProviderContext(BinRequestContext* ctx);
 extern int exportIndication(char *url, char *payload, char **resp, char **msg);
 extern void dumpSegments(void*);
-extern int exportIndication(char *url, char *payload, char **resp, char **msg);
 extern UtilStringBuffer *segments2stringBuffer(RespSegment *rs);
 extern UtilStringBuffer *newStringBuffer(int);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);

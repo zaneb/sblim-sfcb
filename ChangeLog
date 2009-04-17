@@ -1,3 +1,8 @@
+2009-04-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 2771516 ] Duplicate extern in indCIMXMLHandler.c
+
 2009-04-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* providerMgr.c

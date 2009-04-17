@@ -929,7 +929,18 @@ void processProviderMgrRequests()
 }
 
 void closeProviderContext(BinRequestContext * ctx)
-{ 
+{
+   int i = 0;
+    _SFCB_ENTER(TRACE_PROVIDERMGR, "closeProviderContext");
+   for(i = 0; i < ctx->pCount; i++) {
+     semAcquire(sfcbSem,PROV_GUARD(ctx->pAs[i].ids.procId));
+     if(semGetValue(sfcbSem, PROV_INUSE(ctx->pAs[i].ids.procId)) != 0) {
+       semAcquire(sfcbSem,PROV_INUSE(ctx->pAs[i].ids.procId));
+     } else {
+       fprintf(stderr, "--- closeProviderContext not touching sem %d; already zero\n", PROV_INUSE(ctx->pAs[i].ids.procId));
+     }
+     semRelease(sfcbSem,PROV_GUARD(ctx->pAs[i].ids.procId));
+   }
    if (ctx->pAs) free(ctx->pAs);
 }
 
@@ -947,8 +958,8 @@ static void setInuseSem(void *id)
    ids.ids=id;
 
    semAcquire(sfcbSem,PROV_GUARD(ids.procId));
-   semAcquire(sfcbSem,PROV_INUSE(ids.procId));
-   semReleaseUnDo(sfcbSem,PROV_INUSE(ids.procId));
+   //semAcquire(sfcbSem,PROV_INUSE(ids.procId));
+   //semReleaseUnDo(sfcbSem,PROV_INUSE(ids.procId));
    semRelease(sfcbSem,PROV_GUARD(ids.procId));
    _SFCB_EXIT();
 }

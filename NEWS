@@ -24,6 +24,7 @@ Bugs fixed:
 - 2708675 unused function definition in providerDrv.c
 - 2727841 Memory Leak is in gatherNameSpaces in classProvider
 - 2762848 pam/sfcb reduced logging in syslog
+- 2538227 Daemon clients are not unloading providers (localclient)
 
 Changes in 1.3.3
 ================

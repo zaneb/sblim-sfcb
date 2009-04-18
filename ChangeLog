@@ -3,6 +3,9 @@
 	* indCIMXMLHandler.c:
 	[ 2771516 ] Duplicate extern in indCIMXMLHandler.c
 
+	* objectImpl.c:
+	[ 2771819 ] Some ClXXX functions in objectImpl assume "data" is not NULL
+	
 2009-04-17 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* providerMgr.c

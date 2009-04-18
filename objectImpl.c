@@ -879,19 +879,21 @@ static int copyQualifiers(int ofs, int max, char *to, ClSection * ts,
 
 static int ClGetQualifierAt(ClClass * cls, ClQualifier *q, int id, CMPIData * data, char **name)
 {
-   if (data) *data = (q + id)->data;
-   if (data->type== CMPI_chars) {
+  if (data) { 
+    *data = (q + id)->data;
+    if (data->type== CMPI_chars) {
       const char *str =
-          ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
+        ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
       data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
       data->type = CMPI_string;
-   }
-   else if (data->type & CMPI_ARRAY) {
+    }
+    else if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&cls->hdr,
-            (ClArray *) & data->value.array);
-   }
-   if (name) *name = (char*)ClObjectGetClString(&cls->hdr, &(q + id)->id);
-   return 0;
+                                                            (ClArray *) & data->value.array);
+    }
+  }
+  if (name) *name = (char*)ClObjectGetClString(&cls->hdr, &(q + id)->id);
+  return 0;
 }
 
 int ClClassGetQualifierAt(ClClass * cls, int id, CMPIData * data, char **name)
@@ -1160,7 +1162,7 @@ int ClClassGetMethParamQualifierAt(ClClass * cls, ClParameter *parm, int id, CMP
    
    ClGetQualifierAt(cls,q,id,data,name); 
    
-   if (data->type & CMPI_ARRAY && data->value.array) {
+   if (data && data->type & CMPI_ARRAY && data->value.array) {
       data->value.array = native_make_CMPIArray((CMPIData *) data->value.array, 
          NULL, &cls->hdr);
    }   
@@ -1676,7 +1678,38 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
    p = (ClProperty *) ClObjectGetClSection(&cls->hdr, &cls->properties);
    if (id < 0 || id > cls->properties.used)
       return 1;
-   if (data) *data = (p + id)->data;
+    
+   if ((p + id)->quals & ClProperty_Q_EmbeddedObject) {
+     data->type = (data->type & CMPI_ARRAY ? CMPI_instance | CMPI_ARRAY : CMPI_instance); 
+   }
+   
+   if (data) { 
+     *data = (p + id)->data;
+     if (data->state & CMPI_nullValue)  {
+       data->value.uint64=0;
+     }
+     else if (data->type == CMPI_chars) {
+       const char *str =
+         ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
+       data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
+       data->type = CMPI_string;
+     }
+     else if (data->type == CMPI_dateTime) {
+       const char *str =
+         ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
+       data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL); 
+     }
+     else if (data->type & CMPI_ARRAY) {
+       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&cls->hdr,
+                                             (ClArray *) & data->value.array);
+     }
+     else if (data->type == CMPI_instance) {
+       data->value.inst = 
+         relocateSerializedInstance((void *)ClObjectGetClObject(&cls->hdr,
+                                    (ClString *) & data->value.inst));          
+     }
+   }
+
    if (name) *name = (char*)ClObjectGetClString(&cls->hdr, &(p + id)->id);
    if (quals) *quals = (p + id)->quals;
    if (refName) {
@@ -1687,34 +1720,7 @@ int ClClassGetPropertyAt(ClClass * cls, int id, CMPIData * data, char **name,
          *refName = NULL;
       }
    }
-   
-   if ((p + id)->quals & ClProperty_Q_EmbeddedObject) {
-   	     data->type = (data->type & CMPI_ARRAY ? CMPI_instance | CMPI_ARRAY : CMPI_instance); 
-   }
-   
-   if (data->state & CMPI_nullValue)  {
-      data->value.uint64=0;
-   }
-   else if (data->type == CMPI_chars) {
-      const char *str =
-          ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
-      data->type = CMPI_string;
-   }
-   else if (data->type == CMPI_dateTime) {
-      const char *str =
-         ClObjectGetClString(&cls->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL); 
-   }
-   else if (data->type & CMPI_ARRAY) {
-      data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&cls->hdr,
-            (ClArray *) & data->value.array);
-   }
-   else if (data->type == CMPI_instance) {
-      data->value.inst = 
-   	      relocateSerializedInstance((void *)ClObjectGetClObject(&cls->hdr,
-   	  							(ClString *) & data->value.inst));   	
-   }
+
    return 0;
 }
 
@@ -1960,31 +1966,35 @@ int ClInstanceGetPropertyAt(ClInstance * inst, int id, CMPIData * data,
    p = (ClProperty *) ClObjectGetClSection(&inst->hdr, &inst->properties);
    if (id < 0 || id > inst->properties.used)
       _SFCB_RETURN(1);
-   if (data) *data = (p + id)->data;
+   if (data) {
+     *data = (p + id)->data;
+     if (data->type == CMPI_chars) {
+       const char *str =
+         ClObjectGetClString(&inst->hdr, (ClString *) & data->value.chars);
+       data->value.string = sfcb_native_new_CMPIString(str, NULL, 2);
+       data->type = CMPI_string;
+     }
+     if (data->type == CMPI_dateTime) {
+       const char *str =
+         ClObjectGetClString(&inst->hdr, (ClString *) & data->value.chars);
+       data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL);
+     }
+     if (data->type & CMPI_ARRAY) {
+       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&inst->hdr,
+                                                             (ClArray *) & data->value.array);
+     }
+     if (data->type == CMPI_instance) {
+       data->value.inst = (void *)ClObjectGetClObject(&inst->hdr,
+                                                      (ClString *) & data->value.inst);
+       if(data->value.inst) {
+         relocateSerializedInstance(data->value.inst);
+       }
+     }   
+   }
+
    if (name) *name = (char*)ClObjectGetClString(&inst->hdr, &(p + id)->id);
    if (quals) *quals = (p + id)->quals;
-   if (data->type == CMPI_chars) {
-      const char *str =
-          ClObjectGetClString(&inst->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL, 2);
-      data->type = CMPI_string;
-   }
-   if (data->type == CMPI_dateTime) {
-      const char *str =
-          ClObjectGetClString(&inst->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL);
-   }
-   if (data->type & CMPI_ARRAY) {
-      data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&inst->hdr,
-            (ClArray *) & data->value.array);
-   }
-   if (data->type == CMPI_instance) {
-      data->value.inst = (void *)ClObjectGetClObject(&inst->hdr,
-      					(ClString *) & data->value.inst);
-      if(data->value.inst) {
-      	 relocateSerializedInstance(data->value.inst);
-      }
-   }   
+
    _SFCB_RETURN(0);
 }
 
@@ -2155,19 +2165,22 @@ int ClObjectPathGetKeyAt(ClObjectPath * op, int id, CMPIData * data,
 
    p = (ClProperty *) ClObjectGetClSection(&op->hdr, &op->properties);
    if (id < 0 || id > op->properties.used) return 1;
-   if (data) *data = (p + id)->data;
-   if (name) *name = (char*)ClObjectGetClString(&op->hdr, &(p + id)->id);
-   if (data->type == CMPI_chars) {
-      const char *str =
-          ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
-      data->type = CMPI_string;
-   }
-   else if (data->type == CMPI_dateTime) {
-      const char *str =
+   if (data) {
+     *data = (p + id)->data;
+     if (data->type == CMPI_chars) {
+       const char *str =
          ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL); 
+       data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
+       data->type = CMPI_string;
+     }
+     else if (data->type == CMPI_dateTime) {
+       const char *str =
+         ClObjectGetClString(&op->hdr, (ClString *) & data->value.chars);
+       data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL); 
+     }
    }
+   if (name) *name = (char*)ClObjectGetClString(&op->hdr, &(p + id)->id);
+
    return 0;
 }
 
@@ -2319,29 +2332,32 @@ int ClArgsGetArgAt(ClArgs * arg, int id, CMPIData * data, char **name)
    p = (ClProperty *) ClObjectGetClSection(&arg->hdr, &arg->properties);
    if (id < 0 || id > arg->properties.used)
       return 1;
-   if (data) *data = (p + id)->data;
+   if (data) {
+     *data = (p + id)->data;
+     if (data->type == CMPI_chars) {
+       const char *str = ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
+       data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
+       data->type = CMPI_string;
+     }
+     if (data->type == CMPI_dateTime) {
+       const char *str =
+         ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
+       data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL);
+     }
+     if (data->type & CMPI_ARRAY) {
+       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&arg->hdr,
+                                             (ClArray *) & data->value.array);
+     }
+     if (data->type == CMPI_instance) {
+       data->value.inst = (void *)ClObjectGetClObject(&arg->hdr,
+                                             (ClString *) & data->value.inst);
+       if(data->value.inst) {
+         relocateSerializedInstance(data->value.inst);
+       }
+     }   
+   }
    if (name) *name = (char*)ClObjectGetClString(&arg->hdr, &(p + id)->id);
-   if (data->type == CMPI_chars) {
-      const char *str = ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
-      data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
-      data->type = CMPI_string;
-   }
-   if (data->type == CMPI_dateTime) {
-      const char *str =
-          ClObjectGetClString(&arg->hdr, (ClString *) & data->value.chars);
-      data->value.dateTime = sfcb_native_new_CMPIDateTime_fromChars(str, NULL);
-   }
-   if (data->type & CMPI_ARRAY) {
-      data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&arg->hdr,
-         (ClArray *) & data->value.array);
-   }
-   if (data->type == CMPI_instance) {
-   	  data->value.inst = (void *)ClObjectGetClObject(&arg->hdr,
-      								(ClString *) & data->value.inst);
-      if(data->value.inst) {
-      	 relocateSerializedInstance(data->value.inst);
-      }
-   }   
+
    _SFCB_RETURN(0);
 }
 
@@ -2446,17 +2462,19 @@ int ClQualifierAddQualifier(ClObjectHdr * hdr, ClSection * qlfs,
 
 static int ClGetQualifierFromQualifierDeclaration(ClQualifierDeclaration * q, ClQualifier *qData, CMPIData * data)
 {
-   if (data) *data = qData->data;
-   if (data->type == CMPI_chars) {
+  if (data) {
+    *data = qData->data;
+    if (data->type == CMPI_chars) {
       const char *str =
-          ClObjectGetClString(&q->hdr, (ClString *) & data->value.chars);
+        ClObjectGetClString(&q->hdr, (ClString *) & data->value.chars);
       data->value.string = sfcb_native_new_CMPIString(str, NULL, 0);
       data->type = CMPI_string;
-   }
-   else if (data->type & CMPI_ARRAY) {
+    }
+    else if (data->type & CMPI_ARRAY) {
       data->value.dataPtr.ptr = (void *) ClObjectGetClArray(&q->hdr,
-            (ClArray *) & data->value.array);
-   }
+                                                            (ClArray *) & data->value.array);
+    }
+  }
    return 0;
 }
 

@@ -28,6 +28,7 @@ Bugs fixed:
 - 2771516 Duplicate extern in indCIMXMLHandler.c
 - 2771819 Some ClXXX functions in objectImpl assume "data" is not NULL
 - 2779859 HOST defaults to "localhost" in XML output of OBJECTPATH
+- 2780126 EnumerateClassNames with ClassName=NULL gets error
 
 Changes in 1.3.3
 ================

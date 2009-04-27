@@ -656,7 +656,10 @@ static CMPIStatus ClassProviderEnumClassNames(CMPIClassMI * mi,
    ns=(char*)CMGetNameSpace(ref,NULL)->hdl;
    flgs=ctx->ft->getEntry(ctx,CMPIInvocationFlags,NULL).value.uint32;
    cni=ref->ft->getClassName(ref,NULL);
-   if (cni) cn=(char*)cni->hdl;
+   if (cni) {
+      cn=(char*)cni->hdl;
+      if (cn && *cn==0) cn=NULL;
+   }   
    cb = (ClassBase *) cReg->hdl;  
 
    cReg->ft->wLock(cReg);

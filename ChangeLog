@@ -1,3 +1,10 @@
+2009-04-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* classProvider.c, classProviderGz.c, classProviderMem.c
+	  test/xmltest/EnumerateClassesNoName.*:
+	[ 2780126 ] EnumerateClassNames with ClassName=NULL gets error
+	(based on patch from Shigeyoshi Hashi)
+
 2009-04-23 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* cimXmlGen.c

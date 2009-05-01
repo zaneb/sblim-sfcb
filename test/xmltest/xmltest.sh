@@ -76,12 +76,25 @@ do
         passed=0
         while read line 
         do
+          # Check for disallowed lines (line starts with "!" in .lines file)
+          notline=$(echo $line | awk '{ line=index($line,"!"); print line; }' )
+          if [ "$notline" != 0 ] ; then
+            text=$(echo $line | awk '{ line=substr($line, 2); print line; }' )
+            if  grep --q "$text" $_TESTRESULT  ; then
+                echo "FAILED disallowed line found in result:"
+                echo "\t$text"
+                passed=1
+                _RC=1;
+            fi
+          else
+            # Check for required lines
             if ! grep --q "$line" $_TESTRESULT  ; then
                 echo "FAILED line not found in result:"
                 echo "\t$line"
                 passed=1
                 _RC=1;
             fi
+          fi
         done < $_TESTLINES
         if [ $passed -eq 0 ] ;  then
             echo "PASSED"

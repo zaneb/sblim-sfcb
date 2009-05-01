@@ -299,7 +299,7 @@ static void handleSigSegv(int sig)
    mlogf(M_ERROR,M_SHOW, "-#- %s - %d provider exiting due to a SIGSEGV signal\n",
            processName, currentProc);
    while (threads) {
-      snprintf(msg,1023, "*** Provider %s(%d) exiting due to a SIGSEGV signal\n",
+      snprintf(msg,1023, "*** Provider %s(%d) exiting due to a SIGSEGV signal",
               threads->pInfo->providerName, currentProc);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
       sendResponse(threads->requestor, resp);
@@ -2490,18 +2490,18 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
    switch (doLoadProvider(info,dlName, 512)) {
    case -1: {
       char msg[740];
-      snprintf(msg,739,"*** Failed to load %s for %s\n", dlName,
+      snprintf(msg,739,"*** Failed to load %s for %s", dlName,
               info->providerName);
-      mlogf(M_ERROR,M_SHOW,"%s",msg);
+      mlogf(M_ERROR,M_SHOW,"%s\n",msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
       free(info);
       _SFCB_RETURN(resp);
    }
    case -2:  {
       char msg[740];
-      snprintf(msg,739,"*** Inconsistent provider registration for %s (1)\n",
+      snprintf(msg,739,"*** Inconsistent provider registration for %s (1)",
               info->providerName);
-      mlogf(M_ERROR,M_SHOW,"%s",msg);
+      mlogf(M_ERROR,M_SHOW,"%s\n",msg);
       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
       free(info);
       _SFCB_RETURN(resp);

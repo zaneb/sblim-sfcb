@@ -1,5 +1,11 @@
 2009-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* classProvider.c, providerDrv.c, test/xmltest/CreateClassSegfault*:
+	[ 2778276 ] ClassProvider exiting by CreateClass
+	(based on patch from Shigeyoshi Hashi)
+
+2009-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* test/xmltest/xmltest.sh:
 	Added support for inverse xmltests in .lines files.
 

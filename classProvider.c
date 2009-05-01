@@ -322,8 +322,8 @@ static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
    int i,m,iq,mq,ip,mp,propId,methId,parmId;
    unsigned long quals;
    ClProperty *prop;
-   ClMethod *meth;
-   ClParameter *parm;
+   ClMethod *meth, *newMeth;
+   ClParameter *parm, *newParm;
    
    cl->quals |= ccl->quals;
    for (i=0,m=ClClassGetQualifierCount(ccl); i<m; i++) {
@@ -349,21 +349,23 @@ static int cpyClass(ClClass *cl, CMPIConstClass *cc, unsigned char originId)
    for (i=0,m=ClClassGetMethodCount(ccl); i<m; i++) {
       ClClassGetMethodAt(ccl,i,&t,&name,&quals);
       methId=ClClassAddMethod(cl, name, t);
-      meth=((ClMethod*)ClObjectGetClSection(&cl->hdr,&cl->methods))+methId-1;
+      meth=((ClMethod*)ClObjectGetClSection(&ccl->hdr,&ccl->methods))+methId-1;
+      newMeth=((ClMethod*)ClObjectGetClSection(&cl->hdr,&cl->methods))+methId-1;
       
       for (iq=0,mq=ClClassGetMethQualifierCount(ccl,methId-1); iq<mq; iq++) {
          ClClassGetMethQualifierAt(ccl, meth, iq, &d, &name);
-         ClClassAddMethodQualifier(&cl->hdr, meth, name, d);
+         ClClassAddMethodQualifier(&cl->hdr, newMeth, name, d);
       }   
       
       for (ip=0,mp=ClClassGetMethParameterCount(ccl,methId-1); ip<mp; ip++) {
          ClClassGetMethParameterAt(ccl, meth, ip, &p, &name);
-         parmId=ClClassAddMethParameter(&cl->hdr, meth, name, p);
-         parm=((ClParameter*)ClObjectGetClSection(&cl->hdr,&meth->parameters))+parmId-1;
+         parmId=ClClassAddMethParameter(&cl->hdr, newMeth, name, p);
+         parm=((ClParameter*)ClObjectGetClSection(&ccl->hdr,&meth->parameters))+parmId-1;
+         newParm=((ClParameter*)ClObjectGetClSection(&cl->hdr,&newMeth->parameters))+parmId-1;
      
          for (iq=0,mq=ClClassGetMethParamQualifierCount(ccl,parm); iq<mq; iq++) {
             ClClassGetMethParamQualifierAt(ccl, parm, iq, &d, &name);
-            ClClassAddMethParamQualifier(&cl->hdr, parm, name, d);
+            ClClassAddMethParamQualifier(&cl->hdr, newParm, name, d);
          }   
       }   
    } 

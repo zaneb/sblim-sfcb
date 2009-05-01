@@ -1,3 +1,8 @@
+2009-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/xmltest/xmltest.sh:
+	Added support for inverse xmltests in .lines files.
+
 2009-04-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* classProvider.c, classProviderGz.c, classProviderMem.c

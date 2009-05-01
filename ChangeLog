@@ -1,5 +1,11 @@
 2009-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* cimXmlParser.c
+	[ 2784240 ] Possible array access overflow in cimXmlParser
+	(patch from Klaus Kämpf)
+
+2009-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* classProvider.c, providerDrv.c, test/xmltest/CreateClassSegfault*:
 	[ 2778276 ] ClassProvider exiting by CreateClass
 	(based on patch from Shigeyoshi Hashi)

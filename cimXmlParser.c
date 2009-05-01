@@ -227,18 +227,23 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
                    const char *tag, int etag)
 {
    unsigned int n;
-   char *ptr, wa[32];
+#define MAXATTR 32
+#define WORDLEN 20
+   char *ptr, wa[MAXATTR];
    char msg1[] = { "Unknown attribute in list for " };
    char msg2[] = { "Bad attribute list for " };
-   char word[11];
+   char word[WORDLEN+1];
 
-   for (n = 0; (e + n)->attr; n++)
-      wa[n] = 0;
+   for (n = 0; (e + n)->attr; n++) {
+      if (n >= MAXATTR)
+        Throw(xb, "Too many attribute in XML");
+        wa[n] = 0;
+   }
 
    xb->eTagFound = 0;
    for (skipWS(xb); isalpha(*xb->cur); skipWS(xb)) {
 //      for (n=0; n < a.size(); n++) {
-      for (n = 0; (e + n)->attr; n++) {
+      for (n = 0; (e + n)->attr; n++) {  /* MAXATTR checked above */
          if (wa[n] == 1)
             continue;
          if (getWord(xb, (e + n)->attr, 0)) {
@@ -254,14 +259,14 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
             }
          }
       }
-      strncpy(word, xb->cur, 10);
-      word[10] = 0;
-      ptr = (char *) alloca(strlen(tag) + strlen(msg1) + 8 + 20);
+      strncpy(word, xb->cur, WORDLEN);
+      word[WORDLEN] = 0;
+      ptr = (char *) alloca(strlen(tag) + strlen(msg1) + WORDLEN + sizeof(char)*4);
       strcpy(ptr, msg1);
       strcat(ptr, tag);
-      strcat(ptr, " (");
+      strcat(ptr, " ("); /* 2 chars */
       strcat(ptr, word);
-      strcat(ptr, ")");
+      strcat(ptr, ")"); /* 1 char + \0 */
       Throw(xb, ptr);
     ok:;
    }
@@ -282,16 +287,18 @@ static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
    }
 
    /* build error message for Throw(): "Bad attribute list for: <TAG>: <chars...> */
-   ptr = (char*)alloca(strlen(msg2) + strlen(tag) + sizeof(char)*2 + strlen(word));
+   ptr = (char*)alloca(strlen(msg2) + strlen(tag) + sizeof(char)*3 + strlen(word));
    strcpy(ptr, msg2);
    strcat(ptr, tag);
    strcat(ptr, ": ");
-   /* ensure we have at least 10 chars left in the XML */
-   int wlen = (xb->cur < (xb->last - 10)) ? 10 : (xb->last - xb->cur); 
+   /* ensure we have at least WORDLEN chars left in the XML */
+   int wlen = (xb->cur < (xb->last - WORDLEN)) ? WORDLEN : (xb->last - xb->cur); 
    strncpy(word, xb->cur, wlen);
    strncat(ptr, word, wlen);
    Throw(xb, ptr);
    return -1;
+#undef WORDLEN
+#undef MAXATTR
 }
 
 /* Is this Broken?  I guess we don't allow escaping the quotes */

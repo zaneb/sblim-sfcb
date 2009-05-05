@@ -33,6 +33,7 @@
 #include "providerMgr.h"
 #include "internalProvider.h" 
 #include "cimXmlRequest.h" 
+#include "native.h"
 
 extern void closeProviderContext(BinRequestContext* ctx);
 extern int exportIndication(char *url, char *payload, char **resp, char **msg);
@@ -71,6 +72,18 @@ CMPIStatus IndCIMXMLHandlerCleanup(CMPIInstanceMI * mi, const CMPIContext * ctx,
  * Instance MI Functions
  * ------------------------------------------------------------------ */
 
+static CMPIContext* prepareUpcall(CMPIContext *ctx)
+{
+    /* used to invoke the internal provider in upcalls, otherwise we will
+ *      * be routed here (interOpProvider) again*/
+    CMPIContext *ctxLocal;
+    ctxLocal = native_clone_CMPIContext(ctx);
+    CMPIValue val;
+    val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
+    ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
+    return ctxLocal;
+}
+
 
 CMPIStatus IndCIMXMLHandlerEnumInstanceNames(CMPIInstanceMI * mi,
                                              const CMPIContext * ctx,
@@ -78,8 +91,20 @@ CMPIStatus IndCIMXMLHandlerEnumInstanceNames(CMPIInstanceMI * mi,
                                              const CMPIObjectPath * ref)
 {
    CMPIStatus st;
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;
+
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstanceNames");
-   st=InternalProviderEnumInstanceNames(NULL,ctx,rslt,ref);
+   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, ref, &st);
+   CMRelease(ctxLocal);
+
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
+   }
+   if(enm) CMRelease(enm);
+
    _SFCB_RETURN(st);
 }
 
@@ -90,8 +115,20 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
                                          const char **properties)
 {
    CMPIStatus st;
+   CMPIEnumeration *enm;
+   CMPIContext *ctxLocal;
+
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstances");
-   st=SafeInternalProviderEnumInstances(NULL,ctx,rslt,ref,properties,1);
+   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
+   ctxLocal = prepareUpcall((CMPIContext *)ctx);
+   enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
+   CMRelease(ctxLocal);
+
+   while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+   }
+   if(enm) CMRelease(enm);
+
    _SFCB_RETURN(st);
 }
 

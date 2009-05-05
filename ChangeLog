@@ -1,3 +1,8 @@
+2009-05-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c, internalProvider.c, internalProvider.h: 
+	[ 2779966 ] Use upcalls for ei/ein in indCIMXMLHandler	
+
 2009-05-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimXmlParser.c

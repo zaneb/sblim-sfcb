@@ -26,10 +26,6 @@
 #include "utilft.h"
 #include "cmpidt.h"
 
-CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
-					     const CMPIContext * ctx, 
-					     const CMPIResult * rslt, 
-					     const CMPIObjectPath * ref);
 CMPIStatus InternalProviderEnumInstances(CMPIInstanceMI * mi,
 					 const CMPIContext * ctx, 
 					 const CMPIResult * rslt, 
@@ -86,12 +82,6 @@ CMPIStatus InternalProviderReferences(CMPIAssociationMI * mi,
                                       const CMPIObjectPath * cop,
                                       const char *assocClass,
                                       const char *role, const char **propertyList);                                                                                                                            
-CMPIStatus SafeInternalProviderEnumInstances(CMPIInstanceMI * mi,
-                                      const CMPIContext * ctx,
-                                      const CMPIResult * rslt,
-                                      const CMPIObjectPath * ref,
-                                      const char **properties,
-                                      int ignprov);
 extern char *internalProviderNormalizeObjectPath(const CMPIObjectPath *cop);
 
 #endif

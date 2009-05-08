@@ -111,6 +111,7 @@ Control init[] = {
    {"traceMask",   1, "0"},
 
    {"httpMaxContentLength", 1, "100000000"},
+   {"validateMethodParamTypes",	2,	"false"},
    {"maxMsgLen",	1,	"10000000"},
 };
 

@@ -23,3 +23,9 @@ certificateAuthLib:   sfcCertificateAuthentication
 registrationDir: @localstatedir@/lib/sfcb/registration
 providerDirs: @libdir@/sfcb @libdir@ @libdir@/cmpi
 enableInterOp:  true
+
+## For an invokeMethod request, validate method parameter types against what
+## is specified in the mof, and return an error on a mismatch. Many providers 
+## will do this on their own.  Note that if one param type is not set, SFCB will
+## do validation and set the correct type, even if this option is disabled.
+#validateMethodParamTypes:  false

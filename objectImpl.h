@@ -435,6 +435,7 @@ extern int ClClassAddMethParameter(ClObjectHdr *hdr, ClMethod *m, const char *id
 extern int ClClassLocateMethod(ClObjectHdr *hdr, ClSection *mths, const char *id);
 extern int ClClassGetMethQualifierCount(ClClass * cls, int id);
 extern int ClClassGetMethParamQualifierCount(ClClass * cls, ClParameter *p);
+extern int ClClassGetMethParmQualifierCount(ClClass * cls, ClMethod *m, int id);
 extern int ClObjectLocateProperty(ClObjectHdr *hdr, ClSection *prps, const char *id);
 extern void showClHdr(void *ihdr);
 extern unsigned char ClClassAddGrandParent(ClClass *cls, char *gp);

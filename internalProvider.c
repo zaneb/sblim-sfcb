@@ -192,6 +192,71 @@ CMPIStatus InternalProviderCleanup(CMPIInstanceMI * mi,
  * ------------------------------------------------------------------ */ 
  
 
+CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
+                                             const CMPIContext * ctx,
+                                             const CMPIResult * rslt,
+                                             const CMPIObjectPath * ref)
+{
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIStatus sti = { CMPI_RC_OK, NULL };
+   BlobIndex *bi;
+   CMPIString *cn = CMGetClassName(ref, NULL);
+   CMPIString *ns = CMGetNameSpace(ref, NULL);
+   CMPIObjectPath *cop;
+   const char *nss=ns->ft->getCharPtr(ns,NULL);
+   const char *cns=cn->ft->getCharPtr(cn,NULL);
+   const char *bnss=repositoryNs(nss);
+   size_t ekl;
+   int i,ac=0;
+   char copKey[8192]="";
+   char *kp;
+   char *msg;
+   CMPIArgs *in,*out;
+   CMPIObjectPath *op;
+   CMPIArray *ar;
+   CMPIData rv;
+
+   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "InternalProviderEnumInstanceNames");
+   _SFCB_TRACE(1,("%s %s",nss,cns));
+   
+   in=CMNewArgs(Broker,NULL);
+   out=CMNewArgs(Broker,NULL);
+   CMAddArg(in,"class",cns,CMPI_chars);
+   op=CMNewObjectPath(Broker,bnss,"$ClassProvider$",&sti);
+   rv=CBInvokeMethod(Broker,ctx,op,"getallchildren",in,out,&sti);     
+   ar=CMGetArg(out,"children",NULL).value.array;
+   if (ar) ac=CMGetArrayCount(ar,NULL);
+   
+   for (i=0; cns; i++) {
+      if ((bi=_getIndex(bnss,cns))!=NULL) {
+	if (ipGetFirst(bi,NULL,&kp,&ekl)) {
+	  while(1) {
+            strcpy(copKey,nss);
+            strcat(copKey,":");
+            strcat(copKey,cns);
+            strcat(copKey,".");
+            strncat(copKey,kp,ekl);
+	    
+            cop=getObjectPath(copKey,&msg);
+            if (cop) CMReturnObjectPath(rslt, cop);
+            else {
+	      CMPIStatus st = { CMPI_RC_ERR_FAILED, NULL };
+	      return st;
+            }
+	    if (bi->next < bi->dSize && ipGetNext(bi,NULL,&kp,&ekl)) {
+	      continue;
+	    }
+	    break;
+	  }
+	}
+	freeBlobIndex(&bi,1);
+      }
+      if (i<ac) cns=(char*)CMGetArrayElementAt(ar,i,NULL).value.string->hdl;
+      else cns=NULL;  
+   }
+   _SFCB_RETURN(st);
+}
+
 UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
 
 static CMPIStatus enumInstances(CMPIInstanceMI * mi, 
@@ -851,6 +916,8 @@ CMPIStatus InternalProviderGetProperty(CMPIPropertyMI * mi,
  *       as long as the MI has no special requirements, i.e. to store
  *       data between calls.
  * ------------------------------------------------------------------ */
+
+CMInstanceMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);
 
 CMAssociationMIStub(InternalProvider, InternalProvider, _broker, CMNoHook);
 

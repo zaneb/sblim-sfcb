@@ -26,6 +26,10 @@
 #include "utilft.h"
 #include "cmpidt.h"
 
+CMPIStatus InternalProviderEnumInstanceNames(CMPIInstanceMI * mi,
+					     const CMPIContext * ctx, 
+					     const CMPIResult * rslt, 
+					     const CMPIObjectPath * ref);
 CMPIStatus InternalProviderEnumInstances(CMPIInstanceMI * mi,
 					 const CMPIContext * ctx, 
 					 const CMPIResult * rslt, 

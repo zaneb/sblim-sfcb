@@ -41,66 +41,87 @@ do
    _TESTOK=$_TEST.OK
    _TESTLINES=$_TEST.lines
    _TESTRESULT=$_TEST.result
-   #_TESTNAME=${_TEST##$TESTDIR/}
+   _TESTPREREQ=$_TEST.prereq
    _TESTNAME=$_TEST
 
-   # Remove any old test result file
-   rm -f $_TESTRESULT
-
-   # Send the test CIM-XML to the CIMOM and save the response, 
-   # stripping off the http header
    echo -n "  Testing $_TESTNAME..."
-   wbemcat $xmlfile 2>&1 | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT 
-   if [ $? -ne 0 ]; then
-      echo "FAILED to send CIM-XML request"
-      _RC=1
-      continue
-   fi
+   # Check if there's a .prereq file and if so, run it. Skip this
+   # test if it returns "1"
+   if [ ! -f $_TESTPREREQ ] ||  eval ./$_TESTPREREQ  ; then
 
-   # Compare the response XML against the expected XML for differences
-   # Either using a full copy of the expected output (testname.OK)
-   if [ -f $_TESTOK ] ; then
-        if ! diff --brief $_TESTOK $_TESTRESULT > /dev/null; then
-            echo "FAILED output not as expected"
-            _RC=1;
-            continue
-
-        # We got the expected response XML
-        else
-            echo "PASSED"
-            rm -f $_TESTRESULT
-        fi
-   fi
-   # or a file containing individual lines that must be found (testname.lines)
-   if [ -f $_TESTLINES ] ; then
-        passed=0
-        while read line 
-        do
-          # Check for disallowed lines (line starts with "!" in .lines file)
-          notline=$(echo $line | awk '{ line=index($line,"!"); print line; }' )
-          if [ "$notline" != 0 ] ; then
-            text=$(echo $line | awk '{ line=substr($line, 2); print line; }' )
-            if  grep --q "$text" $_TESTRESULT  ; then
-                echo "FAILED disallowed line found in result:"
-                echo "\t$text"
-                passed=1
+       # Remove any old test result file
+       rm -f $_TESTRESULT
+    
+       # Send the test CIM-XML to the CIMOM and save the response, 
+       # stripping off the http header
+       wbemcat $xmlfile 2>&1 | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT 
+       if [ $? -ne 0 ]; then
+          echo "FAILED to send CIM-XML request"
+          _RC=1
+          continue
+       fi
+    
+       # Compare the response XML against the expected XML for differences
+       # Either using a full copy of the expected output (testname.OK)
+       if [ -f $_TESTOK ] ; then
+            if ! diff --brief $_TESTOK $_TESTRESULT > /dev/null; then
+                echo "FAILED output not as expected"
                 _RC=1;
+                continue
+    
+            # We got the expected response XML
+            else
+                echo "PASSED"
+                rm -f $_TESTRESULT
             fi
-          else
-            # Check for required lines
-            if ! grep --q "$line" $_TESTRESULT  ; then
-                echo "FAILED line not found in result:"
-                echo "\t$line"
-                passed=1
-                _RC=1;
+       fi
+       # or a file containing individual lines that must be found (testname.lines)
+       if [ -f $_TESTLINES ] ; then
+            passed=0
+            rm -f ./tmpfail
+            while read line 
+            do
+              # Check for disallowed lines (line starts with "!" in .lines file)
+              notline=$(echo $line | awk '{ line=index($line,"!"); print line; }' )
+              if [ "$notline" != 0 ] ; then
+                text=$(echo $line | awk '{ line=substr($line, 2); print line; }' )
+                if  grep --q "$text" $_TESTRESULT  ; then
+                    if [ $passed -eq 0 ] ; then
+                        echo "FAILED disallowed line found"
+                        passed=1
+                        _RC=1;
+                    fi
+                    echo "FAILED disallowed line found" >> ./tmpfail
+                    echo "\t$text" >> ./tmpfail
+                fi
+              else
+                # Check for required lines
+                if ! grep --q "$line" $_TESTRESULT  ; then
+                    if [ $passed -eq 0 ] ; then
+                        echo "FAILED required line not found"
+                        passed=1
+                        _RC=1;
+                    fi
+                    echo "FAILED: required line not found" >> ./tmpfail
+                    echo "\t$line" >> ./tmpfail
+                fi
+              fi
+            done < $_TESTLINES
+            if [ -f ./tmpfail ]; then
+                    echo "\n\n**** Test Failed ****\n\n" >> $_TESTRESULT
+                    cat ./tmpfail >> $_TESTRESULT
+                    rm -f ./tmpfail
             fi
-          fi
-        done < $_TESTLINES
-        if [ $passed -eq 0 ] ;  then
-            echo "PASSED"
-            rm -f $_TESTRESULT
-        fi
-            
+    
+            if [ $passed -eq 0 ] ;  then
+                echo "PASSED"
+                rm -f $_TESTRESULT
+            fi
+                
+       fi
+   else 
+        # Prereq test failed, so skip this test.
+        echo "SKIPPED prerequisite not met"
    fi
 done
 

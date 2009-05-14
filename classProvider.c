@@ -470,9 +470,7 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
      closedir(dir_test);
      cr=newClassRegister(n);
      if (cr) {
-       char *name = (char*)malloc(strlen(n+nsBaseLen)+1);
-       strncpy(name, n+nsBaseLen, strlen(n+nsBaseLen));
-       ns->ft->put(ns, name, cr);
+       ns->ft->put(ns, strdup(n+nsBaseLen), cr);
        gatherNameSpaces(n,ns,0);
      }
      free(n);

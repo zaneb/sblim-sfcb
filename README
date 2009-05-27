@@ -110,7 +110,7 @@ are already installed on your Linux/Unix system:
 	bison >= 1.85
 	curl >= 7.11.1-1
 	curl-devel >= 7.11.1-1
-    flex
+        flex
 
 If you want to enable SSL support, the following packages are needed as well:
 
@@ -552,7 +552,7 @@ slpRefreshInterval
 keepaliveTimeout
         Specify the maximum time in seconds an sfcb HTTP process will wait
         between two requests on one connection before terminating. Setting 
-        it to 0 will disable HTTP keep-alive. Default=0
+        it to 0 will disable HTTP keep-alive. Default=15
 	
 keepaliveMaxRequest
 	Specify the maximum number of consecutive request on one connection.
@@ -614,8 +614,8 @@ traceLevel
 	variable SFCB_TRACE_LEVEL. Default: 0.
 
 traceMask
-	Specify the trace mask for sfcb. Can be overriden by the command line option
-	--trace-mask. Default: 0.
+	Specify the trace mask for sfcb. Overrides the command line option
+	--trace-components. Default: 0.
 
 traceFile
 	Specify the trace file for sfcb. Can be overriden by setting environment
@@ -690,11 +690,6 @@ SBLIM_TRACE=[0..4]
 	to 4 (all messages).
 	Note: this only applies to SBLIM providers written with explicit trace
 	messages in their source code.
-
-SBLIM_TRACE_FILE=/path/to/file
-	By default SBLIM provider trace messages are written to STDERR.
-	Setting this envorinment variable causes the trace messages to be
-	written to a file instead.
 
 
 14. Installing CMPI Providers

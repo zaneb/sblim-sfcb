@@ -2,7 +2,7 @@ Changes in 1.3.4
 ================
 
 New features:
-- wbemcatX: Multi protocol version of wbemcat
+- wbemcat: Updated to support multiple protocols
 - Inverse xmltests in .lines files
 - Prereq checks for individual xml tests
 
@@ -34,6 +34,7 @@ Bugs fixed:
 - 2778276 ClassProvider exiting by CreateClass
 - 2784240 Possible array access overflow in cimXmlParser
 - 2779966 Use upcalls for ei/ein in indCIMXMLHandler
+- 2794013 multiple wbemcats
 
 Changes in 1.3.3
 ================

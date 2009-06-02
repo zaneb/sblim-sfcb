@@ -32,7 +32,7 @@ cmpilibdir=$(libdir)/cmpi
 
 MANFILES=man/genSslCert.1 man/getSchema.1 man/sfcbd.1 man/sfcbmof.1 \
 	man/sfcbrepos.1 man/sfcbstage.1 man/sfcbunstage.1 man/sfcbuuid.1 \
-	man/wbemcat.1 man/xmltest.1 man/wbemcatX.1
+	man/wbemcat.1 man/xmltest.1
 
 BUILT_SOURCES=queryParser.c queryLexer.c sqlParser.c sqlLexer.c cimXmlOps.c cimXmlParserProcessed.c $(MANFILES)
 
@@ -402,7 +402,7 @@ dist_sfcbdata_DATA=default.reg interop.mof indication.mof
 
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage sfcbuuid
 
-dist_bin_SCRIPTS=wbemcat xmltest wbemcatX
+dist_bin_SCRIPTS=wbemcat xmltest
 
 init_SCRIPTS=sfcb
 

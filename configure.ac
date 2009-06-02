@@ -447,7 +447,7 @@ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh
 		 sfcb.init-redhat sfcb.init-suse sfcb.init-none default.reg
 		 man/genSslCert.1.pre  man/sfcbmof.1.pre 
                  man/sfcbunstage.1.pre man/sfcbuuid.1.pre man/getSchema.1.pre
-		 man/sfcbrepos.1.pre  man/wbemcat.1.pre man/wbemcatX.1.pre
+		 man/sfcbrepos.1.pre  man/wbemcat.1.pre
 		 man/sfcbd.1.pre man/sfcbstage.1.pre man/xmltest.1.pre 
 		 sfcb-dox.conf test/Makefile])
 AC_OUTPUT

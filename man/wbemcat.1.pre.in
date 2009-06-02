@@ -1,5 +1,5 @@
 .ig
-(C) Copyright IBM Corp. 2004, 2005
+(C) Copyright IBM Corp. 2009
                                                                                 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -11,18 +11,22 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
 
-.TH wbemcat 1 "August 2005" "wbemcat Version @PACKAGE_VERSION@"
+.TH wbemcat 1 "April 2009" "wbemcatX Version @PACKAGE_VERSION@"
 .SH NAME
-wbemcat \- Simple CIM-XML (via curl) CIM client
+wbemcat \- a multi-protocol CIM-XML client
 
 .SH SYNOPSIS
-.B wbemcat
+.B wbemcatX
 [\fIoptions\fR] [\fIFILE\fR]
 .SH DESCRIPTION
 Utility to send raw CIM-XML request \fIFILE\fR to the a CIMOM and display
-the response/results. Default CIMOM is \fIlocalhost:5988\fR.
+the response/results. Default CIMOM is \fIhttp://localhost:5988\fR.
 If no input file is specified then get XML data from stdin.
+This used to be the wbemcatX utility before it officially replaced the original.
 .SH OPTIONS
+.TP
+\fB\-t\fR, \fB\-\-protocol\fR=\fIPROTOCOL\fR
+Protocol with which to connect. Default=\fIhttp\fR
 .TP
 \fB\-h\fR, \fB\-\-host\fR=\fIHOSTNAME\fR
 Name of host running the CIMOM. Default=\fIlocalhost\fR
@@ -33,11 +37,9 @@ Port that the CIMOM is listening on. Default=\fI5988\fR
 \fB\-?\fR, \fB\-\-help\fR
 Display help message and exit.
 .SH PREREQUISITES
-Requires curl
 .SH AUTHOR
-Adrian Schuur <schuur@de.ibm.com>
+Sean Swehla <smswehla@linux.vnet.ibm.com>
 .SH CONTRIBUTORS
-Dr. Gareth S. Bestor <bestor@us.ibm.com>
 .SH BUGS
 .PP
 The SBLIM project maintains a mailing list to which you should direct all
@@ -50,7 +52,7 @@ The SBLIM Project Bug tracking page can be found at
 .IP
 http://sourceforge.net/tracker/?group_id=128809&atid=712784
 .SH COPYRIGHT
-(C) Copyright IBM Corp. 2004, 2005
+(C) Copyright IBM Corp. 2009
 .SH AVAILABILITY
 The Small-Footprint CIM Broker (sfcb) is a part of the SBLIM project.
 The most recent version is available on the web at
@@ -58,6 +60,7 @@ The most recent version is available on the web at
 http://sblim.sourceforge.net/
 .SH "SEE ALSO"
 .BR xmltest(1)
+.BR wbemcat(1)
 
 
 

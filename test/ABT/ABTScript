@@ -1,210 +1,259 @@
 #!/bin/bash
+set -x
+source /root/new_sc/sfcb.config
 
-# cvs_sfcb usage
+# ABTScript usage
+function USAGE()
+{
+    echo "USAGE: ABTScript <-c> <-h>"
+    echo " "
+    echo " -c  -  Check-out the code from CVS tree before starting the bulid"
+    echo " -h  -  Help"
 
-if [ "$1" == "" ] ;then
-   echo "USAGE: cvs_sfcb co [sfcb_config options]..."
-   echo " "
-   echo " co  -  Indicates check-out the code from CVS tree"
-   echo " sfcb_config options --   enable-ssl , --enable-slp --enable-ipv6 ...."
-   echo " "
-   echo "Examples:"
-   echo "     cvs_sfcb co  --- this command check-out the code from cvs tree and build sfcb with default options "
-   echo "     cvs_sfcb co  enable-ssl -- this command check-out the code from cvs tree and build sfcb with enabled"
-   echo "                                  ssl option"
-   echo "     cvs_sfcb enable-ipv6 enable-ssl -- this command build sfcb with enabled ssl and ipv6 options" 
-   echo " "
-   exit 1
+    exit 1
+}
+
+if [ "$1" == "-h" ] ;then
+    USAGE
 fi
 
-REPOSITORY_DIR="/usr/local/var/lib/sfcb/registration/repository"
-SFCB_ROOT="/opt/Nightlybuild"
+# set the CVS root
+if [ ! $CVSROOT ] ; then
+    export CVSROOT=":pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim"
+fi
+
+#set SFCB root
+if [ ! $SFCB_ROOT ]; then
+    export SFCB_ROOT="/root"
+fi
+
+# Status files
+
+DATE=`date -u +%y%m%d`
+CVS_CO_OUT=cvsco.out
+AUTO_CONFISCATE=autoconfiscate.out
+CONFIGURE_OUT=configure.out
+MAKE_OUT=make.out
+TEST_OUT=test.out
+MAIL_FILE=mailFile
+REPORT_SUMMARY=report.summary
+ZIP_FILE=report.zip
+STATUS="FAILURE"
+RC=""
+
 dirName="sfcbBuild"
 BASE_DIR="$SFCB_ROOT/$dirName"
 
-SBLIM_ROOT="/opt/SBLIM"
+# Remove sfcb dir if already exists
+function INIT_CLEAN()
+{
+    if [ -d $BASE_DIR ] ; then
+        cd ${BASE_DIR}/sfcb
+        make uninstall
+        cd $SFCB_ROOT
+        rm -rf $dirName
+        rm -rf $REPOSITORY_DIR
+        mkdir -p $BASE_DIR
+        REPORTDIR=$BASE_DIR/report1
+        mkdir -p $REPORTDIR
+        cd $BASE_DIR
+    else
+        mkdir -p $BASE_DIR
+        REPORTDIR=$BASE_DIR/report1
+        mkdir -p $REPORTDIR
+        cd $BASE_DIR
+    fi
+}
 
-# Remove sfcb if already exist
-
-if [ -d $BASE_DIR ]
-then
-   cd ${BASE_DIR}/sfcb
-   make uninstall
-   cd $SFCB_ROOT
-   rm -rf $dirName
-   rm -rf $REPOSITORY_DIR
-fi
-
- if [ ! -d $dirName ]
- then
-    mkdir -p $BASE_DIR
-    cd $BASE_DIR
- fi
-
-# Status files
-DATE=`date -u +%y%m%d`
-CVS_CO_OUT=cvsco_out
-AUTO_CONFISCATE=auto_confiscate
-MAKE_OUT=make_out
-MAIL_FILE=mail_file
-TEST_OUT=test_out
-ZIP_FILE=report.zip
-REPORT_FILE=report$DATE.txt
-
-configOptions=""
-testOptions=""
-TEST_OUT=test_out
-distro=""
-status="FAILURE"
-distro_id=`lsb_release -i| awk {'print $3'}`
-if [ $distro_id == "RedHatEnterpriseAS" ]
-then
-    distro="RHEL4U6"
-else
-    distro="SLES10"
-fi
-
-
-
-echo "Platform: LINUX_GNU" >> ${BASE_DIR}/${REPORT_FILE}
-echo "Date  : $DATE" >> ${BASE_DIR}/${REPORT_FILE}
-
-
-MAIL_ID=""  #mailing list
-
-export  PATH=$BASE_DIR/sfcb:/usr/local/bin:/usr/local/etc/init.d:$PATH
-export  LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib/sfcb:$BASE_DIR/sfcb/.libs:$LD_LIBRARY_PATH
+# Clean SFCB
+function SFCB_CLEAN()
+{
+    cd ${BASE_DIR}/sfcb
+    make clean
+    make uninstall
+}
 
 # Mail the report
 
 function MAIL_TO()
 {
-     /usr/local/etc/init.d/sfcb  stop #Stop SFCB server
-     zip -j ${BASE_DIR}/${ZIP_FILE} ${BASE_DIR}/${MAKE_OUT}
-     zip -j ${BASE_DIR}/${ZIP_FILE} ${BASE_DIR}/sfcb/test/xmltest/*.result
-     tail -30 $1 >> ${BASE_DIR}/${MAIL_FILE}
-     mail -s "$distro : $status : SFCB NightlyBuild" $MAIL_ID < ${BASE_DIR}/${REPORT_FILE}
-     mutt -a  ${BASE_DIR}/${ZIP_FILE} -s "$distro : $status : SFCB NightlyBuild" $MAIL_IDS < ${BASE_DIR}/${MAIL_FILE}
-     exit 1
+    zip -rj $REPORTDIR/$ZIP_FILE $REPORTDIR
+    mutt -a $REPORTDIR/$ZIP_FILE  -s "SFCB NBT: $DISTRO: $STATUS: $config_option" $MAIL_IDS < $REPORTDIR/$REPORT_SUMMARY
 }
 
-# Starting code check out from CVS source
+# check-out the code from CVS
 
- function CVS_CHECK_OUT()
- {
-    export CVSROOT=:pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim
+function CVS_CHECK_OUT()
+{
     cvs login
 
-    cvs co sfcb 1>$BASE_DIR/$CVS_CO_OUT 2>&1
-    cd sfcb
-    cvs co mofc 1>$BASE_DIR/$CVS_CO_OUT 2>&1
+    if cvs co sfcb 1>$REPORTDIR/$CVS_CO_OUT 2>&1
+    then
+        echo "SFCB check-out : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+        cd sfcb
+        if cvs co mofc 1>$REPORTDIR/$CVS_CO_OUT 2>&1
+        then
+            STATUS="SUCCESS"
+            echo "MOFC check-out : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+        else
+            STATUS="FAILURE"
+            echo "MOFC check-out : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+            MAIL_TO
+            exit 1
+        fi
+    else
+        STATUS="FAILURE"
+        echo "SFCB check-out : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+        MAIL_TO
+        exit 1
+    fi
  }
-# SFCB tests
+
+function SFCB_START()
+{
+    /usr/local/etc/init.d/sfcb  start
+    if [[ $? -eq 0 ]] ; then
+        echo "SFCB start : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+    else
+        echo "SFCB start : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+    fi
+}
+
+function SFCB_STOP()
+{
+    /usr/local/etc/init.d/sfcb  stop
+    if [[ $? -eq 0 ]] ; then
+        echo "SFCB stop : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+    else
+        echo "SFCB stop : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+    fi
+}
 
 function SFCB_TESTS()
 {
-     echo "Starting Unit tests ........." >> $MAKE_OUT
-     if make check 1>>$BASE_DIR/$MAKE_OUT 2>&1
-     then
-        tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-        status="SUCCESS"
-     else
-	tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-        status="FAILURE"
-        MAIL_TO ${BASE_DIR}/${MAKE_OUT}
-        break
-     fi
+    echo "Starting Unit tests ........." >> $REPORTDIR/$TEST_OUT
+
+    SFCB_START
+    if make test 1>>$REPORTDIR/$TEST_OUT 2>&1
+    then
+        RC=0
+        echo "SFCB Tests : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+    else
+        RC=1
+        echo "SFCB Tests : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+    fi
+    SFCB_STOP
+}
+
+function AUTO_CONF()
+{
+    if [ -d mofc ] ; then
+        if sh ./autoconfiscate.sh 1> $REPORTDIR/$AUTO_CONFISCATE 2>&1
+        then
+            STATUS="SUCCESS"
+            echo "Autoconfiscate : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+        else
+            STATUS="FAILURE"
+            echo "Autoconfiscate : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+            MAIL_TO
+            exit 1
+        fi
+    fi
+}
+
+function CONFIGURE_SFCB()
+{
+    if  sh ./configure  $config_option 1>> $REPORTDIR/$CONFIGURE_OUT 2>&1
+    then
+        RC=0
+        echo "CONFIGURE : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+        BUILD_SFCB
+    else
+        RC=1
+        echo "CONFIGURE : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+        echo "configure Failure" >> $REPORTDIR/$CONFIGURE_OUT
+    fi
+}
+
+# Starts SFCB Build
+
+function BUILD_SFCB()
+{
+    echo " " >> ${REPORTDIR}/${MAKE_OUT}
+    echo "Starting Build " >> ${REPORTDIR}/${MAKE_OUT}
+    echo " " >> ${REPORTDIR}/${MAKE_OUT}
+
+    if  make  1>>${REPORTDIR}/${MAKE_OUT} 2>&1
+    then
+        echo "MAKE  : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+        if make install 1>>${REPORTDIR}/${MAKE_OUT} 2>&1
+        then
+            echo "MAKE INSTALL : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+            if make postinstall 1>>${REPORTDIR}/${MAKE_OUT} 2>&1
+            then
+                RC=0
+                echo "MAKE POSTINSTALL : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+                SFCB_TESTS
+            else
+                RC=1
+                echo "MAKE POSTINSTALL : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+            fi
+        else
+            RC=1
+            echo "MAKE INSTALL : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+        fi
+    else
+        RC=1
+        echo "MAKE  : FAILURE" >> $REPORTDIR/$REPORT_SUMMARY
+    fi
 }
 
 
-if [ -n $1 ] ; then
-   for confVariable in $*
-   do
-       case $confVariable in
-           "co"|"CO" ) 
-                         CVS_CHECK_OUT
-                         ;;
-                   * ) 
-                          if [ -z "$configOptions" ] ; then
-                              configOptions="--$confVariable=yes"
-                          else
-                              configOptions="$configOptions   --$confVariable=yes"
-                          fi
-                          if [ "$confVariable" == "enable-ipv6" ]
-                          then
-                              testOptions=ipv6;
-                          fi
-			  if [ "$confVariable" == "enable-tests" ]
- 			  then
-			      configOptions="$configOptions   --$confVariable"
-			  fi
-                          ;;
-       esac
-   done
-fi
-
-# Setup auto conf files by runing autoconfiscate.sh file. 
-
-if [ -d mofc ] 
-then
-   if sh ./autoconfiscate.sh 1> $BASE_DIR/$AUTO_CONFISCATE 2>&1
-   then
-       tail -30 $BASE_DIR/$AUTO_CONFISCATE >> ${BASE_DIR}/${REPORT_FILE}
-       status="SUCCESS"
+function INIT_SFCB_BUILD()
+{
+    RC=0
+    CONFIGURE_SFCB  $config_option
+    if [[ $RC == 0 ]] ; then
+        STATUS="SUCCESS"
     else
-        MAIL_TO $BASE_DIR/$AUTO_CONFIGURE
-    fi 
-fi
-
-# Configuring build options and starting SFCB Build 
-
-if  sh ./configure  $configOptions 1>> $BASE_DIR/$MAKE_OUT 2>&1
-then
-
-    echo " " >> ${BASE_DIR}/${MAKE_OUT}
-    echo "Starting Build " >> ${BASE_DIR}/${MAKE_OUT}
-    echo " " >> ${BASE_DIR}/${MAKE_OUT}
-    tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-
-    if  make  1>>${BASE_DIR}/${MAKE_OUT} 2>&1
-    then
-        tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-        if make install 1>>${BASE_DIR}/${MAKE_OUT} 2>&1
-        then
-	    tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-            if make postinstall 1>>${BASE_DIR}/${MAKE_OUT} 2>&1
-            then 
-		tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-                status="SUCCESS"
-            else
-		tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-                status="FAILURE"
-                MAIL_TO ${BASE_DIR}/${MAKE_OUT}
-            fi
-        else
-	    tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-            status="FAILURE"
-            MAIL_TO ${BASE_DIR}/${MAKE_OUT}
-        fi
-    else
-	tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-        status="FAILURE"
-        MAIL_TO ${BASE_DIR}/${MAKE_OUT}
+        STATUS="FAILURE"
     fi
+    MAIL_TO
+}
+
+i=1
+
+if [ $1 == "-c" ]; then
+    INIT_CLEAN
+    CVS_CHECK_OUT
 else
-      tail -30 $BASE_DIR/${MAKE_OUT} >> ${BASE_DIR}/${REPORT_FILE}
-      status="FAILURE"
-      MAIL_TO ${BASE_DIR}/${MAKE_OUT}
+    SFCB_CLEAN
 fi
 
-# End of the SFCB Build
+AUTO_CONF
 
-# Starting tests
+# Count the options specified in CONFIG_OPTIONS variable
 
-/usr/local/etc/init.d/sfcb  start 1>>${BASE_DIR}/${MAKE_OUT} 2>&1 #Start SFCB server
+numberOfRuns=`echo $CONFIG_OPTIONS | awk -F:  {'print NF'}`
 
-SFCB_TESTS
+if [[ $numberOfRuns -eq  0 ]]; then
+    INIT_SFCB_BUILD
+fi
 
-/usr/local/etc/init.d/sfcb  stop 1>>${BASE_DIR}/${MAKE_OUT} 2>&1 #Stop SFCB server
+# Build SFCB with the options provided
+while  [[ $i -le $numberOfRuns ]]
+do
+    config_option=`echo $CONFIG_OPTIONS | cut -d':' -f$i`
+    if [[ $i -ne 1 ]]; then
+        REPORTDIR=$BASE_DIR/report$i
+        mkdir -p $REPORTDIR
+        SFCB_CLEAN
+        echo "SFCB check-out : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+        echo "MOFC check-out : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY
+        echo "Autoconfiscate : SUCCESS" >> $REPORTDIR/$REPORT_SUMMARY        
+    fi
+    INIT_SFCB_BUILD $config_option
+    let i="$i + 1"
+done
 
-MAIL_TO ${BASE_DIR}/${MAKE_OUT}
+set +x

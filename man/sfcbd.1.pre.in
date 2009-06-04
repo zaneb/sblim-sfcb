@@ -1,5 +1,5 @@
 .ig
-(C) Copyright IBM Corp. 2004, 2005
+(C) Copyright IBM Corp. 2004, 2005, 2009
                                                                                 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -11,10 +11,10 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
 
-.TH sfcbd 1 "December 2005" "sfcb Version @PACKAGE_VERSION@"
+.TH sfcbd 1 "June 2009" "sfcb Version @PACKAGE_VERSION@"
 
 .SH NAME
-sfcbd \- Open Source Small-Footprint CIM Broker (sfcb)
+sfcbd \- Small-Footprint CIM Broker (sfcb)
 .SH SYNOPSIS
 .B sfcbd
 [\fIoptions\fR]
@@ -65,6 +65,10 @@ Run sfcbd (and child processes) in the background.
 \fB\-h\fR, \fB\-\-help\fR
 Print help message and exit.
 .TP
+\fB\-k\fR, \fB\-\-color-trace\fR
+-k, --color-trace               
+Color the trace output of each process
+.TP
 \fB\-s\fR, \fB\-\-collect-stats\fR
 Turn on runtime statistics collecting. If enabled then
 various sfcbd runtime statistics will be written to \fI./sfcbStat\fR.
@@ -82,8 +86,8 @@ Prints version information and exits.
 .PP
 sfcbd reads the configuration file \fI@sysconfdir@/sfcb/sfcb.cfg\fR (or
 the file specified with the -c option) at start up. The configuration file 
-contains \fIoption : value\fR pairs, one per line. sfcb recogonizes the 
-following configuration file options
+contains \fIoption : value\fR pairs, one per line. For a complete list of
+options, see the default configuration file included with the sfcb package.
 .TP
 .B httpPort
 Local port that sfcbd should listen to receive HTTP (i.e. insecure)
@@ -268,7 +272,7 @@ SSL server certificate for sfcb.
 SSL private key file for sfcb.
 .TP
 .I @sysconfdir@/sfcb/client.pem
-SSL client certificate / trus store for sfcb.
+SSL client certificate / trust store for sfcb.
 .SH LIBRARIES
 .TP
 .I @libdir@/libsfc*
@@ -279,28 +283,31 @@ Binaries for providers
 .SH AUTHOR
 Adrian Schuur <schuur@de.ibm.com>
 .SH CONRIBUTORS
+.TS
+l l.	
 Dr. Gareth S. Bestor <bestor@us.ibm.com>,
-Viktor Mihajlovski <MIHAJLOV@de.ibm.com>
+Viktor Mihajlovski <MIHAJLOV@de.ibm.com>,
+Chris Buccella <buccella@linux.vnet.ibm.com>
+.TE
 .SH BUGS
 .PP
 The SBLIM project maintains a mailing list to which you should direct all
 questions regarding sfcb, sfcc, wbemcli, or any of the SBLIM providers.
 To subscribe to this mailing list visit
 .IP
-http://lists.sourceforge.net/lists/listinfo/sblim-issues
+http://lists.sourceforge.net/lists/listinfo/sblim-devel
 .PP
 The SBLIM Project Bug tracking page can be found at
 .IP
 http://sourceforge.net/tracker/?group_id=128809&atid=712784
 .SH COPYRIGHT
-(C) Copyright IBM Corp. 2004, 2005
+(C) Copyright IBM Corp. 2004, 2005, 2009
 .SH AVAILABILITY
 The Small-Footprint CIM Broker (sfcb) is a part of the SBLIM project.
 The most recent version is available on the web at
 .IP
 http://sblim.sourceforge.net/
 .SH "SEE ALSO"
-.BR cimserver (1),
 .BR sfcbmof (1),
 .BR sfcbstage (1),
 .BR sfcbunstage (1),

@@ -54,6 +54,10 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
 #ifdef HAVE_SYS_FSUID_H
 #include <sys/fsuid.h>
 #endif
@@ -64,7 +68,6 @@
 
 #ifdef HAVE_UDS
 #include <grp.h>
-#include <sys/stat.h>
 #endif
 
 unsigned long exFlags = 0;
@@ -1457,6 +1460,19 @@ static void handleHttpRequest(int connFd)
 
 }
 
+int isDir(const char *path)
+{
+#if defined (HAVE_SYS_STAT_H) && defined (USE_SSL)
+   struct stat sb;
+   int rc;
+   rc = stat(path, &sb);
+   if (rc == -1)
+      intSSLerror("Error opening the client trust store");
+   return (sb.st_mode & S_IFMT) == S_IFDIR;
+#else
+   return 0;
+#endif
+}
 
 int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 {
@@ -1729,6 +1745,7 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 #if defined USE_SSL
     if (sfcbSSLMode) {
        char *fnc,*fnk, *fnt, *fnl;
+       int rc;
        ctx = SSL_CTX_new(SSLv23_method());
        getControlChars("sslCertificateFilePath", &fnc);
        _SFCB_TRACE(1,("---  sslCertificateFilePath = %s",fnc));
@@ -1756,9 +1773,15 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
        } 
        getControlChars("sslClientTrustStore", &fnt);
        _SFCB_TRACE(1,("---  sslClientTrustStore = %s",fnt));
-       if (ccVerifyMode != CC_VERIFY_IGNORE &&
-	   SSL_CTX_load_verify_locations(ctx, fnt, NULL) != 1)
-	 intSSLerror("Error locating the client trust store");
+
+       if (ccVerifyMode != CC_VERIFY_IGNORE) {
+           if (isDir(fnt))
+              rc = SSL_CTX_load_verify_locations(ctx, NULL, fnt);
+           else
+              rc = SSL_CTX_load_verify_locations(ctx, fnt, NULL);
+           if (rc != 1)
+              intSSLerror("Error locating the client trust store");
+       }
 
        /* SSLv2 is pretty old; no one should be needing it any more */
        SSL_CTX_set_options(ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | 

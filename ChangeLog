@@ -1,3 +1,9 @@
+2009-06-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c, man/sfcbd.1.pre.in:
+	[ 2766344 ] Allow the client trust store to be a directory
+	(patch from Mihai Ibanescu)
+	
 2009-04-06 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* Makefile.am, configure.ac, wbemcat, wbemcat.1.pre.in

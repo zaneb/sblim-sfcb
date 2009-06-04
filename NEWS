@@ -5,6 +5,7 @@ New features:
 - wbemcat: Updated to support multiple protocols
 - Inverse xmltests in .lines files
 - Prereq checks for individual xml tests
+- Allow the client trust store to be a directory
 
 Bugs fixed:
 

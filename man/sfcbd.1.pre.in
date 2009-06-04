@@ -174,10 +174,19 @@ be passphrase-protected. This file is only required if enableHttps is
 set to \fItrue\fR. Default=\fI@sysconfdir@/sfcb/file.pem\fR
 .TP
 .B sslClientTrustStore
-Specify the name of the file containing the either the CA certificate
+Specify the name of the file or directory containing either the CA certificate
 issuing client certificates or self-signed certificates of the clients.
-This file must be in PEM format and is only required if sslClientCertificate
-is set to \fIaccept\fR or \fIrequire\fR. Default=\fI@sysconfdir@/sfcb/client.pem\fR
+This setting is only required if sslClientCertificate is set to \fIaccept\fR
+or \fIrequire\fR.
+
+If a file, it must be in PEM format.
+
+If a directory, it must be in "hash format": each file in the directory should
+be named \fIhash.0\fR, where \fIhash\fR is the output of 
+\fIopenssl x509 -hash\fR. See the \fI-CApath\fR option in \fIverify(1)\fR
+from the \fIopenssl\fR package for more information about the hash format.
+
+Default=\fI@sysconfdir@/sfcb/client.pem\fR
 .TP
 .B sslClientCertificate
 Specify the way sfcb handles client certificate based authentication. If set to

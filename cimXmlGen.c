@@ -1024,8 +1024,6 @@ int enum2xml(CMPIEnumeration * enm, UtilStringBuffer * sb, CMPIType type,
    CMPIObjectPath *cop;
    CMPIInstance *ci;
    CMPIConstClass *cl;
-   CMPIString *hs;
-   static char hss[HOST_NAME_MAX+1];
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "enum2xml");
    

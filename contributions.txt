@@ -4,9 +4,9 @@ External Contributions to sfcb
 Below are listed code contributions from the open source community.  
 The format is:
 
-MM/DD/YYYY by Author, Organization
-----------------------------------
-[ bugnum ] description
+Author, Organization
+--------------------
+MM/DD/YYYY [ bugnum ] description
 
 
 where "bugnum" is the bug number on SourceForge where a summary of the fix can 
@@ -18,124 +18,103 @@ https://sourceforge.net/tracker/?atid=712784&group_id=128809
 
 ********************************************************************************
 
-11/21/2008 by Klaus Kaempf, Novell
-----------------------------------
-[ 2192023 ] sfcb deadlocks on nsHt initialization
+Reddy Dasari, Dell
+------------------
+10/16/2007 [ 1811090 ] sfcb memory corruption on property value with quote or apos
 
-11/03/2008 by Mike Brasher, Inova
----------------------------------
-[ 2210462 ] Memory Corruption in CMSetProperty()
+Rajib Saha, AMI
+---------------
+10/16/2007 [ 1814455 ] sfcb leaks fd's during local connect
+10/23/2007 [ 1818578 ] sfcb local leaks memory during associator calls
+04/02/2008 [ 1928685 ] sfcb httpAdapter memory leak while authenticating
 
+Tim Potter, HP
+--------------
+12/13/2007 [ 1850416 ] Deadlock in getObjectPath()
+01/24/2008 [ 1879319 ] Fix various unused variable warnings
+01/24/2008 [ 1879330 ] Uninitialised memory in spSendMsg() and spSendCtl()
+01/24/2008 [ 1879334 ] Memory leaks in cimXmlRequest.c
+01/24/2008 [ 1879454 ] Memory leaks in brokerUpc.c
+01/24/2008 [ 1883049 ] Memory leak in sfcbdump
+02/15/2008 [ 1891702 ] Fix various resource leaks
+02/19/2008 [ 1892621 ] Memory leak in associator and associatorNames
+02/19/2008 [ 1893300 ] More memory leaks in associators and associatorNames
+02/19/2008 [ 1896551 ] Memory leak on loadProvider() failure
+04/08/2008 [ 1893302 ] New CMPI arrays not tracked
 
-10/31/2008 by Klaus Kampf, Novell
----------------------------------
-[ 2189234 ] provProcMax can be too low
+Peter Mellquist, HP
+-------------------
+01/07/2008 [ 1866424 ] Indication sending via https does not include client cert 
 
+J. Vinodhini, AMI
+-----------------
+03/14/2008 [ 1914551 ] sfcb file descriptor leaks
 
-10/30/2008 by Klaus Kampf, Novell
----------------------------------
-[ 2192049 ] Potential memory leak in providerDrv.c
-[ 2189206 ] duplicate call CMNewObjectPath to profileProvider.c
-[ 2192073 ] Add thread information to trace output
+Gokula Kannan, AMI
+------------------
+05/02/2008 [ 1919970 ] Provider process not terminated after idle (w/ LocalConnect)
 
+Luong Nguyen-Duy, Sun
+---------------------
+05/07/2008 [ 1953683 ] allow sfcb to be built to support localconnect only
+10/09/2008 [2027392] Bug in Query processing
+10/09/2008 [2028194] Failure in generating indication 
 
-10/09/2008 by Luong Nguyen-Duy, Sun
------------------------------------
-[2027392] Bug in Query processing
-[2028194] Failure in generating indication 
+J. Bart Whitely, Novell
+-----------------------
+06/27/2008 [ 1978218 ] SFCB support for HTTP over a unix socket
+07/30/2008 [ 2024019 ] SFCB can't handle large error messages
+10/03/2008 [ 2079099 ] SFCB should load providers with RTLD_GLOBAL
+12/05/2008 [ 2391132 ] Check for empty string in decode64
+12/08/2008 [ 2390100 ] mlogf called with unsafe arguments
+12/18/2008 [ 2412189 ] More flexible access control with unix socket connections
+03/10/2009 [ 2646746 ] SFCB crashes if provider MI factory functions return NULL
+03/03/2009 [ 2658399 ] Crash in providerDrv.c with NULL indicationMI
 
-
-10/03/2008 by J. Bart Whitely, Novell
--------------------------------------
-[ 2079099 ] SFCB should load providers with RTLD_GLOBAL
-
-
-10/02/2008 by Ingo van Lil, AMI
--------------------------------
-[ 2138163 ] sfcb: Wrong PID when running as daemon
-
-
-09/09/2008 by Alexander Dunfey, VMWare
---------------------------------------
-[ 2100707 ] NULL properties in property list returned with value
-
-
-07/30/2008 by J. Bart Whitely, Novell
--------------------------------------
-[ 2024019 ] SFCB can't handle large error messages
-
-
-06/27/2008 by J. Bart Whitely, Novell
--------------------------------------
-[ 1978218 ] SFCB support for HTTP over a unix socket
-
-
-05/07/2008 by Luong Nguyen-Duy, Sun
------------------------------------
-[ 1953683 ] allow sfcb to be built to support localconnect only
-
-
-05/02/2008 by Gokula Kannan 
-----------------------------
-[ 1919970 ] Provider process not terminated after idle (w/ LocalConnect)
-
-
-04/08/2008 by Tim Potter, HP
-----------------------------
-[ 1893302 ] New CMPI arrays not tracked
-
-
-04/02/2008 by Rajib Saha
+Alexander Dunfey, VMWare
 ------------------------
-[ 1928685 ] sfcb httpAdapter memory leak while authenticating
+09/09/2008 [ 2100707 ] NULL properties in property list returned with value
 
+Ingo van Lil, AMI
+-----------------
+10/02/2008 [ 2138163 ] sfcb: Wrong PID when running as daemon
 
-03/14/2008 by J. Vinodhini, AMI
--------------------------------
-[ 1914551 ] sfcb file descriptor leaks
+Klaus Kampf, Novell
+-------------------
+10/30/2008 [ 2192049 ] Potential memory leak in providerDrv.c
+10/30/2008 [ 2189206 ] duplicate call CMNewObjectPath to profileProvider.c
+10/30/2008 [ 2192073 ] Add thread information to trace output
+10/31/2008 [ 2189234 ] provProcMax can be too low
+11/21/2008 [ 2192023 ] sfcb deadlocks on nsHt initialization
+12/16/2008 [ 2433594 ] sfcb causing 'unaligned access' errors on IA64
+02/02/2009 [ 2192062 ] providerMgr doesn't check forkProvider() return values
+02/06/2009 [ 2561165 ] The genSslCert.sh SSL certificate setup has tempfile races
+05/01/2009 [ 2784240 ] Possible array access overflow in cimXmlParser
 
+Mike Brasher, Inova
+-------------------
+11/03/2008 [ 2210462 ] Memory Corruption in CMSetProperty()
 
-02/19/2008 by Tim Potter, HP
-----------------------------
-[ 1892621 ] Memory leak in associator and associatorNames
-[ 1893300 ] More memory leaks in associators and associatorNames
-[ 1896551 ] Memory leak on loadProvider() failure
+John Powell, VMWare
+--------------------
+12/12/2008 [ 2390523 ] buffer overrun in cimslpSLP.c
+12/18/2008 [ 2390515 ] Fix multiple resource leaks in SFCB detected by Coverity
+01/20/2009 [ 2390533 ] Memory leak in httpAdapter.c
 
+Norm Paxton, Novell
+-------------------
+01/09/2009 [ 2140807 ] Indication subscriptions don't persist across sfcbrepos
 
-02/15/2008 by Tim Potter, HP
-----------------------------
-[ 1891702 ] Fix various resource leaks
+Shigeyoshi Hashi, NEC
+---------------------
+04/06/2009 [ 2727841 ] Memory Leak is in gatherNameSpaces in classProvider
+04/27/2009 [ 2780126 ] EnumerateClassNames with ClassName=NULL gets error
+05/01/2009 [ 2778276 ] ClassProvider exiting by CreateClass
 
+Chad Smith, HP
+--------------
+04/14/2009 [ 2762848 ] pam/sfcb reduced logging in syslog
 
-01/24/2008 by Tim Potter, HP
-----------------------------
-[ 1879319 ] Fix various unused variable warnings
-[ 1879330 ] Uninitialised memory in spSendMsg() and spSendCtl()
-[ 1879334 ] Memory leaks in cimXmlRequest.c
-[ 1879454 ] Memory leaks in brokerUpc.c
-[ 1883049 ] Memory leak in sfcbdump
-
-
-01/07/2008 by Peter Mellquist, HP
----------------------------------
-[ 1866424 ] Indication sending via https does not include client cert 
-
-
-12/13/2007 by Tim Potter, HP
-----------------------------
-[ 1850416 ] Deadlock in getObjectPath()
-
-
-10/23/2007 by Rajib Saha, AMI
------------------------------
-[ 1818578 ] sfcb local leaks memory during associator calls
-
-
-10/16/2007 by Reddy Dasari, Dell
---------------------------------
-[ 1811090 ] sfcb memory corruption on property value with quote or apos
-
-
-10/16/2007 by Rajib Saha, AMI
------------------------------
-[ 1814455 ] sfcb leaks fd's during local connect
+Mihai Ibanescu, rPath
+---------------------
+06/04/2009 [ 2766344 ] Allow the client trust store to be a directory

@@ -11,6 +11,9 @@
 	* cimXmlParser.c:
 	[ 2736627 ] The type of NewValue is not checked at free
 	(patch from Shigeyoshi Hashi)
+
+	* cimXmlOps.y:
+	[ 2780152 ] SetProperty without NewValue gets segfault
 	
 2009-06-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
 

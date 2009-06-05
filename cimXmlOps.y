@@ -831,11 +831,15 @@ setPropertyParms
 	{
 		$$.instanceName = $2;
 		$$.propertyName = NULL;
+		$$.newVal.type = 0;
+		$$.newVal.val.value = NULL;
 	}
 	| XTOK_IP_PROPERTYNAME value ZTOK_IPARAMVALUE
 	{
 		$$.propertyName = $2.value;
 		$$.instanceName.className = NULL;
+		$$.newVal.type = 0;
+		$$.newVal.val.value = NULL;
 	}
 	| XTOK_IP_NEWVALUE newValue ZTOK_IPARAMVALUE
 	{

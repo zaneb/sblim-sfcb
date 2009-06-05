@@ -36,6 +36,7 @@ Bugs fixed:
 - 2784240 Possible array access overflow in cimXmlParser
 - 2779966 Use upcalls for ei/ein in indCIMXMLHandler
 - 2794013 multiple wbemcats
+- 2761168 Return value does not comply DSP0200
 
 Changes in 1.3.3
 ================

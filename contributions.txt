@@ -110,6 +110,7 @@ Shigeyoshi Hashi, NEC
 04/06/2009 [ 2727841 ] Memory Leak is in gatherNameSpaces in classProvider
 04/27/2009 [ 2780126 ] EnumerateClassNames with ClassName=NULL gets error
 05/01/2009 [ 2778276 ] ClassProvider exiting by CreateClass
+06/06/2009 [ 2761168 ] Return value does not comply DSP0200
 
 Chad Smith, HP
 --------------

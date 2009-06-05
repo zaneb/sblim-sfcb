@@ -221,7 +221,7 @@ static CMPIStatus NameSpaceProviderGetInstance(CMPIInstanceMI * mi,
       }
       else st.rc=CMPI_RC_ERR_NOT_FOUND;   
    }
-   else st.rc=CMPI_RC_ERR_NO_SUCH_PROPERTY;  
+   else st.rc=CMPI_RC_ERR_INVALID_PARAMETER;  
    
    _SFCB_RETURN(st);
 }
@@ -405,7 +405,7 @@ static CMPIStatus ObjectManagerProviderGetInstance(CMPIInstanceMI * mi,
          return ObjectManagerProviderEnumInstances(mi,ctx,rslt,ref,properties);
       else st.rc=CMPI_RC_ERR_NOT_FOUND;   
    }
-   else st.rc=CMPI_RC_ERR_NO_SUCH_PROPERTY;  
+   else st.rc=CMPI_RC_ERR_INVALID_PARAMETER;  
    
    _SFCB_RETURN(st);
 }
@@ -506,7 +506,7 @@ static CMPIStatus ComMechProviderGetInstance(CMPIInstanceMI * mi,
          return ComMechProviderEnumInstances(mi,ctx,rslt,ref,properties);
       else st.rc=CMPI_RC_ERR_NOT_FOUND;   
    }
-   else st.rc=CMPI_RC_ERR_NO_SUCH_PROPERTY;  
+   else st.rc=CMPI_RC_ERR_INVALID_PARAMETER;  
    
    _SFCB_RETURN(st);
 }

@@ -14,7 +14,12 @@
 
 	* cimXmlOps.y:
 	[ 2780152 ] SetProperty without NewValue gets segfault
+	(patch from Shigeyoshi Hashi)
 	
+	* cimXmlGen.c:
+	[ 2799756 ] Bad xml for Array of embedded instance out parameters
+	(patch from J. Bart Whitely)
+
 2009-06-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c, man/sfcbd.1.pre.in:

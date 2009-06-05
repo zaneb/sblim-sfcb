@@ -70,6 +70,7 @@ J. Bart Whitely, Novell
 12/18/2008 [ 2412189 ] More flexible access control with unix socket connections
 03/10/2009 [ 2646746 ] SFCB crashes if provider MI factory functions return NULL
 03/03/2009 [ 2658399 ] Crash in providerDrv.c with NULL indicationMI
+06/06/2009 [ 2799756 ] Bad xml for Array of embedded instance out parameters
 
 Alexander Dunfey, VMWare
 ------------------------

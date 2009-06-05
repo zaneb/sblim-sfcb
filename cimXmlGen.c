@@ -642,7 +642,7 @@ void data2xml(CMPIData * data, void *obj, CMPIString * name, CMPIString * refNam
       }
       else if(((data->type & ~CMPI_ARRAY) == CMPI_instance) 
                || ((data->type & ~CMPI_ARRAY) == CMPI_class)) {
-         SFCB_APPENDCHARS_BLOCK(sb, "string");
+         SFCB_APPENDCHARS_BLOCK(sb, "string\" EmbeddedObject=\"object");
       } else {
           sb->ft->appendChars(sb, dataType(data->type));
       }

@@ -8,6 +8,10 @@
 	[ 2736593 ] Null/No NewValue of SetProperty causes segfault
 	(patch from Shigeyoshi Hashi)
 
+	* cimXmlParser.c:
+	[ 2736627 ] The type of NewValue is not checked at free
+	(patch from Shigeyoshi Hashi)
+	
 2009-06-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c, man/sfcbd.1.pre.in:

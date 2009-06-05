@@ -1828,9 +1828,18 @@ static void freeInstance(XtokInstance *op)
 
 static  void freeNewValue(XtokNewValue *op)
 {
+  switch(op->type) {
+  case typeValue_Instance:
+/* case typeValue_Class: */
     freeValue(&op->val);
+    break;
+  case CMPI_ref:
     freeReference(&op->ref);
+    break;
+  case CMPI_ARRAY:
     freeArray(&op->arr);
+    break;
+  }
 }
 
 static void freeMethodCall(XtokMethodCall* op)

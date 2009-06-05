@@ -38,6 +38,7 @@ Bugs fixed:
 - 2794013 multiple wbemcats
 - 2761168 Return value does not comply DSP0200
 - 2736593 Null/No NewValue of SetProperty causes segfault
+- 2736627 The type of NewValue is not checked at free
 
 Changes in 1.3.3
 ================

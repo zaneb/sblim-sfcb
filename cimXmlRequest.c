@@ -2244,9 +2244,14 @@ static RespSegments setProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
    else {
       t = req->newVal.type;
    }
-   val = str2CMPIValue(t, req->newVal.val, &req->newVal.ref, req->op.nameSpace.data);
-   
-   CMSetProperty(inst, req->propertyName, &val, t);
+   if (t != CMPI_null) {
+      val = str2CMPIValue(t, req->newVal.val, &req->newVal.ref, req->op.nameSpace.data);
+      CMSetProperty(inst, req->propertyName, &val, t);
+   }
+   else {
+      val.string = 0;
+      CMSetProperty(inst, req->propertyName, 0, t);
+   }
 
    sreq.principal = setCharsMsgSegment(ctx->principal);
    sreq.path = setObjectPathMsgSegment(path);

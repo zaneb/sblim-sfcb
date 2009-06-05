@@ -275,6 +275,7 @@ static char *keyType(CMPIType type)
 
 CMPIType guessType(char *val)
 {
+   if (!val) return CMPI_null;
    if (((*val=='-' || *val=='+') && strlen(val)>1) || isdigit(*val)) {
       char *c;
       for (c=val+1; ; c++) {

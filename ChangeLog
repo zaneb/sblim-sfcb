@@ -4,6 +4,10 @@
 	[ 2761168 ] Return value does not comply DSP0200
 	(patch from Shigeyoshi Hashi)
 	
+	* cimXmlRequest.c, cimXmlGen.c:
+	[ 2736593 ] Null/No NewValue of SetProperty causes segfault
+	(patch from Shigeyoshi Hashi)
+
 2009-06-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c, man/sfcbd.1.pre.in:

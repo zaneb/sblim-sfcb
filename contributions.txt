@@ -112,6 +112,8 @@ Shigeyoshi Hashi, NEC
 05/01/2009 [ 2778276 ] ClassProvider exiting by CreateClass
 06/06/2009 [ 2761168 ] Return value does not comply DSP0200
 06/06/2009 [ 2736593 ] Null/No NewValue of SetProperty causes segfault
+06/06/2009 [ 2736627 ] The type of NewValue is not checked at free
+06/06/2009 [ 2780152 ] SetProperty without NewValue gets segfault
 
 Chad Smith, HP
 --------------

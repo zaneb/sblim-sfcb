@@ -163,9 +163,10 @@ extern char *httpPauseStr;
 #define HTTP_PROCS_ID 1
 #define SHTTP_GUARD_ID 2
 #define SHTTP_PROCS_ID 3
+#define LOG_GUARD_ID 4
 /* PROV_PROC_BASE_ID must be updated if the number of id's
  * in the above block changes. */
-#define PROV_PROC_BASE_ID 4
+#define PROV_PROC_BASE_ID 5
 
 /* constants for calculating per process ids */
 #define PROV_PROC_GUARD_ID 0

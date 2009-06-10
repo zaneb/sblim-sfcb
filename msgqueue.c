@@ -126,8 +126,8 @@ int initSem(int https, int shttps, int provs)
    
    if ((sfcbSem=semget(sfcbSemKey,4+(provs*3)+3,IPC_CREAT | IPC_EXCL | 0600))==-1) {
       char *emsg=strerror(errno);
-      mlogf(M_ERROR,M_SHOW,"\n--- SFCB semaphore create key: 0x%x failed: %s\n",sfcbSemKey,emsg);
-      mlogf(M_ERROR,M_SHOW,"     use \"ipcrm -S 0x%x\" to remove semaphore\n\n",sfcbSemKey);
+      fprintf(stderr,"\n--- SFCB semaphore create key: 0x%x failed: %s\n",sfcbSemKey,emsg);
+      fprintf(stderr,"     use \"ipcrm -S 0x%x\" to remove semaphore\n\n",sfcbSemKey);
       abort();
    }
 
@@ -139,6 +139,9 @@ int initSem(int https, int shttps, int provs)
    semctl(sfcbSem,SHTTP_GUARD_ID,SETVAL,sun);
    sun.val=shttps;
    semctl(sfcbSem,SHTTP_PROCS_ID,SETVAL,sun);
+   sun.val=1;
+   semctl(sfcbSem,LOG_GUARD_ID,SETVAL,sun);
+
    
    for (i=0; i<provs; i++) {
       sun.val=1;

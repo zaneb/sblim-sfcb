@@ -6,6 +6,7 @@ New features:
 - Inverse xmltests in .lines files
 - Prereq checks for individual xml tests
 - Allow the client trust store to be a directory
+- 2804331 Reduce logging verbosity
 
 Bugs fixed:
 

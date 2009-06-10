@@ -414,7 +414,7 @@ To stop and restart sfcbd type
 sfcb has a few commandline options that enable/disable particular runtime
 features. They are
 
-	sfcbd [-t N|?] [-d] [-v] [-h] [-k] [-s] [-c FILE] 
+	sfcbd [-t N|?] [-d] [-v] [-h] [-k] [-s] [-c FILE] [-l LOGLEVEL] 
 
 where
 	-t, --trace-components<N|?>
@@ -468,6 +468,11 @@ where
 	-c, --config-file=<FILE>
 		Specify an alternative configuration file (see Section 12).
 		Default=/usr/local/etc/sfcb/sfcb.cfg 
+
+    -l, --syslog-level=<LOGLEVEL>
+         specify the level for syslog. LOGLEVEL can be LOG_INFO, 
+         LOG_DEBUG, or LOG_ERR. LOG_ERR is the default
+
  
 
 12. Runtime Configuration Options

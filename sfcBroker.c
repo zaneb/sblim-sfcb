@@ -43,6 +43,7 @@
 #include "control.h"
 
 #include <getopt.h>
+#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -509,6 +510,9 @@ static void usage(int status)
 		" -d, --daemon                    run in the background",
 		" -h, --help                      display this message and exit",
 		" -k, --color-trace               color the trace output of each process",
+		" -l, --syslog-level=<LOGLEVEL>   specify the level for syslog",
+		"                                 LOGLEVEL can be LOG_INFO, LOG_DEBUG, or LOG_ERR",
+		"                                 LOG_ERR is the default",
 		" -s, --collect-stats             turn on runtime statistics collecting",
 		" -t, --trace-components=<N|?>    activate component-level tracing messages where",
 		"                                 N is an OR-ed bitmask integer defining the",
@@ -546,6 +550,7 @@ int main(int argc, char *argv[])
    int enableUds=0;
 #endif
    int enableHttp=0,enableHttps=0,useChunking=0,doBa=0,enableInterOp=0,httpLocalOnly=0;
+   int syslogLevel=LOG_ERR;
    long dSockets,sSockets,pSockets;
    char *pauseStr;
 
@@ -562,7 +567,6 @@ int main(int argc, char *argv[])
    restartArgc=argc;
    restartArgv=argv;
 
-   startLogging("sfcb");
 
    exFlags = 0;
 
@@ -573,12 +577,13 @@ int main(int argc, char *argv[])
 	   { "help",             no_argument,       0,        'h' },
 	   { "color-trace",      no_argument,       0,        'k' },
 	   { "collect-stats",    no_argument,       0,        's' },
+	   { "syslog-level",     required_argument, 0,        'l' },
 	   { "trace-components", required_argument, 0,        't' },
 	   { "version",          no_argument,       0,        'v' },
 	   { 0, 0, 0, 0 }
        };
 
-   while ((c = getopt_long(argc, argv, "c:dhkst:v", long_options, 0)) != -1)
+   while ((c = getopt_long(argc, argv, "c:dhkst:vl:", long_options, 0)) != -1)
    {
        switch(c)
        {
@@ -623,10 +628,25 @@ int main(int argc, char *argv[])
 	   case 'v':
 	       version();
 
+	   case 'l':
+            if (strcmp(optarg,"LOG_ERR")==0) {
+                syslogLevel=LOG_ERR;
+            } else if (strcmp(optarg,"LOG_INFO")==0) {
+                syslogLevel=LOG_INFO;
+            } else if (strcmp(optarg,"LOG_DEBUG")==0) {
+                syslogLevel=LOG_DEBUG;
+            } else {
+                fprintf(stderr,"Invalid value for syslog-level.\n");
+	            usage(3);
+            }
+            break;
+        
 	   default:
 	       usage(3);
        }
    }
+   initSem(dSockets,sSockets,pSockets);
+   startLogging("sfcb",syslogLevel);
 
    mlogf(M_INFO,M_SHOW,"--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
 
@@ -747,7 +767,6 @@ int main(int argc, char *argv[])
      startHttp = 1;
    }
    
-   initSem(dSockets,sSockets,pSockets);
    initProvProcCtl(pSockets);
    init_sfcBroker(NULL);
    initSocketPairs(pSockets,dSockets,sSockets);

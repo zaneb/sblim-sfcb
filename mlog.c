@@ -21,14 +21,15 @@
 const char *_mlog_id = "$Id$";
 
 #include "mlog.h"
+#include "msgqueue.h"
 #include <syslog.h>
 #include <stdarg.h>
 #include <stdio.h>
 
-void startLogging(const char *name)
+void startLogging(const char *name, int level)
 {
   openlog(name,LOG_PID,LOG_DAEMON);
-  setlogmask(LOG_UPTO(LOG_INFO));
+  setlogmask(LOG_UPTO(level));
 }
 
 /** \brief mlogf - Create syslog entries
@@ -62,16 +63,16 @@ void mlogf(int priority, int errout, const char *fmt, ...)
     priosysl=LOG_ERR;
     break;
   }
+
+  semAcquire(sfcbSem,LOG_GUARD_ID);
   va_start(ap,fmt);
-  
   vsnprintf(buf,4096,fmt,ap);
   syslog(priosysl,"%s",buf);
 
   if (errout) {
-    va_start(apc,fmt);
-    vfprintf(stderr,fmt,apc);
-    va_end(apc);
+    fprintf(stderr,"%s",buf);
   }
   va_end(ap);
+  semRelease(sfcbSem,LOG_GUARD_ID);
 }
 

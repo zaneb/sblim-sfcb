@@ -825,7 +825,14 @@ static int doHttpRequest(CommHndl conn_fd)
            commClose(conn_fd);
            exit(1);
          }
-         unsigned long clen = strtoul(cp, NULL, 0);
+         errno = 0; 
+         unsigned long clen = strtoul(cp, NULL, 10);
+         if (errno != 0) {
+           genError(conn_fd, &inBuf, 400, "Error converting Content-Length to a decimal value", NULL);
+           _SFCB_TRACE(1, ("--- exiting: content-length conversion error"));
+           commClose(conn_fd);
+           exit(1);
+         }
          unsigned int maxLen;
          if (getControlUNum("httpMaxContentLength", &maxLen) != 0) {
            genError(conn_fd, &inBuf, 501, "Server misconfigured (httpMaxContentLength)", NULL);

@@ -1,3 +1,8 @@
+2009-06-11  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	[ 2804477 ] SFCB doesn't properly parse content-length from some clients
+
 2009-06-05  Michael Chase-Salerno  <bratac@linux.vnet.ibm.com>
 
 	* mlog.c, mlog.h, sfcBroker.c, msgqueue.c, msgqueue.h:

@@ -71,6 +71,7 @@ J. Bart Whitely, Novell
 03/10/2009 [ 2646746 ] SFCB crashes if provider MI factory functions return NULL
 03/03/2009 [ 2658399 ] Crash in providerDrv.c with NULL indicationMI
 06/06/2009 [ 2799756 ] Bad xml for Array of embedded instance out parameters
+06/11/2009 [ 2804477 ] SFCB doesn't properly parse content-length from some clients
 
 Alexander Dunfey, VMWare
 ------------------------

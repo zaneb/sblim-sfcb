@@ -645,7 +645,6 @@ int main(int argc, char *argv[])
 	       usage(3);
        }
    }
-   initSem(dSockets,sSockets,pSockets);
    startLogging("sfcb",syslogLevel);
 
    mlogf(M_INFO,M_SHOW,"--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
@@ -767,6 +766,7 @@ int main(int argc, char *argv[])
      startHttp = 1;
    }
    
+   initSem(dSockets,sSockets,pSockets);
    initProvProcCtl(pSockets);
    init_sfcBroker(NULL);
    initSocketPairs(pSockets,dSockets,sSockets);

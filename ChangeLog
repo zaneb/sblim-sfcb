@@ -4,7 +4,7 @@
 	[ 2804477 ] SFCB doesn't properly parse content-length from some clients
 	(patch from J. Bart Whitely)
 	
-2009-06-05  Michael Chase-Salerno  <bratac@linux.vnet.ibm.com>
+2009-06-11  Michael Chase-Salerno  <bratac@linux.vnet.ibm.com>
 
 	* mlog.c, mlog.h, sfcBroker.c, msgqueue.c, msgqueue.h:
 	[ 2804331 ] Reduce logging verbosity 

@@ -2,6 +2,14 @@ Changes in 1.3.4
 ================
 
 New features:
+
+Bugs fixed:
+
+
+Changes in 1.3.4
+================
+
+New features:
 - wbemcat: Updated to support multiple protocols
 - Inverse xmltests in .lines files
 - Prereq checks for individual xml tests

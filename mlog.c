@@ -71,7 +71,7 @@ void startLogging(const char *name, int level)
  */
 void mlogf(int priority, int errout, const char *fmt, ...)
 {
-  va_list ap,apc;
+  va_list ap;
   int priosysl;
 
   char buf[4096];

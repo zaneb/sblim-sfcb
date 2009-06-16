@@ -1,3 +1,8 @@
+2009-06-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* getSchema.pre.in:
+	[ 2807245 ] Bump downloaded CIM schema to 2.21
+
 2009-06-11  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

@@ -323,23 +323,28 @@ static CMPIStatus NameSpaceProviderEnumInstanceNames(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-//------------------------------------------------------------------
+/* 
+   EnumInstanceNames for CIM_Service className 
+   Currently used for CIM_ObjectManager, CIM_IndicationService
+*/
 
-static CMPIStatus ObjectManagerProviderEnumInstanceNames(CMPIInstanceMI * mi,
-							 const CMPIContext * ctx,
-							 const CMPIResult * rslt,
-							 const CMPIObjectPath * ref)
+static CMPIStatus ServiceProviderEnumInstanceNames(CMPIInstanceMI * mi,
+						 const CMPIContext * ctx,
+						 const CMPIResult * rslt,
+						 const CMPIObjectPath * ref, 
+						 const char* className, 
+                                                 const char* sccn)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char hostName[512];
    CMPIObjectPath *op;
-   
-   _SFCB_ENTER(TRACE_PROVIDERS, "ObjectManagerProviderEnumInstanceNames");
 
-   op=CMNewObjectPath(_broker,"root/interop","CIM_ObjectManager",NULL);
+   _SFCB_ENTER(TRACE_PROVIDERS, "ServiceProviderEnumInstanceNames");
+
+   op=CMNewObjectPath(_broker,"root/interop",className,NULL);
    
-   CMAddKey(op,"CreationClassName","CIM_ObjectManager",CMPI_chars);
-   CMAddKey(op,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
+   CMAddKey(op,"CreationClassName",className,CMPI_chars);
+   CMAddKey(op,"SystemCreationClassName",sccn,CMPI_chars);
    hostName[0]=0;
    gethostname(hostName,511);
    CMAddKey(op,"SystemName",hostName,CMPI_chars);
@@ -363,7 +368,7 @@ static CMPIStatus ObjectManagerProviderEnumInstances(CMPIInstanceMI * mi,
    CMPIUint16 state;
    CMPIBoolean bul=0;
    
-   _SFCB_ENTER(TRACE_PROVIDERS, "ObjectManagerProviderEnumInstanceNames");
+   _SFCB_ENTER(TRACE_PROVIDERS, "ObjectManagerProviderEnumInstances");
 
    op=CMNewObjectPath(_broker,"root/interop","CIM_ObjectManager",NULL);
    ci=CMNewInstance(_broker,op,NULL);
@@ -388,27 +393,49 @@ static CMPIStatus ObjectManagerProviderEnumInstances(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-
-static CMPIStatus ObjectManagerProviderGetInstance(CMPIInstanceMI * mi,
-						   const CMPIContext * ctx,
-						   const CMPIResult * rslt,
-						   const CMPIObjectPath * ref, 
-						   const char **properties)
+static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
+                                             const CMPIContext * ctx,
+                                             const CMPIResult * rslt,
+                                             const CMPIObjectPath * ref,
+                                             const char **properties)
 {
-  CMPIStatus st = { CMPI_RC_OK, NULL };
-  CMPIString *name=CMGetKey(ref,"name",NULL).value.string;
-   
-   _SFCB_ENTER(TRACE_PROVIDERS, "ObjectManagerProviderGetInstance");
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   char str[512];
+   CMPIObjectPath *op;
+   CMPIInstance *ci;
+   CMPIBoolean filterCreation=1;
+   CMPIUint16 retryAttempts=0; /* only try to deliver indications once */
+   CMPIUint32 retryInterval=30;
+   CMPIUint16 subRemoval=3; /* 3 == "Disable" */
+   CMPIUint32 subRemovalInterval=2592000; /* 30 days */
 
-   if (name && name->hdl) {
-      if (strcasecmp((char*)name->hdl,getSfcbUuid())==0)  
-         return ObjectManagerProviderEnumInstances(mi,ctx,rslt,ref,properties);
-      else st.rc=CMPI_RC_ERR_NOT_FOUND;   
-   }
-   else st.rc=CMPI_RC_ERR_INVALID_PARAMETER;  
+   
+   _SFCB_ENTER(TRACE_PROVIDERS, "IndServiceProviderEnumInstances");
+
+   op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
+   ci=CMNewInstance(_broker,op,NULL);
+   
+   CMSetProperty(ci,"CreationClassName","CIM_ObjectManager",CMPI_chars);
+   CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
+   str[0]=0;
+   gethostname(str,511);
+   CMSetProperty(ci,"SystemName",str,CMPI_chars);
+   CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
+
+
+   CMSetProperty(ci,"FilterCreationEnabled",&filterCreation,CMPI_boolean);
+   CMSetProperty(ci,"ElementName","sfcb",CMPI_chars);
+   CMSetProperty(ci,"Description",PACKAGE_STRING,CMPI_chars);
+   CMSetProperty(ci,"DeliveryRetryAttempts",&retryAttempts,CMPI_uint16);
+   CMSetProperty(ci,"DeliveryRetryInterval",&retryInterval,CMPI_uint32);
+   CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
+   CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
+   
+    CMReturnInstance(rslt,ci);
    
    _SFCB_RETURN(st);
 }
+
 
 // ---------------------------------------------------------------
 
@@ -490,20 +517,27 @@ static CMPIStatus ComMechProviderEnumInstances(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
-static CMPIStatus ComMechProviderGetInstance(CMPIInstanceMI * mi,
+static CMPIStatus ServiceProviderGetInstance(CMPIInstanceMI * mi,
                                              const CMPIContext * ctx,
                                              const CMPIResult * rslt,
                                              const CMPIObjectPath * ref, 
-					     const char **properties)
+                                             const char **properties,
+                                             const char* className)
 {
   CMPIStatus st = { CMPI_RC_OK, NULL };
   CMPIString *name=CMGetKey(ref,"name",NULL).value.string;
    
-   _SFCB_ENTER(TRACE_PROVIDERS, "ComMechProviderGetInstance");
+   _SFCB_ENTER(TRACE_PROVIDERS, "ServiceProviderGetInstance");
 
    if (name && name->hdl) {
       if (strcasecmp((char*)name->hdl,getSfcbUuid())==0)  
+	if (strcasecmp(className, "cim_objectmanager"))
+         return ObjectManagerProviderEnumInstances(mi,ctx,rslt,ref,properties);
+	if (strcasecmp(className, "cim_objectmanagercommunicationMechanism"))
          return ComMechProviderEnumInstances(mi,ctx,rslt,ref,properties);
+	if (strcasecmp(className, "cim_indicationservice"))
+         return IndServiceProviderEnumInstances(mi,ctx,rslt,ref,properties);
+
       else st.rc=CMPI_RC_ERR_NOT_FOUND;   
    }
    else st.rc=CMPI_RC_ERR_INVALID_PARAMETER;  
@@ -533,9 +567,14 @@ static CMPIStatus ServerProviderGetInstance(CMPIInstanceMI * mi,
    else if (strcasecmp((char*)cls->hdl,"__namespace")==0) 
      return NameSpaceProviderGetInstance(mi, ctx, rslt, ref, properties, 1);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanager")==0) 
-      return ObjectManagerProviderGetInstance(mi, ctx, rslt, ref, properties);
+      return ServiceProviderGetInstance(mi, ctx, rslt, ref, properties, 
+                                                          "cim_objectmanager");
    if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
-      return ComMechProviderGetInstance(mi, ctx, rslt, ref, properties);
+      return ServiceProviderGetInstance(mi, ctx, rslt, ref, properties, 
+                                    "cim_objectmanagercommunicationMechanism");
+   if (strcasecmp((char*)cls->hdl,"cim_indicationservice")==0) 
+      return ServiceProviderGetInstance(mi, ctx, rslt, ref, properties, 
+                                                      "cim_indicationservice");
    
    return invClassSt;
 }
@@ -552,9 +591,13 @@ static CMPIStatus ServerProviderEnumInstanceNames(CMPIInstanceMI * mi,
    if (strcasecmp((char*)cls->hdl,"__namespace")==0) 
       return NameSpaceProviderEnumInstanceNames(mi, ctx, rslt, ref,1);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanager")==0) 
-      return ObjectManagerProviderEnumInstanceNames(mi, ctx, rslt, ref);
+      return ServiceProviderEnumInstanceNames(mi, ctx, rslt, ref, 
+                                    "CIM_ObjectManager", "CIM_ComputerSystem");
    if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
       return ComMechProviderEnumInstanceNames(mi, ctx, rslt, ref);
+   if (strcasecmp((char*)cls->hdl,"cim_indicationservice")==0) 
+     return ServiceProviderEnumInstanceNames(mi, ctx, rslt, ref, 
+                                 "CIM_IndicationService", "CIM_ObjectManager");
   
    return okSt;
 }                                                
@@ -575,6 +618,10 @@ static CMPIStatus ServerProviderEnumInstances(CMPIInstanceMI * mi,
       return ObjectManagerProviderEnumInstances(mi, ctx, rslt, ref, properties);
    if (strcasecmp((char*)cls->hdl,"cim_objectmanagercommunicationMechanism")==0) 
       return ComMechProviderEnumInstances(mi, ctx, rslt, ref, properties);
+   if (strcasecmp((char*)cls->hdl,"cim_interopservice")==0) /* do we still need this? */
+      return ComMechProviderEnumInstances(mi, ctx, rslt, ref, properties);
+   if (strcasecmp((char*)cls->hdl,"cim_indicationservice")==0)
+      return IndServiceProviderEnumInstances(mi, ctx, rslt, ref, properties);
    
    return okSt;
 }                                                

@@ -4,6 +4,7 @@ Changes in 1.3.5
 New features:
 
 - Bump downloaded CIM schema to 2.21
+- Implement CIM_IndicationService
 
 Bugs fixed:
 

@@ -11,6 +11,10 @@ class DMY_ObjectManager : CIM_ObjectManager
 {
 };
 
+class DMY_IndicationService : CIM_IndicationService
+{
+};
+
 class DMY_ObjectManagerCommunicationMechanism : CIM_ObjectManagerCommunicationMechanism
 {
 };

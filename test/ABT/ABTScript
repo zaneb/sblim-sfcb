@@ -1,31 +1,4 @@
 #!/bin/bash
-set -x
-source /root/new_sc/sfcb.config
-
-# ABTScript usage
-function USAGE()
-{
-    echo "USAGE: ABTScript <-c> <-h>"
-    echo " "
-    echo " -c  -  Check-out the code from CVS tree before starting the bulid"
-    echo " -h  -  Help"
-
-    exit 1
-}
-
-if [ "$1" == "-h" ] ;then
-    USAGE
-fi
-
-# set the CVS root
-if [ ! $CVSROOT ] ; then
-    export CVSROOT=":pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim"
-fi
-
-#set SFCB root
-if [ ! $SFCB_ROOT ]; then
-    export SFCB_ROOT="/root"
-fi
 
 # Status files
 
@@ -223,13 +196,8 @@ function INIT_SFCB_BUILD()
 
 i=1
 
-if [ $1 == "-c" ]; then
-    INIT_CLEAN
-    CVS_CHECK_OUT
-else
-    SFCB_CLEAN
-fi
-
+INIT_CLEAN
+CVS_CHECK_OUT
 AUTO_CONF
 
 # Count the options specified in CONFIG_OPTIONS variable
@@ -255,5 +223,3 @@ do
     INIT_SFCB_BUILD $config_option
     let i="$i + 1"
 done
-
-set +x

@@ -1,0 +1,18 @@
+#!/bin/bash
+set -x
+source /root/suri/sfcb.config
+
+#Check the config options
+if [ ! $CVSROOT ] ; then
+    export CVSROOT=":pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim"
+fi
+
+if [ ! $SFCB_ROOT ]; then
+    export SFCB_ROOT=`pwd`
+fi
+
+if [ "$CONFIG_OPTIONS" == "" ] ; then
+    export CONFIG_OPTIONS="--enable-tests"
+fi
+
+sh ./ABTScript 

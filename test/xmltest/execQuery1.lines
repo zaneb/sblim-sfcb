@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<MESSAGE ID="1000" PROTOCOLVERSION="1.0">
+<SIMPLERSP>
+<IMETHODRESPONSE NAME="ExecQuery">
+<PROPERTY NAME="CreationClassName" TYPE="string">
+<VALUE>Linux_ComputerSystem</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Description" TYPE="string">
+<VALUE>A class derived from ComputerSystem that represents the single node container of the Linux OS.</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Caption" TYPE="string">
+<VALUE>Computer System</VALUE>
+</PROPERTY>

@@ -70,6 +70,7 @@ cd $scriptDir
 
 if [ $selfUpdateDone == "no" ]; then
     cvs -d :pserver:anonymous:@sblim.cvs.sourceforge.net:/cvsroot/sblim co sfcb/test/ABT/
+    cp $scriptDir/sfcb/test/ABT/* $scriptDir
     cp $scriptDir/MonitorABT $0
     exec $0 -ud $params
 fi

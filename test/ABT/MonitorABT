@@ -1,6 +1,97 @@
 #!/bin/bash
 set -x
-source /root/suri/sfcb.config
+
+function USAGE()
+{
+    echo " MonitorABT  -sd [-mid] [-cf]"
+    echo " sd  ----   Location/Path of ABT scripts"
+    echo " mid ----   Machine ID"
+    echo " cf  ----   Configuration file"
+    echo " Example :"
+    echo " MonitorABT  -sd /opt/ABT [-mid xnl3107] [-cf /tmp/SFCB/sfcbABT.conf]"
+    exit 1
+}
+
+scriptDir=""
+confFile=""
+machineID=""
+
+selfUpdateDone="no"
+params=$*
+if [[ $# -eq 0 ]] ; then
+   USAGE
+else
+   confFileStatus=0
+   sdStatus=0
+   
+   for conf in  $*
+   do
+      case $conf in
+          "-mid"|"-MID")
+                machineID=$2
+                shift 2
+                ;;
+          "-cf"|"-CF")
+                confFile=$2
+                shift 2
+                confFileStatus=1
+                if [[ ! -f $confFile ]] ; then
+                    echo "No configuration file present in the location $confFile"
+                    exit 1;
+                else
+                    chmod 755 $confFile
+                fi
+                ;;
+           "-sd"|"-SD")
+                sdStatus=1          
+                scriptDir=$2
+                shift 2
+                if [[ ! -d $scriptDir ]]; then
+                    echo " $scriptDir is not a directory"
+                    USAGE
+                fi  
+                ;;
+           #For internal use.
+           "-ud")
+                selfUpdateDone="yes"
+                shift 1
+                ;;
+      esac
+   done
+fi
+
+
+if [[ $sdStatus -eq 0 ]]; then
+    echo "Provide ABT scripts Location"
+    USAGE
+fi
+
+cd $scriptDir
+
+if [ $selfUpdateDone == "no" ]; then
+    cvs -d :pserver:anonymous:@sblim.cvs.sourceforge.net:/cvsroot/sblim co sfcb/test/ABT/
+    cp $scriptDir/MonitorABT $0
+    exec $0 -ud $params
+fi
+
+echo $selfUpdateDone
+
+if [[ $confFileStatus -eq 0 ]] ; then
+    echo "No configuration file: It will take default conf file"
+    confFile=$scriptDir/sfcb.config
+fi
+
+if [[ "$machineID" == "" ]] ; then
+    machineID=`hostname`
+fi
+RELEASE=`lsb_release -r -s`
+IDISTRO=`lsb_release -i -s`
+
+source $confFile
+
+export DISTRO="$IDISTRO $RELEASE"
+export MID=$machineID
+
 
 #Check the config options
 if [ ! $CVSROOT ] ; then
@@ -8,11 +99,20 @@ if [ ! $CVSROOT ] ; then
 fi
 
 if [ ! $SFCB_ROOT ]; then
-    export SFCB_ROOT=`pwd`
+    export SFCB_ROOT=$scriptDir/sfcbBuild
 fi
 
-if [ "$CONFIG_OPTIONS" == "" ] ; then
-    export CONFIG_OPTIONS="--enable-tests"
+index=${#TESTCONFIG[@]}
+
+i=0
+
+if [ -d $SFCB_ROOT ]; then
+    rm -rf $SFCB_ROOT
 fi
 
-sh ./ABTScript 
+while [[ $i -lt $index ]]
+do
+     sh $scriptDir/ABTScript $SFCB_ROOT "${TESTNAME[$i]}"  "${TESTCONFIG[$i]}"
+     let i="$i + 1"
+done
+

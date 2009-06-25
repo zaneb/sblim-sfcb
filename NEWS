@@ -8,6 +8,8 @@ New features:
 
 Bugs fixed:
 
+- 2727799 Qualifier provider exiting due to a SIGSEGV signal
+
 
 Changes in 1.3.4
 ================

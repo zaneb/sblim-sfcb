@@ -1,3 +1,9 @@
+2009-06-25  Sean Swehla  <smswehla@linux.vnet.ibm.com>
+
+	* fileRepository.c:
+	[ 2727799 ] Qualifier provider exiting due to a SIGSEGV signal
+	(patch from Shigeyoshi Hashi, tested by Pratayusha Doddapaneni)
+	
 2009-06-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* getSchema.pre.in:

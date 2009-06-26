@@ -2,7 +2,6 @@
 
 # Status files
 
-DATE=`date -u +%y%m%d`
 CVS_CO_OUT=cvsco.out
 AUTO_CONFISCATE=autoconfiscate.out
 CONFIGURE_OUT=configure.out
@@ -11,177 +10,158 @@ TEST_OUT=test.out
 MAIL_FILE=mailFile
 REPORT_SUMMARY=report.summary
 ZIP_FILE=report.zip
-STATUS="FAILURE"
 RC=0
-
-#dirName="sfcbBuild"
-#BASE_DIR="$SFCB_ROOT/$dirName"
 
 BASE_DIR=$1
 TESTNAME=$2
 CONFIGOPTIONS=$3
 
-REPORTDIR=$BASE_DIR/"$TESTNAME"
+REPORTDIR=$BASE_DIR/report/"$TESTNAME"
 
-if [[ ! -d $BASE_DIR ]]; then
+if [ ! -d $BASE_DIR ]; then
     mkdir -p $BASE_DIR
 fi
-if [[ ! -d "$REPORTDIR" ]]; then
+if [ ! -d "$REPORTDIR" ]; then
     mkdir -p "$REPORTDIR"
 fi
 
 # Clean SFCB
-function SFCB_CLEAN()
+SFCB_CLEAN()
 {
-    if [[ -d $BASE_DIR/sfcb ]] ; then
+    if [ -d $BASE_DIR/sfcb ] ; then
         cd ${BASE_DIR}/sfcb
         make clean uninstall
     fi
 }
 
-# Mail the report
-function MAIL_TO()
-{
-    zip -rj "$REPORTDIR"/$ZIP_FILE "$REPORTDIR"
-    mutt -a "$REPORTDIR"/$ZIP_FILE  -s "SFCB NBT: $TESTNAME: $MID: $DISTRO: $STATUS: $DATE" $MAIL_IDS < "$REPORTDIR"/$REPORT_SUMMARY
-}
-
 # check-out the code from CVS
 
-function CVS_CHECK_OUT()
+CVS_CHECK_OUT()
 {
     cvs login
     cd ${BASE_DIR}
     if cvs co sfcb 1>"$REPORTDIR"/$CVS_CO_OUT 2>&1
     then
-        echo "SFCB check-out : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+        RC=0
+        echo "SFCB check-out : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
         cd sfcb
         if cvs co mofc 1>"$REPORTDIR"/$CVS_CO_OUT 2>&1
         then
-            STATUS="SUCCESS"
-            echo "MOFC check-out : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+            RC=0
+            echo "MOFC check-out : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
         else
-            STATUS="FAILURE"
-            echo "MOFC check-out : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
-            MAIL_TO
-            exit 1
+            RC=1
+            echo "MOFC check-out : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
         fi
     else
-        STATUS="FAILURE"
-        echo "SFCB check-out : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
-        MAIL_TO
-        exit 1
+        RC=1
+        echo "SFCB check-out : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
     fi
  }
 
-function SFCB_START()
+SFCB_START()
 {
     /usr/local/etc/init.d/sfcb  start
-    if [[ $? -eq 0 ]] ; then
-        echo "SFCB start : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+    if [ $? -eq 0 ] ; then
+        echo "SFCB start : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
     else
-        echo "SFCB start : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "SFCB start : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
     fi
 }
 
-function SFCB_STOP()
+SFCB_STOP()
 {
     /usr/local/etc/init.d/sfcb  stop
-    if [[ $? -eq 0 ]] ; then
-        echo "SFCB stop : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+    if [ $? -eq 0 ] ; then
+        echo "SFCB stop : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
     else
-        echo "SFCB stop : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "SFCB stop : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
     fi
 }
 
-function SFCB_TESTS()
+SFCB_TESTS()
 {
-    echo "Starting Unit tests ........." >> "$REPORTDIR"/$TEST_OUT
+    echo "Starting Unit tests ........." >> $BASE_DIR/$TEST_OUT
 
     SFCB_START
     if make test 1>>"$REPORTDIR"/$TEST_OUT 2>&1
     then
         RC=0
-        echo "SFCB Tests : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "SFCB Tests : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
     else
         RC=1
-        echo "SFCB Tests : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "SFCB Tests : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
     fi
     SFCB_STOP
 }
 
-function AUTO_CONF()
+AUTO_CONF()
 {
     if sh ./autoconfiscate.sh 1> "$REPORTDIR"/$AUTO_CONFISCATE 2>&1
     then
-        STATUS="SUCCESS"
-        echo "Autoconfiscate : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+        RC=0
+        echo "Autoconfiscate : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
     else
-        STATUS="FAILURE"
-        echo "Autoconfiscate : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
-        MAIL_TO
-        exit 1
+        RC=1
+        echo "Autoconfiscate : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
     fi
 }
 
-function CONFIGURE_SFCB()
+CONFIGURE_SFCB()
 {
     if  sh ./configure  $CONFIGOPTIONS 1>> "$REPORTDIR"/$CONFIGURE_OUT 2>&1
     then
         RC=0
-        echo "CONFIGURE : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "CONFIGURE : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
         BUILD_SFCB
     else
         RC=1
-        echo "CONFIGURE : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "CONFIGURE : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
     fi
 }
 
 # Starts SFCB Build
 
-function BUILD_SFCB()
+BUILD_SFCB()
 {
-    echo " " >> ${REPORTDIR}/${MAKE_OUT}
+    echo " " >>  ${REPORTDIR}/${MAKE_OUT}
     echo "Starting Build " >> ${REPORTDIR}/${MAKE_OUT}
     echo " " >> ${REPORTDIR}/${MAKE_OUT}
 
     if  make  1>>${REPORTDIR}/${MAKE_OUT} 2>&1
     then
-        echo "MAKE  : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "MAKE  : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
         if make install 1>>${REPORTDIR}/${MAKE_OUT} 2>&1
         then
-            echo "MAKE INSTALL : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+            echo "MAKE INSTALL : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
             if make postinstall 1>>${REPORTDIR}/${MAKE_OUT} 2>&1
             then
                 RC=0
-                echo "MAKE POSTINSTALL : SUCCESS" >> "$REPORTDIR"/$REPORT_SUMMARY
+                echo "MAKE POSTINSTALL : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
                 SFCB_TESTS
             else
                 RC=1
-                echo "MAKE POSTINSTALL : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
+                echo "MAKE POSTINSTALL : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
             fi
         else
             RC=1
-            echo "MAKE INSTALL : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
+            echo "MAKE INSTALL : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
         fi
     else
         RC=1
-        echo "MAKE  : FAILURE" >> "$REPORTDIR"/$REPORT_SUMMARY
+        echo "MAKE  : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
     fi
 }
 
-
+echo "TEST NAME :  $TESTNAME" >> $BASE_DIR/$REPORT_SUMMARY
 SFCB_CLEAN
-if [[ ! -d $BASE_DIR/sfcb ]]; then
+if [ ! -d $BASE_DIR/sfcb ]; then
     CVS_CHECK_OUT
     AUTO_CONF
 fi
 CONFIGURE_SFCB
-if [[ $RC -eq 0 ]]; then
-    STATUS="SUCCESS"
-else
-    STATUS="FAILURE"
-fi
-MAIL_TO
 
-set +x
+echo " " >> $BASE_DIR/$REPORT_SUMMARY
+echo "============================================================== " >> $BASE_DIR/$REPORT_SUMMARY
+
+exit  $RC

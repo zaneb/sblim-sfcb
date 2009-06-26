@@ -1,10 +1,9 @@
 #!/bin/bash
-set -x
 
-function USAGE()
+USAGE()
 {
     echo " MonitorABT  -sd [-mid] [-cf]"
-    echo " sd  ----   Location/Path of ABT scripts"
+    echo " sd  ----   Directory where sfcb will be downloaded and built"
     echo " mid ----   Machine ID"
     echo " cf  ----   Configuration file"
     echo " Example :"
@@ -15,10 +14,16 @@ function USAGE()
 scriptDir=""
 confFile=""
 machineID=""
+zipFile="report.zip"
+reportSummary="report.summary"
+testCount=0
+DATE=`date -u +%y%m%d`
+STATUS="SUCCESS"
+
 
 selfUpdateDone="no"
 params=$*
-if [[ $# -eq 0 ]] ; then
+if [ $# -eq 0 ] ; then
    USAGE
 else
    confFileStatus=0
@@ -61,7 +66,7 @@ else
 fi
 
 
-if [[ $sdStatus -eq 0 ]]; then
+if [ $sdStatus -eq 0 ]; then
     echo "Provide ABT scripts Location"
     USAGE
 fi
@@ -77,12 +82,12 @@ fi
 
 echo $selfUpdateDone
 
-if [[ $confFileStatus -eq 0 ]] ; then
+if [ $confFileStatus -eq 0 ] ; then
     echo "No configuration file: It will take default conf file"
     confFile=$scriptDir/sfcb.config
 fi
 
-if [[ "$machineID" == "" ]] ; then
+if [ "$machineID" == "" ] ; then
     machineID=`hostname`
 fi
 RELEASE=`lsb_release -r -s`
@@ -99,9 +104,7 @@ if [ ! $CVSROOT ] ; then
     export CVSROOT=":pserver:anonymous:@sblim.cvs.sourceforge.net/cvsroot/sblim"
 fi
 
-if [ ! $SFCB_ROOT ]; then
-    export SFCB_ROOT=$scriptDir/sfcbBuild
-fi
+export SFCB_ROOT=$scriptDir/sfcbBuild
 
 index=${#TESTCONFIG[@]}
 
@@ -111,9 +114,23 @@ if [ -d $SFCB_ROOT ]; then
     rm -rf $SFCB_ROOT
 fi
 
-while [[ $i -lt $index ]]
+while [ $i -lt $index ]
 do
      sh $scriptDir/ABTScript $SFCB_ROOT "${TESTNAME[$i]}"  "${TESTCONFIG[$i]}"
+     if [ $? -eq 0 ] ; then
+         let testCount="$testCount + 1"
+     fi
      let i="$i + 1"
 done
 
+if [ $testCount -eq $index ] ; then
+    STATUS="SUCCESS"
+else
+    STATUS="FAILURE"
+fi
+let  failureNo="$index - $testCount"
+
+# Mail the report
+
+zip -r $scriptDir/$zipFile $SFCB_ROOT/report
+mutt -a $scriptDir/$zipFile -s "SFCB NBT: $STATUS: $TESTSUITE: $MID: $DISTRO: $DATE: ($testCount OK,$failureNo FAIL)" $MAIL_IDS < $SFCB_ROOT/$reportSummary

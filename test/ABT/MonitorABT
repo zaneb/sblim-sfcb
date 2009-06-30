@@ -20,7 +20,6 @@ testCount=0
 DATE=`date -u +%y%m%d`
 STATUS="SUCCESS"
 
-
 selfUpdateDone="no"
 params=$*
 if [ $# -eq 0 ] ; then
@@ -40,7 +39,7 @@ else
                 confFile=$2
                 shift 2
                 confFileStatus=1
-                if [[ ! -f $confFile ]] ; then
+                if [ ! -f $confFile ] ; then
                     echo "No configuration file present in the location $confFile"
                     exit 1;
                 else
@@ -51,7 +50,7 @@ else
                 sdStatus=1          
                 scriptDir=$2
                 shift 2
-                if [[ ! -d $scriptDir ]]; then
+                if [ ! -d $scriptDir ]; then
                     echo " $scriptDir is not a directory"
                     USAGE
                 fi  
@@ -65,22 +64,19 @@ else
    done
 fi
 
-
 if [ $sdStatus -eq 0 ]; then
     echo "Provide ABT scripts Location"
     USAGE
 fi
 
-cd $scriptDir
-
 if [ $selfUpdateDone == "no" ]; then
+    cd $scriptDir
     cvs -d :pserver:anonymous:@sblim.cvs.sourceforge.net:/cvsroot/sblim co sfcb/test/ABT/
+    cd -
     cp $scriptDir/sfcb/test/ABT/* $scriptDir
     cp $scriptDir/MonitorABT $0
     exec $0 -ud $params
 fi
-
-echo $selfUpdateDone
 
 if [ $confFileStatus -eq 0 ] ; then
     echo "No configuration file: It will take default conf file"
@@ -97,7 +93,6 @@ source $confFile
 
 export DISTRO="$IDISTRO $RELEASE"
 export MID=$machineID
-
 
 #Check the config options
 if [ ! $CVSROOT ] ; then

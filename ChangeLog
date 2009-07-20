@@ -1,5 +1,11 @@
 2009-07-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* Makefile.am
+	[2802113] make footprint doesn't account for .so files
+	(patch from Pratayusha Doddapaneni)
+
+2009-07-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* test/ABT/MonitorABT
 	[2821718] Former reports included in the report zip file if ABT fails
 	(patch from Pratayusha Doddapaneni)

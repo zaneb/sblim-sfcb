@@ -127,5 +127,5 @@ let  failureNo="$index - $testCount"
 
 # Mail the report
 
-zip -r $scriptDir/$zipFile $SFCB_ROOT/report
-mutt -a $scriptDir/$zipFile -s "SFCB NBT: $STATUS: $TESTSUITE: $MID: $DISTRO: $DATE: ($testCount OK,$failureNo FAIL)" $MAIL_IDS < $SFCB_ROOT/$reportSummary
+zip -r $SFCB_ROOT/$zipFile $SFCB_ROOT/report
+mutt -a $SFCB_ROOT/$zipFile -s "SFCB NBT: $STATUS: $TESTSUITE: $MID: $DISTRO: $DATE: ($testCount OK,$failureNo FAIL)" $MAIL_IDS < $SFCB_ROOT/$reportSummary

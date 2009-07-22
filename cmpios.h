@@ -65,7 +65,8 @@
 	    };
 #   endif /* HAVE_STRUCT_TIMESPEC */
 
-#   elif defined(CMPI_PLATFORM_ZOS_ZSERIES_IBM)
+#   elif defined(CMPI_PLATFORM_ZOS_ZSERIES_IBM) || \
+         defined (CMPI_PLATFORM_LINUX_GENERIC_GNU)
 #      ifndef __cplusplus
 #      include <pthread.h>
 #         define CMPI_THREAD_CDECL

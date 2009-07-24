@@ -790,13 +790,13 @@ static int doHttpRequest(CommHndl conn_fd)
       _SFCB_TRACE(1,("--- Header: %s",inBuf.httpHdr));
       path += strspn(path, " \t\r\n");
       inBuf.protocol = strpbrk(path, " \t\r\n");
+      if (inBuf.protocol == NULL)
+         break;
       *inBuf.protocol++ = 0;
 #ifdef SFCB_CANONICAL_URI
       if (strcmp(path, "/cimom") != 0)
          break;
 #endif
-      if (inBuf.protocol == NULL)
-         break;
       badReq = 0;
    }
 

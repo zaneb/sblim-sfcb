@@ -27,6 +27,7 @@ Rajib Saha, AMI
 10/16/2007 [ 1814455 ] sfcb leaks fd's during local connect
 10/23/2007 [ 1818578 ] sfcb local leaks memory during associator calls
 04/02/2008 [ 1928685 ] sfcb httpAdapter memory leak while authenticating
+08/27/2009 [ 2827800 ] SfcbBroker Library crashes in Local mode communication
 
 Tim Potter, HP
 --------------

@@ -1,3 +1,9 @@
+2009-07-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* support.c:
+	[ 2827800 ] SfcbBroker Library crashes in Local mode communication
+	(patch by Rajib Saha)
+
 2009-07-24  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

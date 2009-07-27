@@ -433,7 +433,7 @@ void uninitGarbageCollector()
    
    __cleanup_mt(mt);
    CMPI_BrokerExt_Ftab->setThreadSpecific(__mm_key,NULL);
-
+   CMPI_BrokerExt_Ftab->destroyThreadKey(__mm_key);
 }
 
 static managed_thread *__init_mt()

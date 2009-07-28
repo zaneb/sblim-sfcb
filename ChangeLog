@@ -1,3 +1,8 @@
+2009-07-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 2825221 ] No validation for PersistenceType property
+
 2009-07-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* support.c:

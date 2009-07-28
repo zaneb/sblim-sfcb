@@ -186,7 +186,19 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
        free(newdest);
      }
    }
-   dest = CMGetProperty(ciLocal, "destination", &st).value.string;
+
+   CMPIData persistence = CMGetProperty(ciLocal, "persistencetype", &st);
+   if (persistence.state == CMPI_nullValue) {
+     /* default is 2 - permanent */
+     CMSetProperty(ciLocal, "persistencetype", 2, CMPI_uint16);
+   }
+   else if (persistence.value.uint16 < 1 || persistence.value.uint16 > 3) {
+     setStatus(&st,CMPI_RC_ERR_FAILED,"PersistenceType property must be 1, 2, or 3");
+     _SFCB_RETURN(st);              
+   }
+   else {
+     CMSetProperty(ciLocal, "persistencetype", &persistence.value.uint16, CMPI_uint16);
+   }
 
             CMPIString *str=CDToString(_broker,cop,NULL);
             CMPIString *ns=CMGetNameSpace(cop,NULL);

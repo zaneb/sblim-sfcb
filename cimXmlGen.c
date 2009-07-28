@@ -556,12 +556,13 @@ static int nsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
       hn = malloc(HOST_NAME_MAX);
       if(gethostname(hn, HOST_NAME_MAX) == 0) {
         sb->ft->appendChars(sb, hn);
-      } else {
+       } else {
         SFCB_APPENDCHARS_BLOCK(sb, "localhost");
       }
    }
    SFCB_APPENDCHARS_BLOCK(sb, "</HOST>\n");
    
+   free (hn);
    lnsPath2xml(ci, sb);
    SFCB_APPENDCHARS_BLOCK(sb, "</NAMESPACEPATH>\n");
    _SFCB_RETURN(0);

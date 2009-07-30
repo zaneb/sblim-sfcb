@@ -15,6 +15,7 @@ Bugs fixed:
 - 2823219 doHttpRequest Segfault when Protocol field is NULL
 - 2827800 SfcbBroker Library crashes in Local mode communication
 - 2826620 Memory leak while generating responses
+- 2825221 No validation for PersistenceType property
 
 Changes in 1.3.4
 ================

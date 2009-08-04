@@ -52,12 +52,14 @@ CVS_CHECK_OUT()
         else
             RC=1
             echo "MOFC check-out : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+            exit $RC
         fi
     else
         RC=1
         echo "SFCB check-out : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        exit $RC
     fi
- }
+}
 
 SFCB_START()
 {
@@ -104,6 +106,7 @@ AUTO_CONF()
     else
         RC=1
         echo "Autoconfiscate : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        exit $RC
     fi
 }
 

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="CreateInstance">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="interop"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="NewInstance">
+          <INSTANCE CLASSNAME="CIM_IndicationSubscription">
+            <PROPERTY.REFERENCE NAME="Filter"
+                                REFERENCECLASS="CIM_IndicationFilter">
+              <VALUE.REFERENCE>
+                <INSTANCENAME CLASSNAME="CIM_IndicationFilter">
+                  <KEYBINDING NAME="SystemCreationClassName">
+                    <KEYVALUE VALUETYPE="string">
+                    CIM_ComputerSystem
+                    </KEYVALUE>
+                  </KEYBINDING>
+                  <KEYBINDING NAME="SystemName">
+                    <KEYVALUE VALUETYPE="string">
+                    localhost.localdomain
+                    </KEYVALUE>
+                  </KEYBINDING>
+                  <KEYBINDING NAME="CreationClassName">
+                    <KEYVALUE VALUETYPE="string">
+                    CIM_IndicationFilter
+                    </KEYVALUE>
+                  </KEYBINDING>
+                  <KEYBINDING NAME="Name">
+                    <KEYVALUE VALUETYPE="string">
+                    TestFilter0
+                    </KEYVALUE>
+                  </KEYBINDING>
+                </INSTANCENAME>
+              </VALUE.REFERENCE>
+            </PROPERTY.REFERENCE>
+            <PROPERTY.REFERENCE NAME="Handler"
+                                REFERENCECLASS="CIM_IndicationHandler">
+              <VALUE.REFERENCE>
+                <INSTANCENAME CLASSNAME="CIM_IndicationHandlerCIMXML">
+                  <KEYBINDING NAME="SystemCreationClassName">
+                    <KEYVALUE VALUETYPE="string">
+                    CIM_ComputerSystem
+                    </KEYVALUE>
+                  </KEYBINDING>
+                  <KEYBINDING NAME="SystemName">
+                    <KEYVALUE VALUETYPE="string">
+                    localhost.localdomain
+                    </KEYVALUE>
+                  </KEYBINDING>
+                  <KEYBINDING NAME="CreationClassName">
+                    <KEYVALUE VALUETYPE="string">
+                    CIM_IndicationHandlerCIMXML
+                    </KEYVALUE>
+                  </KEYBINDING>
+                  <KEYBINDING NAME="Name">
+                    <KEYVALUE VALUETYPE="string">
+                    TestHandler0
+                    </KEYVALUE>
+                  </KEYBINDING>
+                </INSTANCENAME>
+              </VALUE.REFERENCE>
+            </PROPERTY.REFERENCE>
+            <PROPERTY NAME="SubscriptionState" TYPE="uint16">
+              <VALUE> 2 </VALUE>
+            </PROPERTY>
+          </INSTANCE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+

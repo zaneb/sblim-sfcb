@@ -154,7 +154,6 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
       else if (strcasecmp(type, "ref") == 0) {
          CMPIObjectPath *op;
          char *hn="",*ns="",*cn;
-         CMPIType type;
          CMPIValue v, *valp;
          int i,m;
          XtokInstanceName *in; 
@@ -175,7 +174,7 @@ CMPIValue *getKeyValueTypePtr(char *type, char *value, XtokValueReference *ref,
             break;   
          default:
             mlogf(M_ERROR,M_SHOW,"%s(%d): unexpected reference type %d %x\n", __FILE__, __LINE__, 
-               (int) type, (int) type);
+               (int) ref->type, (int) ref->type);
             abort();   
          }
 

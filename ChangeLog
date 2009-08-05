@@ -1,3 +1,8 @@
+2009-08-05  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+
+	* cimXmlGen.c
+	[ 2727830 ] No valid variable in error message in cimXmlGen.c 
+
 2009-07-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

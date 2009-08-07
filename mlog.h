@@ -28,6 +28,7 @@
 #define M_QUIET 0
 
 void startLogging(const char *name, int level);
+void closeLogging();
 void mlogf(int priority, int errout, const char* fmt, ...);
 
 #endif

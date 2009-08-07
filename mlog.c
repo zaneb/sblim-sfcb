@@ -37,7 +37,7 @@ void startLogging(const char *name, int level)
 {
    union semun sun;
 
-   logSemKey=ftok(SFCB_BINARY,'L');
+   logSemKey=ftok(SFCB_BINARY,getpid());
 
     // if sem exists, clear it out.
    if ((logSem=semget(logSemKey,1, 0600))!=-1)
@@ -55,6 +55,18 @@ void startLogging(const char *name, int level)
   openlog(name,LOG_PID,LOG_DAEMON);
   setlogmask(LOG_UPTO(level));
 
+}
+
+/** \brief closeLogging - Closes down loggin
+ *
+ * closeLogging deletes the semaphore and closes out
+ * the syslog services that are created in startLogging.
+ */
+void closeLogging ()
+{
+    union semun sun;
+    semctl(logSem,0,IPC_RMID,sun);
+    closelog();
 }
 
 /** \brief mlogf - Create syslog entries

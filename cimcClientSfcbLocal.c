@@ -23,6 +23,8 @@
 #include "cmpidt.h"
 #include "cmpift.h"
 #include "cmpimacs.h"
+#include "mlog.h"
+#include <syslog.h>
 
 #include "providerMgr.h"
 #include "queryOperation.h"
@@ -207,6 +209,7 @@ static CMPIStatus releaseClient(Client * mb)
   if (cl->connection) CMRelease(cl->connection);
 
   free(cl);
+  closeLogging();
   return rc;
 }
 
@@ -1736,6 +1739,8 @@ ClientEnv* _Create_SfcbLocal_Env(char *id)
     ClientEnv *env = (ClientEnv*)malloc(sizeof(ClientEnv));
     env->hdl=NULL;
     env->ft=&localFT;
+    // enable logging when called from sfcc
+    startLogging("sfcb",LOG_ERR);
     
     return env;
  }

@@ -17,6 +17,7 @@ Bugs fixed:
 - 2826620 Memory leak while generating responses
 - 2825221 No validation for PersistenceType property
 - 2727830 No valid variable in error message in cimXmlGen.c 
+- 2833403 sfcc calls unable to log
 
 Changes in 1.3.4
 ================

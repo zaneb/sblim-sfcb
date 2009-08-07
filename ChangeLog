@@ -1,3 +1,8 @@
+2009-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c, mlog.c, mlog.h:
+	[2833403] sfcc calls unable to log
+
 2009-08-05  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 
 	* cimXmlGen.c

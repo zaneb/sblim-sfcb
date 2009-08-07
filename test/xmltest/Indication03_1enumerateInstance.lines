@@ -1,0 +1,4 @@
+<INSTANCE CLASSNAME="CIM_IndicationFilter">
+<PROPERTY NAME="QueryLanguage" TYPE="string">
+<VALUE>WQL</VALUE>
+</PROPERTY>

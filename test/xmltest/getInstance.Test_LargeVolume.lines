@@ -1,0 +1,5 @@
+<INSTANCE CLASSNAME="TEST_LargeVolume">
+<PROPERTY NAME="name" TYPE="string">
+<VALUE>Test_Class1</VALUE>
+</PROPERTY>
+

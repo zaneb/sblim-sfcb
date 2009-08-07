@@ -1,0 +1,6 @@
+<INSTANCE CLASSNAME="cim_registeredprofile">
+<PROPERTY.ARRAY NAME="AdvertiseTypes" TYPE="uint16">
+<VALUE.ARRAY>
+<VALUE>3</VALUE>
+</VALUE.ARRAY>
+</PROPERTY.ARRAY>

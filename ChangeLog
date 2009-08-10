@@ -1,5 +1,11 @@
 2009-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* context.c:
+	[2833542] Possible leak in CMPIContext addEntry
+	(based on patch from Gokul)
+
+2009-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* cimcClientSfcbLocal.c, mlog.c, mlog.h:
 	[2833403] sfcc calls unable to log
 

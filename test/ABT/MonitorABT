@@ -125,6 +125,31 @@ else
 fi
 let  failureNo="$index - $testCount"
 
+# Posting reports to sourceforge.net
+
+if [  $REMOTE_USER_ID ]; then
+   if [ $REMOTE_HOST ]; then
+      if [ $SFCB_REMOTE_DESTINATION ]; then
+         if [ $SFCB_LOCAL_SOURCE ]; then
+            scp -r $SFCB_LOCAL_SOURCE  $REMOTE_MACHINE_USER_ID@$REMOTE_MACHINE_IP:$SFCB_REMOTE_DESTINATION
+            if [ $? -eq 0 ] ; then
+              echo "SCP Success"  >> $SFCB_ROOT/$reportSummary
+            else 
+              echo "SCP Failure"  >> $SFCB_ROOT/$reportSummary
+            fi
+         else
+            echo "Provide Source location" >> $SFCB_ROOT/$reportSummary
+         fi
+      else
+         echo "Provide Remote Destination"  >> $SFCB_ROOT/$reportSummary
+      fi
+   else
+      echo "Provide Remote Machine IP/Host Name"  >> $SFCB_ROOT/$reportSummary
+   fi
+else
+   echo "Provide Remote Machine User ID"  >> $SFCB_ROOT/$reportSummary
+fi
+
 # Mail the report
 
 zip -r $SFCB_ROOT/$zipFile $SFCB_ROOT/report

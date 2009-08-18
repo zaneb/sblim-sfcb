@@ -1,0 +1,6 @@
+<PROPERTY NAME="RequestedState" TYPE="uint16">
+<VALUE>2</VALUE>
+</PROPERTY>
+<PROPERTY NAME="EnabledState" TYPE="uint16">
+<VALUE>2</VALUE>
+</PROPERTY>

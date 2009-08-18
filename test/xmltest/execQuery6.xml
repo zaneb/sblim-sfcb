@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<MESSAGE ID="1000" PROTOCOLVERSION="1.0">
+<SIMPLEREQ>
+<IMETHODCALL NAME="ExecQuery">
+<LOCALNAMESPACEPATH>
+<NAMESPACE NAME="root"/>
+<NAMESPACE NAME="cimv2"/>
+</LOCALNAMESPACEPATH>
+<IPARAMVALUE NAME="QueryLanguage">
+<VALUE>WQL</VALUE>
+</IPARAMVALUE>
+<IPARAMVALUE NAME="Query">
+<VALUE>select EnabledState,RequestedState from CIM_ComputerSystem where Caption is not NULL</VALUE>
+</IPARAMVALUE>
+</IMETHODCALL>
+</SIMPLEREQ>
+</MESSAGE>
+</CIM>
+

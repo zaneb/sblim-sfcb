@@ -187,6 +187,8 @@ ProviderRegister *newProviderRegister(char *fn)
                    info->parms[i]=0;
                }
             }
+            else if (strcmp(rv.id, "user") == 0)
+               info->user = strdup(cntlGetVal(&rv));
             else if (strcmp(rv.id, "group") == 0)
                info->group = strdup(cntlGetVal(&rv));
             else if (strcmp(rv.id, "unload") == 0) {

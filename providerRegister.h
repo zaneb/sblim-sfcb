@@ -46,6 +46,7 @@ typedef struct _ProviderInfo {
    char *location;
    char *parms;
    char *group;
+   char *user;
    char **ns;
    int id;
    pid_t pid;

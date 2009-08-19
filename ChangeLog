@@ -1,3 +1,8 @@
+2009-08-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* providerDrv.c, providerRegister.c, providerRegister.h:
+	[2840374] Specify user for provider processes
+
 2009-08-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* context.c:

@@ -1,3 +1,8 @@
+2009-08-20  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlRequest.c:
+	[ 2841419 ] Memory leak during chunked ec call
+
 2009-08-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerDrv.c, providerRegister.c, providerRegister.h:

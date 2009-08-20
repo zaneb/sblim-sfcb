@@ -1031,6 +1031,7 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
 	freeResponseHeaders(resp,&binCtx);
 	_SFCB_RETURN(rs);
       }
+      freeResponseHeaders(resp,&binCtx);
       
       rs.chunkedMode=1;
       rs.rc=err;

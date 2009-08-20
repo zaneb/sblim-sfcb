@@ -19,6 +19,7 @@ Bugs fixed:
 - 2727830 No valid variable in error message in cimXmlGen.c 
 - 2833403 sfcc calls unable to log
 - 2833542 Possible leak in CMPIContext addEntry
+- 2841419 Memory leak during chunked ec call
 
 Changes in 1.3.4
 ================

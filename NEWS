@@ -5,6 +5,7 @@ New features:
 
 - Bump downloaded CIM schema to 2.21
 - Implement CIM_IndicationService
+- 2840374 Specify user for provider processes
 
 Bugs fixed:
 

@@ -25,7 +25,6 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #include <time.h>
-#include <pwd.h>
 #include <sys/stat.h>
 
 #include "trace.h"
@@ -553,8 +552,6 @@ static CMPIStatus getQualifierDeclMI(ProviderInfo *info, CMPIQualifierDeclMI **m
 static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
 {
    int i,rc;
-   uid_t uid;
-   struct passwd *passwd;
    static int seq=0;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "getProcess");
@@ -615,24 +612,14 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
             setSignal(SIGSEGV, handleSigSegv,SA_ONESHOT);
 
             // If requested, change the uid of the provider
-            if (info->user) {
-                errno=0;
-                // Find the uid from the username
-                passwd=getpwnam(info->user);
-                if (passwd) {
-                    uid=passwd->pw_uid;
-                    _SFCB_TRACE(1,("--- Changing uid of provider, %s, to %d(%s)",info->providerName,uid,info->user));
-                    // Set the real and effective uids
-                    rc=setreuid(uid,uid);
-                    if (rc == -1) {
-                        mlogf(M_ERROR,M_SHOW,"Changing uid for %s failed.\n",info->providerName);
-                        _SFCB_RETURN(-1);
-                    }
-                } else {
-                    mlogf(M_ERROR,M_SHOW,"Couldn't resolve username %s. Errno: %d\n",info->user,errno);
+            if (info->uid != -1 ) {
+                _SFCB_TRACE(1,("--- Changing uid of provider, %s, to %d(%s)",info->providerName,info->uid,info->user));
+                // Set the real and effective uids
+                rc=setreuid(info->uid,info->uid);
+                if (rc == -1) {
+                    mlogf(M_ERROR,M_SHOW,"--- Changing uid for %s failed.\n",info->providerName);
                     _SFCB_RETURN(-1);
                 }
-                    
             }
 
             curProvProc=(*proc);

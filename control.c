@@ -92,6 +92,8 @@ Control init[] = {
    {"providerSampleInterval",  1, "30"},
    {"providerTimeoutInterval", 1, "60"},
    {"providerAutoGroup", 2, "true"},
+   {"providerDefaultUserSFCB", 2, "true"},
+   {"providerDefaultUser", 0, ""},
 
    {"sslKeyFilePath",   0, SFCB_CONFDIR "/file.pem"},
    {"sslCertificateFilePath", 0, SFCB_CONFDIR "/server.pem"},
@@ -193,7 +195,6 @@ int setupControl(char *fn)
          break;
       }
    }
-
    if (stmt) free(stmt);
 
 

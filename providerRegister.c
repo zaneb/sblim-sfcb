@@ -28,6 +28,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <support.h>
+#include <pwd.h>
 
 #include "providerRegister.h"
 
@@ -36,6 +37,7 @@ extern unsigned long exFlags;
 extern char * configfile;
 extern int setupControl(char *fn);
 extern int getControlChars(char *id, char **val);
+extern int getControlBool(char *id, int *val);
 
 ProviderInfo *qualiProvInfoPtr = NULL;
 ProviderInfo *classProvInfoPtr = NULL;
@@ -112,19 +114,44 @@ static void addProviderToHT(ProviderInfo *info, ProviderRegister *br)
 ProviderRegister *newProviderRegister(char *fn)
 {
    FILE *in;
-   char *dir;
+   char *dir,*provuser;
    char fin[1024], *stmt = NULL;
    ProviderInfo *info = NULL;
    int err = 0, n = 0, i;
    CntlVals rv;
    int id=0;
+   int provSFCB,provuid=-1;
    int interopFound=0;
+   struct passwd *passwd;
 
    ProviderRegister *br = (ProviderRegister *) malloc(sizeof(ProviderRegister) +
                                                       sizeof(ProviderBase));
    ProviderBase *bb = (ProviderBase *) (br + 1);
    
    setupControl(configfile);
+   
+   // Get/check provider user info
+   if (getControlBool("providerDefaultUserSFCB",&provSFCB)) {
+     provSFCB = 1;
+   } 
+   if (provSFCB) {
+     // This indicates that we should use the SFCB user by default
+     provuid = -1;
+   } else {
+      if (getControlChars("providerDefaultUser",&provuser)) {
+        provuid = -1;
+      } else {
+        errno=0;
+        passwd=getpwnam(provuser);
+        if (passwd) {
+            provuid=passwd->pw_uid;
+        } else {
+            mlogf(M_ERROR,M_SHOW,"--- Couldn't find username %s requested in SFCB config file. Errno: %d\n",provuser,errno);
+            err=1;
+        }
+      }
+    }
+
 
    if (getControlChars("registrationDir",&dir)) {
      dir = "/var/lib/sfcb/registration";
@@ -175,6 +202,9 @@ ProviderRegister *newProviderRegister(char *fn)
             info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
             info->className = strdup(rv.id);
             info->id= ++id;
+            // Set the default provider uid
+            info->uid=provuid;
+            info->user=provuser;
             break;
          case 2:
             if (strcmp(rv.id, "provider") == 0)
@@ -187,8 +217,18 @@ ProviderRegister *newProviderRegister(char *fn)
                    info->parms[i]=0;
                }
             }
-            else if (strcmp(rv.id, "user") == 0)
+            else if (strcmp(rv.id, "user") == 0) {
                info->user = strdup(cntlGetVal(&rv));
+               errno=0;
+               passwd=getpwnam(info->user);
+               if (passwd) {
+                  info->uid=passwd->pw_uid;
+               } else {
+                  mlogf(M_ERROR,M_SHOW,"--- Couldn't find username %s requested in providerRegister. Errno: %d\n",info->user,errno);
+                  err = 1;
+                  break;
+               }
+            }
             else if (strcmp(rv.id, "group") == 0)
                info->group = strdup(cntlGetVal(&rv));
             else if (strcmp(rv.id, "unload") == 0) {

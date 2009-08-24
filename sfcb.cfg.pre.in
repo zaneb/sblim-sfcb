@@ -114,6 +114,16 @@ enableInterOp:  true
 ## Default is false.
 #validateMethodParamTypes:  false
 
+## These settings control what user providers are forked under. If
+## providerDefaultUserSFCB is "true" (the default), providers will run under 
+## the same user as the SFCB main process. If it is "false" the username 
+## specified for providerDefaultUser will be used. 
+## providerDefaultUser MUST be specified if providerDefaultUserSFCB is false.
+##
+## In either case, a user name specified in the providerRegister will override
+## these settings.
+#providerDefaultUserSFCB:true
+#providerDefaultUser: 
 
 ##--------------------------------- HTTPS -------------------------------------
 ## These options only apply if configured with --enable-ssl

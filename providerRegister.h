@@ -32,6 +32,7 @@
 #include "utilft.h"
 #include "providerMgr.h"
 #include <time.h>
+#include <pwd.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +48,7 @@ typedef struct _ProviderInfo {
    char *parms;
    char *group;
    char *user;
+   uid_t uid;
    char **ns;
    int id;
    pid_t pid;

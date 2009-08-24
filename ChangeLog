@@ -1,7 +1,7 @@
 2009-08-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerDrv.c, providerRegister.c, providerRegister.h, 
-	sfcb.cfg.pre.in, control.c:
+	sfcb.cfg.pre.in, control.c, README:
 	[2840374] Specify user for provider processes
 
 2009-08-20  Chris Buccella  <buccella@linux.vnet.ibm.com>

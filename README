@@ -1041,6 +1041,7 @@ The format of the sfcb registration file is
    group: <group-name>
    unload: never
    namespace: <namespace-for-class> ...
+   user: <username>
 
 where:
 
@@ -1074,6 +1075,13 @@ unload
 namespace
 	List of namespaces for which this provider can execute.	This is
 	required, although for most providers this will be "root/cimv2".
+
+user
+    The username to run the provider process under. This is optional.
+    If specified, the provider will have its uid set to match the given 
+    username. If not specified, the default user will be used based on the 
+    settings within the sfcb.cfg file. All providers within a provider group
+    must use the same username. 
 
 
 Once all the class defintions and provider registration files are stored in

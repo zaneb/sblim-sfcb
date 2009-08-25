@@ -20,6 +20,15 @@ enableHttp:     @SFCB_CONF_HTTP@
 ## Default is 5988
 httpPort:       5988
 
+## These settings control what user http is forked under. If
+## httpUserSFCB is "true" (the default), http will run under 
+## the same user as the SFCB main process. If it is "false" the username 
+## specified for httpUser will be used. This setting is used for
+## both http and https servers
+## httpUser MUST be specified if httpUserSFCB is false.
+#httpUserSFCB:true
+#httpUser: 
+
 ## Max number of HTTP processes.  
 ## Default is 8
 httpProcs:      8

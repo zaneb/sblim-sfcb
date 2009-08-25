@@ -1,3 +1,8 @@
+2009-08-25 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* control.c, sfcb.cfg.pre.in, sfcBroker.c:
+	[2840384] Have httpAdapter not run as root
+
 2009-08-25 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* configure.ac, test/slptest/slpTest.sh, test/slptest/Makefile.am
 	[2844044] Script to test slp functionality

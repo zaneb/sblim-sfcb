@@ -66,6 +66,8 @@ Control init[] = {
    {"enableHttps",      2, "false"},
    {"httpsProcs",       1, "8"},
    {"httpLocalOnly",    2, "false"},
+   {"httpUserSFCB", 2, "true"},
+   {"httpUser", 0, ""},
 #ifdef HAVE_JDBC
    {"dbpPort",         1, "5980"},
    {"enableDbp",         2, "true"},

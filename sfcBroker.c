@@ -44,6 +44,7 @@
 
 #include <getopt.h>
 #include <syslog.h>
+#include <pwd.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -435,6 +436,35 @@ static int startHttpd(int argc, char *argv[], int sslMode)
 #else
 
    int pid,sfcPid=currentProc;
+   int httpSFCB,rc;
+   char *httpUser;
+   uid_t httpuid;
+   struct passwd *passwd;
+
+   // Get/check http user info
+   if (getControlBool("httpUserSFCB",&httpSFCB)) {
+     mlogf(M_ERROR,M_SHOW,"--- Error retrieving http user info from config file.\n");
+     exit(2);
+   } 
+   if (httpSFCB) {
+     // This indicates that we should use the SFCB user by default
+     httpuid = -1;
+   } else {
+     // Get the user specified in the config file
+     if (getControlChars("httpUser",&httpUser)) {
+        mlogf(M_ERROR,M_SHOW,"--- Error retrieving http user info from config file.\n");
+        exit(2);
+     } else {
+        errno=0;
+        passwd=getpwnam(httpUser);
+        if (passwd) {
+            httpuid=passwd->pw_uid;
+        } else {
+            mlogf(M_ERROR,M_SHOW,"--- Couldn't find http username %s requested in SFCB config file. Errno: %d\n",httpUser,errno);
+            exit(2);
+        }
+     }
+    }
 
    pid= fork();
    if (pid < 0) {
@@ -444,6 +474,14 @@ static int startHttpd(int argc, char *argv[], int sslMode)
    }
    if (pid == 0) {
       currentProc=getpid();
+      if (httpuid != -1 ) {
+          // Set the real and effective uids
+          rc=setreuid(httpuid,httpuid);
+          if (rc == -1) {
+              mlogf(M_ERROR,M_SHOW,"--- Changing uid for http failed.\n");
+              exit(2);
+          }
+      }
       httpDaemon(argc, argv, sslMode, sfcPid);
       closeSocket(&sfcbSockets,cRcv,"startHttpd");
       closeSocket(&resultSockets,cAll,"startHttpd");

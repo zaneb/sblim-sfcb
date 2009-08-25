@@ -10,4 +10,12 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
+if SSL
+  export SFCB_TEST_PORT=5989
+  export SFCB_TEST_PROTOCOL=https
+else
+  export SFCB_TEST_PORT=5988
+  export SFCB_TEST_PROTOCOL=http
+endif
+
 TESTS = check_errors.pl

@@ -54,7 +54,7 @@ do
     
        # Send the test CIM-XML to the CIMOM and save the response, 
        # stripping off the http header
-       wbemcat $xmlfile 2>&1 | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT 
+       wbemcat -p $SFCB_TEST_PORT -t $SFCB_TEST_PROTOCOL $xmlfile 2>&1 | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT 
        if [ $? -ne 0 ]; then
           echo "FAILED to send CIM-XML request"
           _RC=1

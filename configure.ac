@@ -177,7 +177,7 @@ fi
 # Check and configure requested tests.
 if test "$enable_tests" == "yes"; then
     # This means all tests should be on
-    enable_tests="unit,gcov,wbemcli,xml,commands"
+    enable_tests="unit,gcov,wbemcli,xml,commands,slp"
 fi
 
 OLDIFS="$IFS"
@@ -195,6 +195,8 @@ do
             test_xml=yes;;
         commands|command|cmd|cmds)
             test_cmd=yes;;
+	slp)
+	    test_slp=yes;;
         *)
             echo "Unknown testcase $testcase";;
     esac
@@ -207,6 +209,7 @@ AM_CONDITIONAL(GCOV,[test "$test_gcov" == "yes"])
 AM_CONDITIONAL(WCTEST,[test "$test_wbemcli" == "yes"])
 AM_CONDITIONAL(XMLTEST,[test "$test_xml" == "yes"])
 AM_CONDITIONAL(CMDTEST,[test "$test_cmd" == "yes"])
+AM_CONDITIONAL(SLPTEST,[test "$test_slp" == "yes"])
 
 if [test "$enable_tests"]; then
     # The order of TEST_SUBDIRS determines test
@@ -233,6 +236,11 @@ if [test "$enable_tests"]; then
         TEST_SUBDIRS="$TEST_SUBDIRS unittest"
         AC_CONFIG_FILES([test/unittest/Makefile])
         AC_DEFINE(UNITTEST,,[Unittest enabled])
+    fi
+
+    if [test "$test_slp" == "yes"];then
+	TEST_SUBDIRS="$TEST_SUBDIRS slptest"
+	AC_CONFIG_FILES([test/slptest/Makefile])
     fi
 
     TEST_SUBDIRS="$TEST_SUBDIRS finaltest"

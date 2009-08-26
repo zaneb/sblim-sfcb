@@ -9,14 +9,13 @@ MAKE_OUT=make.out
 TEST_OUT=test.out
 MAIL_FILE=mailFile
 REPORT_SUMMARY=report.summary
-ZIP_FILE=report.zip
 RC=0
-
+REPORT_DIR="report`date -u +%y%m%d`"
 BASE_DIR=$1
 TESTNAME=$2
 CONFIGOPTIONS=$3
-
-REPORTDIR=$BASE_DIR/report/"$TESTNAME"
+COVERAGE_DIR="$BASE_DIR/sfcb/coverage"
+REPORTDIR=$BASE_DIR/$REPORT_DIR/"$TESTNAME"
 
 if [ ! -d $BASE_DIR ]; then
     mkdir -p $BASE_DIR
@@ -89,6 +88,7 @@ SFCB_TESTS()
     if make test 1>>"$REPORTDIR"/$TEST_OUT 2>&1
     then
         RC=0
+        cp -r  $COVERAGE_DIR    "$REPORTDIR"
         echo "SFCB Tests : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
     else
         RC=1

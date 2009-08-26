@@ -131,7 +131,7 @@ if [  $REMOTE_USER_ID ]; then
    if [ $REMOTE_HOST ]; then
       if [ $SFCB_REMOTE_DESTINATION ]; then
          if [ $SFCB_LOCAL_SOURCE ]; then
-            scp -r $SFCB_LOCAL_SOURCE  $REMOTE_MACHINE_USER_ID@$REMOTE_MACHINE_IP:$SFCB_REMOTE_DESTINATION
+            scp -r $SFCB_LOCAL_SOURCE  $REMOTE_USER_ID@$REMOTE_HOST:$SFCB_REMOTE_DESTINATION
             if [ $? -eq 0 ] ; then
               echo "SCP Success"  >> $SFCB_ROOT/$reportSummary
             else 
@@ -152,5 +152,5 @@ fi
 
 # Mail the report
 
-zip -r $SFCB_ROOT/$zipFile $SFCB_ROOT/report
+zip -r $SFCB_ROOT/$zipFile $SFCB_ROOT/"report$DATE"
 mutt -a $SFCB_ROOT/$zipFile -s "SFCB NBT: $STATUS: $TESTSUITE: $MID: $DISTRO: $DATE: ($testCount OK,$failureNo FAIL)" $MAIL_IDS < $SFCB_ROOT/$reportSummary

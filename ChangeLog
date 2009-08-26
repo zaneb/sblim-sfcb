@@ -1,3 +1,9 @@
+2009-08-26  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	[ 2844812 ] CMPIConnect2 doesn't init CMPIStatus completely
+	(fix by Klaus Kampf)
+
 2009-08-25 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* control.c, sfcb.cfg.pre.in, sfcBroker.c:

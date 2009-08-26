@@ -1648,7 +1648,7 @@ static Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, c
 {  
    ClientEnc *cc = (ClientEnc*)calloc(1, sizeof(ClientEnc));
 
-   if (rc) rc->rc=0;
+   if (rc) CMSetStatus(rc, 0);
    
    cc->enc.hdl		= &cc->data;
    cc->enc.ft		= &clientFt;

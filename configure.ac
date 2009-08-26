@@ -196,7 +196,10 @@ do
         commands|command|cmd|cmds)
             test_cmd=yes;;
 	slp)
-	    test_slp=yes;;
+	    if test "$enable_slp" == "yes"; then
+	       test_slp=yes
+	    fi
+	    ;;
         *)
             echo "Unknown testcase $testcase";;
     esac

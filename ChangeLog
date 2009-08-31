@@ -1,3 +1,8 @@
+2009-08-31 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/ABT/ABTScript:
+	[2845131] Add summary.html to uploaded results
+
 2009-08-26  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c:

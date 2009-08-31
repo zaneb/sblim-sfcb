@@ -16,6 +16,7 @@ TESTNAME=$2
 CONFIGOPTIONS=$3
 COVERAGE_DIR="$BASE_DIR/sfcb/coverage"
 REPORTDIR=$BASE_DIR/$REPORT_DIR/"$TESTNAME"
+HTMLFILE="$REPORTDIR/index.html"
 
 if [ ! -d $BASE_DIR ]; then
     mkdir -p $BASE_DIR
@@ -23,6 +24,22 @@ fi
 if [ ! -d "$REPORTDIR" ]; then
     mkdir -p "$REPORTDIR"
 fi
+
+#Output to the email and index.html files
+# 1st arg is the text, 2nd is the link target
+DUALOUT()
+{
+    echo $1 >> $BASE_DIR/$REPORT_SUMMARY
+    if [[ $2 ]] 
+    then
+        #If a link was given, make the text hot
+        echo "<a href=$2>$1</a><br>" >> $HTMLFILE
+    else
+        #If not, just plain text.
+        echo "$1<br>" >> $HTMLFILE
+    fi
+}
+
 
 # Clean SFCB
 SFCB_CLEAN()
@@ -42,20 +59,20 @@ CVS_CHECK_OUT()
     if cvs co sfcb 1>"$REPORTDIR"/$CVS_CO_OUT 2>&1
     then
         RC=0
-        echo "SFCB check-out : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB check-out : SUCCESS" "./$CVS_CO_OUT"
         cd sfcb
         if cvs co mofc 1>"$REPORTDIR"/$CVS_CO_OUT 2>&1
         then
             RC=0
-            echo "MOFC check-out : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+            DUALOUT "MOFC check-out : SUCCESS" "./$CVS_CO_OUT"
         else
             RC=1
-            echo "MOFC check-out : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+            DUALOUT "MOFC check-out : FAILURE" "./$CVS_CO_OUT"
             exit $RC
         fi
     else
         RC=1
-        echo "SFCB check-out : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB check-out : FAILURE" "./$CVS_CO_OUT"
         exit $RC
     fi
 }
@@ -64,9 +81,9 @@ SFCB_START()
 {
     /usr/local/etc/init.d/sfcb  start
     if [ $? -eq 0 ] ; then
-        echo "SFCB start : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB start : SUCCESS" 
     else
-        echo "SFCB start : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB start : FAILURE" 
     fi
 }
 
@@ -74,9 +91,9 @@ SFCB_STOP()
 {
     /usr/local/etc/init.d/sfcb  stop
     if [ $? -eq 0 ] ; then
-        echo "SFCB stop : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB stop : SUCCESS"
     else
-        echo "SFCB stop : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB stop : FAILURE"
     fi
 }
 
@@ -89,10 +106,10 @@ SFCB_TESTS()
     then
         RC=0
         cp -r  $COVERAGE_DIR    "$REPORTDIR"
-        echo "SFCB Tests : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB Tests : SUCCESS" "./$TEST_OUT"
     else
         RC=1
-        echo "SFCB Tests : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "SFCB Tests : FAILURE" "./$TEST_OUT"
     fi
     SFCB_STOP
 }
@@ -102,10 +119,10 @@ AUTO_CONF()
     if sh ./autoconfiscate.sh 1> "$REPORTDIR"/$AUTO_CONFISCATE 2>&1
     then
         RC=0
-        echo "Autoconfiscate : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "Autoconfiscate : SUCCESS" "./$AUTO_CONFISCATE"
     else
         RC=1
-        echo "Autoconfiscate : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "Autoconfiscate : FAILURE" "./$AUTO_CONFISCATE"
         exit $RC
     fi
 }
@@ -115,11 +132,11 @@ CONFIGURE_SFCB()
     if  sh ./configure  $CONFIGOPTIONS 1>> "$REPORTDIR"/$CONFIGURE_OUT 2>&1
     then
         RC=0
-        echo "CONFIGURE : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "CONFIGURE : SUCCESS" "./$CONFIGURE_OUT"
         BUILD_SFCB
     else
         RC=1
-        echo "CONFIGURE : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "CONFIGURE : FAILURE" "./$CONFIGURE_OUT"
     fi
 }
 
@@ -133,30 +150,36 @@ BUILD_SFCB()
 
     if  make  1>>${REPORTDIR}/${MAKE_OUT} 2>&1
     then
-        echo "MAKE  : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "MAKE  : SUCCESS" "./$MAKE_OUT"
         if make install 1>>${REPORTDIR}/${MAKE_OUT} 2>&1
         then
-            echo "MAKE INSTALL : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+            DUALOUT "MAKE INSTALL : SUCCESS" "./$MAKE_OUT"
             if make postinstall 1>>${REPORTDIR}/${MAKE_OUT} 2>&1
             then
                 RC=0
-                echo "MAKE POSTINSTALL : SUCCESS" >> $BASE_DIR/$REPORT_SUMMARY
+                DUALOUT "MAKE POSTINSTALL : SUCCESS" "./$MAKE_OUT"
                 SFCB_TESTS
             else
                 RC=1
-                echo "MAKE POSTINSTALL : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+                DUALOUT "MAKE POSTINSTALL : FAILURE" "./$MAKE_OUT"
             fi
         else
             RC=1
-            echo "MAKE INSTALL : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+            DUALOUT "MAKE INSTALL : FAILURE" "./$MAKE_OUT"
         fi
     else
         RC=1
-        echo "MAKE  : FAILURE" >> $BASE_DIR/$REPORT_SUMMARY
+        DUALOUT "MAKE  : FAILURE" "./$MAKE_OUT"
     fi
 }
 
-echo "TEST NAME :  $TESTNAME" >> $BASE_DIR/$REPORT_SUMMARY
+# init the output files
+echo "" > $BASE_DIR/$REPORT_SUMMARY
+echo "<HTML><BODY>" >$HTMLFILE
+
+DUALOUT "TEST NAME :  $TESTNAME"
+DUALOUT "CONFIG OPTIONS: $CONFIGOPTIONS"
+
 SFCB_CLEAN
 if [ ! -d $BASE_DIR/sfcb ]; then
     CVS_CHECK_OUT
@@ -164,7 +187,10 @@ if [ ! -d $BASE_DIR/sfcb ]; then
 fi
 CONFIGURE_SFCB
 
-echo " " >> $BASE_DIR/$REPORT_SUMMARY
-echo "============================================================== " >> $BASE_DIR/$REPORT_SUMMARY
+echo "<a href=./coverage/index.html>Code Coverage Report</a><br>" >> $HTMLFILE
+
+DUALOUT " " 
+DUALOUT "============================================================== " 
+echo "</BODY></HTML>" >>$HTMLFILE
 
 exit  $RC

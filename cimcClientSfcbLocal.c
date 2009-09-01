@@ -814,16 +814,19 @@ static CMPIEnumeration * execQuery(
       if (err == 0) {
          enm=cpyEnumResponses(&binCtx,resp,l);
          freeResps(resp,binCtx.pCount);
+         CMRelease(path);
          _SFCB_RETURN(enm);
       }
       if (rc) CIMCSetStatusWithChars(rc, resp[err-1]->rc, 
                   (char*)resp[err-1]->object[0].data);
+      CMRelease(path);
       freeResps(resp,binCtx.pCount);
       _SFCB_RETURN(NULL);
    }
    else ctxErrResponse(&binCtx,rc);
    closeProviderContext(&binCtx);
-    
+
+   CMRelease(path);
    _SFCB_RETURN(NULL);
 }	
 	

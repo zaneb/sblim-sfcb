@@ -25,6 +25,7 @@ Bugs fixed:
 - 2844044 Script to test slp functionality
 - 2844812 CMPIConnect2 doesn't init CMPIStatus completely
 - 2847757 local cim client execQuery leak
+- 2791613 interop provider gives invalid error while creating instance
 
 Changes in 1.3.4
 ================

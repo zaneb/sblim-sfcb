@@ -795,7 +795,6 @@ CMPIStatus InteropProviderCreateInstance(
       char *key=NULL,*ql,lng[16];
       CMPIString *lang=ciLocal->ft->getProperty(ciLocal,"querylanguage",&st).value.string;
       CMPIString *query=ciLocal->ft->getProperty(ciLocal,"query",&st).value.string;
-      CMPIString *sns=ciLocal->ft->getProperty(ciLocal,"SourceNamespace",&st).value.string;
       
       _SFCB_TRACE(1,("--- create cim_indicationfilter"));
    
@@ -805,13 +804,14 @@ CMPIStatus InteropProviderCreateInstance(
          _SFCB_RETURN(st);         
       }
       
+      CMPIString *sns=ciLocal->ft->getProperty(ciLocal,"SourceNamespace",&st).value.string;
       if(sns == NULL || sns->hdl == NULL) {
       	  /* if sourcenamespace is NULL, the namespace of the filter
       	   * registration is assumed */
-	sns = sfcb_native_new_CMPIString("root/interop", NULL,0);
+	      sns = sfcb_native_new_CMPIString("root/interop", NULL,0);
           valSNS.string = sns;
-          ciLocal->ft->setProperty(ciLocal, "SourceNamespace", &valSNS,
-                                   CMPI_string);
+          ciLocal->ft->setProperty(ciLocal, "SourceNamespace", &valSNS, CMPI_string);
+          CMSetStatus(&st, CMPI_RC_OK);
       }
       
       for (ql=(char*)lang->hdl,i=0,n=0,m=strlen(ql); i<m; i++) {

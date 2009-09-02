@@ -85,6 +85,7 @@ extern Class_Register_FT *ClassRegisterFT;
 
 
 static CMPIConstClass *getClass(ClassRegister * cr, const char *clsName);
+int traverseChildren(ClassRegister *cReg, const char *parent, const char *child);
 
 typedef struct nameSpaces {
    int next,max,blen;
@@ -1108,22 +1109,8 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
 
    else if (strcasecmp(methodName, "ischild") == 0) {
       char *parent=(char*)CMGetClassName(ref,NULL)->hdl;
-      UtilList *ul = getChildren(cReg, parent);
       char *chldn=(char*)CMGetArg(in, "child", NULL).value.string->hdl;
-      char *child;
-      
-      cReg->ft->rLock(cReg);
-   
-      st.rc = CMPI_RC_ERR_FAILED;
-      if (ul) for (child=(char*)ul->ft->getFirst(ul); child; 
-                   child=(char*)ul->ft->getNext(ul)) {
-         if (strcasecmp(child,chldn)==0 ) {
-            st.rc=CMPI_RC_OK;
-            break;
-         }   
-      }
-      
-      cReg->ft->rUnLock(cReg);
+      st.rc = traverseChildren(cReg, parent, chldn);
    }
    
    else if (strcasecmp(methodName, "_startup") == 0) {
@@ -1137,6 +1124,29 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
    _SFCB_RETURN(st);
 }
 
+int traverseChildren(ClassRegister *cReg, const char *parent, const char *chldn) {
+      char *child;
+      int rc = CMPI_RC_ERR_FAILED;
+      UtilList *ul = getChildren(cReg, parent);
+      
+      cReg->ft->rLock(cReg);
+   
+      if (ul) for (child=(char*)ul->ft->getFirst(ul); child; 
+                   child=(char*)ul->ft->getNext(ul)) {
+         if (strcasecmp(child,chldn)==0 ) {
+            rc=CMPI_RC_OK;
+            break;
+         }
+         else {
+            rc = traverseChildren(cReg, child, chldn);
+            if(rc == CMPI_RC_OK) break;
+         }
+      }
+      
+      cReg->ft->rUnLock(cReg);
+      return rc;
+}
+   
 
 CMClassMIStub(ClassProvider, ClassProvider, _broker, CMNoHook);
 

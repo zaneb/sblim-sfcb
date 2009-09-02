@@ -1,3 +1,8 @@
+2009-09-02  Sean Swehla  <smswehla@linux.vnet.ibm.com>
+
+	* classProvider.c, classProviderGz.c, classProviderMem.c:
+	[ 1887383 ] isa() in interopProvider.c doesn't find all children
+
 2009-09-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopProvider.c:

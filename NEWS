@@ -27,6 +27,7 @@ Bugs fixed:
 - 2847757 local cim client execQuery leak
 - 2791613 interop provider gives invalid error while creating instance
 - 1897383 isa() in interopProvider.c doesn't find all children
+- 2832552 Memory leak in classProviderGz.c
 
 Changes in 1.3.4
 ================

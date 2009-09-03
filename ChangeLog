@@ -1,3 +1,7 @@
+2009-09-03  Pratyusha Doddapaneni
+	* classProviderGz.c
+        [ 2832552 ] Memory leak in classProviderGz.c
+
 2009-09-02  Sean Swehla  <smswehla@linux.vnet.ibm.com>
 
 	* classProvider.c, classProviderGz.c, classProviderMem.c:

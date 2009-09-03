@@ -757,8 +757,8 @@ static CMPIStatus ClassProviderEnumClasses(CMPIClassMI * mi,
            it = cReg->ft->getNextClass(cReg, it, &key, &cls,&cid)) {
          if ((flgs & CMPI_FLAG_DeepInheritance) || cls->ft->getCharSuperClassName(cls)==NULL) {  
             CMReturnInstance(rslt, (CMPIInstance *) cls);
-            if (cid==NULL) CMRelease(cls);
          }   
+ 	 if(cid == NULL) CMRelease(cls);
       }     
    } else {
      cls = getClass(cReg,cn,NULL);

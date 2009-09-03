@@ -1,4 +1,8 @@
 2009-09-03  Pratyusha Doddapaneni
+	* configure.ac
+	[ 2835364 ] No check for lcov when code coverage is enabled.
+
+2009-09-03  Pratyusha Doddapaneni
 	* classProviderGz.c
         [ 2832552 ] Memory leak in classProviderGz.c
 

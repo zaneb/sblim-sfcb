@@ -253,6 +253,11 @@ fi
 if [test "$test_gcov" == "yes"]; then
     AC_CHECK_LIB(gcc,main)
     AC_CHECK_LIB(gcov,main)
+    AC_PATH_PROG(LCOV,lcov,no)
+    AC_PATH_PROG(GENHTML,genhtml,no)
+    if test "$LCOV"=no -o "$GENHTML"=no ; then
+       AC_MSG_ERROR([lcov and genhtml are required for profiling.])
+    fi
     SFCB_CPPFLAGS="-D SFCB_GCOV $SFCB_CPPFLAGS"
 fi
 # End of test configuration 

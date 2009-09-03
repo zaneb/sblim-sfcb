@@ -11,4 +11,4 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 #Some SLP tests
-TESTS = slpTest.sh
+TESTS = slpTests.sh

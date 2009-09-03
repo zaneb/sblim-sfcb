@@ -1,4 +1,8 @@
 2009-09-03  Pratyusha Doddapaneni
+        * result.c
+	[ 2531949 ] GetInstance call ends up with SIGSEGV when Released
+
+2009-09-03  Pratyusha Doddapaneni
 	* configure.ac
 	[ 2835364 ] No check for lcov when code coverage is enabled.
 

@@ -29,6 +29,7 @@ Bugs fixed:
 - 1897383 isa() in interopProvider.c doesn't find all children
 - 2832552 Memory leak in classProviderGz.c
 - 2835364 No check for lcov when code coverage is enabled.
+- 2531949 GetInstance call ends up with SIGSEGV when Released
 
 Changes in 1.3.4
 ================

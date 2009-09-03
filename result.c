@@ -258,7 +258,11 @@ static CMPIStatus __rft_returnInstance(const CMPIResult * result,
       CMPIValue v;
       CMPIStatus rc;
       _SFCB_TRACE(1,("--- Legacy Mode"));
-      v.inst = (CMPIInstance *) instance;
+      if(isInst) {
+        v.inst = CMClone(instance,NULL);
+        memLinkInstance(v.inst);
+      }
+      else v.inst = (CMPIInstance *) instance;
       rc=returnData(result, &v, CMPI_instance);
       if (releaseInstance) instance->ft->release((CMPIInstance*)instance);
       _SFCB_RETURN(rc);

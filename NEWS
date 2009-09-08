@@ -10,6 +10,7 @@ New features:
 
 Bugs fixed:
 
+- 2726890 sfcbd is starting with invalid options
 - 2726835 closing file two times in mofpp.c causes corruption
 - 2727799 Qualifier provider exiting due to a SIGSEGV signal
 - 2821718 Former reports included in the report zip file if ABT fails

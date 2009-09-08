@@ -1,4 +1,8 @@
 2009-09-08  Surendra Kodali
+         * sfcBroker.c
+         [ 2726890 ] sfcbd is starting with invalid options
+
+2009-09-08  Surendra Kodali
         * mofpp.c
         [ 2726835 ] closing file two times in mofpp.c causes corruption
 

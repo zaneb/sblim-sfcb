@@ -1,3 +1,7 @@
+2009-09-08  Surendra Kodali
+        * mofpp.c
+        [ 2726835 ] closing file two times in mofpp.c causes corruption
+
 2009-09-03  Pratyusha Doddapaneni
         * result.c
 	[ 2531949 ] GetInstance call ends up with SIGSEGV when Released

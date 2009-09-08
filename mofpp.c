@@ -82,7 +82,6 @@ void processFile(char *fn, FILE *in, FILE *out)
             fprintf(out,"// resolved:  >>>> %s",s);
             processFile(ifn,incFile,out);
             fprintf(out,"// back from: >>>> %s",s);
-            fclose(incFile);
          }
          else {
             fprintf(stderr,"%s:%d File not found: %s\n",fn,nl,s);

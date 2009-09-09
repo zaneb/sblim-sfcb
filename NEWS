@@ -10,6 +10,7 @@ New features:
 
 Bugs fixed:
 
+- 2691765 --disable-debug option is not working.
 - 2726890 sfcbd is starting with invalid options
 - 2726835 closing file two times in mofpp.c causes corruption
 - 2727799 Qualifier provider exiting due to a SIGSEGV signal

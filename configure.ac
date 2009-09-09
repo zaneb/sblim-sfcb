@@ -149,6 +149,11 @@ AC_SUBST(CIMSCHEMA_SUBDIRS)
 
 AC_DISABLE_STATIC
 
+if test "$enable_debug" != "yes" ; then
+   CFLAGS="`echo $CFLAGS | sed -e 's/-g//'`"
+   CXXFLAGS="`echo $CXXFLAGS | sed -e 's/-g//'`"
+fi
+
 if test "$enable_debug" == "yes"; then
    SFCB_CPPFLAGS="-D SFCB_DEBUG $SFCB_CPPFLAGS"
 fi

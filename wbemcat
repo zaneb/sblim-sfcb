@@ -8,6 +8,9 @@ my $version = "1.0.0";
 my $port = 5988;
 my $host = "localhost";
 my $protocol = "http";
+my $user="";
+my $password="";
+my $cred_host="";
 
 # Usage description
 sub usage {
@@ -18,6 +21,8 @@ sub usage {
    print "  -t, --protocol=PROTOCOL\tProtocol with which to connect. Default=$protocol\n";
    print "  -h, --host=HOSTNAME\tName of host running the CIMOM. Default=$host\n";
    print "  -p, --port=PORT\tPort that the CIMOM is listening on. Default=$port\n";
+   print "  -u, --user=USER\tUser Name for authentication\n";
+   print "  -pwd, --password=PASSWORD\tPassword for authentication\n";
    print "  -?, --help\t\tDisplay this help and exit\n";
    exit;
 }
@@ -26,6 +31,8 @@ sub usage {
 GetOptions("host|h=s" => \$host,
            "port|p=i" => \$port,
            "protocol|t=s" => \$protocol,
+           "user|u=s" => \$user,
+           "password|pwd=s" => \$password,
            "help|?" => sub{usage}) || usage;
 my $file = @ARGV[0];
 
@@ -40,10 +47,19 @@ if ($file) {
   @xml = (<STDIN>);
 }
 
+if ( $user && $password )
+{
+    $cred_host=$user . ":" . $password . "@" . $host;
+}
+else
+{
+    $cred_host = $host;
+}
+
 my $ua = LWP::UserAgent->new;
 $ua->agent("wbemcat $version");
 
-my $req = HTTP::Request->new(POST => "$protocol://$host:$port/cimom");
+my $req = HTTP::Request->new(POST => "$protocol://$cred_host:$port/cimom");
 $req->content_type("application/xml");
 $req->header("CIMProtocolVersion" => "1.0",
              "CIMOperation" => "MethodCall");

@@ -1,5 +1,10 @@
 2009-09-09  Surendra Kodali
 
+         * wbemcat
+         [ 2858565 ] Need user and password support for wbemcat 
+
+2009-09-09  Surendra Kodali
+
          * configure.ac
          [ 2691765 ] --disable-debug option is not working.
 

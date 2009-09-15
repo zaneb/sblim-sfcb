@@ -51,10 +51,16 @@ do
 
        # Remove any old test result file
        rm -f $_TESTRESULT
-    
+
        # Send the test CIM-XML to the CIMOM and save the response, 
        # stripping off the http header
-       wbemcat -p $SFCB_TEST_PORT -t $SFCB_TEST_PROTOCOL $xmlfile 2>&1 | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT 
+
+       if [ "$SFCB_TEST_USER" != "" ] && [ "$SFCB_TEST_PASSWORD" != "" ]; then
+           wbemcat -u $SFCB_TEST_USER -pwd $SFCB_TEST_PASSWORD -p $SFCB_TEST_PORT -t $SFCB_TEST_PROTOCOL $xmlfile 2>&1 | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT
+       else
+           wbemcat -p $SFCB_TEST_PORT -t $SFCB_TEST_PROTOCOL $xmlfile 2>&1 | awk '/<\?xml.*/{xml=1} {if (xml) print}' > $_TESTRESULT
+       fi
+
        if [ $? -ne 0 ]; then
           echo "FAILED to send CIM-XML request"
           _RC=1

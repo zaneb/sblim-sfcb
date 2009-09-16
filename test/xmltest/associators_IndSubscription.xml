@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4711" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="Associators">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="interop"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="ObjectName">
+          <INSTANCENAME CLASSNAME="CIM_IndicationSubscription">
+            <KEYBINDING  NAME="SubscriptionState">
+              <KEYVALUE VALUETYPE="uint16">123</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="AssocClass">
+        </IPARAMVALUE>
+        <IPARAMVALUE NAME="ResultClass">
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+

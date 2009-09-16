@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="55003" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="ModifyInstance">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="cimv2"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="ModifiedInstance">
+	 <VALUE.NAMEDINSTANCE>
+          <INSTANCENAME CLASSNAME="TEST_Person">
+            <KEYBINDING NAME="name">
+              <KEYVALUE VALUETYPE="string">Gabi</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+	  <INSTANCE CLASSNAME="TEST_Person">
+	  	<PROPERTY NAME="name" TYPE="string">
+			<VALUE>Gabi1</VALUE>
+		</PROPERTY>
+	  </INSTANCE>
+          </VALUE.NAMEDINSTANCE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>

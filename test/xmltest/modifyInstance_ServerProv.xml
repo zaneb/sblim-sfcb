@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="55003" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="ModifyInstance">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="interop"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="ModifiedInstance">
+	 <VALUE.NAMEDINSTANCE>
+          <INSTANCENAME CLASSNAME="CIM_ObjectManager">
+            <KEYBINDING NAME="Name">
+              <KEYVALUE VALUETYPE="string">localhost</KEYVALUE>
+            </KEYBINDING>
+          </INSTANCENAME>
+	  <INSTANCE CLASSNAME="CIM_ObjectManager">
+	  	<PROPERTY NAME="Name" TYPE="string">
+			<VALUE>localhost.localdomain</VALUE>
+		</PROPERTY>
+	  </INSTANCE>
+          </VALUE.NAMEDINSTANCE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>

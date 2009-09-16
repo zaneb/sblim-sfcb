@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+  <MESSAGE ID="4700" PROTOCOLVERSION="1.0">
+    <SIMPLEREQ>
+      <IMETHODCALL NAME="CreateInstance">
+        <LOCALNAMESPACEPATH>
+          <NAMESPACE NAME="root"/>
+          <NAMESPACE NAME="interop"/>
+        </LOCALNAMESPACEPATH>
+        <IPARAMVALUE NAME="NewInstance">
+          <INSTANCE CLASSNAME="CIM_ObjectManager" >
+            <PROPERTY NAME="Name"  CLASSORIGIN="CIM_ObjectManager" TYPE="string">
+              <VALUE>localhost.RHDomain</VALUE>
+            </PROPERTY>
+          </INSTANCE>
+        </IPARAMVALUE>
+      </IMETHODCALL>
+    </SIMPLEREQ>
+  </MESSAGE>
+</CIM>
+

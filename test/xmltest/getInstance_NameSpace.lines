@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<MESSAGE ID="1001" PROTOCOLVERSION="1.0">
+<SIMPLERSP>
+<IMETHODRESPONSE NAME="GetInstance">
+<IRETURNVALUE>
+<INSTANCE CLASSNAME="CIM_Namespace">
+<PROPERTY NAME="DescriptionOfClassType" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="ClassTypeVersion" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="ClassType" TYPE="uint16">
+</PROPERTY>
+<PROPERTY NAME="DescriptionOfClassInfo" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="ClassInfo" TYPE="uint16">
+<VALUE>0</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Name" TYPE="string">
+<VALUE>root/interop</VALUE>
+</PROPERTY>
+<PROPERTY NAME="CreationClassName" TYPE="string">
+<VALUE>CIM_Namespace</VALUE>
+</PROPERTY>
+<PROPERTY NAME="ObjectManagerName" TYPE="string">
+<VALUE>sfcb:NO-UUID-FILE-vpuvvada3</VALUE>
+</PROPERTY>
+<PROPERTY NAME="ObjectManagerCreationClassName" TYPE="string">
+<VALUE>CIM_ObjectManager</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SystemName" TYPE="string">
+<VALUE>vpuvvada3</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SystemCreationClassName" TYPE="string">
+<VALUE>CIM_ComputerSystem</VALUE>
+</PROPERTY>
+<PROPERTY NAME="InstanceID" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="Caption" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="Description" TYPE="string">
+</PROPERTY>
+<PROPERTY NAME="ElementName" TYPE="string">
+</PROPERTY>
+</INSTANCE>
+</IRETURNVALUE>
+</IMETHODRESPONSE>
+</SIMPLERSP>
+</MESSAGE>
+</CIM>

@@ -1,3 +1,8 @@
+2009-09-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	[ 2860163 ] Missing commRead error checks
+
 2009-09-09  Surendra Kodali
 
          * wbemcat

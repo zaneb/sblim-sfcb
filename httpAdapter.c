@@ -390,8 +390,15 @@ static int readData(CommHndl conn_fd, char *into, int length)
          break;
       }
       r = commRead(conn_fd, into + c, length - c);
-      if (r < 0 && (errno == EINTR || errno == EAGAIN)) {
+      if (r < 0) {
+        if (errno == EINTR || errno == EAGAIN) {
          continue;
+        }
+        else {
+          mlogf(M_INFO,M_SHOW,"--- readData(): read() error %s\n", strerror(errno));
+          c = -2;
+          break;
+        }
       }
       /* r==0 is a success condition for read(), but the loop should complete prior to this */
       else if (r == 0) {
@@ -654,7 +661,16 @@ static int getHdrs(CommHndl conn_fd, Buffer * b, char *cmd)
       char buf[hdrBufsize];
       int r = commRead(conn_fd, buf, sizeof(buf));
       
-      if (r < 0 && (errno == EINTR || errno == EAGAIN)) continue;
+      if (r < 0) {
+        if (errno == EINTR || errno == EAGAIN) {
+          continue;
+        }
+        else {
+          mlogf(M_INFO,M_SHOW,"--- getHdrs: read() error %s\n", strerror(errno));
+          state = 3;
+          break;
+        }
+      }
       if (r == 0) {
         if (b->size == 0) break;
         if (strstr(b->data, "\r\n\r\n") == NULL &&

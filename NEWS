@@ -35,6 +35,7 @@ Bugs fixed:
 - 2835364 No check for lcov when code coverage is enabled.
 - 2531949 GetInstance call ends up with SIGSEGV when Released
 - 2860163 Missing commRead error checks
+- 2859978 TestProviders for SFCB 
 
 Changes in 1.3.4
 ================

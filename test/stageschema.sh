@@ -48,7 +48,15 @@ else
         exit 1
     else
         # Copy test schema files into the SFCB stage directory for testing.
-        sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 $TEST_SCHEMA_DIR/*.mof
+        for regfile in `ls $TEST_SCHEMA_DIR/*.reg | cut -d '/' -f4`
+        do
+          moffile=`echo $regfile | sed 's/reg/mof/'`
+          if [ -f $TEST_SCHEMA_DIR/$regfile ]; then
+            sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 -r $TEST_SCHEMA_DIR/$regfile $TEST_SCHEMA_DIR/$moffile
+          else
+            sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 $TEST_SCHEMA_DIR/$moffile
+          fi
+        done
     fi
 
     # Check for sfcbrepos utility

@@ -158,7 +158,10 @@ sfcblib_LTLIBRARIES = \
    $(SLP_LIBS) \
    $(SLP_HOSTNAME_LIBS) \
    $(INDICATION_LIBS) \
-   $(PAM_LIBS) 
+   $(PAM_LIBS) \
+   libTestAssociationProvider.la \
+   libTestMethodProvider.la \
+   libTestInstanceProvider.la 
 
 if SLP_ALONE
 SLP_PROGRAMFILES = cimslp
@@ -335,6 +338,24 @@ libsfcClassProviderMem_la_SOURCES = \
    classProviderMem.c classSchemaMem.c interop_classSchema.c
 libsfcClassProviderMem_la_LIBADD=-lsfcBrokerCore
 libsfcClassProviderMem_la_DEPENDENCIES=libsfcBrokerCore.la
+
+# Building providers in the test/TestProviders directory
+if TEST_ENABLED
+libTestAssociationProvider_la_SOURCES = \
+   test/TestProviders/cmpiTestAssociationProvider.c
+libTestAssociationProvider_la_LIBADD = -lsfcBrokerCore
+libTestAssociationProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+
+libTestMethodProvider_la_SOURCES = \
+   test/TestProviders/cmpiTestMethodProvider.c
+libTestMethodProvider_la_LIBADD = -lsfcBrokerCore
+libTestMethodProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+
+libTestInstanceProvider_la_SOURCES = \
+   test/TestProviders/cmpiTestInstanceProvider.c
+libTestInstanceProvider_la_LIBADD = -lsfcBrokerCore
+libTestInstanceProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+endif
 
 #
 # if enable_local_connect_no_indication is not turned on then

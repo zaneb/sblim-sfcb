@@ -1,0 +1,4 @@
+class Sample_Method
+{
+        string SayHello( [IN] string Name, [OUT] string Message);
+};

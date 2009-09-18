@@ -1,0 +1,21 @@
+[CMPI_TEST_Vehicle]
+    provider: TestAssociationProvider
+    location: TestAssociationProvider
+    type: association
+    namespace: root/cimv2
+#
+
+[CMPI_TEST_Person]
+    provider: TestAssociationProvider
+    location: TestAssociationProvider
+    namespace: root/cimv2
+    type: association
+#
+
+[CMPI_TEST_Racing]
+    provider: TestAssociationProvider
+    location: TestAssociationProvider
+    namespace: root/cimv2
+    type: association
+#
+

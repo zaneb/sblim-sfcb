@@ -1,0 +1,38 @@
+[Version("1.0.0"), Description (" Class that defines a person.")]
+
+class CMPI_TEST_Person
+{
+    [key]
+    string name;
+};
+
+class CMPI_TEST_Vehicle
+{
+    [key]
+    string vehiclename;
+};
+
+[Association, Version("1.0.0"), Description(" Racing defines the "
+"relationship between a driver and a vehicle model.") ]
+class CMPI_TEST_Racing
+{
+    [key] CMPI_TEST_Person ref driver;
+    [key] CMPI_TEST_Vehicle ref model;
+};
+
+instance of CMPI_TEST_Person { name = "Harry"; };
+instance of CMPI_TEST_Person { name = "Larry"; };
+
+instance of CMPI_TEST_Vehicle { vehiclename = "BMW"; };
+instance of CMPI_TEST_Vehicle { vehiclename = "Ferrari"; };
+
+instance of CMPI_TEST_Racing
+{
+    driver = "CMPI_TEST_Person.name=\"Larry\"";
+    model = "CMPI_TEST_Vehicle.vehiclename=\"Ferrari\"";
+};
+instance of CMPI_TEST_Racing
+{
+    driver = "CMPI_TEST_Person.name=\"Harry\"";
+    model = "CMPI_TEST_Vehicle.vehiclename=\"BMW\"";
+};

@@ -1,6 +1,6 @@
 <METHODRESPONSE NAME="SayHello">
 <RETURNVALUE PARAMTYPE="string">
-<VALUE>Hello,</VALUE>
+<VALUE>Hello,Harry!</VALUE>
 </RETURNVALUE>
 <PARAMVALUE NAME="Message" PARAMTYPE="string">
 <VALUE>Have a good day</VALUE>

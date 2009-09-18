@@ -10,6 +10,9 @@
         </LOCALNAMESPACEPATH>
         <CLASSNAME NAME="Sample_Method"/>
        </LOCALCLASSPATH>
+       <PARAMVALUE NAME="Name">
+         <VALUE>Harry</VALUE>
+       </PARAMVALUE>
      </METHODCALL>
    </SIMPLEREQ>
  </MESSAGE>

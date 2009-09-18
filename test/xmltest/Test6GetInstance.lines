@@ -1,0 +1,8 @@
+<INSTANCE CLASSNAME="Sample_Instance">
+<PROPERTY NAME="Message" TYPE="string">
+<VALUE>Hello World</VALUE>
+</PROPERTY>
+<PROPERTY NAME="Identifier" TYPE="uint8">
+<VALUE>1</VALUE>
+</PROPERTY>
+</INSTANCE>

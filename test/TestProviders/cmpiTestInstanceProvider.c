@@ -433,9 +433,7 @@ CMPIStatus TestInstanceProviderExecQuery (
     CMPIData retProp;
 
     /*create the select expression */
-    printf("\n query : %s \n ",query);
     se_def = CMNewSelectExp (_broker, query, lang, &projection, &rc_Clone);
-    printf("\nSelect exp : %d\n",rc_Clone.rc);
     if (se_def)
     {
         /*loop over instances in array to evaluate for requested properties */

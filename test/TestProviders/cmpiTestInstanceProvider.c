@@ -383,7 +383,6 @@ CMPIStatus TestInstanceProviderDeleteInstance (
             /*compare key values.
               If they match, release the object(instance)
               Also set its validity to zero, marking it as deleted */
-            printf(" \n\n %d :: %d \n\n",key1.value.uint8,key2.value.uint8);
             if (key1.value.uint8 == key2.value.uint8)
             {
                 if(retInst.value.inst)

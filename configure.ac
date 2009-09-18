@@ -224,6 +224,8 @@ if [test "$enable_tests"]; then
     # execution order.
     TEST_SUBDIRS="."
     AC_CONFIG_FILES([test/finaltest/Makefile])
+    TEST_SUBDIRS="$TEST_SUBDIRS TestProviders/tests"
+    AC_CONFIG_FILES([test/TestProviders/tests/Makefile])
     # Enable the various tests
     if [test "$test_cmd" == "yes"]; then
         TEST_SUBDIRS="$TEST_SUBDIRS commands"

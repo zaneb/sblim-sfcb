@@ -158,10 +158,14 @@ sfcblib_LTLIBRARIES = \
    $(SLP_LIBS) \
    $(SLP_HOSTNAME_LIBS) \
    $(INDICATION_LIBS) \
-   $(PAM_LIBS) \
+   $(PAM_LIBS) 
+
+if TEST_ENABLED 
+sfcblib_LTLIBRARIES += \
    libTestAssociationProvider.la \
    libTestMethodProvider.la \
    libTestInstanceProvider.la 
+endif
 
 if SLP_ALONE
 SLP_PROGRAMFILES = cimslp

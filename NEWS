@@ -8,6 +8,7 @@ New features:
 - Implement CIM_IndicationService
 - 2840374 Specify user for provider processes
 - 2840384 Have httpAdapter not run as root
+- interopProvider needs IndividualSubscriptionSupported prop
 
 Bugs fixed:
 

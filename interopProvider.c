@@ -795,9 +795,21 @@ CMPIStatus InteropProviderCreateInstance(
       char *key=NULL,*ql,lng[16];
       CMPIString *lang=ciLocal->ft->getProperty(ciLocal,"querylanguage",&st).value.string;
       CMPIString *query=ciLocal->ft->getProperty(ciLocal,"query",&st).value.string;
+      CMPIBoolean iss=ciLocal->ft->getProperty(ciLocal,"individualsubscriptionsupported",&st).value.boolean;
+      CMPIValue iss_default = { .boolean=1 };
       
       _SFCB_TRACE(1,("--- create cim_indicationfilter"));
    
+      /* This property new as of 2.22.  Really only useful for 
+         FilterCollections. If FCs are implemented, this will need updating. */
+      if (iss == 0) {
+        setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"IndividualSubscriptionSupported property must be TRUE (FilterCollections not available)");
+        _SFCB_RETURN(st);         
+      }
+      else {
+        CMSetProperty(ciLocal, "IndividualSubscriptionSupported", &iss_default, CMPI_boolean);
+      }
+
       if (lang == NULL || lang->hdl == NULL
           || query == NULL ||  query->hdl == NULL) {
          setStatus(&st,CMPI_RC_ERR_FAILED,"Query and/or Language property not found");

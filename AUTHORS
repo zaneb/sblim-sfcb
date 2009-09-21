@@ -3,10 +3,11 @@ Principal author of sfcb is Adrian Schuur
 Other core developers are or have been:
  Gareth S Bestor
  Chris Buccella 
+ Michael Chase-Salerno
  Tyrel Datwyler
  Sven Schuetz
+ Sean Swehla
  Viktor Mihajlovski
- Michael Chase-Salerno
 
 Frank Scheffler has contributed by writing the Remote CMPI interface
 from which many code portions have been reused - especially the native

@@ -1,3 +1,8 @@
+2009-09-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* getSchema.pre.in:
+	[ 2863736 ] Bump downloaded CIM schema to 2.22
+
 2009-09-18  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* Makefile.am test/stageschema.sh
 	[ 2859978 ] TestProviders for SFCB

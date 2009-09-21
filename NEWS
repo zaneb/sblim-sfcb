@@ -4,7 +4,7 @@ Changes in 1.3.5
 New features:
 
 - 2858565 Need user and password support for wbemcat
-- Bump downloaded CIM schema to 2.21
+- Bump downloaded CIM schema to 2.22
 - Implement CIM_IndicationService
 - 2840374 Specify user for provider processes
 - 2840384 Have httpAdapter not run as root

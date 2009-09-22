@@ -68,6 +68,7 @@ static void prepResultBuffer(NativeResult *nr)
    
    if (getControlNum("chunkSize",(long*)&nr->dMax)) nr->dMax=50000;
 
+   nr->requestor=0;
    nr->dNext=0;
    nr->data=(char*)malloc(nr->dMax);
   

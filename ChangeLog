@@ -1,3 +1,8 @@
+2009-09-22  Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* interopServerProvider.c:
+	[ 2864486 ] IndicationProfile: CIM_IndicationService should persist
+
 2009-09-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* getSchema.pre.in:
@@ -113,6 +118,7 @@
 	* cimXmlGen.c
 	[ 2727830 ] No valid variable in error message in cimXmlGen.c 
 
+>>>>>>> 1.463
 2009-07-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

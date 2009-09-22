@@ -33,6 +33,7 @@
 #include "constClass.h"
 #include "providerRegister.h"
 #include "trace.h"
+#include "native.h"
 #include "control.h"
 #include "config.h"
 
@@ -402,7 +403,7 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
    CMPIStatus st = { CMPI_RC_OK, NULL };
    char str[512];
    CMPIObjectPath *op;
-   CMPIInstance *ci;
+   CMPIInstance *ci = NULL;
    CMPIBoolean filterCreation=1;
    CMPIUint16 retryAttempts=0; /* only try to deliver indications once */
    CMPIUint32 retryInterval=30;
@@ -412,27 +413,49 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
    
    _SFCB_ENTER(TRACE_PROVIDERS, "IndServiceProviderEnumInstances");
 
+    CMPIContext *ctxLocal;
+    ctxLocal = native_clone_CMPIContext(ctx);
+    CMPIValue val;
+    val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
+    ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
+
    op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
-   ci=CMNewInstance(_broker,op,NULL);
+   val.chars = "CIM_ObjectManager";
+   CMAddKey(op,"CreationClassName",(CMPIValue *)&val,CMPI_chars);
+   val.chars = "CIM_ComputerSystem";
+   CMAddKey(op,"SystemCreationClassName",(CMPIValue *)&val,CMPI_chars);
+   ci = CBGetInstance(_broker, ctxLocal, op, NULL, &st);
+   if(st.rc == CMPI_RC_ERR_NOT_FOUND) {
+     fprintf(stderr, "SMS -- It's here.\n");
+     ci=CMNewInstance(_broker,op,NULL);
    
-   CMSetProperty(ci,"CreationClassName","CIM_ObjectManager",CMPI_chars);
-   CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
-   str[0]=0;
-   gethostname(str,511);
-   CMSetProperty(ci,"SystemName",str,CMPI_chars);
-   CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
+     CMSetProperty(ci,"CreationClassName","CIM_ObjectManager",CMPI_chars);
+     CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
+     str[0]=0;
+     gethostname(str,511);
+     CMSetProperty(ci,"SystemName",str,CMPI_chars);
+     CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
 
+     CMSetProperty(ci,"FilterCreationEnabled",&filterCreation,CMPI_boolean);
+     CMSetProperty(ci,"ElementName","sfcb",CMPI_chars);
+     CMSetProperty(ci,"Description",PACKAGE_STRING,CMPI_chars);
+     CMSetProperty(ci,"DeliveryRetryAttempts",&retryAttempts,CMPI_uint16);
+     CMSetProperty(ci,"DeliveryRetryInterval",&retryInterval,CMPI_uint32);
+     CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
+     CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
+     CBCreateInstance(_broker, ctxLocal, op, ci, &st);
+//     if(st.rc != CMPI_RC_OK) fprintf(stderr, "SMS -- %s\n", CMGetCharPtr(st.msg));
+       
+   } else if(st.rc != CMPI_RC_OK) {
+     fprintf(stderr, "SMS -- GetInstance effed\n");
+     goto done;
+   }
 
-   CMSetProperty(ci,"FilterCreationEnabled",&filterCreation,CMPI_boolean);
-   CMSetProperty(ci,"ElementName","sfcb",CMPI_chars);
-   CMSetProperty(ci,"Description",PACKAGE_STRING,CMPI_chars);
-   CMSetProperty(ci,"DeliveryRetryAttempts",&retryAttempts,CMPI_uint16);
-   CMSetProperty(ci,"DeliveryRetryInterval",&retryInterval,CMPI_uint32);
-   CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
-   CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
+   CMReturnInstance(rslt,ci);
+   CMReturnDone(rslt);
    
-    CMReturnInstance(rslt,ci);
-   
+done:
+   if(ctxLocal) CMRelease(ctxLocal);
    _SFCB_RETURN(st);
 }
 

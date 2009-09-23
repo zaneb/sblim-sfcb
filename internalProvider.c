@@ -438,6 +438,13 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
       return st;
    }
 
+   CMPIConstClass *cc =getConstClass(nss, cns);
+   /* per DSP0004 2.5.2 */
+   if (cc!=NULL && cc->ft->isAbstract(cc) != 0) {
+      CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
+      return st;
+   }
+
    if (existingBlob(bnss,cns,key)) {
       CMPIStatus st = { CMPI_RC_ERR_ALREADY_EXISTS, NULL };
       return st;

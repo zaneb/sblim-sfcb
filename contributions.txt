@@ -118,6 +118,7 @@ Shigeyoshi Hashi, NEC
 06/06/2009 [ 2736593 ] Null/No NewValue of SetProperty causes segfault
 06/06/2009 [ 2736627 ] The type of NewValue is not checked at free
 06/06/2009 [ 2780152 ] SetProperty without NewValue gets segfault
+09/22/2009 [ 2793653 ] CreateInstance method of abstract class
 
 Chad Smith, HP
 --------------

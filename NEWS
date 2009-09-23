@@ -39,6 +39,7 @@ Bugs fixed:
 - 2859978 TestProviders for SFCB 
 - 2864486 IndicationProfile: CIM_IndicationService should persist
 - 2818014 EnumerateClasses segfault w/DeepInheritance prop setting
+- 2793653 CreateInstance method of abstract class
 
 Changes in 1.3.4
 ================

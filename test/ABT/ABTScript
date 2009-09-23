@@ -174,7 +174,6 @@ BUILD_SFCB()
 }
 
 # init the output files
-echo "" > $BASE_DIR/$REPORT_SUMMARY
 echo "<HTML><BODY>" >$HTMLFILE
 
 DUALOUT "TEST NAME :  $TESTNAME"

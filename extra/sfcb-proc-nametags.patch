@@ -7,8 +7,8 @@ sfcbd xxxxxxxxxxxxxx <sfcbd options...>
 "ps a | grep sfcb" will then show:
 
 3450 pts/1    Sl+    0:00 sfcbd main
-3452 pts/1    S+     0:00 sfcbd httpd   
-3453 pts/1    S+     0:00 sfcbd ClassProvider 
+3452 pts/1    S+     0:00 sfcbd httpd
+3453 pts/1    S+     0:00 sfcbd ClassProvider
 3455 pts/1    S+     0:00 sfcbd InteropProvider
 3457 pts/1    S+     0:00 sfcbd ProfileProvider
 3460 pts/1    S+     0:00 sfcbd InternalProvide
@@ -18,14 +18,15 @@ The number of 'x's supplied determines the length of the "nametag".
 
 Tested and working on x86 with glibc.
 
+
 Index: httpAdapter.c
 ===================================================================
 RCS file: /cvsroot/sblim/sfcb/httpAdapter.c,v
-retrieving revision 1.61
-diff -u -p -r1.61 httpAdapter.c
---- httpAdapter.c	15 Oct 2008 21:22:55 -0000	1.61
-+++ httpAdapter.c	17 Oct 2008 02:10:12 -0000
-@@ -111,6 +111,8 @@ extern int inet_aton(const char *cp, str
+retrieving revision 1.80
+diff -u -p -r1.80 httpAdapter.c
+--- httpAdapter.c	17 Sep 2009 18:04:27 -0000	1.80
++++ httpAdapter.c	24 Sep 2009 17:26:09 -0000
+@@ -125,6 +125,8 @@ extern int inet_aton(const char *cp, str
  int sfcBrokerPid=0;
  static unsigned int sessionId;
  extern char *opsName[];
@@ -34,7 +35,7 @@ diff -u -p -r1.61 httpAdapter.c
  
  typedef int (*Authenticate)(char* principal, char* pwd);
  
-@@ -1249,6 +1251,7 @@ static void handleHttpRequest(int connFd
+@@ -1337,6 +1339,7 @@ static void handleHttpRequest(int connFd
        if (r==0) {
           currentProc=getpid();
           processName="CIMXML-Processor";
@@ -45,11 +46,11 @@ diff -u -p -r1.61 httpAdapter.c
 Index: sfcBroker.c
 ===================================================================
 RCS file: /cvsroot/sblim/sfcb/sfcBroker.c,v
-retrieving revision 1.42
-diff -u -p -r1.42 sfcBroker.c
---- sfcBroker.c	2 Oct 2008 16:35:23 -0000	1.42
-+++ sfcBroker.c	17 Oct 2008 02:10:12 -0000
-@@ -111,6 +111,9 @@ static int adaptersStopped=0,providersSt
+retrieving revision 1.50
+diff -u -p -r1.50 sfcBroker.c
+--- sfcBroker.c	24 Sep 2009 14:53:13 -0000	1.50
++++ sfcBroker.c	24 Sep 2009 17:26:09 -0000
+@@ -113,6 +113,9 @@ static int adaptersStopped=0,providersSt
  
  extern char * configfile;
  
@@ -59,15 +60,15 @@ diff -u -p -r1.42 sfcBroker.c
  typedef struct startedAdapter {
     struct startedAdapter *next;
     int stopped;
-@@ -442,6 +445,7 @@ static int startHttpd(int argc, char *ar
-    }
-    if (pid == 0) {
-       currentProc=getpid();
+@@ -483,6 +486,7 @@ static int startHttpd(int argc, char *ar
+               exit(2);
+           }
+       }
 +      strncpy(nametag,"httpd",nametaglen);
        httpDaemon(argc, argv, sslMode, sfcPid);
        closeSocket(&sfcbSockets,cRcv,"startHttpd");
        closeSocket(&resultSockets,cAll,"startHttpd");
-@@ -549,6 +553,13 @@ int main(int argc, char *argv[])
+@@ -597,6 +601,13 @@ int main(int argc, char *argv[])
     if (name != NULL) ++name;
     else name = argv[0];
  
@@ -81,14 +82,31 @@ diff -u -p -r1.42 sfcBroker.c
     collectStat=0;
     colorTrace=0;
     processName="sfcbd";
+@@ -685,11 +696,11 @@ int main(int argc, char *argv[])
+        }
+    }
+ 
+-   if (optind < argc)
+-   {
+-      fprintf(stderr,"SFCB not started: unrecognized config property %s\n",argv[optind]);
+-      usage(1);
+-   }
++//    if (optind < argc)
++//    {
++//       fprintf(stderr,"SFCB not started: unrecognized config property %s\n",argv[optind]);
++//       usage(1);
++//    }
+ 
+    startLogging("sfcb",syslogLevel);
+ 
 Index: providerDrv.c
 ===================================================================
 RCS file: /cvsroot/sblim/sfcb/providerDrv.c,v
-retrieving revision 1.67
-diff -u -p -r1.67 providerDrv.c
---- providerDrv.c	15 Oct 2008 21:22:55 -0000	1.67
-+++ providerDrv.c	17 Oct 2008 02:10:12 -0000
-@@ -143,6 +143,9 @@ unsigned long provTimeoutInterval=25;
+retrieving revision 1.79
+diff -u -p -r1.79 providerDrv.c
+--- providerDrv.c	24 Aug 2009 18:57:58 -0000	1.79
++++ providerDrv.c	24 Sep 2009 17:26:09 -0000
+@@ -142,6 +142,9 @@ unsigned long provTimeoutInterval=25;
  unsigned      provAutoGroup=0;
  static int stopping=0;
  
@@ -98,7 +116,7 @@ diff -u -p -r1.67 providerDrv.c
  void uninitProvProcCtl();
  extern void uninitSocketPairs();
  extern void sunsetControl();
-@@ -573,7 +576,7 @@ static int getProcess(ProviderInfo * inf
+@@ -602,7 +605,7 @@ static int getProcess(ProviderInfo * inf
           }
  
           if (info->pid == 0) {

@@ -426,7 +426,7 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
    CMAddKey(op,"SystemCreationClassName",(CMPIValue *)&val,CMPI_chars);
    ci = CBGetInstance(_broker, ctxLocal, op, NULL, &st);
    if(st.rc == CMPI_RC_ERR_NOT_FOUND) {
-     fprintf(stderr, "SMS -- It's here.\n");
+     //     fprintf(stderr, "SMS -- It's here.\n");
      ci=CMNewInstance(_broker,op,NULL);
    
      CMSetProperty(ci,"CreationClassName","CIM_ObjectManager",CMPI_chars);
@@ -447,7 +447,7 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
 //     if(st.rc != CMPI_RC_OK) fprintf(stderr, "SMS -- %s\n", CMGetCharPtr(st.msg));
        
    } else if(st.rc != CMPI_RC_OK) {
-     fprintf(stderr, "SMS -- GetInstance effed\n");
+     //     fprintf(stderr, "SMS -- GetInstance effed\n");
      goto done;
    }
 

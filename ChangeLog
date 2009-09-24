@@ -1,3 +1,9 @@
+2009-09-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* sfcBroker.c:
+	[ 2865635 ] Semaphore leak
+	(patch from Surendra Kodali)
+
 2009-09-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* result.c:

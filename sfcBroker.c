@@ -266,7 +266,8 @@ static void stopBroker(void *p)
    uninitSocketPairs();
    sunsetControl();
 //   uninitGarbageCollector();
-   
+   closeLogging();
+ 
    if (restartBroker) {
       char *emsg=strerror(errno);
       execvp("sfcbd",restartArgv);

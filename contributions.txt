@@ -54,6 +54,7 @@ J. Vinodhini, AMI
 Gokula Kannan, AMI
 ------------------
 05/02/2008 [ 1919970 ] Provider process not terminated after idle (w/ LocalConnect)
+09/01/2009 [ 2791613 ] interop provider gives invalid error while creating instance
 
 Luong Nguyen-Duy, Sun
 ---------------------

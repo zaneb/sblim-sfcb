@@ -802,7 +802,7 @@ CMPIStatus InteropProviderCreateInstance(
    
       /* This property new as of 2.22.  Really only useful for 
          FilterCollections. If FCs are implemented, this will need updating. */
-      if (iss == 0) {
+      if (st.rc == CMPI_RC_OK && iss == 0) {
         setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"IndividualSubscriptionSupported property must be TRUE (FilterCollections not available)");
         _SFCB_RETURN(st);         
       }

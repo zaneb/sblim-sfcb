@@ -1,3 +1,8 @@
+2009-09-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* interopProvider.c
+	[ 2870959 ] Creation of IndicationFilter fails if missing property
+
 2009-09-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* sfcBroker.c:

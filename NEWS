@@ -6,6 +6,7 @@ New features:
 
 Bugs fixed:
 
+- 2870959 Creation of IndicationFilter fails if missing property
 
 Changes in 1.3.5
 ================

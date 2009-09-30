@@ -189,7 +189,7 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    }
 
    CMPIData persistence = CMGetProperty(ciLocal, "persistencetype", &st);
-   if (persistence.state == CMPI_nullValue) {
+   if (persistence.state == CMPI_nullValue || persistence.state == CMPI_notFound) {
      persistenceType = 2;  /* default is 2 = permanent */
    }
    else if (persistence.value.uint16 < 1 || persistence.value.uint16 > 3) {

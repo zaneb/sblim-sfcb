@@ -1,7 +1,10 @@
 2009-09-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
-	* interopProvider.c
+	* interopProvider.c:
 	[ 2870959 ] Creation of IndicationFilter fails if missing property
+
+	* indCIMXMLHandler.c:
+	[ 2871055 ] Creation of IndicationHandlerCIMXML fails if missing prop
 
 2009-09-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 

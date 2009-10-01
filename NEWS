@@ -2,7 +2,7 @@ Changes in 1.3.6
 ================
 
 New features:
-
+- 2850167 IndicationProfile: CIM_ServiceAffectsElement creation 
 
 Bugs fixed:
 

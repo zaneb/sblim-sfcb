@@ -1,3 +1,8 @@
+2009-10-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* interopServerProvider.c, indication.mof, default.reg.in
+	[ 2850167 ] IndicationProfile: CIM_ServiceAffectsElement creation
+
 2009-09-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopProvider.c:

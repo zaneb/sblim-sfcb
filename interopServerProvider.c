@@ -690,3 +690,303 @@ static CMPIStatus ServerProviderExecQuery(CMPIInstanceMI * mi,
  
 CMInstanceMIStub(ServerProvider, ServerProvider, _broker, CMNoHook);
 
+/*---------------------- Association interface --------------------------*/ 
+
+
+CMPIStatus ServerProviderAssociationCleanup(CMPIAssociationMI * mi, const CMPIContext * ctx, CMPIBoolean terminate)
+{
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   _SFCB_ENTER(TRACE_PROVIDERS, "ServerProviderAssociationCleanup");
+   
+   _SFCB_RETURN(st);
+}
+
+                            
+/** \brief buildAssoc - Builds the Association instances
+ *
+ *  buildAssoc returns a set of instances represented 
+ *  by op that is passed in. 
+ *  The propertyList is used as a filter on the results
+ *  and the target determines if names or instances should
+ *  be returned.
+ */
+
+CMPIStatus buildAssoc(const CMPIContext * ctx,
+                     const CMPIResult * rslt,
+                     const CMPIObjectPath * op,
+                     const char **propertyList,
+                     const char *target)
+{
+    CMPIEnumeration *enm = NULL;
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+
+    if (strcasecmp(target,"AssocNames") == 0 ) {
+        enm = _broker->bft->enumerateInstanceNames(_broker, ctx, op, &rc);
+        while(enm && enm->ft->hasNext(enm, &rc)) {
+            CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &rc).value.ref));
+        }
+    } else if (strcasecmp(target,"Assocs") == 0 ){
+        enm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, &rc);
+        while(enm && enm->ft->hasNext(enm, &rc)) {
+            CMPIData inst=CMGetNext(enm,&rc);
+            if (propertyList) {
+                CMSetPropertyFilter(inst.value.inst,propertyList,NULL);
+            }
+            CMReturnInstance(rslt, (inst.value.inst));
+        }
+    }
+    if(enm) CMRelease(enm);
+    CMReturnDone( rslt );
+    CMReturn(CMPI_RC_OK);
+}
+
+/** \brief buildRefs - Builds the Reference instances
+ *
+ *  buildAssoc returns a set of instances of the
+ *  SFCB_ServiceAffectsElement class that associate
+ *  the objects represented by op to the IndicationService.
+ *  isop is an objectPath pointer to the IndicationService,
+ *  saeop is an objectPath pointer to SFCB_ServiceAffectsElement.
+ *  The propertyList is used as a filter on the results
+ *  and the target determines if names or instances should
+ *  be returned.
+ */
+CMPIStatus buildRefs(const CMPIContext * ctx,
+                     const CMPIResult * rslt,
+                     const CMPIObjectPath * op,
+                     const CMPIObjectPath * isop,
+                     const CMPIObjectPath * saeop,
+                     const char **propertyList,
+                     const char *target)
+{
+    CMPIEnumeration *enm = NULL;
+    CMPIEnumeration *isenm = NULL;
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+    CMPIStatus rc2 = {CMPI_RC_OK, NULL};
+    CMPIInstance *ci;
+
+    // Get the single instance of IndicationService
+    isenm = _broker->bft->enumerateInstanceNames(_broker, ctx, isop, &rc);
+    CMPIData isinst=CMGetNext(isenm,&rc);
+    // Create an instance of SAE
+    ci=CMNewInstance(_broker,saeop,&rc2);
+    CMSetProperty(ci,"AffectingElement",&(isinst.value.ref),CMPI_ref);
+
+    if (CMGetKeyCount(op,NULL) == 0) {
+        enm = _broker->bft->enumerateInstanceNames(_broker, ctx, op, &rc);
+        while(enm && CMHasNext(enm, &rc)) {
+            CMPIData inst=CMGetNext(enm,&rc);
+            CMSetProperty(ci,"AffectedElement",&(inst.value.ref),CMPI_ref);
+            if (strcasecmp(target,"Refs") == 0 ) {
+                if (propertyList) {
+                    CMSetPropertyFilter(ci,propertyList,NULL);
+                }
+                CMReturnInstance(rslt, ci);
+            } else {
+                CMReturnObjectPath(rslt,CMGetObjectPath(ci,NULL));
+            }
+        }
+    } else {
+        CMSetProperty(ci,"AffectedElement",&(op),CMPI_ref);
+        if (strcasecmp(target,"Refs") == 0 ) {
+            if (propertyList) {
+                CMSetPropertyFilter(ci,propertyList,NULL);
+            }
+            CMReturnInstance(rslt, ci);
+        } else {
+            CMReturnObjectPath(rslt,CMGetObjectPath(ci,NULL));
+        }
+    }
+
+    if(ci) CMRelease(ci);
+    if(enm) CMRelease(enm);
+    if(isenm) CMRelease(isenm);
+    CMReturnDone( rslt );
+    CMReturn(CMPI_RC_OK);
+}
+                            
+/** \brief buildObj - Builds the Association or Reference instances
+ *
+ *  buildObj calls buildAssoc or buildRefs as required.
+ *  op is the target objectPath.
+ *  isop is an objectPath pointer to the IndicationService,
+ *  saeop is an objectPath pointer to SFCB_ServiceAffectsElement.
+ *  The propertyList is used as a filter on the results
+ *  and the target determines if names or instances should
+ *  be returned and whether association or references.
+ */
+CMPIStatus buildObj(const CMPIContext * ctx,
+                     const CMPIResult * rslt,
+                     const char *resultClass,
+                     const CMPIObjectPath * op,
+                     const CMPIObjectPath * isop,
+                     const CMPIObjectPath * saeop,
+                     const char **propertyList,
+                     const char *target)
+{
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+
+    if ( ((strcasecmp(target,"Assocs") == 0 ) || (strcasecmp(target,"AssocNames") == 0 ))
+    && (( resultClass==NULL ) || ( CMClassPathIsA(_broker,op,resultClass,&rc) == 1 ) )) {
+        // Association was requested
+        buildAssoc(ctx,rslt,op,propertyList,target);
+    } else if ( ((strcasecmp(target,"Refs") == 0 ) || (strcasecmp(target,"RefNames") == 0 )) 
+    && (( resultClass==NULL ) || ( CMClassPathIsA(_broker,saeop,resultClass,&rc) == 1 ) )) {
+        // Reference was requested
+        buildRefs(ctx,rslt,op,isop,saeop,propertyList,target);
+    }
+    CMReturnDone( rslt );
+    CMReturn(CMPI_RC_OK);
+}
+
+/** \brief getAssociators - Builds the Association or Reference instances
+ *
+ *  Determines what needs to be returned for the various associator and
+ *  reference calls.
+ */
+CMPIStatus getAssociators(CMPIAssociationMI * mi,
+                          const CMPIContext * ctx,
+                          const CMPIResult * rslt,
+                          const CMPIObjectPath * cop,
+                          const char *assocClass,
+                          const char *resultClass,
+                          const char *role,
+                          const char *resultRole,
+                          const char **propertyList,
+                          const char *target)
+{
+
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+    CMPIObjectPath * saeop = NULL, * ldop = NULL, * ifop = NULL, * isop = NULL;
+
+    // Make sure role & resultRole are valid
+    if ( role && resultRole  && (strcasecmp(role,resultRole) == 0)) {
+        CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "role and resultRole cannot be equal." );
+        return rc;
+    }
+    if ( role  && (strcasecmp(role,"AffectingElement") != 0) 
+    && (strcasecmp(role,"AffectedElement") != 0)) {
+        CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Invalid value for role ." );
+        return rc;
+    }
+    if ( resultRole  && (strcasecmp(resultRole,"AffectingElement") != 0) 
+    && (strcasecmp(resultRole,"AffectedElement") != 0)) {
+        CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Invalid value for resultRole ." );
+        return rc;
+    }
+
+    saeop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "SFCB_ServiceAffectsElement", &rc );
+    if( saeop==NULL ) {
+        CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed." );
+        return rc;
+    }
+
+    // Make sure we are getting a request for the right assoc class
+    if( ( assocClass==NULL ) || ( CMClassPathIsA(_broker,saeop,assocClass,&rc) == 1 ) ) {
+        
+        // Get pointers to all the interesting classes.
+        ldop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "CIM_listenerdestination", &rc );
+        ifop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "CIM_indicationfilter", &rc );
+        isop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "CIM_indicationservice", &rc );
+        if (( ldop==NULL ) || ( ifop==NULL ) || ( isop==NULL )) {
+            CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed." );
+            return rc;
+        }
+
+        if ( (role == NULL  || ( strcasecmp(role,"affectedelement") != 0)) 
+        && (resultRole == NULL || ( strcasecmp(resultRole,"affectingelement") != 0)) 
+        && CMClassPathIsA(_broker,cop,"cim_indicationservice",&rc) == 1 ) { 
+            // We were given an IndicationService, so we need to return 
+            // IndicationFilters and ListenerDestinations
+            // Get IndicationFilters
+            buildObj(ctx,rslt,resultClass,ifop,isop,saeop,propertyList,target);
+            // Get ListenerDestinations
+            buildObj(ctx,rslt,resultClass,ldop,isop,saeop,propertyList,target);
+        }
+        if (( role == NULL || strcasecmp(role,"affectingelement") != 0) 
+        && ( resultRole == NULL || strcasecmp(resultRole,"affectedelement") != 0) 
+        && (( CMClassPathIsA(_broker,cop,"cim_indicationfilter",&rc) == 1) 
+        || (CMClassPathIsA(_broker,cop,"cim_listenerdestination",&rc) == 1) )  ) { 
+            // We were given either an IndicationFilter, or a ListenerDestination,
+            if  ((strcasecmp(target,"Assocs") == 0 ) || (strcasecmp(target,"AssocNames") == 0 )) {
+                // Here we need the IndicationService only
+                buildObj(ctx,rslt,resultClass,isop,isop,saeop,propertyList,target);
+            } else {
+                // Here we need the refs for the given object
+                buildObj(ctx,rslt,resultClass,cop,isop,saeop,propertyList,target);
+            }
+        }
+    }
+
+    CMReturnDone( rslt );
+    CMReturn(CMPI_RC_OK);
+}
+
+CMPIStatus ServerProviderAssociators(CMPIAssociationMI * mi,
+                                       const CMPIContext * ctx,
+                                       const CMPIResult * rslt,
+                                       const CMPIObjectPath * cop,
+                                       const char *assocClass,
+                                       const char *resultClass,
+                                       const char *role,
+                                       const char *resultRole,
+                                       const char **propertyList)
+{
+
+    _SFCB_ENTER(TRACE_PROVIDERS, "ServerProviderAssociators");
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+    rc = getAssociators(mi,ctx,rslt,cop,assocClass,resultClass,role,resultRole,propertyList,"Assocs");
+    _SFCB_RETURN(rc);
+}
+
+CMPIStatus ServerProviderAssociatorNames(CMPIAssociationMI * mi,
+                                           const CMPIContext * ctx,
+                                           const CMPIResult * rslt,
+                                           const CMPIObjectPath * cop,
+                                           const char *assocClass,
+                                           const char *resultClass,
+                                           const char *role,
+                                           const char *resultRole)
+{
+    _SFCB_ENTER(TRACE_PROVIDERS, "ServerProviderAssociatorNames");
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+    rc = getAssociators(mi,ctx,rslt,cop,assocClass,resultClass,role,resultRole,NULL,"AssocNames");
+    _SFCB_RETURN(rc);
+}
+
+
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus ServerProviderReferences(
+	CMPIAssociationMI * mi,
+	const CMPIContext * ctx,
+	const CMPIResult * rslt,
+	const CMPIObjectPath * cop,
+	const char * resultClass,
+	const char * role,
+	const char ** propertyList)
+{
+   CMPIStatus rc = { CMPI_RC_OK, NULL };
+   _SFCB_ENTER(TRACE_PROVIDERS, "ServerProviderReferences");
+    rc = getAssociators(mi,ctx,rslt,cop,NULL,resultClass,role,NULL,propertyList,"Refs");
+   _SFCB_RETURN(rc);
+}
+
+/* ------------------------------------------------------------------------- */
+
+CMPIStatus ServerProviderReferenceNames(
+	CMPIAssociationMI * mi,
+	const CMPIContext * ctx,
+	const CMPIResult * rslt,
+	const CMPIObjectPath * cop,
+	const char * resultClass,
+	const char * role)
+{
+   CMPIStatus rc = { CMPI_RC_OK, NULL };
+   _SFCB_ENTER(TRACE_PROVIDERS, "ServerProviderReferenceNames");
+    rc = getAssociators(mi,ctx,rslt,cop,NULL,resultClass,role,NULL,NULL,"RefNames");
+   _SFCB_RETURN(rc);
+}
+
+
+CMAssociationMIStub(ServerProvider, ServerProvider, _broker, CMNoHook);

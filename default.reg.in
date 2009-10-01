@@ -94,4 +94,9 @@
    type: instance
    namespace: root/interop
 #
-
+[SFCB_ServiceAffectsElement]
+   provider: ServerProvider
+   location: sfcInteropServerProvider
+   type: instance association
+   namespace: root/interop
+#

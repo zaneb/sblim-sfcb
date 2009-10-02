@@ -97,12 +97,44 @@ CMPIStatus IndCIMXMLHandlerEnumInstanceNames(CMPIInstanceMI * mi,
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstanceNames");
    if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
+
+#ifdef HAVE_OPTIMIZED_ENUMERATION
+   CMPIString* cn;
+   CMPIObjectPath* refLocal;
+   cn = CMGetClassName(ref, &st);
+
+   if (strcasecmp(CMGetCharPtr(cn), "cim_listenerdestination") == 0) {
+     enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, ref, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
+     }
+     refLocal = CMNewObjectPath(_broker,"root/interop","cim_listenerdestinationcimxml",&st);
+     enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, refLocal, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
+     }
+     refLocal = CMNewObjectPath(_broker,"root/interop","cim_indicationhandlercimxml",&st);
+     enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, refLocal, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
+     }
+     CMRelease(refLocal);
+   }
+   else {
+     enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, ref, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
+     }
+   }
+#else
    enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, ref, &st);
-   CMRelease(ctxLocal);
 
    while(enm && enm->ft->hasNext(enm, &st)) {
        CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
    }
+#endif
+
+   CMRelease(ctxLocal);
    if(enm) CMRelease(enm);
 
    _SFCB_RETURN(st);
@@ -121,12 +153,43 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstances");
    if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
-   enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
-   CMRelease(ctxLocal);
 
+#ifdef HAVE_OPTIMIZED_ENUMERATION
+   CMPIString* cn;
+   CMPIObjectPath* refLocal;
+   cn = CMGetClassName(ref, &st);
+
+   if (strcasecmp(CMGetCharPtr(cn), "cim_listenerdestination") == 0) {
+     enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+     }
+     refLocal = CMNewObjectPath(_broker,"root/interop","cim_listenerdestinationcimxml",&st);
+     enm = _broker->bft->enumerateInstances(_broker, ctxLocal, refLocal, properties, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+     }
+     refLocal = CMNewObjectPath(_broker,"root/interop","cim_indicationhandlercimxml",&st);
+     enm = _broker->bft->enumerateInstances(_broker, ctxLocal, refLocal, properties, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+     }
+     CMRelease(refLocal);
+   }
+   else {
+     enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
+     while(enm && enm->ft->hasNext(enm, &st)) {
+       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+     }
+   }
+#else
+   enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
    while(enm && enm->ft->hasNext(enm, &st)) {
        CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
    }
+#endif
+
+   CMRelease(ctxLocal);
    if(enm) CMRelease(enm);
 
    _SFCB_RETURN(st);

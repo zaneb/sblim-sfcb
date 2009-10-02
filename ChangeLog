@@ -1,5 +1,10 @@
 2009-10-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* indCIMXMLHandler.c:
+	[ 2864610 ] Subclasses not enum'd
+
+2009-10-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* test/xmltest/SAE*
 	[ 2850167 ] IndicationProfile: CIM_ServiceAffectsElement creation 
 	Added some testcases

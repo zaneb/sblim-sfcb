@@ -9,6 +9,7 @@ Bugs fixed:
 - 2870959 Creation of IndicationFilter fails if missing property
 - 2871055 Creation of IndicationHandlerCIMXML fails if missing prop
 - 2871935 indCIMXMLHandler provider can crash on invalid destination
+- 2864610 Subclasses not enum'd
 
 Changes in 1.3.5
 ================

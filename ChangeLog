@@ -1,3 +1,9 @@
+2009-10-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/xmltest/SAE*
+	[ 2850167 ] IndicationProfile: CIM_ServiceAffectsElement creation 
+	Added some testcases
+
 2009-10-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

@@ -1,3 +1,8 @@
+2009-10-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 2871935 ] indCIMXMLHandler provider can crash on invalid destination
+
 2009-10-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopServerProvider.c, indication.mof, default.reg.in

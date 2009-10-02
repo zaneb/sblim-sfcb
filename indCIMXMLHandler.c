@@ -179,7 +179,7 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
      char* ds = CMGetCharPtr(dest);
      if (strchr(ds, ':') == NULL) {
        char* prefix = "http:";
-       int n = strlen(ds)+strlen(prefix);
+       int n = strlen(ds)+strlen(prefix)+1;
        char* newdest = (char*)malloc(n*sizeof(char));
        strcpy(newdest, prefix);
        strcat(newdest, ds);

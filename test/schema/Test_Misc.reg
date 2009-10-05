@@ -1,0 +1,6 @@
+[TestCMPI_Method]
+    provider: TestMiscProvider
+    location: TestMiscProvider
+    type: method
+    namespace: root/cimv2
+#

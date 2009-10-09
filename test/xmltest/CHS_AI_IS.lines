@@ -1,0 +1,5 @@
+<IMETHODRESPONSE NAME="Associators">
+<KEYVALUE VALUETYPE="string">CIM_System</KEYVALUE>
+<INSTANCE CLASSNAME="CIM_System">
+<PROPERTY NAME="PrimaryOwnerContact" TYPE="string">
+

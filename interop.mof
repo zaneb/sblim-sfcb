@@ -7,6 +7,10 @@
 // 	dummy classes to get event classes loaded by mofc
 // ===================================================================
 
+class DMY_HostedService : CIM_HostedService
+{
+};
+
 class DMY_ObjectManager : CIM_ObjectManager
 {
 };

@@ -100,3 +100,9 @@
    type: instance association
    namespace: root/interop
 #
+[CIM_HostedService]
+   provider: ServerProvider
+   location: sfcInteropServerProvider
+   type: instance association
+   namespace: root/interop
+#

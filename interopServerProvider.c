@@ -839,6 +839,62 @@ CMPIStatus buildObj(const CMPIContext * ctx,
     CMReturn(CMPI_RC_OK);
 }
 
+/** \brief makeCIM_System - Builds a CIM_System instance
+ *  Creates an instance for a (dummy) CIM_System
+*/
+CMPIStatus  makeCIM_System(CMPIInstance * csi)
+{
+    CMSetProperty(csi,"CreationClassName","CIM_System",CMPI_chars);
+    CMSetProperty(csi,"Name",getSfcbUuid(),CMPI_chars);
+    CMReturn(CMPI_RC_OK);
+}
+
+/** \brief makeHostedService - Builds a CIM_HostedService instance
+ *  
+ *  Creates and returns the instance (or name) of a CIM_HostedService
+ *  association between CIM_System and CIM_IndicationService
+*/
+CMPIStatus makeHostedService(CMPIAssociationMI * mi,
+                     const CMPIContext * ctx,
+                     const CMPIResult * rslt,
+                     const CMPIObjectPath * isop,
+                     const CMPIObjectPath * hsop,
+                     const CMPIObjectPath * csop,
+                     const char **propertyList,
+                     const char *target)
+{
+    CMPIEnumeration *isenm = NULL;
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+    CMPIInstance  *hsi, *cci ;
+
+    cci=CMNewInstance(_broker,csop,&rc);
+    makeCIM_System(cci);
+
+    // Get the single instance of IndicationService
+    isenm = _broker->bft->enumerateInstanceNames(_broker, ctx, isop, &rc);
+    CMPIData isinst=CMGetNext(isenm,&rc);
+    // Create an instance 
+    hsi=CMNewInstance(_broker,hsop,&rc);
+    CMPIValue cciop;
+    cciop.ref=CMGetObjectPath(cci,NULL);
+    
+    CMSetProperty(hsi,"Dependent",&(isinst.value),CMPI_ref);
+    CMSetProperty(hsi,"Antecedent",&(cciop),CMPI_ref);
+    if (strcasecmp(target,"Refs") == 0 ) {
+        if (propertyList) {
+            CMSetPropertyFilter(hsi,propertyList,NULL);
+        }
+        CMReturnInstance(rslt, hsi);
+    } else {
+        CMReturnObjectPath(rslt,CMGetObjectPath(hsi,NULL));
+    }
+    if(cci) CMRelease(cci);
+    if(hsi) CMRelease(hsi);
+    if(isenm) CMRelease(isenm);
+    CMReturnDone( rslt );
+    CMReturn(CMPI_RC_OK);
+}
+
 /** \brief getAssociators - Builds the Association or Reference instances
  *
  *  Determines what needs to be returned for the various associator and
@@ -858,6 +914,9 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
 
     CMPIStatus rc = {CMPI_RC_OK, NULL};
     CMPIObjectPath * saeop = NULL, * ldop = NULL, * ifop = NULL, * isop = NULL;
+    CMPIObjectPath * csop = NULL, * hsop = NULL;
+    CMPIInstance *cci;
+    CMPIEnumeration *isenm = NULL;
 
     // Make sure role & resultRole are valid
     if ( role && resultRole  && (strcasecmp(role,resultRole) == 0)) {
@@ -865,24 +924,30 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
         return rc;
     }
     if ( role  && (strcasecmp(role,"AffectingElement") != 0) 
-    && (strcasecmp(role,"AffectedElement") != 0)) {
+    && (strcasecmp(role,"AffectedElement") != 0) 
+    && (strcasecmp(role,"Antecedent") != 0) 
+    && (strcasecmp(role,"Dependent") != 0)) {
         CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Invalid value for role ." );
         return rc;
     }
     if ( resultRole  && (strcasecmp(resultRole,"AffectingElement") != 0) 
-    && (strcasecmp(resultRole,"AffectedElement") != 0)) {
+    && (strcasecmp(resultRole,"AffectedElement") != 0) 
+    && (strcasecmp(resultRole,"Antecedent") != 0) 
+    && (strcasecmp(resultRole,"Dependent") != 0)) {
         CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Invalid value for resultRole ." );
         return rc;
     }
 
     saeop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "SFCB_ServiceAffectsElement", &rc );
-    if( saeop==NULL ) {
+    hsop = CMNewObjectPath( _broker, "root/interop", "CIM_HostedService", &rc );
+    if (( saeop==NULL ) || ( hsop==NULL)) {
         CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed." );
         return rc;
     }
 
     // Make sure we are getting a request for the right assoc class
     if( ( assocClass==NULL ) || ( CMClassPathIsA(_broker,saeop,assocClass,&rc) == 1 ) ) {
+        // Handle SFCB_ServiceAffectsElement
         
         // Get pointers to all the interesting classes.
         ldop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "CIM_listenerdestination", &rc );
@@ -893,8 +958,8 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
             return rc;
         }
 
-        if ( (role == NULL  || ( strcasecmp(role,"affectedelement") != 0)) 
-        && (resultRole == NULL || ( strcasecmp(resultRole,"affectingelement") != 0)) 
+        if ( (role == NULL  || ( strcasecmp(role,"affectingelement") == 0)) 
+        && (resultRole == NULL || ( strcasecmp(resultRole,"affectedelement") == 0)) 
         && CMClassPathIsA(_broker,cop,"cim_indicationservice",&rc) == 1 ) { 
             // We were given an IndicationService, so we need to return 
             // IndicationFilters and ListenerDestinations
@@ -903,8 +968,8 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
             // Get ListenerDestinations
             buildObj(ctx,rslt,resultClass,ldop,isop,saeop,propertyList,target);
         }
-        if (( role == NULL || strcasecmp(role,"affectingelement") != 0) 
-        && ( resultRole == NULL || strcasecmp(resultRole,"affectedelement") != 0) 
+        if (( role == NULL || strcasecmp(role,"affectedelement") == 0) 
+        && ( resultRole == NULL || strcasecmp(resultRole,"affectingelement") == 0) 
         && (( CMClassPathIsA(_broker,cop,"cim_indicationfilter",&rc) == 1) 
         || (CMClassPathIsA(_broker,cop,"cim_listenerdestination",&rc) == 1) )  ) { 
             // We were given either an IndicationFilter, or a ListenerDestination,
@@ -918,9 +983,74 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
         }
     }
 
+    // Handle CIM_HostedService
+
+    if( ( assocClass==NULL ) || ( CMClassPathIsA(_broker,hsop,assocClass,&rc) == 1 ) ) {
+
+        isop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "CIM_indicationservice", &rc );
+        csop = CMNewObjectPath( _broker, "root/cimv2", "CIM_System", &rc );
+        if (( csop==NULL ) || (isop==NULL) ) {
+            CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed." );
+            return rc;
+        }
+
+        if ( (role == NULL  || ( strcasecmp(role,"dependent") == 0)) 
+        && (resultRole == NULL || ( strcasecmp(resultRole,"antecedent") == 0)) 
+        && CMClassPathIsA(_broker,cop,"cim_indicationservice",&rc) == 1 ) { 
+            // An IndicationService was passed in, so we need to return either the 
+            // CIM_System instance or a CIM_HostedService association instance
+            if  (((strcasecmp(target,"Assocs") == 0 ) || (strcasecmp(target,"AssocNames") == 0 )) 
+            && (resultClass == NULL || ( strcasecmp(resultClass,"CIM_System") == 0)) ) {
+                // Return the CIM_System instance
+                cci=CMNewInstance(_broker,csop,&rc);
+                makeCIM_System(cci);
+                if (strcasecmp(target,"Assocs") == 0 ) {
+                    if (propertyList) {
+                        CMSetPropertyFilter(cci,propertyList,NULL);
+                    }
+                    CMReturnInstance(rslt, cci);
+                } else {
+                    CMReturnObjectPath(rslt,CMGetObjectPath(cci,NULL));
+                }
+                if(cci) CMRelease(cci);
+
+            } else if (resultClass == NULL || ( strcasecmp(resultClass,"CIM_HostedService") == 0)) {
+                // Return the CIM_HostedService instance
+                makeHostedService(mi,ctx,rslt,isop,hsop,csop,propertyList,target);
+            }
+
+                
+        }
+        if (( role == NULL || strcasecmp(role,"antecedent") == 0) 
+        && ( resultRole == NULL || strcasecmp(resultRole,"dependent") == 0) 
+        && ( CMClassPathIsA(_broker,cop,"cim_system",&rc) == 1) ) { 
+            // A CIM_System was passed in so wee need to return either the
+            // CIM_IndicationService instance or a CIM_HostedService association instance
+            if  ( ((strcasecmp(target,"Assocs") == 0 ) || (strcasecmp(target,"AssocNames") == 0 )) 
+            && (resultClass == NULL || ( strcasecmp(resultClass,"CIM_IndicationService") == 0)) ) {
+                // Return the CIM_IndicationService instance
+                isenm = _broker->bft->enumerateInstances(_broker, ctx, isop, NULL, &rc);
+                CMPIData inst=CMGetNext(isenm,&rc);
+                if (strcasecmp(target,"Assocs") == 0 ) {
+                    if (propertyList) {
+                        CMSetPropertyFilter(inst.value.inst,propertyList,NULL);
+                    }
+                    CMReturnInstance(rslt, (inst.value.inst));
+                } else {
+                    CMReturnObjectPath(rslt,CMGetObjectPath(inst.value.inst,NULL));
+                }
+                if(isenm) CMRelease(isenm);
+            } else if (resultClass == NULL || ( strcasecmp(resultClass,"CIM_HostedService") == 0)) {
+                // Return the CIM_HostedService instance
+                makeHostedService(mi,ctx,rslt,isop,hsop,csop,propertyList,target);
+            }
+        }
+    }
+
     CMReturnDone( rslt );
     CMReturn(CMPI_RC_OK);
 }
+
 
 CMPIStatus ServerProviderAssociators(CMPIAssociationMI * mi,
                                        const CMPIContext * ctx,

@@ -411,8 +411,8 @@ CMPIStatus TestInstanceProviderExecQuery (
     const CMPIContext * ctx,
     const CMPIResult * rslt,
     const CMPIObjectPath * referencePath,
-    const char *lang,
-    const char *query)
+    const char *query,
+    const char *lang)
 {
     CMPIStatus rc = { CMPI_RC_OK, NULL };
     CMPIStatus rc_Eval = { CMPI_RC_OK, NULL };

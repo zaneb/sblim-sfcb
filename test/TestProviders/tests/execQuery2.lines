@@ -1,0 +1,9 @@
+<PROPERTY NAME="c" TYPE="char16">
+<VALUE>c</VALUE>
+</PROPERTY>
+<PROPERTY NAME="s" TYPE="string">
+<VALUE>Hello</VALUE>
+</PROPERTY>
+<PROPERTY NAME="ElementName" TYPE="string">
+<VALUE>Test_Query</VALUE>
+</PROPERTY>

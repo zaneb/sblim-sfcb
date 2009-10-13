@@ -57,7 +57,7 @@
 @LOAD_INDICATION_PROVIDER@   type: instance method
 @LOAD_INDICATION_PROVIDER@   namespace: root/interop
 #
-[CIM_RegisteredProfile]
+[SFCB_RegisteredProfile]
    provider: ProfileProvider
    location: sfcProfileProvider
    type: instance method

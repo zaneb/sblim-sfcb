@@ -1,4 +1,9 @@
-2009-10-09 Sean Swehla <smswehla@linux.vnet.ibm.com>
+2009-10-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* Makefile.am, default.reg.in, profileProvider.c
+	[ 2864660 ] IndicationProfile: CIM_RegisteredProfile
+
+2009-10-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* Makefile.am, interop.mof, 10_interop.mof: 
 	[ 2875050 ] default MOFs should allow for multiple files

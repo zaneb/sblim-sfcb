@@ -129,7 +129,7 @@ static void initProfiles(
   ctxLocal = prepareUpcall((CMPIContext *)ctx);
 
   /* Add Profile Registration profile */
-  op = CMNewObjectPath(broker,"root/interop","cim_registeredprofile",&st); 
+  op = CMNewObjectPath(broker,"root/interop","sfcb_registeredprofile",&st); 
   ci = CMNewInstance(broker, op, &st);
   Profile* prof = (Profile*)malloc(sizeof(Profile));
   prof->InstanceID = "CIM:SFCB_PR";

@@ -1,3 +1,8 @@
+2009-10-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* sfcbrepos.sh.in, man/sfcbrepos.1.pre.in:
+	[ 2878175 ] sfcbrepos should pass all backend options to sfcbmof
+
 2009-10-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* Makefile.am, default.reg.in, profileProvider.c

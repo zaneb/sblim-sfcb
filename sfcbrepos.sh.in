@@ -2,10 +2,10 @@
 
 usage() 
 {
-    echo "usage: $0 [-h] [-f] [-i] [-c cimschemadir] [-s stagingdir] [-r registrationdir] " 1>&2 
+    echo "usage: $0 [-h] [-f] [-i] [-b backendopt] [-c cimschemadir] [-s stagingdir] [-r registrationdir] " 1>&2 
 }
 
-args=`getopt fhis:r:c:X: $*`
+args=`getopt fhib:s:r:c:X: $*`
 rc=$?
 
 if [ $rc = 127 ]
@@ -29,7 +29,10 @@ do
 	  shift;;
       -i) ignore_instances=1
 	  shift;;
-      -X) xformat="-b $2"
+      -b) backendopt="-b $2"
+          shift 2;;
+      # -X previously used, replaced by -b.  Keep it around for compatibility.
+      -X) backendopt="-b $2"
 	  shift 2;;
       -s) stagingdir=$2
 	  shift 2;;
@@ -182,7 +185,7 @@ then
         else
             instmigopt=""
         fi
-	    if ! sfcbmof -d $repositorydir -n $namespace -o classSchemas -I $cimschemadir -i CIM_Schema.mof $xformat $instmigopt $mofdir/*.mof $globalmofs
+	    if ! sfcbmof -d $repositorydir -n $namespace -o classSchemas -I $cimschemadir -i CIM_Schema.mof $backendopt $instmigopt $mofdir/*.mof $globalmofs
 	    then
             rm -f $instmigfile 2> /dev/null
 		    echo Failed compiling the MOF files. >&2

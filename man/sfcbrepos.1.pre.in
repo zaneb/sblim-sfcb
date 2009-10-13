@@ -42,9 +42,14 @@ Force option. Without this option you will be prompted to confirm creating a
 new class repository (and delete the old one). Setting this option will
 rebuild the new sfcb repository without prompting.
 .TP
+\fB\-b\fR \fIbackendopts\fR
+Set special backend options for sfcbmof.  Valid options are: \fBP32\fR - compile 
+for PowerPC target; \fBQ\fR - skip qualifiers in output file; \fBq\fR - skip 
+Description, ValueMap, and Values qualifiers in output file. Note: eliminating 
+qualifiers will often significantly reduce the size of the class repository.
+.TP
 \fB\-X\fR \fIplatform\fR
-Build repository for different platform type. Currently only supported on
-ix86 environments. Only valid value is P32 meaning powerpc 32 bit mode. 
+Alias of \fB-b\fR
 .TP
 \fB\-h\fR
 Display usage information and exit.

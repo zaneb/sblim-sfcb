@@ -1,5 +1,5 @@
 .ig
-(C) Copyright IBM Corp. 2004, 2005
+(C) Copyright IBM Corp. 2004, 2005, 2009
                                                                                 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -11,7 +11,7 @@ entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 ..
 
-.TH sfcbrepos 1 "August 2005" "sfcbrepos Version @PACKAGE_VERSION@"
+.TH sfcbrepos 1 "October 2009" "sfcbrepos Version @PACKAGE_VERSION@"
 .SH NAME
 sfcbrepos \- Script to rebuild the Small-Footprint CIM Broker (sfcb) class repository
 .SH SYNOPSIS
@@ -41,6 +41,9 @@ Default is \fI@localstatedir@/lib/sfcb/registration\fR
 Force option. Without this option you will be prompted to confirm creating a 
 new class repository (and delete the old one). Setting this option will
 rebuild the new sfcb repository without prompting.
+.TP
+\fB-i\fR
+Do \fInot\fR migrate instances from previous repository
 .TP
 \fB\-b\fR \fIbackendopts\fR
 Set special backend options for sfcbmof.  Valid options are: \fBP32\fR - compile 
@@ -111,7 +114,7 @@ The SBLIM Project Bug tracking page can be found at
 .IP
 http://sourceforge.net/tracker/?group_id=128809&atid=712784
 .SH COPYRIGHT
-(C) Copyright IBM Corp. 2004, 2005
+(C) Copyright IBM Corp. 2004, 2005, 2009
 .SH AVAILABILITY
 The Small-Footprint CIM Broker (sfcb) is a part of the SBLIM project.
 The most recent version is available on the web at

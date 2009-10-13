@@ -1,0 +1,13 @@
+//
+// instance of CIM_RegisteredProfile
+// for Indications Profile
+//
+
+instance of SFCB_RegisteredProfile
+{
+  InstanceID = "CIM:SFCB_IP";
+  RegisteredOrganization = 2;
+  RegisteredName = "Indications";
+  RegisteredVersion = "1.0.0";
+  AdvertiseTypes = 3;
+};

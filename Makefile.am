@@ -438,7 +438,7 @@ EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 
 dist_sfcbdata_SCRIPTS=genSslCert.sh getSchema.sh test/stageschema.sh
 
-dist_sfcbdata_DATA=default.reg interop.mof indication.mof
+dist_sfcbdata_DATA=default.reg 10_interop.mof indication.mof
 
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage sfcbuuid
 
@@ -506,7 +506,7 @@ install-data-local:
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 	test -d $(DESTDIR)$(sfcbstatedir)/stage/regs || $(mkdir_p) $(DESTDIR)$(sfcbstatedir)/stage/regs
 	$(INSTALL_DATA) ./default.reg $(DESTDIR)$(sfcbstatedir)/stage
-	$(INSTALL_DATA) $(srcdir)/interop.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
+	$(INSTALL_DATA) $(srcdir)/10_interop.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 if INDICATIONS
 	$(INSTALL_DATA) $(srcdir)/indication.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs
 endif
@@ -517,7 +517,7 @@ endif
 
 uninstall-local:
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
-	rm -f $(DESTDIR)$(sfcbstatedir)/stage/root/interop/interop.mof
+	rm -f $(DESTDIR)$(sfcbstatedir)/stage/root/interop/10_interop.mof
 if INDICATIONS
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/mofs/indication.mof
 endif

@@ -1,3 +1,8 @@
+2009-10-09 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* Makefile.am, interop.mof, 10_interop.mof: 
+	[ 2875050 ] default MOFs should allow for multiple files
+
 2009-10-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* default.reg.in, interop.mof, interopServerProvider.c: 

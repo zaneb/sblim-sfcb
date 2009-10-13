@@ -7,10 +7,6 @@
 // 	dummy classes to get event classes loaded by mofc
 // ===================================================================
 
-class DMY_HostedService : CIM_HostedService
-{
-};
-
 class DMY_ObjectManager : CIM_ObjectManager
 {
 };
@@ -27,7 +23,7 @@ class DMY_RegisteredSubProfile : CIM_RegisteredSubProfile
  {
  };
 
-class DMY_RegisteredProfile : CIM_RegisteredProfile
+class SFCB_RegisteredProfile : CIM_RegisteredProfile
  {
  };
 

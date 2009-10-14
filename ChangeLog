@@ -1,3 +1,8 @@
+2009-10-14  Sean Swehla  <smswehla@linux.vnet.ibm.com>
+
+	* 10_interop.mof
+	[ 2875050 ] default MOFs should allow for multiple files
+
 2009-10-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* sfcbrepos.sh.in, man/sfcbrepos.1.pre.in:

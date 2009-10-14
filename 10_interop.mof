@@ -57,3 +57,7 @@ class DMY_IndicationSubscription : CIM_IndicationSubscription
 {
 };
 
+class DMY_HostedService : CIM_HostedService
+{
+};
+

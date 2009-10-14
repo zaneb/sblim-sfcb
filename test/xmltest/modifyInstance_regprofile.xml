@@ -9,7 +9,7 @@
         </LOCALNAMESPACEPATH>
         <IPARAMVALUE NAME="ModifiedInstance">
 	 <VALUE.NAMEDINSTANCE>
-          <INSTANCENAME CLASSNAME="CIM_RegisteredProfile">
+          <INSTANCENAME CLASSNAME="SFCB_RegisteredProfile">
             <KEYBINDING NAME="InstanceID">
               <KEYVALUE VALUETYPE="string">CIM:SFCB_AB</KEYVALUE>
             </KEYBINDING>

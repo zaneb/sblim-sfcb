@@ -1,4 +1,4 @@
-<INSTANCE CLASSNAME="cim_registeredprofile">
+<INSTANCE CLASSNAME="SFCB_RegisteredProfile">
 <PROPERTY.ARRAY NAME="AdvertiseTypes" TYPE="uint16">
 <VALUE.ARRAY>
 <VALUE>3</VALUE>

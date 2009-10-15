@@ -22,10 +22,24 @@
 	* Makefile.am, interop.mof, 10_interop.mof: 
 	[ 2875050 ] default MOFs should allow for multiple files
 
+2009-10-11 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* Makefile.am, test/schema/Test_Query.*, test/TestProviders/cmpiTestExecQueryProvider.c, 				       test/TestProviders/tests/execQuery*.*
+	[2859978] TestProviders for SFCB 
+
+2009-10-10 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* test/TestProviders/cmpiTestInstanceProvider.c
+	[2859978] TestProviders for SFCB ( Typo error in the sample instance provider )
+	* test/TestProviders/tests/Test7ExecQuery*.*
+	[2859978] TestProviders for SFCB (ExecQuery test cases for sample InstanceProvider )
+
 2009-10-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* default.reg.in, interop.mof, interopServerProvider.c: 
 	[ 2875822 ] IndicationProfile: CIM_HostedService
+
+2009-10-05 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* test/schema/Test_Misc.reg, test/schema/Test_Misc.mof
+	[ 2859978 ] TestProviders for SFCB ( Updating with schema files )
 
 2009-10-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
@@ -55,6 +69,10 @@
 
 	* indCIMXMLHandler.c:
 	[ 2871055 ] Creation of IndicationHandlerCIMXML fails if missing prop
+
+2009-10-25 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* Makefile.am, test/TestProviders/cmpiTestMiscProvider.c, test/TestProviders/tests/TestMisc*.*
+	[ 2859978 ] TestProviders for SFCB ( Inclusion of test cases for new provider )	
 
 2009-09-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 

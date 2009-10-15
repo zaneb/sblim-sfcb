@@ -182,7 +182,7 @@ fi
 # Check and configure requested tests.
 if test "$enable_tests" == "yes"; then
     # This means all tests should be on
-    enable_tests="unit,gcov,wbemcli,xml,commands,slp"
+    enable_tests="unit,gcov,wbemcli,xml,commands,slp,providers"
 fi
 
 OLDIFS="$IFS"
@@ -205,6 +205,8 @@ do
 	       test_slp=yes
 	    fi
 	    ;;
+        providers)
+            test_providers=yes;;
         *)
             echo "Unknown testcase $testcase";;
     esac
@@ -218,14 +220,12 @@ AM_CONDITIONAL(WCTEST,[test "$test_wbemcli" == "yes"])
 AM_CONDITIONAL(XMLTEST,[test "$test_xml" == "yes"])
 AM_CONDITIONAL(CMDTEST,[test "$test_cmd" == "yes"])
 AM_CONDITIONAL(SLPTEST,[test "$test_slp" == "yes"])
-
+AM_CONDITIONAL(PROVTEST,[test "$test_providers" == "yes"])
 if [test "$enable_tests"]; then
     # The order of TEST_SUBDIRS determines test
     # execution order.
     TEST_SUBDIRS="."
     AC_CONFIG_FILES([test/finaltest/Makefile])
-    TEST_SUBDIRS="$TEST_SUBDIRS TestProviders/tests"
-    AC_CONFIG_FILES([test/TestProviders/tests/Makefile])
     # Enable the various tests
     if [test "$test_cmd" == "yes"]; then
         TEST_SUBDIRS="$TEST_SUBDIRS commands"
@@ -251,6 +251,11 @@ if [test "$enable_tests"]; then
     if [test "$test_slp" == "yes"];then
 	TEST_SUBDIRS="$TEST_SUBDIRS slptest"
 	AC_CONFIG_FILES([test/slptest/Makefile])
+    fi
+
+    if [test "$test_providers" == "yes"]; then
+       TEST_SUBDIRS="$TEST_SUBDIRS TestProviders/tests"
+       AC_CONFIG_FILES([test/TestProviders/tests/Makefile])
     fi
 
     TEST_SUBDIRS="$TEST_SUBDIRS finaltest"

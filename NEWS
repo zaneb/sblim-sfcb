@@ -14,6 +14,7 @@ Bugs fixed:
 - 2871935 indCIMXMLHandler provider can crash on invalid destination
 - 2864610 Subclasses not enum'd
 - 2878175 sfcbrepos should pass all backend options to sfcbmof
+- 2871527 TestProviders not switchable
 
 Changes in 1.3.5
 ================

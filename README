@@ -309,7 +309,7 @@ Options:
         --enable-tests[=TESTS]
                 Enables the test suite with the listed tests. If no tests are
                 listed, all tests are enabled.
-                Valid tests are "commands,unit,xml,wbemcli,gcov"
+                Valid tests are "commands,unit,xml,wbemcli,gcov,slp,providers"
                 Default=no
 
         --enable-uds
@@ -864,6 +864,10 @@ automated sfcb install process when using installsfcb.sh, otherwise you will
 have to downlaod and install the wbemcli package from the SBLIM website.
 See Section 24 below for more information about wbemcli.
 
+Also there are providers included under test/TestProviders along with the 
+relevant test cases to test SFCB functionality. The configuration option 
+--enable-tests has an option 'providers' to enable the providers and its 
+testcases. The same xmltest script is used for execution of the test cases.
 
 16. Debugging sfcb
 ==================

@@ -6,6 +6,7 @@ New features:
 - 2875822 IndicationProfile: CIM_HostedService
 - 2875050 default MOFs should allow for multiple files
 - 2864660 IndicationProfile: CIM_RegisteredProfile
+- 2882663 IndicationProfile: CIM_ElementConformsToProfile
 
 Bugs fixed:
 

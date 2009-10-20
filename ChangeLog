@@ -1,3 +1,8 @@
+2009-10-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* default.reg.in, 10_interop.mof, interopServerProvider.c: 
+	[ 2882663 ] IndicationProfile: CIM_ElementConformsToProfile
+
 2009-10-15 Pratyusha Doddpaneni <pratyusha.d@in.ibm.com>
 	* configure.ac
 	[ 2871527 ] TestProviders not switchable
@@ -23,7 +28,8 @@
 	[ 2875050 ] default MOFs should allow for multiple files
 
 2009-10-11 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* Makefile.am, test/schema/Test_Query.*, test/TestProviders/cmpiTestExecQueryProvider.c, 				       test/TestProviders/tests/execQuery*.*
+	* Makefile.am, test/schema/Test_Query.*, test/TestProviders/cmpiTestExecQueryProvider.c,
+	test/TestProviders/tests/execQuery*.*
 	[2859978] TestProviders for SFCB 
 
 2009-10-10 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>

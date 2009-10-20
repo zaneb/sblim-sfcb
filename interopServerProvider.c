@@ -895,6 +895,46 @@ CMPIStatus makeHostedService(CMPIAssociationMI * mi,
     CMReturn(CMPI_RC_OK);
 }
 
+/** \brief makeElementConforms - Builds a CIM_ElementConformsToProfile instance
+ *  
+ *  Creates and returns the instance (or name) of a CIM_ElementConformsToProfile
+ *  association between CIM_RegisteredProfile and CIM_IndicationService
+*/
+CMPIStatus makeElementConforms(CMPIAssociationMI * mi,
+                     const CMPIContext * ctx,
+                     const CMPIResult * rslt,
+                     const CMPIObjectPath * isop,
+                     const CMPIObjectPath * ecop,
+                     CMPIObjectPath * rpop,
+                     const char **propertyList,
+                     const char *target)
+{
+    CMPIEnumeration *isenm = NULL;
+    CMPIStatus rc = {CMPI_RC_OK, NULL};
+    CMPIInstance  *eci = NULL;
+
+    // Get the single instance of IndicationService
+    isenm = _broker->bft->enumerateInstanceNames(_broker, ctx, isop, &rc);
+    CMPIData isinst=CMGetNext(isenm,&rc);
+    // Get the IndicationProfile instance of RegisteredProfile
+    CMAddKey(rpop, "InstanceID", "CIM:SFCB_IP", CMPI_chars);
+    // Create an instance 
+    eci=CMNewInstance(_broker,ecop,&rc);
+    CMSetProperty(eci,"ManagedElement",&(isinst.value),CMPI_ref);
+    CMSetProperty(eci,"ConformantStandard",&(rpop),CMPI_ref);
+    if (strcasecmp(target,"Refs") == 0 ) {
+        if (propertyList) {
+            CMSetPropertyFilter(eci,propertyList,NULL);
+        }
+        CMReturnInstance(rslt, eci);
+    } else {
+        CMReturnObjectPath(rslt,CMGetObjectPath(eci,NULL));
+    }
+    if(eci) CMRelease(eci);
+    if(isenm) CMRelease(isenm);
+    CMReturnDone( rslt );
+    CMReturn(CMPI_RC_OK);
+}
 /** \brief getAssociators - Builds the Association or Reference instances
  *
  *  Determines what needs to be returned for the various associator and
@@ -914,7 +954,7 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
 
     CMPIStatus rc = {CMPI_RC_OK, NULL};
     CMPIObjectPath * saeop = NULL, * ldop = NULL, * ifop = NULL, * isop = NULL;
-    CMPIObjectPath * csop = NULL, * hsop = NULL;
+    CMPIObjectPath * csop = NULL, * hsop = NULL, * ecpop = NULL, * rpop = NULL;
     CMPIInstance *cci;
     CMPIEnumeration *isenm = NULL;
 
@@ -925,6 +965,8 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
     }
     if ( role  && (strcasecmp(role,"AffectingElement") != 0) 
     && (strcasecmp(role,"AffectedElement") != 0) 
+    && (strcasecmp(role,"ConformantStandard") != 0) 
+    && (strcasecmp(role,"ManagedElement") != 0) 
     && (strcasecmp(role,"Antecedent") != 0) 
     && (strcasecmp(role,"Dependent") != 0)) {
         CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Invalid value for role ." );
@@ -932,6 +974,8 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
     }
     if ( resultRole  && (strcasecmp(resultRole,"AffectingElement") != 0) 
     && (strcasecmp(resultRole,"AffectedElement") != 0) 
+    && (strcasecmp(resultRole,"ConformantStandard") != 0) 
+    && (strcasecmp(resultRole,"ManagedElement") != 0) 
     && (strcasecmp(resultRole,"Antecedent") != 0) 
     && (strcasecmp(resultRole,"Dependent") != 0)) {
         CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Invalid value for resultRole ." );
@@ -940,7 +984,8 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
 
     saeop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "SFCB_ServiceAffectsElement", &rc );
     hsop = CMNewObjectPath( _broker, "root/interop", "CIM_HostedService", &rc );
-    if (( saeop==NULL ) || ( hsop==NULL)) {
+    ecpop = CMNewObjectPath( _broker, "root/interop", "CIM_ElementConformsToProfile", &rc );
+    if (( saeop==NULL ) || ( hsop==NULL) || ( ecpop==NULL)) {
         CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed." );
         return rc;
     }
@@ -1045,6 +1090,56 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
                 makeHostedService(mi,ctx,rslt,isop,hsop,csop,propertyList,target);
             }
         }
+    }
+
+    // Handle ElementConformstoProfile
+    if( ( assocClass==NULL ) || ( CMClassPathIsA(_broker,ecpop,assocClass,&rc) == 1 ) ) {
+        isop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "CIM_indicationservice", &rc );
+        rpop = CMNewObjectPath( _broker, "root/interop", "SFCB_RegisteredProfile", &rc );
+        if (( rpop==NULL ) || (isop==NULL) ) {
+            CMSetStatusWithChars( _broker, &rc, CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed." );
+            return rc;
+        }
+        if ( (role == NULL  || ( strcasecmp(role,"ManagedElement") == 0)) 
+        && (resultRole == NULL || ( strcasecmp(resultRole,"ConformantStandard") == 0)) 
+        && CMClassPathIsA(_broker,cop,"cim_indicationservice",&rc) == 1 ) { 
+            // An IndicationService was passed in, so we need to return either the 
+            // CIM_RegisteredProfile instance or a CIM_ElementConformstoProfile association instance
+            if  (((strcasecmp(target,"Assocs") == 0 ) || (strcasecmp(target,"AssocNames") == 0 )) 
+            && (resultClass == NULL || ( strcasecmp(resultClass,"SFCB_RegisteredProfile") == 0)) ) {
+                // Return the CIM_RegisteredProfile instance
+                //buildAssoc(ctx,rslt,rpop,propertyList,target);
+                CMAddKey(rpop, "InstanceID", "CIM:SFCB_IP", CMPI_chars);
+                if (strcasecmp(target,"AssocNames") == 0 ) {
+                    CMReturnObjectPath(rslt, rpop);
+                } else if (strcasecmp(target,"Assocs") == 0 ){
+                    CMPIInstance * lci=CBGetInstance (_broker,ctx,rpop,NULL,&rc);
+                    if (propertyList) {
+                        CMSetPropertyFilter(lci,propertyList,NULL);
+                    }
+                    CMReturnInstance(rslt, lci);
+                }
+            } else if (resultClass == NULL || ( strcasecmp(resultClass,"CIM_ElementConformsToProfile") == 0)) {
+                // Return the CIM_ElementConformsToProfile association
+                makeElementConforms(mi,ctx,rslt,isop,ecpop,rpop,propertyList,target);
+            }
+        }
+        if (( role == NULL || strcasecmp(role,"antecedent") == 0) 
+        && ( resultRole == NULL || strcasecmp(resultRole,"dependent") == 0) 
+        && ( CMClassPathIsA(_broker,cop,"cim_RegisteredProfile",&rc) == 1) ) { 
+            // A CIM_RegisteredProfile was passed in so wee need to return either the
+            // CIM_IndicationService instance or a CIM_ElementConformsToProfile association instance
+            if  ( ((strcasecmp(target,"Assocs") == 0 ) || (strcasecmp(target,"AssocNames") == 0 )) 
+            && (resultClass == NULL || ( strcasecmp(resultClass,"CIM_IndicationService") == 0)) ) {
+                // Return the CIM_IndicationService instance
+                buildAssoc(ctx,rslt,isop,propertyList,target);
+            } else if (resultClass == NULL || ( strcasecmp(resultClass,"CIM_ElementConformsToProfile") == 0)) {
+                // Return the CIM_ElementConformsToProfile association
+                makeElementConforms(mi,ctx,rslt,isop,ecpop,rpop,propertyList,target);
+            }
+        }
+
+
     }
 
     CMReturnDone( rslt );

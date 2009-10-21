@@ -16,6 +16,7 @@ Bugs fixed:
 - 2864610 Subclasses not enum'd
 - 2878175 sfcbrepos should pass all backend options to sfcbmof
 - 2871527 TestProviders not switchable
+- 2883083 Test cases when SFCB is configured using local connect option
 
 Changes in 1.3.5
 ================

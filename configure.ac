@@ -181,8 +181,12 @@ fi
 
 # Check and configure requested tests.
 if test "$enable_tests" == "yes"; then
+if test "$enable_local_connect_only" == "yes"; then
+    enable_tests="localtests,gcov"
+else
     # This means all tests should be on
     enable_tests="unit,gcov,wbemcli,xml,commands,slp,providers"
+fi
 fi
 
 OLDIFS="$IFS"
@@ -207,6 +211,8 @@ do
 	    ;;
         providers)
             test_providers=yes;;
+        localtests)
+	    test_local=yes;;
         *)
             echo "Unknown testcase $testcase";;
     esac
@@ -221,6 +227,7 @@ AM_CONDITIONAL(XMLTEST,[test "$test_xml" == "yes"])
 AM_CONDITIONAL(CMDTEST,[test "$test_cmd" == "yes"])
 AM_CONDITIONAL(SLPTEST,[test "$test_slp" == "yes"])
 AM_CONDITIONAL(PROVTEST,[test "$test_providers" == "yes"])
+AM_CONDITIONAL(PROVTEST,[test "$test_local" == "yes"])
 if [test "$enable_tests"]; then
     # The order of TEST_SUBDIRS determines test
     # execution order.
@@ -256,6 +263,11 @@ if [test "$enable_tests"]; then
     if [test "$test_providers" == "yes"]; then
        TEST_SUBDIRS="$TEST_SUBDIRS TestProviders/tests"
        AC_CONFIG_FILES([test/TestProviders/tests/Makefile])
+    fi
+
+    if [test "$test_local" == "yes"];then
+       TEST_SUBDIRS="$TEST_SUBDIRS localtests"
+       AC_CONFIG_FILES([test/localtests/Makefile])	
     fi
 
     TEST_SUBDIRS="$TEST_SUBDIRS finaltest"

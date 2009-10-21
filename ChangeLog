@@ -1,3 +1,9 @@
+2009-10-21 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/xmltest/ECTP*:
+	[ 2882663 ] IndicationProfile: CIM_ElementConformsToProfile
+	Testcases
+
 2009-10-21 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* configure.ac, test/localtests/Makefile.am, test/localtests/test*.c
 	[ 2883083 ] Test cases when SFCB is configured using local connect option

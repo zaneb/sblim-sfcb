@@ -1,0 +1,5 @@
+<IMETHODRESPONSE NAME="Associators">
+<INSTANCENAME CLASSNAME="CIM_System">
+<PROPERTY.ARRAY NAME="IdentifyingDescriptions" TYPE="string">
+<INSTANCE CLASSNAME="SFCB_RegisteredProfile">
+<PROPERTY NAME="RegisteredVersion" TYPE="string">

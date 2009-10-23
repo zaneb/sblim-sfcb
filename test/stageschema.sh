@@ -31,9 +31,13 @@ if [ "$op" = "unstage" ]; then
         echo " Cannot find sfcbunstage. "
         exit 1
     else
-        for moffile in `ls $TEST_SCHEMA_DIR/*.mof | cut -d '/' -f3`
+        for moffile in `ls $TEST_SCHEMA_DIR/root/cimv2/*.mof | cut -d '/' -f6`
         do
             sfcbunstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 $moffile
+        done
+        for moffile in `ls $TEST_SCHEMA_DIR/root/interop/*.mof | cut -d '/' -f6`
+        do
+            sfcbunstage -s /usr/local/var/lib/sfcb/stage -n root/interop $moffile
         done
         sfcbrepos -f
     fi
@@ -48,13 +52,22 @@ else
         exit 1
     else
         # Copy test schema files into the SFCB stage directory for testing.
-        for regfile in `ls $TEST_SCHEMA_DIR/*.reg | cut -d '/' -f4`
+        for regfile in `ls $TEST_SCHEMA_DIR/root/cimv2/*.reg | cut -d '/' -f6`
         do
           moffile=`echo $regfile | sed 's/reg/mof/'`
-          if [ -f $TEST_SCHEMA_DIR/$regfile ]; then
-            sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 -r $TEST_SCHEMA_DIR/$regfile $TEST_SCHEMA_DIR/$moffile
+          if [ -f $TEST_SCHEMA_DIR/root/cimv2/$regfile ]; then
+            sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 -r $TEST_SCHEMA_DIR/root/cimv2/$regfile $TEST_SCHEMA_DIR/root/cimv2/$moffile
           else
-            sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 $TEST_SCHEMA_DIR/$moffile
+            sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/cimv2 $TEST_SCHEMA_DIR/root/cimv2/$moffile
+          fi
+       done
+       for regfile in `ls $TEST_SCHEMA_DIR/root/interop/*.reg | cut -d '/' -f6`
+       do
+	  moffile=`echo $regfile | sed 's/reg/mof/'`
+          if [ -f $TEST_SCHEMA_DIR/root/interop/$regfile ]; then
+	    sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/interop -r $TEST_SCHEMA_DIR/root/interop/$regfile $TEST_SCHEMA_DIR/root/interop/$moffile
+          else
+            sfcbstage -s /usr/local/var/lib/sfcb/stage -n root/interop $TEST_SCHEMA_DIR/root/interop/$moffile
           fi
         done
     fi

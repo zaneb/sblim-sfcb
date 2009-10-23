@@ -1,3 +1,9 @@
+2009-10-22 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+
+	* Makefile.am,test/stageschema.sh,test/TestProviders/cmpiTestIndicationProvider.c,
+	  test/TestProviders/tests/IndTest*.xml,test/TestProviders/tests/IndTest*.lines
+	[ 2859978 ] TestProviders for SFCB ( Sample Indicationprovider inclusion )
+
 2009-10-21 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* test/xmltest/ECTP*:

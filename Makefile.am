@@ -166,7 +166,8 @@ sfcblib_LTLIBRARIES += \
    libTestMethodProvider.la \
    libTestInstanceProvider.la \
    libTestMiscProvider.la \
-   libTestExecQueryProvider.la
+   libTestExecQueryProvider.la \
+   libTestIndicationProvider.la
 endif
 
 if SLP_ALONE
@@ -371,6 +372,11 @@ libTestExecQueryProvider_la_SOURCES = \
    test/TestProviders/cmpiTestExecQueryProvider.c
 libTestExecQueryProvider_la_LIBADD = -lsfcBrokerCore
 libTestExecQueryProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+
+libTestIndicationProvider_la_SOURCES = \
+   test/TestProviders/cmpiTestIndicationProvider.c
+libTestIndicationProvider_la_LIBADD = -lsfcBrokerCore
+libTestIndicationProvider_la_DEPENDENCIES=libsfcBrokerCore.la
 endif
 
 #

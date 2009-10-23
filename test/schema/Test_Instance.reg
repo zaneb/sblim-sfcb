@@ -1,6 +1,0 @@
-[Sample_Instance]
-   provider: TestInstanceProvider
-   location: TestInstanceProvider
-   namespace: root/cimv2
-   type: instance
-#

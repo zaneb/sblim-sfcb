@@ -1,0 +1,28 @@
+class TestCMPI_Parent
+{
+    string parentProperty;
+    uint32 Property1;
+};
+
+class TestCMPI_Method : TestCMPI_Parent
+{
+	uint32 TestCMPIBroker (
+	 [IN, Description (
+		"The requested are to test different CMPI data structure operations."),
+		ValueMap { "1", "2", "3"},
+		Values {"CMGetMessage",  "CMLogMessage","CDTraceMessage"}]
+			uint32 Operation,
+	  [OUT, Description (
+		" The result of what the operation carried out.")]
+			string Result);
+
+	String returnString();
+	Uint32 returnUint32();
+    Uint32 testArrayTypes();
+    Uint32 testErrorPaths();
+    Uint32 testSimpleTypes();
+    Uint32 testArrayClone();
+    Uint32 testReturn();
+    uint64 firstPropertyName;
+    uint64 secondPropertyName;
+};

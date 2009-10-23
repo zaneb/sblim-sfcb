@@ -1,0 +1,6 @@
+[Sample_Method]
+    provider: TestMethodProvider
+    location: TestMethodProvider
+    type: method
+    namespace: root/cimv2
+#

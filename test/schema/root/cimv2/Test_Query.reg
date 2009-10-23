@@ -1,0 +1,6 @@
+[Test_Query]
+   provider: TestExecQueryProvider
+   location: TestExecQueryProvider
+   type: instance
+   namespace: root/cimv2
+#

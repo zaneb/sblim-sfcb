@@ -1,0 +1,44 @@
+[Version("1.0.0"), Description (" Top Level Class for "
+   "testing Query operations.")]
+
+class Test_ExecQuery
+{
+    [key]
+    string PropertyA;
+    string PropertyB;
+
+    string s;
+    char16 c;
+    uint64 n64;
+    uint32 n32;
+    uint16 n16;
+    uint8  n8;
+    real64 r64;
+    real32 r32;
+    sint64 s64;
+    sint32 s32;
+    sint16 s16;
+    sint8  s8;
+    boolean b;
+    datetime d;
+};
+
+instance of Test_ExecQuery
+{
+   PropertyA = "A1";
+   PropertyB = "B1";
+   s = "S1";
+   c ="c";
+   n64 = 123456;
+   n32 = 12345;
+   n16 = 1234;
+   n8  = 123;
+   r64 = 123456.123456;
+   r32 = 12345.12345;
+   s64 = 3735928559;
+   s32 = 16777215;
+   s16 = 4095;
+   s8  = 25;
+   b = true;
+   d = "20090817204354.000000:000";
+};

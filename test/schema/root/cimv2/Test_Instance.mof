@@ -1,0 +1,14 @@
+[abstract, Version ("1.0.0")]
+class Sample_Class
+{
+	[key,
+	read]
+	Uint8 Identifier;
+};
+
+[Version ("1.0.0")]
+class Sample_Instance : Sample_Class
+{
+	[read, write]
+	string Message;
+};

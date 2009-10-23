@@ -1,0 +1,82 @@
+[Version("1.0.0"), Description (" Top Level Class that defines "
+   "a person. We will use this in static association "
+   "relationship ")]
+
+class TEST_Person
+{
+    [key]
+    string name;
+    string extraProperty = "defaultvalue";
+};
+
+[Version("1.0.0"), Description (" Sub Level Class that defines "
+   "a person. We will use this in static association "
+   "relationship ")]
+
+class TEST_PersonS : TEST_Person
+{
+    string secondProperty = "empty";
+    uint32 counter;
+};
+
+
+[Association, Version("1.0.0"), Description(" Lineage defines the "
+   "relationship between parents and children.")]
+
+class TEST_Lineage
+{
+    [key] TEST_Person ref parent;
+    [key] TEST_Person ref child;
+};
+
+
+[Association, Version("1.0.0"), Description("Adds a Property.")]
+
+class TEST_LabeledLineage
+{
+    string label;
+    [key] TEST_Person ref parent;
+    [key] TEST_Person ref child;
+};
+
+// The following are instances of the Person and Lineage classes that should be put into
+// the repository for the static association test
+
+instance of TEST_Person { name = "Mike"; };
+
+instance of TEST_Person { name = "Saara"; };
+
+instance of TEST_Person { name = "Sofi"; };
+
+instance of TEST_Person { name = "Gabi"; };
+
+instance of TEST_PersonS { name = "Mikes"; secondProperty = "one" ; counter = 1; };
+
+instance of TEST_PersonS { name = "Saaras"; secondProperty = "two" ; counter = 2; };
+
+instance of TEST_PersonS { name = "Sofis"; secondProperty = "three" ; counter = 3; };
+
+instance of TEST_PersonS { name = "Gabis"; secondProperty = "four" ; counter = 4; };
+
+instance of TEST_Lineage
+{
+    parent = "TEST_Person.name=\"Mike\"";
+    child = "TEST_Person.name=\"Sofi\"";
+};
+
+instance of TEST_Lineage
+{
+    parent = "TEST_Person.name=\"Mike\"";
+    child = "TEST_Person.name=\"Gabi\"";
+};
+
+instance of TEST_Lineage
+{
+    parent = "TEST_Person.name=\"Saara\"";
+    child = "TEST_Person.name=\"Sofi\"";
+};
+instance of TEST_Lineage
+{
+    parent = "TEST_Person.name=\"Saara\"";
+    child = "TEST_Person.name=\"Gabi\"";
+};

@@ -1,0 +1,6 @@
+[Indication]
+class Test_Indication : CIM_ProcessIndication
+{
+    string MethodName;
+    [Static] uint32 SendTestIndication();
+};

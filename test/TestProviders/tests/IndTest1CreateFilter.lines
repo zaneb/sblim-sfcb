@@ -1,0 +1,14 @@
+<INSTANCENAME CLASSNAME="CIM_IndicationFilter">
+<KEYBINDING NAME="SystemCreationClassName">
+<KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE>
+</KEYBINDING>
+<KEYBINDING NAME="SystemName">
+<KEYVALUE VALUETYPE="string">localhost.localdomain</KEYVALUE>
+</KEYBINDING>
+<KEYBINDING NAME="CreationClassName">
+<KEYVALUE VALUETYPE="string">CIM_IndicationFilter</KEYVALUE>
+</KEYBINDING>
+<KEYBINDING NAME="Name">
+<KEYVALUE VALUETYPE="string">Test_Indication_Filter_</KEYVALUE>
+</KEYBINDING>
+</INSTANCENAME>

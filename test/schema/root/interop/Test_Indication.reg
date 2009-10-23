@@ -1,0 +1,6 @@
+[Test_Indication]
+   provider: TestIndicationProvider
+   location: TestIndicationProvider
+   type: indication method
+   namespace: root/interop
+#

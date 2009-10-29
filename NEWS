@@ -17,6 +17,7 @@ Bugs fixed:
 - 2878175 sfcbrepos should pass all backend options to sfcbmof
 - 2871527 TestProviders not switchable
 - 2883083 Test cases when SFCB is configured using local connect option
+- 2888178 getObjectPath() ignores numeric types
 
 Changes in 1.3.5
 ================

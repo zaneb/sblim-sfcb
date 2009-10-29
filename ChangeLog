@@ -1,3 +1,8 @@
+2009-10-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* objectpath.c:
+	[ 2888178 ] getObjectPath() ignores numeric types
+
 2009-10-22 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 
 	* Makefile.am,test/stageschema.sh,test/TestProviders/cmpiTestIndicationProvider.c,

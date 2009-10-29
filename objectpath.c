@@ -521,7 +521,15 @@ static void addKey(CMPIObjectPath * op, char *kd, int ref)
       val[strlen(val) - 1] = 0;
       op->ft->addKey(op, kd, (CMPIValue *) val, CMPI_chars);
    }
+   else if (val[0] == '-' || val[0] == '+') {
+     CMPISint64 vali = atol(val);
+     CMPIValue v = (CMPIValue)vali;
+     op->ft->addKey(op, kd, &v, CMPI_sint64);
+   }
    else if (isdigit(*val)) {
+     CMPIUint64 vali = atol(val);
+     CMPIValue v = (CMPIValue)vali;
+     op->ft->addKey(op, kd, &v, CMPI_uint64);
    }
    else {
    }
@@ -539,7 +547,7 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
    }
    u = origu = strdup(path);
    last = u + strlen(u);
-   *msg = NULL;
+   if (msg) *msg = NULL;
 
    p = strchr(u, '.');
    if (!p) {

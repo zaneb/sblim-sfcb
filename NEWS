@@ -18,6 +18,7 @@ Bugs fixed:
 - 2871527 TestProviders not switchable
 - 2883083 Test cases when SFCB is configured using local connect option
 - 2888178 getObjectPath() ignores numeric types
+- 2881700 Build failure when docs are enabled
 
 Changes in 1.3.5
 ================

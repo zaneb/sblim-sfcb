@@ -1,3 +1,7 @@
+2009-10-30  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* sfcb-dox.conf.in
+	[ 2881700 ] Build failure when docs are enabled
+
 2009-10-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* objectpath.c:

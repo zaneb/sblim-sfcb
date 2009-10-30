@@ -1,4 +1,8 @@
 2009-10-30  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* configure.ac
+	[ 1993231 ] configure doesn't fail for all missing dependencies
+
+2009-10-30  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* sfcb-dox.conf.in
 	[ 2881700 ] Build failure when docs are enabled
 

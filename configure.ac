@@ -298,6 +298,7 @@ else
    LOAD_QUALIFIER_PROVIDER='#'
 fi
 AC_SUBST(LOAD_QUALIFIER_PROVIDER)
+AC_SUBST(SFCB_LIBPAM)
 
 if test "$enable_optimized_enumeration" == "yes"; then
    AC_DEFINE(HAVE_OPTIMIZED_ENUMERATION,1,[Enumeration optimization enabled.])
@@ -305,6 +306,7 @@ fi
 
 if test "$enable_pam" == "yes"; then
    AC_DEFINE(HAVE_PAM,,[PAM support enabled.])
+   AC_CHECK_LIB(pam,main,[SFCB_LIBPAM=-lpam],[AC_MSG_ERROR(Could not find required pam library.)])
    SFCB_CONF_BASICAUTHLIB=sfcBasicPAMAuthentication   
    SFCB_CONF_DOBASICAUTH=true
 else
@@ -362,6 +364,9 @@ AC_SUBST(SFCB_LDFLAGS)
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LEX
+case $LEX in
+ :) AC_MSG_ERROR([No lex program found]);;
+esac 
 AC_CHECK_PROG(YACC,bison,[bison -y])
 if test -z "${YACC}"
 then
@@ -369,6 +374,10 @@ then
 fi
 
 AC_PROG_LIBTOOL
+AC_CHECK_PROG(HAVE_UNZIP,unzip,"yes","no",)
+if test "$HAVE_UNZIP" = "no" ; then
+  AC_MSG_ERROR([Could not find unzip])
+fi
 
 # Checks for libraries.
 AC_CHECK_LIB(pthread,main)
@@ -456,7 +465,7 @@ if test "$enable_docs" = "yes"; then
    AC_CHECK_PROG(DOXYGEN,doxygen,[doxygen])
    if test -z "${DOXYGEN}"
    then
-      AC_MSG_WARN([doxygen is required to build API documentation.])
+      AC_MSG_ERROR([doxygen is required to build API documentation.])
    fi
 fi
 

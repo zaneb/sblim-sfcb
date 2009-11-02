@@ -57,6 +57,12 @@
 @LOAD_INDICATION_PROVIDER@   type: instance method
 @LOAD_INDICATION_PROVIDER@   namespace: root/interop
 #
+@LOAD_INDICATION_PROVIDER@[SFCB_IndicationServiceCapabilities]
+@LOAD_INDICATION_PROVIDER@   provider: ServerProvider
+@LOAD_INDICATION_PROVIDER@   location: sfcInteropServerProvider
+@LOAD_INDICATION_PROVIDER@   type: instance
+@LOAD_INDICATION_PROVIDER@   namespace: root/interop
+#
 [SFCB_RegisteredProfile]
    provider: ProfileProvider
    location: sfcProfileProvider

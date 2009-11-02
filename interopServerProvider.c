@@ -426,7 +426,6 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
    CMAddKey(op,"SystemCreationClassName",(CMPIValue *)&val,CMPI_chars);
    ci = CBGetInstance(_broker, ctxLocal, op, NULL, &st);
    if(st.rc == CMPI_RC_ERR_NOT_FOUND) {
-     //     fprintf(stderr, "SMS -- It's here.\n");
      ci=CMNewInstance(_broker,op,NULL);
    
      CMSetProperty(ci,"CreationClassName","CIM_ObjectManager",CMPI_chars);
@@ -444,10 +443,8 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
      CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
      CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
      CBCreateInstance(_broker, ctxLocal, op, ci, &st);
-//     if(st.rc != CMPI_RC_OK) fprintf(stderr, "SMS -- %s\n", CMGetCharPtr(st.msg));
        
    } else if(st.rc != CMPI_RC_OK) {
-     //     fprintf(stderr, "SMS -- GetInstance effed\n");
      goto done;
    }
 
@@ -459,6 +456,54 @@ done:
    _SFCB_RETURN(st);
 }
 
+
+static CMPIStatus IndServiceCapabilitiesProviderEnumInstanceNames(CMPIInstanceMI * mi,
+                                                              const CMPIContext * ctx,
+                                                              const CMPIResult * rslt,
+                                                              const CMPIObjectPath * ref)
+{
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIObjectPath *op;
+   
+   _SFCB_ENTER(TRACE_PROVIDERS, "IndServiceCapabilitiesProviderEnumInstanceNames");
+
+   op=CMNewObjectPath(_broker,"root/interop","SFCB_IndicationServiceCapabilities",NULL);
+   CMAddKey(op,"InstanceID","CIM:SFCB_ISC",CMPI_chars);
+   CMReturnObjectPath(rslt,op);
+   CMReturnDone(rslt);
+   
+   _SFCB_RETURN(st);
+}
+
+static CMPIStatus IndServiceCapabilitiesProviderEnumInstances(CMPIInstanceMI * mi,
+                                                              const CMPIContext * ctx,
+                                                              const CMPIResult * rslt,
+                                                              const CMPIObjectPath * ref,
+                                                              const char **properties)
+{
+   CMPIStatus st = { CMPI_RC_OK, NULL };
+   CMPIObjectPath *op;
+   CMPIInstance *ci = NULL;
+
+   
+   _SFCB_ENTER(TRACE_PROVIDERS, "IndServiceCapabilitiesProviderEnumInstances");
+
+    CMPIContext *ctxLocal;
+    ctxLocal = native_clone_CMPIContext(ctx);
+    CMPIValue val;
+    val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
+    ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
+
+   op=CMNewObjectPath(_broker,"root/interop","SFCB_IndicationServiceCapabilities",NULL);
+   CMAddKey(op,"InstanceID","CIM:SFCB_ISC",CMPI_chars);
+   ci = CBGetInstance(_broker, ctxLocal, op, properties, &st);
+
+   CMReturnInstance(rslt,ci);
+   CMReturnDone(rslt);
+   
+   if(ctxLocal) CMRelease(ctxLocal);
+   _SFCB_RETURN(st);
+}
 
 // ---------------------------------------------------------------
 
@@ -598,6 +643,8 @@ static CMPIStatus ServerProviderGetInstance(CMPIInstanceMI * mi,
    if (strcasecmp((char*)cls->hdl,"cim_indicationservice")==0) 
       return ServiceProviderGetInstance(mi, ctx, rslt, ref, properties, 
                                                       "cim_indicationservice");
+   if (CMClassPathIsA(_broker, ref, "CIM_IndicationServiceCapabilities", NULL)) 
+      return IndServiceCapabilitiesProviderEnumInstances(mi, ctx, rslt, ref, properties);
    
    return invClassSt;
 }
@@ -621,6 +668,8 @@ static CMPIStatus ServerProviderEnumInstanceNames(CMPIInstanceMI * mi,
    if (strcasecmp((char*)cls->hdl,"cim_indicationservice")==0) 
      return ServiceProviderEnumInstanceNames(mi, ctx, rslt, ref, 
                                  "CIM_IndicationService", "CIM_ObjectManager");
+   if (CMClassPathIsA(_broker, ref, "CIM_IndicationServiceCapabilities", NULL))
+     return IndServiceCapabilitiesProviderEnumInstanceNames(mi, ctx, rslt, ref);
   
    return okSt;
 }                                                
@@ -645,6 +694,8 @@ static CMPIStatus ServerProviderEnumInstances(CMPIInstanceMI * mi,
       return ComMechProviderEnumInstances(mi, ctx, rslt, ref, properties);
    if (strcasecmp((char*)cls->hdl,"cim_indicationservice")==0)
       return IndServiceProviderEnumInstances(mi, ctx, rslt, ref, properties);
+   if (CMClassPathIsA(_broker, ref,"cim_indicationservicecapabilities", NULL))
+      return IndServiceCapabilitiesProviderEnumInstances(mi, ctx, rslt, ref, properties);
    
    return okSt;
 }                                                

@@ -3,6 +3,23 @@
 // for Indications Profile
 //
 
+class SFCB_IndicationServiceCapabilities : CIM_IndicationServiceCapabilities
+{
+};
+
+instance of SFCB_IndicationServiceCapabilities
+{
+  InstanceID = "CIM:SFCB_ISC";
+  FilterCreationEnabledIsSettable           = FALSE;
+  DeliveryRetryAttemptsIsSettable           = FALSE;
+  DeliveryRetryIntervalIsSettable           = FALSE;
+  SubscriptionRemovalActionIsSettable       = FALSE;
+  SubscriptionRemovalTimeIntervalIsSettable = FALSE;
+  MaxListenerDestinations                   = 100;
+  MaxActiveSubscriptions                    = 100;
+  SubscriptionsPersisted                    = TRUE;
+};
+
 instance of SFCB_RegisteredProfile
 {
   InstanceID = "CIM:SFCB_IP";

@@ -1,3 +1,7 @@
+2009-11-02 Sean Swehla <smswehla@linux.vnet.ibm.com>
+	* 20_indication.mof, default.reg.in, interopServerProvider.c
+	[ 2873007 ] IndicationProfile: CIM_IndicationServiceCapabilities
+
 2009-10-30  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* configure.ac
 	[ 1993231 ] configure doesn't fail for all missing dependencies

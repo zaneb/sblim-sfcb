@@ -1,0 +1,3 @@
+<METHODRESPONSE NAME="SayHello">
+<ERROR CODE="1" DESCRIPTION="DefaultProvider does not support invokeMethod operations"/>
+</METHODRESPONSE>

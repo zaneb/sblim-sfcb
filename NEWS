@@ -8,6 +8,7 @@ New features:
 - 2864660 IndicationProfile: CIM_RegisteredProfile
 - 2882663 IndicationProfile: CIM_ElementConformsToProfile
 - 2873007 IndicationProfile: CIM_IndicationServiceCapabilities
+- 2863775 interopProvider needs SourceNamespaces property
 
 Bugs fixed:
 

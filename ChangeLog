@@ -1,3 +1,8 @@
+2009-11-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* interopProvider.c, test/xmltest/SNS*:
+	[ 2863775 ] interopProvider needs SourceNamespaces property
+
 2009-11-03 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* Makefile.am
 	[ 2871527 ] TestProviders not switchable

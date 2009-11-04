@@ -1,0 +1,6 @@
+<IMETHODRESPONSE NAME="EnumerateInstances">
+<INSTANCENAME CLASSNAME="CIM_IndicationFilter">
+<KEYVALUE VALUETYPE="string">CIM_IndicationFilter</KEYVALUE>
+<PROPERTY.ARRAY NAME="SourceNamespaces" TYPE="string">
+<VALUE>root/interop</VALUE>
+<PROPERTY NAME="SourceNamespace" TYPE="string">

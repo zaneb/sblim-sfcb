@@ -1,0 +1,5 @@
+<IMETHODRESPONSE NAME="EnumerateInstances">
+<PROPERTY.ARRAY NAME="SourceNamespaces" TYPE="string">
+<VALUE>root/interop1</VALUE>
+<VALUE>root/interop2</VALUE>
+<PROPERTY NAME="SourceNamespace" TYPE="string">

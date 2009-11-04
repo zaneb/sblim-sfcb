@@ -817,15 +817,32 @@ CMPIStatus InteropProviderCreateInstance(
       }
       
       CMPIString *sns=ciLocal->ft->getProperty(ciLocal,"SourceNamespace",&st).value.string;
-      if(sns == NULL || sns->hdl == NULL) {
-      	  /* if sourcenamespace is NULL, the namespace of the filter
+      CMPIArray *snsa=ciLocal->ft->getProperty(ciLocal,"SourceNamespaces",&st).value.array;
+      if((sns == NULL || sns->hdl == NULL) && (snsa == NULL || snsa->hdl == NULL)) {
+      	  /* if sourcenamespace and sourcenamespaces are both  NULL, the namespace of the filter
       	   * registration is assumed */
-	      sns = sfcb_native_new_CMPIString("root/interop", NULL,0);
+          sns = sfcb_native_new_CMPIString("root/interop", NULL,0);
+          valSNS.string = sns;
+          ciLocal->ft->setProperty(ciLocal, "SourceNamespace", &valSNS, CMPI_string);
+          CMSetStatus(&st, CMPI_RC_OK);
+      } else if (sns == NULL || sns->hdl == NULL) {
+        // Sourcenamespaces is set, but sourcenamespace is not, put the 1st entry of
+        // SourceNamespaces in Sourcenamespace
+          sns = CMGetArrayElementAt(snsa, 0, NULL).value.string;
           valSNS.string = sns;
           ciLocal->ft->setProperty(ciLocal, "SourceNamespace", &valSNS, CMPI_string);
           CMSetStatus(&st, CMPI_RC_OK);
       }
-      
+      // If SourceNamespaces isn't set, use the SourceNamespace
+      if(snsa == NULL || snsa->hdl == NULL) {
+          CMPIArray *snsa = internal_new_CMPIArray(MEM_TRACKED, 1 , CMPI_string, &st);
+          valSNS.string = sns;
+          CMSetArrayElementAt(snsa,0,&valSNS,CMPI_string);
+          valSNS.array = snsa;
+          ciLocal->ft->setProperty(ciLocal, "SourceNamespaces", &valSNS, CMPI_stringA);
+          CMSetStatus(&st, CMPI_RC_OK);
+       }
+        
       for (ql=(char*)lang->hdl,i=0,n=0,m=strlen(ql); i<m; i++) {
          if (ql[i]>' ') lng[n++]=ql[i];
          if (n>=15) break;

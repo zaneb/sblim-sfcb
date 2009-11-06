@@ -851,16 +851,7 @@ int cls2xml(CMPIConstClass * cls, UtilStringBuffer * sb, unsigned int flags)
       else {
          type = dataType(data.type);
          if (*type == '*') {
-            if (data.state &CMPI_nullValue) {
-               SFCB_APPENDCHARS_BLOCK(sb, "<PROPERTY.REFERENCE NAME=\"");
-               sb->ft->appendChars(sb, (char*)name->hdl);
-               if(refName) {
-                  SFCB_APPENDCHARS_BLOCK(sb, "\" REFERENCECLASS=\"");
-                  sb->ft->appendChars(sb, (char*)refName->hdl);
-               }
-               SFCB_APPENDCHARS_BLOCK(sb, "\"></PROPERTY.REFERENCE>\n");
-            }
-            else DATA2XML(&data,cls,name,refName,"<PROPERTY.REFERENCE NAME=\"",
+            DATA2XML(&data,cls,name,refName,"<PROPERTY.REFERENCE NAME=\"",
                    "</PROPERTY.REFERENCE>\n", sb, qsb, 0,0);
          }   
          else  DATA2XML(&data,cls,name,NULL,"<PROPERTY NAME=\"", "</PROPERTY>\n",

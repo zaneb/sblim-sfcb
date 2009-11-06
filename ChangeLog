@@ -1,3 +1,9 @@
+2009-11-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlGen.c:
+	[ 2093567 ] Qualifiers are not returned for REF properties
+	(patch by Bart Whitely)
+	
 2009-11-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopProvider.c, test/xmltest/SNS*:

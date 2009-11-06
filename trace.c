@@ -257,7 +257,7 @@ int trace_test()
         fail=1;
     }
     _sfcb_trace_init();
-    if (_SFCB_TRACE_FILE = NULL  ) {
+    if (_SFCB_TRACE_FILE == NULL  ) {
         printf("  _sfcb_trace_init() test failed.\n");
         fail=1;
     }

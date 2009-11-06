@@ -23,6 +23,7 @@ Bugs fixed:
 - 2881700 Build failure when docs are enabled
 - 1993231 configure doesn't fail for all missing dependencies
 - 2093567 Qualifiers are not returned for REF properties
+- 2892943 Various compiler warnings for TestProviders
 
 Changes in 1.3.5
 ================

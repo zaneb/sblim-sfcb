@@ -17,7 +17,7 @@
 #  define CMGetMessage(b,id,def,rc,parms) \
        ((b)->eft->getMessage((b),(id),(def),(rc),parms))
 
-static CMPIBroker *_broker;
+static const CMPIBroker *_broker;
 
 #ifdef __GNUC__
 # define UINT64_LITERAL(X) ((CMPIUint64)X##ULL)
@@ -77,7 +77,6 @@ static int
 _CMLogMessage (char **result)
 {
   CMPIStatus rc = { CMPI_RC_OK, NULL };
-  CMPIString *str = CMNewString (_broker, "CMLogMessage", &rc);
   rc.rc = CMPI_RC_OK;
   rc = CMLogMessage (_broker, 64, _ClassName, "Log message", NULL);
   if (rc.rc == CMPI_RC_ERR_NOT_SUPPORTED) {
@@ -91,7 +90,6 @@ static int
 _CMTraceMessage (char **result)
 {
   CMPIStatus rc = { CMPI_RC_OK, NULL };
-  CMPIString *str = CMNewString (_broker, "CMTraceMessage", &rc);
   rc.rc = CMPI_RC_OK;
   rc = CMTraceMessage (_broker, 2, NULL, NULL, NULL);
   if (rc.rc == CMPI_RC_ERR_NOT_SUPPORTED){
@@ -1064,13 +1062,11 @@ static int _testCMPIObjectPath ()
     CMPIBoolean getKeySuccessful = 0;
     CMPIBoolean getKeyCountSuccessful = 0;
     CMPIBoolean getKeyAtSuccessful = 0;
-    CMPIBoolean getKeyAtErrorPathSuccessful = 0;
     const char* objectPath1 = NULL;
     const char* objectPath2 = NULL;
     CMPIData data;
     CMPIValue value;
     unsigned int keyCount = 0;
-    void *opptr;
     objPath = make_ObjectPath(_broker, _Namespace, _ClassName);
     rc = CMSetHostname(objPath, hostName);
     returnedHostname = CMGetHostname(objPath, &rc);
@@ -1250,7 +1246,6 @@ static int _testCMPIArgs()
     CMPIData clonedData;
     CMPIBoolean cloneSuccessful = 0;
     CMPIBoolean getArgCountSuccessful = 0;
-    void *args_ptr;
     args = CMNewArgs(_broker, &rc);
     value.uint32 = 10;
     rc = CMAddArg(args, arg1, &value, type);
@@ -1283,26 +1278,22 @@ static int _testCMPIArgs()
 /*                        Method Provider Interface                           */
 /* ---------------------------------------------------------------------------*/
 CMPIStatus
-TestMiscProviderMethodCleanup (CMPIMethodMI * mi, CMPIContext * ctx)
+TestMiscProviderMethodCleanup (CMPIMethodMI * mi, const CMPIContext * ctx, CMPIBoolean terminate)
 {
-  CMReturn (CMPI_RC_OK);
+  CMReturn(CMPI_RC_OK);
 }
 
 CMPIStatus
 TestMiscProviderInvokeMethod (CMPIMethodMI * mi,
-                                    CMPIContext * ctx,
-                                    CMPIResult * rslt,
-                                    CMPIObjectPath * ref,
-                                    char *methodName,
-                                    CMPIArgs * in, CMPIArgs * out)
+                                    const CMPIContext * ctx,
+                                    const CMPIResult * rslt,
+                                    const CMPIObjectPath * ref,
+                                    const char *methodName,
+                                    const CMPIArgs * in, CMPIArgs * out)
 {
   CMPIString *class = NULL;
   CMPIStatus rc = { CMPI_RC_OK, NULL };
   CMPIData data;
-  CMPIString *argName = NULL;
-  CMPIInstance *instance = NULL;
-  CMPIInstance *paramInst = NULL;
-  unsigned int arg_cnt = 0, index = 0;
   CMPIValue value;
   char *result = NULL;
 

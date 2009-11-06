@@ -17,7 +17,7 @@
 #define CMEvaluateSelExpUsingAccessor(s,i,p,r) \
                             ((s)->ft->evaluateUsingAccessor((s),(i),(p),(r)))
 
-static CMPIBroker *_broker;
+static const CMPIBroker *_broker;
 
 /* ---------------------------------------------------------------------------*/
 /*                       CMPI Helper function                        */
@@ -424,17 +424,16 @@ error:
 /* ---------------------------------------------------------------------------*/
 
 CMPIStatus
-TestExecQueryProviderCleanup (CMPIInstanceMI * mi, CMPIContext * ctx)
+TestExecQueryProviderCleanup (CMPIInstanceMI * mi, const CMPIContext * ctx, CMPIBoolean terminate)
 {
-
-  CMReturn (CMPI_RC_OK);
+  CMReturn(CMPI_RC_OK);
 }
 
 CMPIStatus
 TestExecQueryProviderEnumInstanceNames (CMPIInstanceMI * mi,
-                                            CMPIContext * ctx,
-                                            CMPIResult * rslt,
-                                            CMPIObjectPath * ref)
+                                            const CMPIContext * ctx,
+                                            const CMPIResult * rslt,
+                                            const CMPIObjectPath * ref)
 {
 
   CMReturn (CMPI_RC_ERR_NOT_SUPPORTED);
@@ -442,10 +441,10 @@ TestExecQueryProviderEnumInstanceNames (CMPIInstanceMI * mi,
 
 CMPIStatus
 TestExecQueryProviderEnumInstances (CMPIInstanceMI * mi,
-                                            CMPIContext * ctx,
-                                            CMPIResult * rslt,
-                                            CMPIObjectPath * ref,
-                                            char **properties)
+                                            const CMPIContext * ctx,
+                                            const CMPIResult * rslt,
+                                            const CMPIObjectPath * ref,
+                                            const char **properties)
 {
 
   CMReturn (CMPI_RC_ERR_NOT_SUPPORTED);
@@ -453,29 +452,29 @@ TestExecQueryProviderEnumInstances (CMPIInstanceMI * mi,
 
 CMPIStatus
 TestExecQueryProviderGetInstance (CMPIInstanceMI * mi,
-                                      CMPIContext * ctx,
-                                      CMPIResult * rslt,
-                                      CMPIObjectPath * cop, char **properties)
+                                      const CMPIContext * ctx,
+                                      const CMPIResult * rslt,
+                                      const CMPIObjectPath * cop, const char **properties)
 {
   CMReturn (CMPI_RC_ERR_NOT_SUPPORTED);
 }
 
 CMPIStatus
 TestExecQueryProviderCreateInstance (CMPIInstanceMI * mi,
-                                         CMPIContext * ctx,
-                                         CMPIResult * rslt,
-                                         CMPIObjectPath * cop,
-                                         CMPIInstance * ci)
+                                         const CMPIContext * ctx,
+                                         const CMPIResult * rslt,
+                                         const CMPIObjectPath * cop,
+                                         const CMPIInstance * ci)
 {
   CMReturn (CMPI_RC_ERR_NOT_SUPPORTED);
 }
 
 CMPIStatus
 TestExecQueryProviderSetInstance (CMPIInstanceMI * mi,
-                                      CMPIContext * ctx,
-                                      CMPIResult * rslt,
-                                      CMPIObjectPath * cop,
-                                      CMPIInstance * ci, char **properties)
+                                      const CMPIContext * ctx,
+                                      const CMPIResult * rslt,
+                                      const CMPIObjectPath * cop,
+                                      const CMPIInstance * ci, const char **properties)
 {
   CMReturn (CMPI_RC_ERR_NOT_SUPPORTED);
 }
@@ -493,19 +492,19 @@ CMPIStatus TestExecQueryProviderModifyInstance  (
 
 CMPIStatus
 TestExecQueryProviderDeleteInstance (CMPIInstanceMI * mi,
-                                         CMPIContext * ctx,
-                                         CMPIResult * rslt,
-                                         CMPIObjectPath * cop)
+                                         const CMPIContext * ctx,
+                                         const CMPIResult * rslt,
+                                         const CMPIObjectPath * cop)
 {
   CMReturn (CMPI_RC_ERR_NOT_SUPPORTED);
 }
 
 CMPIStatus
 TestExecQueryProviderExecQuery (CMPIInstanceMI * mi,
-                                    CMPIContext * ctx,
-                                    CMPIResult * rslt,
-                                    CMPIObjectPath * ref,
-                                    char *query, char *lang)
+                                    const CMPIContext * ctx,
+                                    const CMPIResult * rslt,
+                                    const CMPIObjectPath * ref,
+                                    const char *query, const char *lang)
 {
 
   CMPISelectExp *se_def = NULL;

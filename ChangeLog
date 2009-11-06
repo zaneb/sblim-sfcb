@@ -3,6 +3,10 @@
 	* cimXmlGen.c:
 	[ 2093567 ] Qualifiers are not returned for REF properties
 	(patch by Bart Whitely)
+
+	* test/TestProviders/cmpiTestExecQueryProvider.c, 
+	  test/TestProviders/cmpiTestMiscProvider.c:
+	[ 2892943 ] Various compiler warnings for TestProviders
 	
 2009-11-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 

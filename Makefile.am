@@ -581,5 +581,5 @@ endif
 postinstall: install-cimschema create-sslkeys
 	test -f $(DESTDIR)$(sfcbstatedir)/registration/providerRegister || $(INSTALL_DATA) $(DESTDIR)$(sfcbstatedir)/stage/default.reg $(DESTDIR)$(sfcbstatedir)/registration/providerRegister 
 if TEST_ENABLED
-	./test/stageschema.sh ./test/schema
+	./test/stageschema.sh -d test/schema -p $(prefix)
 endif

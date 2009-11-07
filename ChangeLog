@@ -5,6 +5,7 @@
 
 	* objectImpl.c:
 	[ 2892739 ] buffer overruns in dataValueToString() 
+	(patch by Bart Whitely)
 	
 2009-11-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
 

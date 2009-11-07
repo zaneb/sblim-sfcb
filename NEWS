@@ -25,6 +25,7 @@ Bugs fixed:
 - 2093567 Qualifiers are not returned for REF properties
 - 2892943 Various compiler warnings for TestProviders
 - 2893618 Improve stageschema.sh
+- 2892739 buffer overruns in dataValueToString()
 
 Changes in 1.3.5
 ================

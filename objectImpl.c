@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <netinet/in.h>
 
@@ -646,68 +647,94 @@ static char *datatypeToString(CMPIData * d, char **array)
    }
 }
 
+/*
+ * print a value into a string based on fmt format string
+ */
+static char * fmtstr(const char* fmt, ...)
+{
+    va_list ap; 
+    int len; 
+    char* str;
+
+    va_start(ap, fmt); 
+    len = vsnprintf(NULL, 0, fmt, ap); 
+    va_end(ap); 
+    if (len <= 0)
+    {
+        return NULL; 
+    }
+    str = (char*)malloc(len+1); 
+    if (str == NULL)
+    {
+        return NULL; 
+    }
+    va_start(ap, fmt); 
+    vsnprintf(str, len+1, fmt, ap); 
+    va_end(ap); 
+    return str; 
+}
+
+/* 
+ * Translate a CMPIData value to a char*
+ */
 static char *dataValueToString(ClObjectHdr * hdr, CMPIData * d)
 {
    static char *True = "true", *False = "false";
-   // Allocate for the biggest numeric type we'll get, if 
-   // we get a char type, it's reallocated below.
-   char *retval=malloc(sizeof(d->value.real64));
+   char *retval=NULL; 
    switch (d->type) {
        case CMPI_chars:
           {
              char *ret = (char *) ClObjectGetClString(hdr, (ClString *) & d->value.chars);
-             if (ret) {
-                 retval=realloc(retval,sizeof(ret));
-                 strcpy(retval, ret); }
+             if (ret) 
+                 retval=fmtstr("%s", ret); 
              else
-                 return "\"\"";
+                 retval=strdup(""); 
           }
           break;
        case CMPI_char16:
           {
              char *ret = (char *) ClObjectGetClString(hdr, (ClString *) & d->value.char16);
-             if (ret) {
-                 retval=realloc(retval,sizeof(ret));
-                 strcpy (retval, ret); }
+             if (ret) 
+                 retval=fmtstr("%s", ret); 
              else
-                 return "\"\"";
+                 retval=strdup(""); 
           }
           break;
        case CMPI_real64:
-          sprintf(retval, "%lf", d->value.real64);
+          retval= fmtstr("%lf", d->value.real64);
           break;
        case CMPI_real32:
-          sprintf(retval, "%f", d->value.real32);
+          retval= fmtstr("%f", d->value.real32);
           break;
        case CMPI_sint64:
-          sprintf(retval, "%lld", d->value.sint64);
+          retval= fmtstr("%lld", d->value.sint64);
           break;
        case CMPI_sint32:
-          sprintf(retval, "%d", d->value.sint32);
+          retval= fmtstr("%d", d->value.sint32);
           break;
        case CMPI_sint16:
-          sprintf(retval, "%d", d->value.sint16);
+          retval= fmtstr("%d", d->value.sint16);
           break;
        case CMPI_sint8:
-          sprintf(retval, "%d", d->value.sint8);
+          retval= fmtstr("%d", d->value.sint8);
           break;
        case CMPI_uint64:
-          sprintf(retval, "%llu", d->value.uint64);
+          retval= fmtstr("%llu", d->value.uint64);
           break;
        case CMPI_uint32:
-          sprintf(retval, "%u", d->value.uint32);
+          retval= fmtstr("%u", d->value.uint32);
           break;
        case CMPI_uint16:
-          sprintf(retval, "%u", d->value.uint16);
+          retval= fmtstr("%u", d->value.uint16);
           break;
        case CMPI_uint8:
-          sprintf(retval, "%u", d->value.uint8);
+          retval= fmtstr("%u", d->value.uint8);
           break;
        case CMPI_boolean:
-          strcpy(retval, d->value.boolean ? True : False);
+          retval= fmtstr("%s", d->value.boolean ? True : False);
           break;
        default:
-          strcpy(retval, "***??***");
+          retval = strdup("***??***");
    }
    return retval;
 }

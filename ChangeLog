@@ -3,6 +3,9 @@
 	* test/stageschema.sh, Makefile.am:
 	[ 2893618 ] Improve stageschema.sh
 
+	* objectImpl.c:
+	[ 2892739 ] buffer overruns in dataValueToString() 
+	
 2009-11-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlGen.c:

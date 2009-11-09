@@ -1119,9 +1119,26 @@ static CMPIData getProperty(const CMPIBroker * broker, const CMPIContext * conte
    return rv;
 }
 
+/* request_FT is initalized at compile time, so we need to use a macro here
+   to compute the cabability mask */
+#ifdef SFCB_INCL_INDICATION_SUPPORT
+#define _sfcbCapabilities (CMPI_MB_Class_2 \
+       | CMPI_MB_AssociationTraversal \
+       | CMPI_MB_QueryExecution \
+       | CMPI_MB_QueryNormalization \
+       | CMPI_MB_Indications \
+       | CMPI_MB_OSEncapsulationSupport)
+#else
+#define _sfcbCapabilities (CMPI_MB_Class_2 \
+       | CMPI_MB_AssociationTraversal \
+       | CMPI_MB_QueryExecution \
+       | CMPI_MB_QueryNormalization \
+       | CMPI_MB_OSEncapsulationSupport)
+#endif
+
 
 static CMPIBrokerFT request_FT = {
-   0, 0,
+   _sfcbCapabilities, 0,
    "RequestHandler",
    prepareAttachThread,
    attachThread,
@@ -1151,7 +1168,8 @@ static CMPIBroker _broker = {
    NULL,
    &request_FT,
    &native_brokerEncFT,
-   &brokerExt_FT
+   &brokerExt_FT,
+   NULL
 };
 
 CMPIBroker *Broker = &_broker;

@@ -4,6 +4,10 @@
 	[ 2727811 ] typeo in fileRepository.c
 	(found by Shigeyoshi Hashi)
 
+	* brokerUpc.c:
+	[ 2707633 ] sfcb: doesn't advertise capabilities CMPIBrokerFT
+	(based on patch by Tyrel Datwyler)
+	
 2009-11-06  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* test/stageschema.sh, Makefile.am:

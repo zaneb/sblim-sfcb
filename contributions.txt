@@ -122,6 +122,7 @@ Shigeyoshi Hashi, NEC
 06/06/2009 [ 2736627 ] The type of NewValue is not checked at free
 06/06/2009 [ 2780152 ] SetProperty without NewValue gets segfault
 09/22/2009 [ 2793653 ] CreateInstance method of abstract class
+11/09/2009 [ 2727811 ] typeo in fileRepository.c
 
 Chad Smith, HP
 --------------

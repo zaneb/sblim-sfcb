@@ -26,6 +26,7 @@ Bugs fixed:
 - 2892943 Various compiler warnings for TestProviders
 - 2893618 Improve stageschema.sh
 - 2892739 buffer overruns in dataValueToString()
+- 2727811 typeo in fileRepository.c
 
 Changes in 1.3.5
 ================

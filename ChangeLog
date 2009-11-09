@@ -1,3 +1,9 @@
+2009-11-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* fileRepository.c:
+	[ 2727811 ] typeo in fileRepository.c
+	(found by Shigeyoshi Hashi)
+
 2009-11-06  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* test/stageschema.sh, Makefile.am:

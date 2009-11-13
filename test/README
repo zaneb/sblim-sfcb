@@ -2,7 +2,7 @@ This directory contains the SFCB automated test suite. It is based on the test
 facility provided by automake:
     http://www.gnu.org/software/automake/manual/automake.html#Tests
 
-The test suite is invoked via "make check". Currently it requires that 
+The test suite is invoked via "make test". Currently it requires that 
 sfcb is installed and running.
 
 Testcases can be either scripts or C code. Scripts just need to be added

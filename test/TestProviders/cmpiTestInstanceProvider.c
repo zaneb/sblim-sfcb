@@ -2,6 +2,7 @@
 #include "cmpift.h"
 #include "cmpimacs.h"
 #include <string.h>
+#include <sys/time.h>
 
 static const CMPIBroker *_broker;
 static CMPIBoolean valid[10];
@@ -9,7 +10,94 @@ static CMPICount numOfInst;
 static CMPIArray* clone_arr_ptr;
 static CMPICount initArraySize = 10;
 
+static const CMPIBroker *_broker;
+static int threads = 0;
+
+static CMPI_MUTEX_TYPE threadCntMutex;
+
 #define _ClassName "Sample_Instance"
+
+
+// Threads
+
+static CMPI_THREAD_RETURN CMPI_THREAD_CDECL
+good_thread (void *args)
+{
+  _broker->xft->lockMutex (threadCntMutex);
+  threads++;
+  _broker->xft->unlockMutex (threadCntMutex);
+  _broker->xft->lockMutex (threadCntMutex);
+  threads--;
+  _broker->xft->unlockMutex (threadCntMutex);
+  return (CMPI_THREAD_RETURN) 0;
+
+}
+static CMPI_THREAD_RETURN CMPI_THREAD_CDECL
+empty_thread (void *args)
+{
+  // Do nothing.
+  return (CMPI_THREAD_RETURN) 0;
+}
+
+//Thread Management functions
+
+int getThreadCount ()
+{
+  int threadCount = 0;
+  _broker->xft->lockMutex (threadCntMutex);
+   threadCount = threads;
+  _broker->xft->unlockMutex (threadCntMutex);
+
+  return threadCount;
+}
+
+void
+initThreads ()
+{
+
+  threadCntMutex = _broker->xft->newMutex (0);
+
+  // Spawn of a couple of threads
+  _broker->xft->newThread (good_thread, NULL, 0);
+  _broker->xft->newThread (good_thread, NULL, 0);
+  _broker->xft->newThread (good_thread, NULL, 0);
+  _broker->xft->newThread (good_thread, NULL, 0);
+  _broker->xft->newThread (good_thread, NULL, 0);
+  _broker->xft->newThread (good_thread, NULL, 0);
+  _broker->xft->newThread (good_thread, NULL, 0);
+  _broker->xft->newThread (empty_thread, NULL, 0);
+
+}
+
+void
+deleteThreads ()
+{
+  CMPI_MUTEX_TYPE _mutex;
+  CMPI_COND_TYPE _cond;
+  struct timespec wait = { 0, 0 };
+  struct timeval t;
+
+  _mutex = _broker->xft->newMutex (0);
+  _cond = _broker->xft->newCondition (0);
+
+  while (getThreadCount())
+    {
+      gettimeofday (&t, NULL);
+      // Set the time wait to 1 seconds.
+      wait.tv_sec = t.tv_sec + 1;
+      wait.tv_nsec = 0;
+      _broker->xft->lockMutex (_mutex);
+      // Wait 1 second has expired or the condition has changed.
+      _broker->xft->timedCondWait (_cond, _mutex, &wait);
+      _broker->xft->condWait(_cond,_mutex);
+      _broker->xft->unlockMutex (_mutex);
+    }
+  // Make sure to de-allocate the mutexes and conditions.
+  _broker->xft->destroyMutex (_mutex);
+  _broker->xft->destroyCondition (_cond);
+}
+
+
 
 static void initialize()
 {
@@ -117,6 +205,8 @@ CMPIStatus TestInstanceProviderCleanup (
     CMPIBoolean  term)
 {
     CMRelease(clone_arr_ptr);
+    deleteThreads ();
+    _broker->xft->destroyMutex (threadCntMutex);
     CMReturn (CMPI_RC_OK);
 }
 
@@ -531,11 +621,35 @@ CMPIStatus TestInstanceProviderExecQuery (
 /* ---------------------------------------------------------------------------*/
 
 
-CMInstanceMIStub(
+/*CMInstanceMIStub(
     TestInstanceProvider,
     TestInstanceProvider,
     _broker,
-    initialize())
+    initialize()) */
+
+
+static CMPIInstanceMIFT instMIFT__ =
+  { 100, 100, "instance" "TestCMPIThreadProvider",
+  TestInstanceProviderCleanup,
+  TestInstanceProviderEnumInstanceNames,
+  TestInstanceProviderEnumInstances,
+  TestInstanceProviderGetInstance,
+  TestInstanceProviderCreateInstance,
+  TestInstanceProviderModifyInstance,
+  TestInstanceProviderDeleteInstance,
+  TestInstanceProviderExecQuery,
+};
+CMPI_EXTERN_C CMPIInstanceMI *
+TestInstanceProvider_Create_InstanceMI (const CMPIBroker * brkr,
+                                          const CMPIContext * ctx,
+                                          CMPIStatus * rc)
+{
+  static CMPIInstanceMI mi = { ((void *) 0), &instMIFT__, };
+  _broker = brkr;
+  initThreads();
+  initialize();
+  return &mi;
+}
 
 /* ---------------------------------------------------------------------------*/
 /*             end of SampleCMPIProvider                      */

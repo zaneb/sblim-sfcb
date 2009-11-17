@@ -234,6 +234,11 @@ if [test "$enable_tests"]; then
     TEST_SUBDIRS="."
     AC_CONFIG_FILES([test/finaltest/Makefile])
     # Enable the various tests
+    if [test "$test_providers" == "yes"]; then
+       TEST_SUBDIRS="$TEST_SUBDIRS TestProviders/tests"
+       AC_CONFIG_FILES([test/TestProviders/tests/Makefile])
+    fi
+
     if [test "$test_cmd" == "yes"]; then
         TEST_SUBDIRS="$TEST_SUBDIRS commands"
         AC_CONFIG_FILES([test/commands/Makefile])
@@ -258,11 +263,6 @@ if [test "$enable_tests"]; then
     if [test "$test_slp" == "yes"];then
 	TEST_SUBDIRS="$TEST_SUBDIRS slptest"
 	AC_CONFIG_FILES([test/slptest/Makefile])
-    fi
-
-    if [test "$test_providers" == "yes"]; then
-       TEST_SUBDIRS="$TEST_SUBDIRS TestProviders/tests"
-       AC_CONFIG_FILES([test/TestProviders/tests/Makefile])
     fi
 
     if [test "$test_local" == "yes"];then

@@ -237,8 +237,13 @@ static ProviderInfo *lookupProvider(long type, char *className, char *nameSpace,
       CMRelease(cc);
    }
     
-   _SFCB_TRACE(1,("Default provider for %s",className));
-   _SFCB_RETURN(defaultProvInfoPtr);
+   if(!disableDefaultProvider) {
+    _SFCB_TRACE(1,("Default provider for %s",className));
+    _SFCB_RETURN(defaultProvInfoPtr);
+   }
+   else {
+    _SFCB_RETURN(NULL);
+   }
 }
 
 
@@ -368,7 +373,7 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
    if (providers) {
       count = (n=providers->ft->size(providers)) - 1;
       _SFCB_TRACE(1,("--- found %d providers",count));
-
+     if(n) {
       for (info = providers->ft->getFirst(providers); info;
            info = providers->ft->getNext(providers), n--) {
          if (info->type!=FORCE_PROVIDER_NOTFOUND &&
@@ -387,6 +392,11 @@ static void lookupProviderList(long type, int *requestor, OperationHdr * req)
 	    break;
          }
       }
+   }
+   else {
+      rc=MSG_X_NOT_SUPPORTED;
+      spSendCtlResult(requestor, &dmy, rc, 0, NULL, req->options);
+     }
    }
    else {
       if (st.rc==CMPI_RC_ERR_INVALID_NAMESPACE) rc=MSG_X_INVALID_NAMESPACE;
@@ -505,7 +515,11 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
       }
    }
    
-   _SFCB_RETURN(defaultProvInfoPtr);
+   if(!disableDefaultProvider) {
+      _SFCB_RETURN(defaultProvInfoPtr);
+   }
+   else
+      _SFCB_RETURN(NULL);
 }
 
 static int addAssocProviders(char *className, char *nameSpace, UtilList * providerList)
@@ -613,7 +627,7 @@ static void assocProviderList(int *requestor, OperationHdr * req)
             count--, NULL, req->options);
       }
    }
-   else {
+   else if(disableDefaultProvider) {
       /* When there is no provider for an assocClass we do not want to produce
        * an error message. So we return the default provider and expect it
        * to produce a nice and empty result */
@@ -633,6 +647,10 @@ static void assocProviderList(int *requestor, OperationHdr * req)
 	  NULL, req->options); */
 	 _SFCB_ABORT();
        }     
+   }
+   else {
+       spSendCtlResult(requestor, &sfcbSockets.send, MSG_X_PROVIDER_NOT_FOUND,
+            count--, NULL, req->options);
    }
    _SFCB_EXIT();
 }
@@ -691,7 +709,11 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
    
    if (interopClass(className)) _SFCB_RETURN(forceNoProvInfoPtr);
    
-   _SFCB_RETURN(defaultProvInfoPtr);
+   if(!disableDefaultProvider) {
+	  _SFCB_RETURN(defaultProvInfoPtr);
+   }
+   else
+	  _SFCB_RETURN(NULL);
 }
 
 static void classProvider(int *requestor, OperationHdr * req)

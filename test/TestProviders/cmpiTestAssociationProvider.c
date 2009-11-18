@@ -133,8 +133,9 @@ CMPIStatus TestAssociationProviderAssociators(
     en = CBEnumInstances( _broker, ctx, op, NULL, &rc);
 
     /* as long as instance entries are found in the enumeration */
-    while( CMHasNext( en, &rc) )
-    {
+    if (!rc.rc) 
+      while( CMHasNext( en, &rc) )
+      {
         /* get the instance */
         data = CMGetNext( en, &rc);
 
@@ -142,7 +143,7 @@ CMPIStatus TestAssociationProviderAssociators(
          * associators() call
         */
         CMReturnInstance( rslt, data.value.inst );
-    }
+      }
     return rc;
 }
 
@@ -182,6 +183,7 @@ CMPIStatus TestAssociationProviderAssociatorNames(
     en = CBEnumInstanceNames( _broker, ctx, op, &rc);
 
     /* as long as object path entries are found in the enumeration */
+   if(!rc.rc)
     while( CMHasNext( en, &rc) )
     {
         /* get the object path */
@@ -239,6 +241,7 @@ CMPIStatus TestAssociationProviderReferences(
     en = CBEnumInstanceNames( _broker, ctx, op, &rc);
 
     /* as long as object path entries are found in the enumeration */
+   if(!rc.rc)
     while( CMHasNext( en, &rc) )
     {
         /* get the object path */
@@ -328,6 +331,7 @@ CMPIStatus TestAssociationProviderReferenceNames(
     en = CBEnumInstanceNames( _broker, ctx, op, &rc);
 
     /* as long as object path entries are found in the enumeration */
+   if(!rc.rc)
     while( CMHasNext( en, &rc) )
     {
         /* get the object path */

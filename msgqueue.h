@@ -116,6 +116,8 @@ typedef struct mqgStat {
   char teintr,eintr,rdone;
 } MqgStat;
 
+extern int disableDefaultProvider;
+
 extern MsgSegment setCharsMsgSegment(const char *);
 
 extern ComSockets sfcbSockets; 

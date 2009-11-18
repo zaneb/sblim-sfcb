@@ -558,6 +558,7 @@ static void usage(int status)
 		"                                 components to trace; ? lists the available",
 		"                                 components with their bitmask and exits",
 		" -v, --version                   output version information and exit",
+		" -i, --disable-repository-default-inst-prov To disable entry into the default provider",
 		"",
 		"For SBLIM package updates and additional information, please see",
 		"    the SBLIM homepage at http://sblim.sourceforge.net"
@@ -619,10 +620,11 @@ int main(int argc, char *argv[])
 	   { "syslog-level",     required_argument, 0,        'l' },
 	   { "trace-components", required_argument, 0,        't' },
 	   { "version",          no_argument,       0,        'v' },
+           { "disable-repository-default-inst-provider", no_argument,       0,        'i' },
 	   { 0, 0, 0, 0 }
        };
 
-   while ((c = getopt_long(argc, argv, "c:dhkst:vl:", long_options, 0)) != -1)
+   while ((c = getopt_long(argc, argv, "c:dhkst:vil:", long_options, 0)) != -1)
    {
        switch(c)
        {
@@ -666,6 +668,10 @@ int main(int argc, char *argv[])
 
 	   case 'v':
 	       version();
+
+           case 'i':
+               disableDefaultProvider=1;
+               break;
 
 	   case 'l':
             if (strcmp(optarg,"LOG_ERR")==0) {

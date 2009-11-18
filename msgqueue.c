@@ -40,6 +40,7 @@ ComSockets resultSockets;
 ComSockets sfcbSockets;
 ComSockets providerSockets;
 int localMode=1;
+int disableDefaultProvider=0;
 
 ComSockets *sPairs;
 int ptBase,htBase,stBase,htMax,stMax;
@@ -338,6 +339,8 @@ static int spRcvMsg(int *s, int *from, void **data, unsigned long *length, MqgSt
    case MSG_X_INVALID_NAMESPACE:
    case MSG_X_PROVIDER_NOT_FOUND:
    case MSG_X_INVALID_CLASS:
+      _SFCB_RETURN(spMsg.xtra);
+   case MSG_X_NOT_SUPPORTED:
       _SFCB_RETURN(spMsg.xtra);
    case MSG_X_LOCAL:
       *length = 0;

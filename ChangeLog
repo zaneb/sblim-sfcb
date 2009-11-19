@@ -1,8 +1,12 @@
-2009-11-17  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+2009-11-19  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* test/unittest/Makefile.am, test/unittest/genericlist.c
+	[ 2859885 ] unittest case for generic list functions
+
+2009-11-18  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* msgQueue.h, msgqueue.c, providerMgr.c, sfcBroker.c, test/TestProviders/cmpiTestAssociationProvider.c
 	[ 2532149 ] sfcb: instance ops against non-instance MI report no error
 
-2009-11-17  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+2009-11-18  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* configure.ac, test/TestProviders/cmpiTestInstanceProvider.c
 	[ 2859978 ] TestProviders for SFCB (added threading based functions support)
 

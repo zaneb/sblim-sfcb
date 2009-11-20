@@ -12,6 +12,8 @@ MAINTAINERCLEANFILES = Makefile.in
 
 AM_LDFLAGS=-L"$(top_builddir)/.libs"
 
+TESTS_ENVIRONMENT = SFCB_TRACE_FILE="/tmp/sfcbtracetest"
+
 TESTS = xmlUnescape newCMPIInstance EmbeddedTests genericlist
 
 check_PROGRAMS = xmlUnescape newCMPIInstance EmbeddedTests genericlist

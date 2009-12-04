@@ -648,8 +648,8 @@ void initInterOp(
       }
       CMRelease(enm);
    } 
-   _SFCB_TRACE(1,("--- checking for cim_indicationsubscription"));
-   op=CMNewObjectPath(broker,"root/interop","cim_indicationsubscription",&st);
+   _SFCB_TRACE(1,("--- checking for sfcb_indicationsubscription"));
+   op=CMNewObjectPath(broker,"root/interop","sfcb_indicationsubscription",&st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
    enm = _broker->bft->enumerateInstances(_broker, ctxLocal, op, NULL, &st);
    CMRelease(ctxLocal);
@@ -785,7 +785,7 @@ CMPIStatus InteropProviderCreateInstance(
    
    if(isa(nss, cns, "cim_indicationsubscription")) {
    
-      _SFCB_TRACE(1,("--- create cim_indicationsubscription"));
+      _SFCB_TRACE(1,("--- create sfcb_indicationsubscription"));
       
       st=processSubscription(_broker,ctx,ciLocal,cop);
    }

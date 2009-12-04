@@ -10,6 +10,7 @@ New features:
 - 2873007 IndicationProfile: CIM_IndicationServiceCapabilities
 - 2863775 interopProvider needs SourceNamespaces property
 - 2707633 sfcb: doesn't advertise capabilities CMPIBrokerFT
+- 2908421 IndicationProfile: IndicationSubscription - RI props
 
 Bugs fixed:
 

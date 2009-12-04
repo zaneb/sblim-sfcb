@@ -1,3 +1,8 @@
+2009-12-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* 10_interop.mof,default.reg.in,interopProvider.c:
+	[ 2908421 ] IndicationProfile: IndicationSubscription - RI props
+
 2009-11-19  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* test/unittest/Makefile.am, test/unittest/genericlist.c
 	[ 2859885 ] unittest case for generic list functions

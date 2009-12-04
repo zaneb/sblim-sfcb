@@ -42,7 +42,7 @@ httpProcs:      8
 useChunking:    true
 
 ## Size of chunks in bytes. This has an affect even if useChunking is not 
-## enabled.
+## enabled. Also, sfcb may internally adjust this value if needed.
 ## Default is 50000
 #chunkSize: 50000
 

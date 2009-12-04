@@ -42,20 +42,27 @@ extern int spSendResult2(int *to, int *from,
    void *d1, unsigned long s1, void *d2, unsigned long s2);
 
 
-
+/* only used within result.c */
 struct native_result {
    CMPIResult result;
-   int mem_state;
+   int mem_state;  /* MEM_NOT_TRACKED, etc. */
 
-   int requestor,size,legacy;
-   CMPICount current;
-   CMPIArray *array;
+   int requestor;  /* socket of the requesting proc */
+   //   int size;
+   int legacy;  /* true for AF,DF,GC,CC,DC,ECN,GQ,SQ,DQ,SP,GP,IM,GI,DI,CI,MI */
 
-   BinResponseHdr *resp;
-   unsigned long sMax,sNext;
-   char *data;
-   unsigned long dMax,dNext;
-   QLStatement *qs;
+   CMPICount current;  /* used for returnData() */
+   CMPIArray *array;  /* used for returnData() */
+
+   BinResponseHdr *resp; /* tracks type, size, and pos in *data for object to be returned */
+   unsigned long sMax;
+   unsigned long sNext;
+
+   char *data;  /* actually stores that data to be returned */
+   unsigned long dMax; /* size of *data. starts as chunkSize, may be adjusted upward */
+   unsigned long dNext; /* the next available pos in *data */
+
+   QLStatement *qs;  /* used for execQuery */
 };
 typedef struct native_result NativeResult;
 
@@ -76,7 +83,6 @@ static void prepResultBuffer(NativeResult *nr)
    nr->sNext=0;
    nr->resp=(BinResponseHdr*)calloc(1,sizeof(BinResponseHdr)+
             ((nr->sMax-1)*sizeof(MsgSegment)));
-   
    _SFCB_EXIT();
 }
 
@@ -86,7 +92,7 @@ static int xferResultBuffer(NativeResult *nr, int to, int more, int rc)
    int i,dmy=-1,s1=l;
  
    _SFCB_ENTER(TRACE_PROVIDERDRV, "xferResultBuffer");
-   
+
    if (nr->data==NULL) prepResultBuffer(nr);
    
    for (i=0; i<nr->sMax; i++) {
@@ -109,25 +115,27 @@ int xferLastResultBuffer(CMPIResult *result, int to, int rc)
     NativeResult *r = (NativeResult*) result;
  
    _SFCB_ENTER(TRACE_PROVIDERDRV, "xferLastResultBuffer");
-    rc=xferResultBuffer(r,to,0,rc);
+   rc=xferResultBuffer(r,to,0,rc);
    _SFCB_RETURN(rc);
 }
 
+/* find the next position where we can stick the next object of type that is 
+   'length' long in 'nr'. If necessary, send what's in the buffer already. */
 static void* nextResultBufferPos(NativeResult *nr, int type, int length)
 {
    long pos,npos;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "nextResultBufferPos");
-   
    if (nr->data==NULL) prepResultBuffer(nr);
 
+   /* if there won't be enough room, send it off or make nr->data bigger */
    if (nr->dNext+length>=nr->dMax) {
       if (nr->requestor) {
-         xferResultBuffer(nr,nr->requestor, 1,1);
+	 xferResultBuffer(nr,nr->requestor, 1,1);
          nr->dNext=0;
          nr->sNext=0;
-   }
-      else {
+      }
+      else { 
          while (nr->dNext+length>=nr->dMax) nr->dMax*=2;
          nr->data=(char*)realloc(nr->data,nr->dMax);
       }
@@ -139,11 +147,12 @@ static void* nextResultBufferPos(NativeResult *nr, int type, int length)
             ((nr->sMax-1)*sizeof(MsgSegment)));
    }
    
+   /* store the pointer to the location within nr->data where this object will be */
    nr->resp->object[nr->sNext].data=(void*)nr->dNext;
    nr->resp->object[nr->sNext].length=length;
    nr->resp->object[nr->sNext++].type=type;
    pos=nr->dNext;
-   nr->dNext+=length;
+   nr->dNext+=length; /* set the position for next object after this one. ready for memcpy */
 
    npos=(long)(nr->data+pos);
    _SFCB_RETURN((void*)npos);
@@ -273,7 +282,7 @@ static CMPIStatus __rft_returnInstance(const CMPIResult * result,
       size=getInstanceSerializedSize(instance);
       ptr=nextResultBufferPos(r, MSG_SEG_INSTANCE, size);
       _SFCB_TRACE(1,("--- Moving instance %d",size));
-      getSerializedInstance(instance,ptr);
+      getSerializedInstance(instance,ptr); /* memcpy inst to ptr */
    }
    else {
       size=getConstClassSerializedSize((CMPIConstClass*)instance);

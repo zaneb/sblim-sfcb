@@ -1,3 +1,8 @@
+2009-12-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* result.c:
+	Repealed original fix for 2818014
+
 2009-12-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* 10_interop.mof,default.reg.in,interopProvider.c:

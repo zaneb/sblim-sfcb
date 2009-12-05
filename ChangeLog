@@ -3,6 +3,9 @@
 	* result.c:
 	Repealed original fix for 2818014
 
+	* result.c:
+	[ 2900630 ] Allow for instances > chunkSize when chunking enabled
+	
 2009-12-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* 10_interop.mof,default.reg.in,interopProvider.c:

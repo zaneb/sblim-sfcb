@@ -69,11 +69,14 @@ typedef struct native_result NativeResult;
 static struct native_result *__new_empty_result(int, CMPIStatus *);
 
 
-static void prepResultBuffer(NativeResult *nr)
+static void prepResultBuffer(NativeResult *nr, int length)
 {
    _SFCB_ENTER(TRACE_PROVIDERDRV, "prepResultBuffer");
    
    if (getControlNum("chunkSize",(long*)&nr->dMax)) nr->dMax=50000;
+
+   /* if what we're returning is > chunkSize, make chunkSize bigger */
+   while (length>=nr->dMax) nr->dMax*=2;
 
    nr->dNext=0;
    nr->data=(char*)malloc(nr->dMax);
@@ -85,14 +88,14 @@ static void prepResultBuffer(NativeResult *nr)
    _SFCB_EXIT();
 }
 
-static int xferResultBuffer(NativeResult *nr, int to, int more, int rc)
+static int xferResultBuffer(NativeResult *nr, int to, int more, int rc, int length)
 {
    long l=sizeof(BinResponseHdr)+((nr->sNext-1)*sizeof(MsgSegment));
    int i,dmy=-1,s1=l;
  
    _SFCB_ENTER(TRACE_PROVIDERDRV, "xferResultBuffer");
 
-   if (nr->data==NULL) prepResultBuffer(nr);
+   if (nr->data==NULL) prepResultBuffer(nr, length);
    
    for (i=0; i<nr->sMax; i++) {
       nr->resp->object[i].data=(void*)l;
@@ -114,7 +117,7 @@ int xferLastResultBuffer(CMPIResult *result, int to, int rc)
     NativeResult *r = (NativeResult*) result;
  
    _SFCB_ENTER(TRACE_PROVIDERDRV, "xferLastResultBuffer");
-   rc=xferResultBuffer(r,to,0,rc);
+   rc=xferResultBuffer(r,to,0,rc, 1); /* passing 1 should be fine */
    _SFCB_RETURN(rc);
 }
 
@@ -125,12 +128,12 @@ static void* nextResultBufferPos(NativeResult *nr, int type, int length)
    long pos,npos;
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "nextResultBufferPos");
-   if (nr->data==NULL) prepResultBuffer(nr);
+   if (nr->data==NULL) prepResultBuffer(nr, length);
 
    /* if there won't be enough room, send it off or make nr->data bigger */
    if (nr->dNext+length>=nr->dMax) {
       if (nr->requestor) {
-	 xferResultBuffer(nr,nr->requestor, 1,1);
+	 xferResultBuffer(nr,nr->requestor, 1,1, length);
          nr->dNext=0;
          nr->sNext=0;
       }

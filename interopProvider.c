@@ -784,8 +784,12 @@ CMPIStatus InteropProviderCreateInstance(
    memLinkInstance(ciLocal);
    
    if(isa(nss, cns, "cim_indicationsubscription")) {
-   
       _SFCB_TRACE(1,("--- create sfcb_indicationsubscription"));
+
+      if (strcasecmp(cns,"CIM_IndicationSubscription")==0) {
+        // Set the class name to our defined extension class
+        CMSetClassName((CMPIObjectPath * ) cop,"SFCB_IndicationSubscription");
+      }
       
       st=processSubscription(_broker,ctx,ciLocal,cop);
    }

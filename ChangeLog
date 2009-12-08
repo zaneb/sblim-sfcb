@@ -1,3 +1,12 @@
+2009-12-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* interopProvider.c, 
+	  test/TestProviders/tests/IndTest3CreateSubscription.lines,IndTest3CreateSubscription.xml,
+	    IndTest5DeleteSubscription.xml,
+	  test/xmltest/Indication03CreateSubscription.OK, Indication11DeleteSubscription.xml:
+	[ 2908421 ] IndicationProfile: IndicationSubscription - RI props
+		Change classname when CIM_IndicationSubscription is created.
+
 2009-12-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* result.c:

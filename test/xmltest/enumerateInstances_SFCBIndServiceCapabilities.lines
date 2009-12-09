@@ -1,0 +1,29 @@
+<INSTANCE CLASSNAME="SFCB_IndicationServiceCapabilities">
+<PROPERTY NAME="InstanceID" TYPE="string">
+<VALUE>CIM:SFCB_ISC</VALUE>
+</PROPERTY>
+<PROPERTY NAME="FilterCreationEnabledIsSettable" TYPE="boolean">
+<VALUE>FALSE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryAttemptsIsSettable" TYPE="boolean">
+<VALUE>FALSE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryIntervalIsSettable" TYPE="boolean">
+<VALUE>FALSE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SubscriptionRemovalActionIsSettable" TYPE="boolean">
+<VALUE>FALSE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SubscriptionRemovalTimeIntervalIsSettable" TYPE="boolean">
+<VALUE>FALSE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="MaxListenerDestinations" TYPE="uint32">
+<VALUE>100</VALUE>
+</PROPERTY>
+<PROPERTY NAME="MaxActiveSubscriptions" TYPE="uint32">
+<VALUE>100</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SubscriptionsPersisted" TYPE="boolean">
+<VALUE>TRUE</VALUE>
+</PROPERTY>
+</INSTANCE>

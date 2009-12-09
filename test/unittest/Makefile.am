@@ -14,9 +14,9 @@ AM_LDFLAGS=-L"$(top_builddir)/.libs"
 
 TESTS_ENVIRONMENT = SFCB_TRACE_FILE="/tmp/sfcbtracetest"
 
-TESTS = xmlUnescape newCMPIInstance EmbeddedTests genericlist
+TESTS = xmlUnescape newCMPIInstance EmbeddedTests genericlist newDateTime
 
-check_PROGRAMS = xmlUnescape newCMPIInstance EmbeddedTests genericlist
+check_PROGRAMS = xmlUnescape newCMPIInstance EmbeddedTests genericlist newDateTime
 
 xmlUnescape_SOURCES = xmlUnescape.c
 xmlUnescape_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter
@@ -29,3 +29,6 @@ EmbeddedTests_LDADD = -lsfcCimXmlCodec -lsfcHttpAdapter
 
 genericlist_SOURCES = genericlist.c
 genericlist_LDADD = -lsfcBrokerCore
+
+newDateTime_SOURCES = newDateTime.c
+newDateTime_LDADD = -lsfcBrokerCore

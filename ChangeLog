@@ -1,3 +1,6 @@
+2009-12-09 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* test/xmltest/execQuery24/25.*,enumerateInstanceNames.SFCB_IndicationServiceCapabilities.*, enumerateInstances.SFCB_IndicationServiceCapabilities.*
+	[  2859885 ] New exec query and enumeration test cases
 2009-12-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopProvider.c, 

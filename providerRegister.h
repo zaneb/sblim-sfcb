@@ -135,7 +135,7 @@ struct _Provider_Register_FT {
 extern Provider_Register_FT *ProviderRegisterFT;
 struct _Provider_Register_FT;
 
-ProviderRegister *newProviderRegister(char *fn);
+ProviderRegister *newProviderRegister();
 
 #ifdef __cplusplus
 }

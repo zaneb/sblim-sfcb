@@ -700,9 +700,9 @@ void releaseHeap(void *hc)
 
 ProviderRegister *pReg = NULL;
 
-int init_sfcBroker(char *home)
+int init_sfcBroker()
 {
-   pReg = newProviderRegister(home);
+   pReg = newProviderRegister();
    return 0;
 }
 

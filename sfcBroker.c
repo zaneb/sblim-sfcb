@@ -73,7 +73,7 @@ struct adapterThreadParams {
 extern void setExFlag(unsigned long f);
 extern char *parseTarget(const char *target);
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
-extern int init_sfcBroker(char *);
+extern int init_sfcBroker();
 extern CMPIBroker *Broker;
 extern void initProvProcCtl(int);
 extern void processTerminated(int pid);
@@ -820,7 +820,7 @@ int main(int argc, char *argv[])
    
    initSem(dSockets,sSockets,pSockets);
    initProvProcCtl(pSockets);
-   init_sfcBroker(NULL);
+   init_sfcBroker();
    initSocketPairs(pSockets,dSockets,sSockets);
 
    setSignal(SIGQUIT, handleSigquit,0);

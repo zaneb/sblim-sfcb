@@ -113,7 +113,7 @@ static void addProviderToHT(ProviderInfo *info, ProviderRegister *br)
     }
 }
 
-ProviderRegister *newProviderRegister(char *fn)
+ProviderRegister *newProviderRegister()
 {
    FILE *in;
    char *dir,*provuser;

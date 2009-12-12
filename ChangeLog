@@ -3,6 +3,9 @@
 	* providerRegister.c:
 	[ 2910372 ] Provider user and params strdup'd but never free'd
 
+	* support.c, sfcBroker.c, providerRegister.h, providerRegister.c:
+	[ 2913067 ] Unused arg for newProviderRegister()
+
 2009-12-09 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 	* test/xmltest/execQuery24/25.*,enumerateInstanceNames.SFCB_IndicationServiceCapabilities.*, enumerateInstances.SFCB_IndicationServiceCapabilities.*, test/unittests/newDateTime.c, test/unittests/Makefile.am
 	[  2859885 ] New exec query and enumeration test cases

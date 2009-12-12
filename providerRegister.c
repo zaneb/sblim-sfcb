@@ -60,6 +60,8 @@ static void freeInfoPtr(ProviderInfo *info)
    n=0;
    if (info->ns) while (info->ns[n]) free(info->ns[n++]); 
    free(info->ns);
+   if (info->user) free(info->user);
+   if (info->parms) free(info->parms);
    free(info);
 }
 
@@ -204,7 +206,7 @@ ProviderRegister *newProviderRegister(char *fn)
             info->id= ++id;
             // Set the default provider uid
             info->uid=provuid;
-            info->user=provuser;
+            info->user=strdup(provuser);
             break;
          case 2:
             if (strcmp(rv.id, "provider") == 0)

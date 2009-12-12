@@ -31,6 +31,7 @@ Bugs fixed:
 - 2727811 typeo in fileRepository.c
 - 2532149 sfcb: instance ops against non-instance MI report no error
 - 2900630 Allow for instances > chunkSize when chunking enabled
+- 2910372 Provider user and params strdup'd but never free'd
 
 Changes in 1.3.5
 ================

@@ -287,6 +287,7 @@ typedef struct loadProviderReq {
    MsgSegment className;
    MsgSegment libName;
    MsgSegment provName;
+   MsgSegment parameters;
    unsigned int unload;
 } LoadProviderReq;
 

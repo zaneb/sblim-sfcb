@@ -1,3 +1,8 @@
+2009-12-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c, providerMgr.h:
+	[ 2914435 ] providers should receive param info from providerRegister
+
 2009-12-11  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerRegister.c:

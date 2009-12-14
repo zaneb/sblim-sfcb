@@ -701,6 +701,7 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
       sreq.className = setCharsMsgSegment(info->className);
       sreq.libName = setCharsMsgSegment(info->location);
       sreq.provName = setCharsMsgSegment(info->providerName);
+      sreq.parameters = setCharsMsgSegment(info->parms);
       sreq.hdr.flags = info->type;
       sreq.unload = info->unload;
       sreq.hdr.provId = getProvIds(info).ids;
@@ -1396,6 +1397,7 @@ static BinResponseHdr *invokeMethod(BinRequestHdr * hdr, ProviderInfo * info,
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
    ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
    ctx->ft->addEntry(ctx,"CMPISessionId",(CMPIValue*)&hdr->sessionId,CMPI_uint32);
+   if (info->parms) ctx->ft->addEntry(ctx,"sfcbProviderParameters",(CMPIValue*)info->parms,CMPI_chars);
 
    if (req->hdr.count>5) {
       int i,s,n;
@@ -2493,6 +2495,7 @@ static BinResponseHdr *loadProvider(BinRequestHdr * hdr, ProviderInfo * info, in
    info->className = strdup((char*)req->className.data);
    info->location = strdup((char*)req->libName.data);
    info->providerName = strdup((char*)req->provName.data);
+   if (req->parameters.data) info->parms = strdup((char*)req->parameters.data);
    info->type = req->hdr.flags;
    info->unload = req->unload;
    info->providerSockets = providerSockets;

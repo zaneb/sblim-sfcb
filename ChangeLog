@@ -3,6 +3,9 @@
 	* providerDrv.c, providerMgr.h:
 	[ 2914435 ] providers should receive param info from providerRegister
 
+	* classProviderGz.c, default.reg.in:
+	[ 2914484 ] classProviderGz's cacheLimit should be tunable at runtime
+
 2009-12-11  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerRegister.c:

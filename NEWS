@@ -12,6 +12,7 @@ New features:
 - 2707633 sfcb: doesn't advertise capabilities CMPIBrokerFT
 - 2908421 IndicationProfile: IndicationSubscription - RI props
 - 2914435 providers should receive param info from providerRegister
+- 2914484 classProviderGz's cacheLimit should be tunable at runtime
 
 Bugs fixed:
 

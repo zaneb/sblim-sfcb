@@ -4,6 +4,7 @@
    type: class method
    unload: never
    namespace: *
+   parameters: cacheLimit=10
 #
 [$DefaultProvider$]
    provider: InternalProvider

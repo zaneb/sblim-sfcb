@@ -49,7 +49,7 @@
 #define LOCALCLASSNAME "ClassProvider"
 #define Iterator HashTableIterator*
 
-static int cacheLimit=10;
+static unsigned int cacheLimit=10;
 
 static const CMPIBroker *_broker;
 
@@ -271,7 +271,6 @@ static void pruneCache(ClassRegister * cr)
 {
    ClassBase *cb = (ClassBase *) (cr + 1);
    ClassRecord *crec;
-   
    while (cb->cachedCount>cacheLimit) {
       crec=cb->lastCached;
 //    fprintf(stderr,"--- removing %s from cache\n",crec->cachedCls->ft->getCharClassName(crec->cachedCls));
@@ -1027,6 +1026,20 @@ static CMPIStatus ClassProviderInvokeMethod(CMPIMethodMI * mi,
    }
    
    else if (strcasecmp(methodName, "_startup") == 0) {
+
+     /* check to see if cacheLimit was specified in providerRegister */
+     CMPIStatus parm_st = { CMPI_RC_OK, NULL };
+     CMPIData parmdata = CMGetContextEntry(ctx, "sfcbProviderParameters", &parm_st);
+
+     if (parm_st.rc == CMPI_RC_OK ) {
+       const char* parms = CMGetCharPtr(parmdata.value.string);
+
+       /* cacheLimit is currently the only param, so just take whatever is after the '=' */
+       const char* val = strchr(parms,'=');
+       /* conversion to uint may cause wrapping; won't catch negatives */
+       cacheLimit = ((val != NULL) && (cacheLimit = atoi(val+sizeof(char)))>0) ? cacheLimit : 10;
+     }
+
       st.rc=CMPI_RC_OK;
   }
    

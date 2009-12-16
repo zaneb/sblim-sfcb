@@ -1,3 +1,8 @@
+2009-12-15  Sean Swehla  <smswehla@linux.vnet.ibm.com>
+
+	* interopServerProvider.c
+	[ 2915198 ] Interop Server Provider returns incorrect object
+
 2009-12-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c, providerMgr.h:

@@ -598,13 +598,14 @@ static CMPIStatus ServiceProviderGetInstance(CMPIInstanceMI * mi,
    _SFCB_ENTER(TRACE_PROVIDERS, "ServiceProviderGetInstance");
 
    if (name && name->hdl) {
-      if (strcasecmp((char*)name->hdl,getSfcbUuid())==0)  
-	if (strcasecmp(className, "cim_objectmanager"))
+      if (strcasecmp((char*)name->hdl,getSfcbUuid())==0) {
+	if (strcasecmp(className, "cim_objectmanager") == 0)
          return ObjectManagerProviderEnumInstances(mi,ctx,rslt,ref,properties);
-	if (strcasecmp(className, "cim_objectmanagercommunicationMechanism"))
+	if (strcasecmp(className, "cim_objectmanagercommunicationMechanism") == 0)
          return ComMechProviderEnumInstances(mi,ctx,rslt,ref,properties);
-	if (strcasecmp(className, "cim_indicationservice"))
+	if (strcasecmp(className, "cim_indicationservice") == 0)
          return IndServiceProviderEnumInstances(mi,ctx,rslt,ref,properties);
+      }
 
       else st.rc=CMPI_RC_ERR_NOT_FOUND;   
    }

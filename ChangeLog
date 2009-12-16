@@ -1,3 +1,9 @@
+2009-12-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* result.c:
+	[ 2818014 ] EnumerateClasses segfault w/DeepInheritance prop setting
+	(refix)
+
 2009-12-15  Surendra Kodali  
 
         * ABTScript

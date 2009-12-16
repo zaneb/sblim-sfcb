@@ -132,14 +132,16 @@ static void* nextResultBufferPos(NativeResult *nr, int type, int length)
 
    /* if there won't be enough room, send it off or make nr->data bigger */
    if (nr->dNext+length>=nr->dMax) {
-      if (nr->requestor) {
+      /* either we aren't chunking or length > buffer size */
+      if (!nr->requestor || length>=nr->dMax) { 
+         while (nr->dNext+length>=nr->dMax) nr->dMax*=2;
+         nr->data=(char*)realloc(nr->data,nr->dMax);
+      }
+      /* xfering current contents to make enough room */
+      else {
 	 xferResultBuffer(nr,nr->requestor, 1,1, length);
          nr->dNext=0;
          nr->sNext=0;
-      }
-      else { 
-         while (nr->dNext+length>=nr->dMax) nr->dMax*=2;
-         nr->data=(char*)realloc(nr->data,nr->dMax);
       }
    }
    

@@ -36,6 +36,7 @@ Bugs fixed:
 - 2910372 Provider user and params strdup'd but never free'd
 - 2913067 Unused arg for newProviderRegister()
 - 2915198 Interop Server Provider returns incorrect object
+- 2893373 Test reports need to include xml results files
 
 Changes in 1.3.5
 ================

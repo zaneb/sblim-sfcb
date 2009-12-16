@@ -16,6 +16,7 @@ TESTNAME=$2
 CONFIGOPTIONS=$3
 COVERAGE_DIR="$BASE_DIR/sfcb/coverage"
 REPORTDIR=$BASE_DIR/$REPORT_DIR/"$TESTNAME"
+RESULTDIR=$REPORTDIR/xmlFailure_reportFiles
 HTMLFILE="$REPORTDIR/index.html"
 
 if [ ! -d $BASE_DIR ]; then
@@ -97,6 +98,17 @@ SFCB_STOP()
     fi
 }
 
+SFCB_RESULTFILES()
+{
+    find . -name "*.result" > $BASE_DIR/temp
+    size_temp=`ls -ltr $BASE_DIR/temp | awk '{print $5}'`
+    rm -f $BASE_DIR/temp
+    if [ $size_temp -ne 0 ] ; then
+        mkdir -p $RESULTDIR
+        find . -name "*.result" -print0 | xargs  -0 -r -I file cp  file --target-directory=$RESULTDIR --parents
+    fi
+}
+
 SFCB_TESTS()
 {
     echo "Starting Unit tests ........." >> $BASE_DIR/$TEST_OUT
@@ -112,6 +124,7 @@ SFCB_TESTS()
         DUALOUT "SFCB Tests : FAILURE" "./$TEST_OUT"
     fi
     SFCB_STOP
+    SFCB_RESULTFILES
 }
 
 AUTO_CONF()

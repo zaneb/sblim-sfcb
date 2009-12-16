@@ -1,3 +1,8 @@
+2009-12-15  Surendra Kodali  
+
+        * ABTScript
+        [ 2893373 ] Test reports need to include xml results files
+
 2009-12-15  Sean Swehla  <smswehla@linux.vnet.ibm.com>
 
 	* interopServerProvider.c

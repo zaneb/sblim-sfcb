@@ -39,6 +39,7 @@ Bugs fixed:
 - 2915198 Interop Server Provider returns incorrect object
 - 2893373 Test reports need to include xml results files
 - 2818014 EnumerateClasses segfault w/DeepInheritance prop setting
+- 2915957 Port 2192023 fix to classProvider and classProviderMem
 
 Changes in 1.3.5
 ================

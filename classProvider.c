@@ -94,6 +94,7 @@ typedef struct nameSpaces {
 } NameSpaces;
 
 static UtilHashTable *nsHt=NULL;
+static pthread_once_t nsHt_once = PTHREAD_ONCE_INIT;
 static int nsBaseLen;
 
 static void buildInheritanceTable(ClassRegister * cr)
@@ -501,6 +502,11 @@ static UtilHashTable *buildClassRegisters()
    return gatherNameSpaces(dn,NULL,1);   
 }    
 
+static void nsHt_init()
+{
+  nsHt=buildClassRegisters();
+}
+
 
 static ClassRegister *getNsReg(const CMPIObjectPath *ref, int *rc)
 {
@@ -509,8 +515,14 @@ static ClassRegister *getNsReg(const CMPIObjectPath *ref, int *rc)
    ClassRegister *cReg;
    *rc=0;
    
-   if (nsHt==NULL) nsHt=buildClassRegisters();
-   
+   pthread_once(&nsHt_once, nsHt_init);
+
+   if (nsHt==NULL) {
+     mlogf(M_ERROR,M_SHOW,"--- ClassProvider: namespace hash table not initialized\n");
+     *rc = 1;
+     return NULL;
+   }
+
    if (nsi && nsi->hdl) {
       ns=(char*)nsi->hdl;
       if (strcasecmp(ns,"root/pg_interop")==0)

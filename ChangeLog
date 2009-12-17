@@ -9,6 +9,9 @@
 	[ 2818014 ] EnumerateClasses segfault w/DeepInheritance prop setting
 	(refix)
 
+	* classProvider.c, classProviderMem.c:
+	[ 2915957 ] Port 2192023 fix to classProvider and classProviderMem
+	
 2009-12-15  Surendra Kodali  
 
 	* ABTScript

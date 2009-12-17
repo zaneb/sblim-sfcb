@@ -18,38 +18,9 @@
  *
 */
 
-
-
-#include "utilft.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-#include <sys/types.h>
-#include <dirent.h>
-
-//#include "classRegister.h"
-#include "constClass.h"
-#include "providerRegister.h"
-#include "trace.h"
-#include "control.h"
-
-#define NEW(x) ((x *) malloc(sizeof(x)))
-
-#include "cmpidt.h"
-#include "cmpift.h"
-#include "cmpiftx.h"
-#include "cmpimacs.h"
-#include "cmpimacsx.h"
-#include "objectImpl.h"
-#include "mrwlock.h"
+#include "classProviderCommon.h"
 
 #define LOCALCLASSNAME "ClassProvider"
-
-static const CMPIBroker *_broker;
-
-extern char * configfile;
-extern ProviderRegister *pReg;
 
 typedef struct _Class_Register_FT Class_Register_FT;
 struct _ClassRegister {
@@ -87,14 +58,6 @@ extern Class_Register_FT *ClassRegisterFT;
 static CMPIConstClass *getClass(ClassRegister * cr, const char *clsName);
 int traverseChildren(ClassRegister *cReg, const char *parent, const char *child);
 
-typedef struct nameSpaces {
-   int next,max,blen;
-   char *base;
-   char *names[1];
-} NameSpaces;
-
-static UtilHashTable *nsHt=NULL;
-static pthread_once_t nsHt_once = PTHREAD_ONCE_INIT;
 static int nsBaseLen;
 
 static void buildInheritanceTable(ClassRegister * cr)

@@ -1,3 +1,8 @@
+2009-12-16 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 2908423 ] Honor DeliveryRetry* props of CIM_IndicationService
+
 2009-12-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* result.c:
@@ -6,8 +11,8 @@
 
 2009-12-15  Surendra Kodali  
 
-        * ABTScript
-        [ 2893373 ] Test reports need to include xml results files
+	* ABTScript
+	[ 2893373 ] Test reports need to include xml results files
 
 2009-12-15  Sean Swehla  <smswehla@linux.vnet.ibm.com>
 

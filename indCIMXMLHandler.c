@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 #include "trace.h"
 #include "fileRepository.h"
 #include "providerMgr.h"
@@ -44,9 +45,8 @@ extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
 extern ExpSegments exportIndicationReq(CMPIInstance *ci, char *id);
 
-
 static const CMPIBroker *_broker;
- 
+
 static int interOpNameSpace(const CMPIObjectPath *cop, CMPIStatus *st) 
  {   
    char *ns=(char*)CMGetNameSpace(cop,NULL)->hdl;   
@@ -347,6 +347,195 @@ CMPIStatus IndCIMXMLHandlerMethodCleanup(CMPIMethodMI * mi,
    _SFCB_RETURN(st);
 }
 
+
+/** \brief deliverInd - Sends the indication to the destination
+ *
+ *  Performs the actual delivery of the indication payload to
+ *  the target destination
+ */
+
+CMPIStatus deliverInd(
+                const CMPIObjectPath * ref,
+			    const CMPIArgs * in)
+{
+  _SFCB_ENTER(TRACE_INDPROVIDER, "deliverInd");  
+  CMPIInstance *hci,*ind;
+  CMPIStatus st = { CMPI_RC_OK, NULL };
+  CMPIString *dest;
+  char strId[64];
+  ExpSegments xs;
+  UtilStringBuffer *sb;
+  static int id=1;
+  char *resp;
+  char *msg;
+
+  if ((hci=internalProviderGetInstance(ref,&st))==NULL) {
+     setStatus(&st,CMPI_RC_ERR_NOT_FOUND,NULL);
+     _SFCB_RETURN(st); 
+  }
+  dest=CMGetProperty(hci,"destination",NULL).value.string;
+  _SFCB_TRACE(1,("--- destination: %s\n",(char*)dest->hdl));
+  ind=CMGetArg(in,"indication",NULL).value.inst;
+
+  sprintf(strId,"%d",id++);
+  xs=exportIndicationReq(ind,strId);
+  sb=segments2stringBuffer(xs.segments);
+  if (exportIndication((char*)dest->hdl,(char*)sb->ft->getCharPtr(sb), &resp, &msg)) {
+     // change rc
+     setStatus(&st,CMPI_RC_ERR_NOT_FOUND,NULL);
+  }
+  RespSegment rs = xs.segments[5];
+  UtilStringBuffer* usb = (UtilStringBuffer*)rs.txt;
+  CMRelease(usb);
+  CMRelease(sb);
+  if (resp) free(resp);
+  if (msg) free(msg);
+  _SFCB_RETURN(st); 
+}
+
+// Retry queue element and control vars
+typedef struct rtelement {
+   CMPIObjectPath * ref;
+   CMPIArgs * in;
+   int count;
+   time_t lasttry;
+   struct rtelement  *next,*prev;
+} RTElement;
+static RTElement *RQhead,*RQtail;
+static int retryRunning=0;
+static pthread_mutex_t RQlock=PTHREAD_MUTEX_INITIALIZER;
+
+/** \brief enqRetry - Add to retry queue
+ *
+ *  Adds the element to the retry queue
+ *  Initializes the queue if empty 
+ *  Adds the current time as the last retry time.
+ */
+
+int enqRetry (RTElement * element)
+{
+    struct timeval tv;
+    struct timezone tz;
+
+    // Put this one on the retry queue
+    if (pthread_mutex_lock(&RQlock)!=0)  {
+        //lock failed
+        return 1;
+    }
+    if (RQhead==NULL) {
+        // Queue is empty
+        RQhead=element;
+        RQtail=element;
+        RQtail->next=element;
+        RQtail->prev=element;
+    } else {
+        element->next=RQtail->next;
+        element->next->prev=element;
+        RQtail->next=element;
+        element->prev=RQtail;
+        RQtail=element;
+    }
+    RQtail->count=0;
+    gettimeofday(&tv, &tz);
+    RQtail->lasttry=tv.tv_sec;
+    if (pthread_mutex_unlock(&RQlock)!=0)  {
+        //lock failed
+        return 1;
+    }
+    return(0);
+}
+
+/** \brief dqRetry - Remove from the retry queue
+ *
+ *  Removes the element from the retry queue
+ *  Cleans up the queue if empty
+ */
+
+int dqRetry (RTElement * cur)
+{
+    // Remove the entry from the queue, closing the hole
+    if (cur->next == cur) {
+        // queue is empty
+        free(cur);
+        RQhead=NULL;
+    } else {
+        //not last
+        cur->prev->next=cur->next;
+        cur->next->prev=cur->prev;
+        free(cur->ref);
+        free(cur->in);
+        free(cur);
+    }
+    return(0);
+}
+
+/** \brief retryExport - Manages retries
+ *
+ *  Spawned as a thread when a retry queue exists to
+ *  manage the retry attempts at the specified intervals
+ *  Thread quits when queue is empty.
+ */
+
+void * retryExport (void * lctx)
+{
+    const CMPIObjectPath *ref;
+    const CMPIArgs * in;
+    const CMPIContext *ctx=(CMPIContext *)lctx;
+    RTElement *cur,*purge;
+    struct timeval tv;
+    struct timezone tz;
+    int rint,maxcount;
+    CMPIObjectPath *op;
+    CMPIEnumeration *isenm = NULL;
+
+
+    CMPIStatus st = { CMPI_RC_OK, NULL };
+    CMPIStatus sts = { CMPI_RC_OK, NULL };
+
+    // Get the retry params from IndService
+    op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
+    isenm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, &st);
+    CMPIData isinst=CMGetNext(isenm,&sts);
+    CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",&st);
+    CMPIData ri=CMGetProperty(isinst.value.inst,"DeliveryRetryInterval",&st);
+    maxcount= mc.value.uint16;
+    rint=ri.value.uint32;
+
+    // Now, run the queue
+    pthread_mutex_lock(&RQlock);
+    cur=RQhead;
+    while (RQhead != NULL ) {
+        ref=cur->ref;
+        in=cur->in;
+        gettimeofday(&tv, &tz);
+        if ((cur->lasttry+rint) > tv.tv_sec) { 
+            // no retries are ready, release the lock
+            // and sleep for an interval, then relock
+            pthread_mutex_unlock(&RQlock);
+            sleep(rint);
+            pthread_mutex_lock(&RQlock);
+        }
+        st=deliverInd(ref,in);
+        if ( (st.rc == 0) || (cur->count >= maxcount-1) ){
+            // either it worked, or we maxed out on 
+            // retries, remove from queue
+            purge=cur;
+            cur=cur->next;
+            dqRetry(purge);
+        } else {
+            // still failing, leave on queue 
+            cur->count++;
+            gettimeofday(&tv, &tz);
+            cur->lasttry=tv.tv_sec; 
+            cur=cur->next;
+        }
+    }
+    // Queue went dry, cleanup and exit
+    pthread_mutex_unlock(&RQlock);
+    retryRunning=0;
+    return(NULL);
+}
+
 CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
 					const CMPIContext * ctx,
 					const CMPIResult * rslt,
@@ -355,45 +544,39 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
 					const CMPIArgs * in, CMPIArgs * out)
 { 
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   CMPIInstance *hci,*ind;
-   static int id=1;
-   char strId[64];
-   ExpSegments xs;
-   UtilStringBuffer *sb;
-   char *resp;
-   char *msg;
-   CMPIString *dest;
    
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerInvokeMethod");  
     
    if (interOpNameSpace(ref,&st)==0) _SFCB_RETURN(st);
    
    if (strcasecmp(methodName, "_deliver") == 0) {     
-      if ((hci=internalProviderGetInstance(ref,&st))==NULL) {
-         setStatus(&st,CMPI_RC_ERR_NOT_FOUND,NULL);
-         _SFCB_RETURN(st); 
+      st=deliverInd(ref,in);
+      if (st.rc) {
+        // Indication delivery failed, send to retry queue
+        // build an element
+        RTElement *element;
+        element = (RTElement *) malloc(sizeof(*element));
+        element->ref=ref->ft->clone(ref,&st);
+        element->in=in->ft->clone(in,&st);
+        // Add it to the retry queue
+        enqRetry(element);
+        // And launch the thread if it isn't already running
+        pthread_t t;
+        pthread_attr_t tattr;
+        pthread_attr_init(&tattr);
+        pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+        if (retryRunning == 0) {
+            pthread_create(&t, &tattr,&retryExport,(void *) ctx);
+            retryRunning=1;
+        }
       }
-      dest=CMGetProperty(hci,"destination",NULL).value.string;
-      _SFCB_TRACE(1,("--- destination: %s\n",(char*)dest->hdl));
-      ind=CMGetArg(in,"indication",NULL).value.inst;
-      sprintf(strId,"%d",id++);
-      xs=exportIndicationReq(ind,strId);
-      sb=segments2stringBuffer(xs.segments);
-      exportIndication((char*)dest->hdl,(char*)sb->ft->getCharPtr(sb), &resp, &msg);
-
-      CMRelease(sb);
-      /* there's a UtilStringBuffer burried in xs... */
-      RespSegment rs = xs.segments[5];
-      UtilStringBuffer* usb = (UtilStringBuffer*)rs.txt;
-      CMRelease(usb);
-      if (resp) free(resp);
-      if (msg) free(msg);
    }
    
    else {
       printf("--- ClassProvider: Invalid request %s\n", methodName);
       st.rc = CMPI_RC_ERR_METHOD_NOT_FOUND;
    }
+
    return st;
    _SFCB_RETURN(st);
 }

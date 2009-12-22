@@ -42,7 +42,9 @@
 
  #define ClCurrentVersion 1
  #define ClCurrentLevel 0
+
  #define ClTypeClassRep 1
+ #define ClTypeClassReducedRep 2
 
  #define ClCurrentObjImplLevel 3
 
@@ -152,6 +154,7 @@ typedef struct {
     #define HDR_ObjectPath 3
     #define HDR_Args 4
     #define HDR_Qualifier 5    
+    #define HDR_IncompleteClass 6
     #define HDR_Version 0x1010
    #endif
    union {

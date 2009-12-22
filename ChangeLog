@@ -1,3 +1,10 @@
+2009-12-18  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* Makefile.am, objectImpl.h, sfcbdump.c, sfcbrepos.sh.in, 
+	  support.c, mofc/backend_sfcb.c, mofc/mofparse.c,
+	  mofc/symtab.c, classProviderSf.c:
+	[ 1664637 ] Reduced size class repository / classProviderSf
+
 2009-12-16 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

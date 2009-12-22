@@ -80,9 +80,10 @@ int main(int argc, char * argv[])
 		    SCHEMA_NAME, clv.size, sizeof(ClVersionRecord));
 	    state = REC_QUIT;
 	  } else  {
-	    printf("%s: Size of version record: %d, version: %hx\n", 
-		   SCHEMA_NAME,clv.size, clv.version);
-	    state = REC_HDR;
+        printf("%s: Size of version record: %d, version: %hx\n", 
+		    SCHEMA_NAME,clv.size, clv.version);
+        printf("%s: Repository type: %hx\n", SCHEMA_NAME, clv.options);
+        state = REC_HDR;
 	  }
 	  break;
 	case REC_HDR:
@@ -107,6 +108,11 @@ int main(int argc, char * argv[])
 	      fillState = REC_CLS;
 	      state = REC_FILL;
 	      break;
+        case HDR_IncompleteClass:
+          numFill = coh.size - sizeof(ClObjectHdr);
+          fillState = REC_CLS;
+          state = REC_FILL;
+          break;
 	    default:
 	      fillState = REC_ANY; 
 	      state = REC_FILL;

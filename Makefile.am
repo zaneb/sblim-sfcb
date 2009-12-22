@@ -147,6 +147,7 @@ sfcblib_LTLIBRARIES = \
    libsfcProfileProvider.la \
    libsfcClassProvider.la \
    libsfcClassProviderGz.la \
+   libsfcClassProviderSf.la \
    libsfcClassProviderMem.la \
    $(CIMXMLCODEC_LIBS) \
    $(HTTP_ADAPTER_LIBS) \
@@ -335,6 +336,11 @@ libsfcClassProviderGz_la_SOURCES = \
    classProviderGz.c
 libsfcClassProviderGz_la_LIBADD=-lsfcBrokerCore @SFCB_LIBZ@
 libsfcClassProviderGz_la_DEPENDENCIES=libsfcBrokerCore.la
+
+libsfcClassProviderSf_la_SOURCES = \
+   classProviderSf.c
+libsfcClassProviderSf_la_LIBADD=-lsfcBrokerCore @SFCB_LIBZ@
+libsfcClassProviderSf_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcClassProvider_la_SOURCES = \
    classProvider.c

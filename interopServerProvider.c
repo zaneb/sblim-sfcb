@@ -420,21 +420,19 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
     ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
 
    op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
-   val.chars = "CIM_ObjectManager";
+   val.chars = "CIM_IndicationService";
    CMAddKey(op,"CreationClassName",(CMPIValue *)&val,CMPI_chars);
    val.chars = "CIM_ComputerSystem";
    CMAddKey(op,"SystemCreationClassName",(CMPIValue *)&val,CMPI_chars);
    ci = CBGetInstance(_broker, ctxLocal, op, NULL, &st);
    if(st.rc == CMPI_RC_ERR_NOT_FOUND) {
      ci=CMNewInstance(_broker,op,NULL);
-   
-     CMSetProperty(ci,"CreationClassName","CIM_ObjectManager",CMPI_chars);
+     CMSetProperty(ci,"CreationClassName","CIM_IndicationService",CMPI_chars);
      CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
      str[0]=0;
      gethostname(str,511);
      CMSetProperty(ci,"SystemName",str,CMPI_chars);
      CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
-
      CMSetProperty(ci,"FilterCreationEnabled",&filterCreation,CMPI_boolean);
      CMSetProperty(ci,"ElementName","sfcb",CMPI_chars);
      CMSetProperty(ci,"Description",PACKAGE_STRING,CMPI_chars);
@@ -443,7 +441,6 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
      CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
      CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
      CBCreateInstance(_broker, ctxLocal, op, ci, &st);
-       
    } else if(st.rc != CMPI_RC_OK) {
      goto done;
    }
@@ -717,7 +714,34 @@ static CMPIStatus ServerProviderModifyInstance(CMPIInstanceMI * mi,
 					       const CMPIInstance * ci, 
 					       const char **properties)
 {
-   return notSuppSt;
+  CMPIValue val;
+  CMPIObjectPath *nop=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
+  val.chars = "CIM_IndicationService";
+  CMAddKey(nop,"CreationClassName",(CMPIValue *)&val,CMPI_chars);
+  val.chars = "CIM_ComputerSystem";
+  CMAddKey(nop,"SystemCreationClassName",(CMPIValue *)&val,CMPI_chars);
+
+  CMPIContext *ctxLocal;
+  ctxLocal = native_clone_CMPIContext(ctx);
+  val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
+  ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
+  CMPIStatus rc = { CMPI_RC_OK, 0 };
+  rc = CBModifyInstance(_broker, ctxLocal, nop, ci, properties);
+  if(rc.rc == CMPI_RC_ERR_NOT_FOUND) {
+    /*
+     * The logic for creating a non-existent IndicationService is in the
+     * enumeration function. This is not necessarily the most logical
+     * place for it, so maybe it should get moved. For now, we just call
+     * the enum function if the previous modify couldn't find the object.
+     */
+    CMPIEnumeration *tmpEnum = NULL;
+    tmpEnum = CBEnumInstances(_broker, ctx, cop, NULL, &rc);
+    if(rc.rc == CMPI_RC_OK)
+      rc = CBModifyInstance(_broker, ctxLocal, nop, ci, properties);
+  }
+  if(ctxLocal) CMRelease(ctxLocal);
+  CMReturnInstance(rslt, ci);
+  return rc;
 }
 
 static CMPIStatus ServerProviderDeleteInstance(CMPIInstanceMI * mi,

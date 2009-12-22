@@ -1,3 +1,8 @@
+2009-12-21  Sean Swehla  <smswehla@linux.vnet.ibm.com>
+
+	* interopServerProvider.c, cmpidt.h
+	[ 2919072 ] IndicationProfile: CIM_IndicationService ModifyInstance
+
 2009-12-18  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* Makefile.am, objectImpl.h, sfcbdump.c, sfcbrepos.sh.in, 

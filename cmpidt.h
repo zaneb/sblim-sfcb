@@ -94,6 +94,11 @@ extern "C"
 // If this is not the case, the MI might require higher version MB support.
 #   if defined (CMPI_VER_200) || defined(CMPI_VER_ALL)
 #      define CMPI_VER_100
+#      define CMPI_VER_90
+#      define CMPI_VER_87
+#      define CMPI_VER_86
+#      define CMPI_VER_85
+#      define CMPI_VER_80
 #      define CMPICurrentVersion CMPIVersion200
 #   elif   defined (CMPI_VER_100) || defined(CMPI_VER_ALL)
 #      define CMPICurrentVersion CMPIVersion100

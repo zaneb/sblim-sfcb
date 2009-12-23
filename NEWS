@@ -44,6 +44,7 @@ Bugs fixed:
 - 2915957 Port 2192023 fix to classProvider and classProviderMem
 - 2919753 Some IndicationSubscriptions cannot be deleted
 - 2920387 IndicationProfile: CIM_IndicationService doesn't persist
+- 2920402 'out' param in localInvokeMethod sometimes not used
 
 Changes in 1.3.5
 ================

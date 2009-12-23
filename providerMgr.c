@@ -1442,7 +1442,7 @@ static CMPIData localInvokeMethod(BinRequestContext * binCtx,
    InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, 5);
    OperationHdr req = { OPS_InvokeMethod, 1 };
    CMPIData data = { 0, CMPI_nullValue, {0} };
-   *out=NULL;
+   if (out) *out=NULL; /* out is used by getchildren and getassocs */
    BinResponseHdr *resp=NULL;
    
    sreq.in = setArgsMsgSegment(in);
@@ -1462,9 +1462,11 @@ static CMPIData localInvokeMethod(BinRequestContext * binCtx,
       resp->rc--;
       if (rc) rc->rc = resp->rc;
       if (resp->rc == CMPI_RC_OK) {
-         *out = relocateSerializedArgs(resp->object[0].data);
-         *out = (*out)->ft->clone(*out, NULL);
-         data=resp->rv;
+        if (out) {
+          *out = relocateSerializedArgs(resp->object[0].data);
+          *out = (*out)->ft->clone(*out, NULL);
+        }
+        data=resp->rv;
          // check for chars
       }
    }
@@ -1488,7 +1490,6 @@ int isChild(const char *ns, const char *parent, const char* child)
    BinRequestContext binCtx;
    OperationHdr req = { OPS_InvokeMethod, 1 };
    CMPIArgs *in = NewCMPIArgs(NULL);
-   CMPIArgs *out = NULL;
    CMPIStatus rc;
    int irc;
 
@@ -1501,7 +1502,7 @@ int isChild(const char *ns, const char *parent, const char* child)
    irc = _methProvider(&binCtx, &req);
 
    if (irc == MSG_X_PROVIDER) {
-      localInvokeMethod(&binCtx, path, "ischild", in, &out, &rc,0);
+      localInvokeMethod(&binCtx, path, "ischild", in, NULL, &rc,0);
       irc=(rc.rc==CMPI_RC_OK);
    }
    else irc=0;
@@ -1519,7 +1520,6 @@ static int startUpProvider(const char* ns, const char *name)
    BinRequestContext binCtx;
    OperationHdr req = { OPS_InvokeMethod, 1 };
    CMPIArgs *in = NewCMPIArgs(NULL);
-   CMPIArgs *out = NULL;
    CMPIStatus rc;
    int irc;
 
@@ -1531,7 +1531,7 @@ static int startUpProvider(const char* ns, const char *name)
    irc = _methProvider(&binCtx, &req);
 
    if (irc == MSG_X_PROVIDER) {
-      localInvokeMethod(&binCtx, path, "_startup", in, &out, &rc, 1);
+      localInvokeMethod(&binCtx, path, "_startup", in, NULL, &rc, 1);
       irc=(rc.rc==CMPI_RC_OK);
    }
    else irc=0;

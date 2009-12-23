@@ -1,3 +1,7 @@
+2009-12-23  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* test/xmltest/modifyInstance_ServerProv.*, enumerateInstance_CIM_IndicationService.lines
+	[ 2919072 ] IndicationProfile: CIM_IndicationService ModifyInstance [ Test case failures updated ]
+
 2009-12-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopProvider.c:
@@ -28,11 +32,11 @@
 
 	* classProvider.c, classProviderMem.c:
 	[ 2915957 ] Port 2192023 fix to classProvider and classProviderMem
-	
+
 2009-12-15  Surendra Kodali  
 
-	* ABTScript
-	[ 2893373 ] Test reports need to include xml results files
+        * ABTScript
+        [ 2893373 ] Test reports need to include xml results files
 
 2009-12-15  Sean Swehla  <smswehla@linux.vnet.ibm.com>
 

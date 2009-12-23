@@ -9,14 +9,14 @@
         </LOCALNAMESPACEPATH>
         <IPARAMVALUE NAME="ModifiedInstance">
 	 <VALUE.NAMEDINSTANCE>
-          <INSTANCENAME CLASSNAME="CIM_ObjectManager">
-            <KEYBINDING NAME="Name">
-              <KEYVALUE VALUETYPE="string">localhost</KEYVALUE>
+          <INSTANCENAME CLASSNAME="CIM_IndicationService">
+            <KEYBINDING NAME="SystemCreationClassName">
+              <KEYVALUE VALUETYPE="string">CIM_ObjectManager</KEYVALUE>
             </KEYBINDING>
           </INSTANCENAME>
-	  <INSTANCE CLASSNAME="CIM_ObjectManager">
-	  	<PROPERTY NAME="Name" TYPE="string">
-			<VALUE>localhost.localdomain</VALUE>
+	  <INSTANCE CLASSNAME="CIM_IndicationService">
+	  	<PROPERTY NAME="SystemCreationClassName" TYPE="string">
+			<VALUE>CIM_WBEMService</VALUE>
 		</PROPERTY>
 	  </INSTANCE>
           </VALUE.NAMEDINSTANCE>
@@ -25,3 +25,4 @@
     </SIMPLEREQ>
   </MESSAGE>
 </CIM>
+

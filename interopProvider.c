@@ -49,6 +49,7 @@ extern CMPIObjectPath *getObjectPath(char *path, char **msg);
 extern void closeProviderContext(BinRequestContext* ctx);
 extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 extern int testNameSpace(char *ns, CMPIStatus *st);
+extern void memLinkObjectPath(CMPIObjectPath *op);
 
 /* ------------------------------------------------------------------------- */
 
@@ -774,6 +775,7 @@ CMPIStatus InteropProviderCreateInstance(
    const char *nss = ns->ft->getCharPtr(ns,NULL);
    CMPIContext *ctxLocal;
    CMPIInstance *ciLocal;
+   CMPIObjectPath *copLocal;
    CMPIValue valSNS;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "InteropProviderCreateInstance");
@@ -782,16 +784,19 @@ CMPIStatus InteropProviderCreateInstance(
    
    ciLocal = ci->ft->clone(ci, NULL);
    memLinkInstance(ciLocal);
+   copLocal = cop->ft->clone(cop, NULL);
+   memLinkObjectPath(copLocal);
    
    if(isa(nss, cns, "cim_indicationsubscription")) {
       _SFCB_TRACE(1,("--- create sfcb_indicationsubscription"));
 
       if (strcasecmp(cns,"CIM_IndicationSubscription")==0) {
         // Set the class name to our defined extension class
-        CMSetClassName((CMPIObjectPath * ) cop,"SFCB_IndicationSubscription");
+        CMSetClassName(copLocal,"SFCB_IndicationSubscription");
+        CMSetObjectPath(ciLocal, copLocal);
       }
-      
-      st=processSubscription(_broker,ctx,ciLocal,cop);
+
+      st=processSubscription(_broker,ctx,ciLocal,copLocal);
    }
    else if (isa(nss, cns, "cim_indicationfilter")) {
       QLStatement *qs=NULL;
@@ -884,7 +889,7 @@ CMPIStatus InteropProviderCreateInstance(
     
    if (st.rc==CMPI_RC_OK) {
       ctxLocal = prepareUpcall((CMPIContext *)ctx);
-      CMReturnObjectPath(rslt, _broker->bft->createInstance(_broker, ctxLocal, cop, ciLocal, &st));
+      CMReturnObjectPath(rslt, _broker->bft->createInstance(_broker, ctxLocal, copLocal, ciLocal, &st));
       CMRelease(ctxLocal);
    }
     

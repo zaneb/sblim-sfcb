@@ -401,15 +401,8 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
                                              const char **properties)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   char str[512];
    CMPIObjectPath *op;
-   CMPIInstance *ci = NULL;
-   CMPIBoolean filterCreation=1;
-   CMPIUint16 retryAttempts=0; /* only try to deliver indications once */
-   CMPIUint32 retryInterval=30;
-   CMPIUint16 subRemoval=3; /* 3 == "Disable" */
-   CMPIUint32 subRemovalInterval=2592000; /* 30 days */
-
+   CMPIEnumeration *indServices = NULL;
    
    _SFCB_ENTER(TRACE_PROVIDERS, "IndServiceProviderEnumInstances");
 
@@ -419,36 +412,14 @@ static CMPIStatus IndServiceProviderEnumInstances(CMPIInstanceMI * mi,
     val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
     ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
 
-   op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
-   val.chars = "CIM_IndicationService";
-   CMAddKey(op,"CreationClassName",(CMPIValue *)&val,CMPI_chars);
-   val.chars = "CIM_ComputerSystem";
-   CMAddKey(op,"SystemCreationClassName",(CMPIValue *)&val,CMPI_chars);
-   ci = CBGetInstance(_broker, ctxLocal, op, NULL, &st);
-   if(st.rc == CMPI_RC_ERR_NOT_FOUND) {
-     ci=CMNewInstance(_broker,op,NULL);
-     CMSetProperty(ci,"CreationClassName","CIM_IndicationService",CMPI_chars);
-     CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
-     str[0]=0;
-     gethostname(str,511);
-     CMSetProperty(ci,"SystemName",str,CMPI_chars);
-     CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
-     CMSetProperty(ci,"FilterCreationEnabled",&filterCreation,CMPI_boolean);
-     CMSetProperty(ci,"ElementName","sfcb",CMPI_chars);
-     CMSetProperty(ci,"Description",PACKAGE_STRING,CMPI_chars);
-     CMSetProperty(ci,"DeliveryRetryAttempts",&retryAttempts,CMPI_uint16);
-     CMSetProperty(ci,"DeliveryRetryInterval",&retryInterval,CMPI_uint32);
-     CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
-     CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
-     CBCreateInstance(_broker, ctxLocal, op, ci, &st);
-   } else if(st.rc != CMPI_RC_OK) {
-     goto done;
-   }
+   op = CMNewObjectPath(_broker, "root/interop", "CIM_IndicationService", NULL);
+   indServices = CBEnumInstances(_broker, ctxLocal, op, properties, &st);
 
-   CMReturnInstance(rslt,ci);
+   while(CMHasNext(indServices, NULL)) {
+     CMReturnInstance(rslt,CMGetNext(indServices, NULL).value.inst);
+   }
    CMReturnDone(rslt);
    
-done:
    if(ctxLocal) CMRelease(ctxLocal);
    _SFCB_RETURN(st);
 }
@@ -714,31 +685,16 @@ static CMPIStatus ServerProviderModifyInstance(CMPIInstanceMI * mi,
 					       const CMPIInstance * ci, 
 					       const char **properties)
 {
-  CMPIValue val;
-  CMPIObjectPath *nop=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
-  val.chars = "CIM_IndicationService";
-  CMAddKey(nop,"CreationClassName",(CMPIValue *)&val,CMPI_chars);
-  val.chars = "CIM_ComputerSystem";
-  CMAddKey(nop,"SystemCreationClassName",(CMPIValue *)&val,CMPI_chars);
-
+  CMPIStatus rc = { CMPI_RC_ERR_NOT_SUPPORTED, 0 };
   CMPIContext *ctxLocal;
+  CMPIValue val;
+  
+  if(!CMClassPathIsA(_broker, cop, "cim_indicationservice", NULL))
+    return rc;
   ctxLocal = native_clone_CMPIContext(ctx);
   val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
   ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
-  CMPIStatus rc = { CMPI_RC_OK, 0 };
-  rc = CBModifyInstance(_broker, ctxLocal, nop, ci, properties);
-  if(rc.rc == CMPI_RC_ERR_NOT_FOUND) {
-    /*
-     * The logic for creating a non-existent IndicationService is in the
-     * enumeration function. This is not necessarily the most logical
-     * place for it, so maybe it should get moved. For now, we just call
-     * the enum function if the previous modify couldn't find the object.
-     */
-    CMPIEnumeration *tmpEnum = NULL;
-    tmpEnum = CBEnumInstances(_broker, ctx, cop, NULL, &rc);
-    if(rc.rc == CMPI_RC_OK)
-      rc = CBModifyInstance(_broker, ctxLocal, nop, ci, properties);
-  }
+  rc = CBModifyInstance(_broker, ctxLocal, cop, ci, properties);
   if(ctxLocal) CMRelease(ctxLocal);
   CMReturnInstance(rslt, ci);
   return rc;
@@ -762,9 +718,48 @@ static CMPIStatus ServerProviderExecQuery(CMPIInstanceMI * mi,
    return notSuppSt;
 }
 
+void ServerProviderInitInstances(const CMPIContext * ctx) {
+  CMPIStatus st = { CMPI_RC_OK, 0 };
+  char str[512];
+  CMPIObjectPath * op = NULL;
+  CMPIValue val;
+  CMPIInstance * ci = NULL;
+  CMPIContext * ctxLocal;
+  CMPIBoolean filterCreation=1;
+  CMPIUint16 retryAttempts=0; /* only try to deliver indications once */
+  CMPIUint32 retryInterval=30;
+  CMPIUint16 subRemoval=3; /* 3 == "Disable" */
+  CMPIUint32 subRemovalInterval=2592000; /* 30 days */
+
+  ctxLocal = native_clone_CMPIContext(ctx);
+  val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
+  ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
+
+  op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",&st);
+  ci=CMNewInstance(_broker,op,&st);
+  CMAddKey(op,"CreationClassName","CIM_IndicationService",CMPI_chars);
+  CMAddKey(op,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
+  str[0]=str[511]=0;
+  gethostname(str,511);
+  CMAddKey(op,"SystemName",str,CMPI_chars);
+  CMAddKey(op,"Name",getSfcbUuid(),CMPI_chars);
+  CMSetProperty(ci,"CreationClassName","CIM_IndicationService",CMPI_chars);
+  CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
+  CMSetProperty(ci,"SystemName",str,CMPI_chars);
+  CMSetProperty(ci,"Name",getSfcbUuid(),CMPI_chars);
+  CMSetProperty(ci,"FilterCreationEnabled",&filterCreation,CMPI_boolean);
+  CMSetProperty(ci,"ElementName","sfcb",CMPI_chars);
+  CMSetProperty(ci,"Description",PACKAGE_STRING,CMPI_chars);
+  CMSetProperty(ci,"DeliveryRetryAttempts",&retryAttempts,CMPI_uint16);
+  CMSetProperty(ci,"DeliveryRetryInterval",&retryInterval,CMPI_uint32);
+  CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
+  CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
+  CBCreateInstance(_broker, ctxLocal, op, ci, &st);
+  return;
+}
 
  
-CMInstanceMIStub(ServerProvider, ServerProvider, _broker, CMNoHook);
+CMInstanceMIStub(ServerProvider, ServerProvider, _broker, ServerProviderInitInstances(ctx));
 
 /*---------------------- Association interface --------------------------*/ 
 

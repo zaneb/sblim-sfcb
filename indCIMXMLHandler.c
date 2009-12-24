@@ -524,7 +524,6 @@ void * retryExport (void * lctx)
             dqRetry(purge);
         } else {
             //Still valid, retry
-
             gettimeofday(&tv, &tz);
             if ((cur->lasttry+rint) > tv.tv_sec) { 
                 // no retries are ready, release the lock
@@ -552,18 +551,26 @@ void * retryExport (void * lctx)
                 if (sfc == 0 ) {
                     // if the time isn't set, this is the "first" failure
                     sfc=tv.tv_sec;
-                    CMSetProperty(sub,"DeliveryFailureTime",&sfc,CMPI_uint64);
                     cur=cur->next;
+                    CMSetProperty(sub,"DeliveryFailureTime",&sfc,CMPI_uint64);
                     CBModifyInstance(_broker, ctx, subop, sub, NULL);
                 } else if (sfc+rtint < tv.tv_sec) {
-                    // If the action is 2, remove the sub, otherwise ignore it
-                    // since disable isn't currently defined by profile
+                    // Exceeded subscription removal threshold, if action is:
+                    // 2, delete the sub; 3, disable the sub; otherwise, nothing
                     if (ract == 2 ) {
                         CBDeleteInstance(_broker, ctx, subop);
                         purge=cur;
                         cur=cur->next;
                         dqRetry(purge);
-                    } 
+                    } else if (ract == 3 ) {
+                        //Set Disable(4)
+                        int sst=4;
+                        CMSetProperty(sub,"SubscriptionState",&sst,CMPI_uint16);
+                        CBModifyInstance(_broker, ctx, subop, sub, NULL);
+                        purge=cur;
+                        cur=cur->next;
+                        dqRetry(purge);
+                    }
                 } else {
                     cur=cur->next;
                 }

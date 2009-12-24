@@ -3,6 +3,8 @@
 	* providerMgr.c:
 	[ 2920402 ] 'out' param in localInvokeMethod sometimes not used
 
+	[ 2920407 ] addProviders() doesn't release UtilList
+	
 2009-12-23  Sean Swehla  <smswehla@linux.vnet.ibm.com>
 
 	* interopServerProvider.c

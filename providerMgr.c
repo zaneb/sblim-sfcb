@@ -551,10 +551,13 @@ static int addAssocProviders(char *className, char *nameSpace, UtilList * provid
    }
    else children = _getAssocClassNames(nameSpace);
 
-   if (children) for (child = children->ft->getFirst(children); child;
+   if (children) {
+     for (child = children->ft->getFirst(children); child;
            child = children->ft->getNext(children)) {
          rc = addAssocProviders(child, nameSpace, providerList);
          if (rc) _SFCB_RETURN(rc);
+     }
+     CMRelease(children);
    }
    _SFCB_RETURN(rc);
 }

@@ -463,10 +463,10 @@ int dqRetry (RTElement * cur)
         //not last
         cur->prev->next=cur->next;
         cur->next->prev=cur->prev;
-        free(cur->ref);
-        free(cur->in);
-        free(cur->sub);
-        free(cur);
+        CMRelease(cur->ref);
+        CMRelease(cur->in);
+        CMRelease(cur->sub);
+        if (cur) free(cur);
     }
     return(0);
 }
@@ -488,26 +488,24 @@ void * retryExport (void * lctx)
     struct timeval tv;
     struct timezone tz;
     int rint,maxcount,ract,rtint;
-    int sfc=0;
+    CMPIUint64 sfc=0;
     CMPIObjectPath *op;
     CMPIEnumeration *isenm = NULL;
 
-
     CMPIStatus st = { CMPI_RC_OK, NULL };
-    CMPIStatus sts = { CMPI_RC_OK, NULL };
 
     // Get the retry params from IndService
     op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
     isenm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, &st);
-    CMPIData isinst=CMGetNext(isenm,&sts);
-    CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",&st);
-    CMPIData ri=CMGetProperty(isinst.value.inst,"DeliveryRetryInterval",&st);
-    CMPIData ra=CMGetProperty(isinst.value.inst,"SubscriptionRemovalAction",&st);
-    CMPIData rti=CMGetProperty(isinst.value.inst,"SubscriptionRemovalTimeInterval",&st);
-    maxcount= mc.value.uint16;
-    rint=ri.value.uint32;
-    ract= ra.value.uint16;
-    rtint=rti.value.uint32;
+    CMPIData isinst=CMGetNext(isenm,NULL);
+    CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",NULL);
+    CMPIData ri=CMGetProperty(isinst.value.inst,"DeliveryRetryInterval",NULL);
+    CMPIData ra=CMGetProperty(isinst.value.inst,"SubscriptionRemovalAction",NULL);
+    CMPIData rti=CMGetProperty(isinst.value.inst,"SubscriptionRemovalTimeInterval",NULL);
+    maxcount= mc.value.uint16;  // Number of times to retry delivery
+    rint=ri.value.uint32;       // Interval between retries
+    rtint=rti.value.uint32;     // Time to allow sub to keep failing until ...
+    ract= ra.value.uint16;      // ... this action is taken
 
     // Now, run the queue
     pthread_mutex_lock(&RQlock);
@@ -532,24 +530,28 @@ void * retryExport (void * lctx)
                 sleep(rint);
                 pthread_mutex_lock(&RQlock);
             }
-            // Check that sub still exists?
             st=deliverInd(ref,in);
             if ( (st.rc == 0) || (cur->count >= maxcount-1) ){
-                // either it worked, or we maxed out on 
-                // retries, remove from queue
+                // either it worked, or we maxed out on retries
+                // If it succeeded, clear the failtime
+                if (st.rc == 0) {
+                    sfc=0;
+                    CMSetProperty(sub,"DeliveryFailureTime",&sfc,CMPI_uint64);
+                    CBModifyInstance(_broker, ctx, subop, sub, NULL);
+                }
+                // remove from queue in either case
                 purge=cur;
                 cur=cur->next;
                 dqRetry(purge);
-                // need to clear Fail time
             } else {
                 // still failing, leave on queue 
                 cur->count++;
                 gettimeofday(&tv, &tz);
                 cur->lasttry=tv.tv_sec; 
-                CMPIData sfcp=CMGetProperty(sub,"DeliveryFailureTime",&st);
+                CMPIData sfcp=CMGetProperty(sub,"DeliveryFailureTime",NULL);
                 sfc=sfcp.value.uint64;
                 if (sfc == 0 ) {
-                    // if the time isn't set, this is the "first" failure
+                    // if the time isn't set, this is the first failure
                     sfc=tv.tv_sec;
                     cur=cur->next;
                     CMSetProperty(sub,"DeliveryFailureTime",&sfc,CMPI_uint64);
@@ -563,8 +565,8 @@ void * retryExport (void * lctx)
                         cur=cur->next;
                         dqRetry(purge);
                     } else if (ract == 3 ) {
-                        //Set Disable(4)
-                        int sst=4;
+                        //Set sub state to disable(4)
+                        CMPIUint16 sst=4;
                         CMSetProperty(sub,"SubscriptionState",&sst,CMPI_uint16);
                         CBModifyInstance(_broker, ctx, subop, sub, NULL);
                         purge=cur;
@@ -598,9 +600,7 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
    
    if (strcasecmp(methodName, "_deliver") == 0) {     
       st=deliverInd(ref,in);
-      if (st.rc == 0) {
-        //Need to clear the fail time
-      } else {
+      if (st.rc != 0) {
         // Get the retry params from IndService
         CMPIObjectPath *op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
         CMPIEnumeration *isenm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, NULL);

@@ -16,6 +16,7 @@ New features:
 - 2908423 Honor DeliveryRetry* props of CIM_IndicationService
 - 1664637 Reduced size class repository / classProviderSf
 - 2919072 IndicationProfile: CIM_IndicationService ModifyInstance
+- 2908425 IndicationProfile: Reliable Indications, removal
 
 Bugs fixed:
 

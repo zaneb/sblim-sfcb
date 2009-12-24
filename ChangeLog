@@ -1,6 +1,11 @@
+2009-12-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 2908425 ] IndicationProfile: Reliable Indications, removal 
+
 2009-12-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* interopProvider.c,indCIMXMLHandler.c,10_interop.mof
+	* interopProvider.c,indCIMXMLHandler.c,10_interop.mof:
 	[ 2908425 ] IndicationProfile: Reliable Indications, removal 
 
 2009-12-23  Chris Buccella  <buccella@linux.vnet.ibm.com>

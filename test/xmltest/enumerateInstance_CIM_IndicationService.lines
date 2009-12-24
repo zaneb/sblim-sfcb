@@ -8,16 +8,12 @@
 </INSTANCENAME>
 <INSTANCE CLASSNAME="CIM_IndicationService">
 <PROPERTY NAME="SubscriptionRemovalTimeInterval" TYPE="uint32">
-<VALUE>2592000</VALUE>
 </PROPERTY>
 <PROPERTY NAME="SubscriptionRemovalAction" TYPE="uint16">
-<VALUE>3</VALUE>
 </PROPERTY>
 <PROPERTY NAME="DeliveryRetryInterval" TYPE="uint32">
-<VALUE>30</VALUE>
 </PROPERTY>
 <PROPERTY NAME="DeliveryRetryAttempts" TYPE="uint16">
-<VALUE>0</VALUE>
 </PROPERTY>
 <PROPERTY NAME="FilterCreationEnabled" TYPE="boolean">
 <VALUE>TRUE</VALUE>

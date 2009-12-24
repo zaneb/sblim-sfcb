@@ -1086,7 +1086,7 @@ CMPIStatus InteropProviderInvokeMethod(
             CMPIString *str=CDToString(_broker,su->ha->hop,NULL);
             CMPIString *ns=CMGetNameSpace(su->ha->hop,NULL);
             _SFCB_TRACE(1,("--- invoke handler %s %s",(char*)ns->hdl,(char*)str->hdl));
-            
+            CMAddArg(hin,"subscription",&su->sci,CMPI_instance);
             CBInvokeMethod(_broker,ctx,su->ha->hop,"_deliver",hin,NULL,&st);
             _SFCB_TRACE(1,("--- invoke handler status: %d",st.rc));
          }     

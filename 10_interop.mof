@@ -68,5 +68,6 @@ class DMY_ElementConformsToProfile : CIM_ElementConformsToProfile
 class SFCB_IndicationSubscription : CIM_IndicationSubscription
 {
     sint32 DeliveryFailureCount;
+    uint64 DeliveryFailureTime;
 };
 

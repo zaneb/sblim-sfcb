@@ -397,6 +397,7 @@ CMPIStatus deliverInd(
 typedef struct rtelement {
    CMPIObjectPath * ref;
    CMPIArgs * in;
+   CMPIInstance * sub;
    int count;
    time_t lasttry;
    struct rtelement  *next,*prev;
@@ -464,6 +465,7 @@ int dqRetry (RTElement * cur)
         cur->next->prev=cur->prev;
         free(cur->ref);
         free(cur->in);
+        free(cur->sub);
         free(cur);
     }
     return(0);
@@ -478,13 +480,15 @@ int dqRetry (RTElement * cur)
 
 void * retryExport (void * lctx)
 {
-    const CMPIObjectPath *ref;
-    const CMPIArgs * in;
-    const CMPIContext *ctx=(CMPIContext *)lctx;
+    CMPIObjectPath *ref;
+    CMPIArgs * in;
+    CMPIInstance *sub;
+    CMPIContext *ctx=(CMPIContext *)lctx;
     RTElement *cur,*purge;
     struct timeval tv;
     struct timezone tz;
-    int rint,maxcount;
+    int rint,maxcount,ract,rtint;
+    int sfc=0;
     CMPIObjectPath *op;
     CMPIEnumeration *isenm = NULL;
 
@@ -498,8 +502,12 @@ void * retryExport (void * lctx)
     CMPIData isinst=CMGetNext(isenm,&sts);
     CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",&st);
     CMPIData ri=CMGetProperty(isinst.value.inst,"DeliveryRetryInterval",&st);
+    CMPIData ra=CMGetProperty(isinst.value.inst,"SubscriptionRemovalAction",&st);
+    CMPIData rti=CMGetProperty(isinst.value.inst,"SubscriptionRemovalTimeInterval",&st);
     maxcount= mc.value.uint16;
     rint=ri.value.uint32;
+    ract= ra.value.uint16;
+    rtint=rti.value.uint32;
 
     // Now, run the queue
     pthread_mutex_lock(&RQlock);
@@ -507,27 +515,59 @@ void * retryExport (void * lctx)
     while (RQhead != NULL ) {
         ref=cur->ref;
         in=cur->in;
-        gettimeofday(&tv, &tz);
-        if ((cur->lasttry+rint) > tv.tv_sec) { 
-            // no retries are ready, release the lock
-            // and sleep for an interval, then relock
-            pthread_mutex_unlock(&RQlock);
-            sleep(rint);
-            pthread_mutex_lock(&RQlock);
-        }
-        st=deliverInd(ref,in);
-        if ( (st.rc == 0) || (cur->count >= maxcount-1) ){
-            // either it worked, or we maxed out on 
-            // retries, remove from queue
+        sub=cur->sub;
+        CMPIObjectPath *subop=sub->ft->getObjectPath(sub,&st);
+        if (st.rc == CMPI_RC_ERR_NOT_FOUND ) {
+            //sub got deleted, purge this indication and move on
             purge=cur;
             cur=cur->next;
             dqRetry(purge);
         } else {
-            // still failing, leave on queue 
-            cur->count++;
+            //Still valid, retry
+
             gettimeofday(&tv, &tz);
-            cur->lasttry=tv.tv_sec; 
-            cur=cur->next;
+            if ((cur->lasttry+rint) > tv.tv_sec) { 
+                // no retries are ready, release the lock
+                // and sleep for an interval, then relock
+                pthread_mutex_unlock(&RQlock);
+                sleep(rint);
+                pthread_mutex_lock(&RQlock);
+            }
+            // Check that sub still exists?
+            st=deliverInd(ref,in);
+            if ( (st.rc == 0) || (cur->count >= maxcount-1) ){
+                // either it worked, or we maxed out on 
+                // retries, remove from queue
+                purge=cur;
+                cur=cur->next;
+                dqRetry(purge);
+                // need to clear Fail time
+            } else {
+                // still failing, leave on queue 
+                cur->count++;
+                gettimeofday(&tv, &tz);
+                cur->lasttry=tv.tv_sec; 
+                CMPIData sfcp=CMGetProperty(sub,"DeliveryFailureTime",&st);
+                sfc=sfcp.value.uint64;
+                if (sfc == 0 ) {
+                    // if the time isn't set, this is the "first" failure
+                    sfc=tv.tv_sec;
+                    CMSetProperty(sub,"DeliveryFailureTime",&sfc,CMPI_uint64);
+                    cur=cur->next;
+                    CBModifyInstance(_broker, ctx, subop, sub, NULL);
+                } else if (sfc+rtint < tv.tv_sec) {
+                    // If the action is 2, remove the sub, otherwise ignore it
+                    // since disable isn't currently defined by profile
+                    if (ract == 2 ) {
+                        CBDeleteInstance(_broker, ctx, subop);
+                        purge=cur;
+                        cur=cur->next;
+                        dqRetry(purge);
+                    } 
+                } else {
+                    cur=cur->next;
+                }
+            }
         }
     }
     // Queue went dry, cleanup and exit
@@ -551,23 +591,35 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
    
    if (strcasecmp(methodName, "_deliver") == 0) {     
       st=deliverInd(ref,in);
-      if (st.rc) {
-        // Indication delivery failed, send to retry queue
-        // build an element
-        RTElement *element;
-        element = (RTElement *) malloc(sizeof(*element));
-        element->ref=ref->ft->clone(ref,&st);
-        element->in=in->ft->clone(in,&st);
-        // Add it to the retry queue
-        enqRetry(element);
-        // And launch the thread if it isn't already running
-        pthread_t t;
-        pthread_attr_t tattr;
-        pthread_attr_init(&tattr);
-        pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
-        if (retryRunning == 0) {
-            pthread_create(&t, &tattr,&retryExport,(void *) ctx);
-            retryRunning=1;
+      if (st.rc == 0) {
+        //Need to clear the fail time
+      } else {
+        // Get the retry params from IndService
+        CMPIObjectPath *op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
+        CMPIEnumeration *isenm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, NULL);
+        CMPIData isinst=CMGetNext(isenm,NULL);
+        CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",NULL);
+        if (mc.value.uint16 > 0) {
+            // Indication delivery failed, send to retry queue
+            // build an element
+            RTElement *element;
+            element = (RTElement *) malloc(sizeof(*element));
+            element->ref=ref->ft->clone(ref,&st);
+            element->in=in->ft->clone(in,&st);
+            CMPIInstance *ind=CMGetArg(in,"subscription",NULL).value.inst;
+            element->sub=ind->ft->clone(ind,&st);
+            // Add it to the retry queue
+            enqRetry(element);
+            // And launch the thread if it isn't already running
+            pthread_t t;
+            pthread_attr_t tattr;
+            pthread_attr_init(&tattr);
+            pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+            if (retryRunning == 0) {
+                CMPIContext * pctx = native_clone_CMPIContext(ctx);
+                pthread_create(&t, &tattr,&retryExport,(void *) pctx);
+                retryRunning=1;
+            }
         }
       }
    }

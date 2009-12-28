@@ -1,3 +1,7 @@
+2009-12-28 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* enumerateInstance_CIM_IndicationService.lines, SAE_03_AI-IF.lines
+	[2908425 ] IndicationProfile: Reliable Indications, removal [ Fixing test failures ]
+
 2009-12-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c, 10_interop.mof:

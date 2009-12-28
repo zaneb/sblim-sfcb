@@ -1,2 +1,80 @@
 <INSTANCENAME CLASSNAME="CIM_IndicationService">
-<PROPERTY NAME="InstallDate" TYPE="datetime">
+<KEYBINDING NAME="SystemCreationClassName">
+<KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE>
+</KEYBINDING>
+</INSTANCENAME>
+</INSTANCEPATH>
+<INSTANCE CLASSNAME="CIM_IndicationService">
+<PROPERTY NAME="SubscriptionRemovalTimeInterval" TYPE="uint32">
+</PROPERTY>
+<PROPERTY NAME="SubscriptionRemovalAction" TYPE="uint16">
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryInterval" TYPE="uint32">
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryAttempts" TYPE="uint16">
+</PROPERTY>
+<PROPERTY NAME="FilterCreationEnabled" TYPE="boolean">
+<VALUE>TRUE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="TransitioningToState" TYPE="uint16">
+<VALUE>12</VALUE>
+</PROPERTY>
+<PROPERTY NAME="EnabledDefault" TYPE="uint16">
+<VALUE>2</VALUE>
+</PROPERTY>
+<PROPERTY NAME="RequestedState" TYPE="uint16">
+<VALUE>12</VALUE>
+</PROPERTY>
+<PROPERTY NAME="EnabledState" TYPE="uint16">
+<VALUE>5</VALUE>
+</PROPERTY>
+<PROPERTY NAME="ElementName" TYPE="string">
+<VALUE>sfcb</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SystemCreationClassName" TYPE="string">
+<VALUE>CIM_ComputerSystem</VALUE>
+</PROPERTY>
+</INSTANCE>
+<INSTANCENAME CLASSNAME="CIM_IndicationService">
+<KEYBINDING NAME="CreationClassName">
+<KEYVALUE VALUETYPE="string">CIM_IndicationService</KEYVALUE>
+</KEYBINDING>
+<KEYBINDING NAME="SystemCreationClassName">
+<KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE>
+</KEYBINDING>
+</INSTANCENAME>
+</INSTANCEPATH>
+<INSTANCE CLASSNAME="CIM_IndicationService">
+<PROPERTY NAME="SubscriptionRemovalTimeInterval" TYPE="uint32">
+</PROPERTY>
+<PROPERTY NAME="SubscriptionRemovalAction" TYPE="uint16">
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryInterval" TYPE="uint32">
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryAttempts" TYPE="uint16">
+</PROPERTY>
+<PROPERTY NAME="FilterCreationEnabled" TYPE="boolean">
+<VALUE>TRUE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="TransitioningToState" TYPE="uint16">
+<VALUE>12</VALUE>
+</PROPERTY>
+<PROPERTY NAME="EnabledDefault" TYPE="uint16">
+<VALUE>2</VALUE>
+</PROPERTY>
+<PROPERTY NAME="RequestedState" TYPE="uint16">
+<VALUE>12</VALUE>
+</PROPERTY>
+<PROPERTY NAME="EnabledState" TYPE="uint16">
+<VALUE>5</VALUE>
+</PROPERTY>
+<PROPERTY NAME="ElementName" TYPE="string">
+<VALUE>sfcb</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SystemCreationClassName" TYPE="string">
+<VALUE>CIM_ComputerSystem</VALUE>
+</PROPERTY>
+<PROPERTY NAME="CreationClassName" TYPE="string">
+<VALUE>CIM_IndicationService</VALUE>
+</PROPERTY>
+</INSTANCE>

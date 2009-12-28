@@ -1,4 +1,40 @@
 <INSTANCENAME CLASSNAME="CIM_IndicationService">
+<KEYBINDING NAME="SystemCreationClassName">
+<KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE>
+</KEYBINDING>
+</INSTANCENAME>
+<INSTANCE CLASSNAME="CIM_IndicationService">
+<PROPERTY NAME="SubscriptionRemovalTimeInterval" TYPE="uint32">
+</PROPERTY>
+<PROPERTY NAME="SubscriptionRemovalAction" TYPE="uint16">
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryInterval" TYPE="uint32">
+</PROPERTY>
+<PROPERTY NAME="DeliveryRetryAttempts" TYPE="uint16">
+</PROPERTY>
+<PROPERTY NAME="FilterCreationEnabled" TYPE="boolean">
+<VALUE>TRUE</VALUE>
+</PROPERTY>
+<PROPERTY NAME="TransitioningToState" TYPE="uint16">
+<VALUE>12</VALUE>
+</PROPERTY>
+<PROPERTY NAME="EnabledDefault" TYPE="uint16">
+<VALUE>2</VALUE>
+</PROPERTY>
+<PROPERTY NAME="RequestedState" TYPE="uint16">
+<VALUE>12</VALUE>
+</PROPERTY>
+<PROPERTY NAME="EnabledState" TYPE="uint16">
+<VALUE>5</VALUE>
+</PROPERTY>
+<PROPERTY NAME="ElementName" TYPE="string">
+<VALUE>sfcb</VALUE>
+</PROPERTY>
+<PROPERTY NAME="SystemCreationClassName" TYPE="string">
+<VALUE>CIM_ComputerSystem</VALUE>
+</PROPERTY>
+</INSTANCE>
+<INSTANCENAME CLASSNAME="CIM_IndicationService">
 <KEYBINDING NAME="CreationClassName">
 <KEYVALUE VALUETYPE="string">CIM_IndicationService</KEYVALUE>
 </KEYBINDING>
@@ -21,45 +57,14 @@
 <PROPERTY NAME="TransitioningToState" TYPE="uint16">
 <VALUE>12</VALUE>
 </PROPERTY>
-<PROPERTY.ARRAY NAME="AvailableRequestedStates" TYPE="uint16">
-</PROPERTY.ARRAY>
-<PROPERTY NAME="TimeOfLastStateChange" TYPE="datetime">
-</PROPERTY>
 <PROPERTY NAME="EnabledDefault" TYPE="uint16">
 <VALUE>2</VALUE>
 </PROPERTY>
 <PROPERTY NAME="RequestedState" TYPE="uint16">
 <VALUE>12</VALUE>
 </PROPERTY>
-<PROPERTY NAME="OtherEnabledState" TYPE="string">
-</PROPERTY>
 <PROPERTY NAME="EnabledState" TYPE="uint16">
 <VALUE>5</VALUE>
-</PROPERTY>
-<PROPERTY NAME="PrimaryStatus" TYPE="uint16">
-</PROPERTY>
-<PROPERTY NAME="OperatingStatus" TYPE="uint16">
-</PROPERTY>
-<PROPERTY NAME="DetailedStatus" TYPE="uint16">
-</PROPERTY>
-<PROPERTY NAME="CommunicationStatus" TYPE="uint16">
-</PROPERTY>
-<PROPERTY NAME="HealthState" TYPE="uint16">
-</PROPERTY>
-<PROPERTY NAME="Status" TYPE="string">
-</PROPERTY>
-<PROPERTY.ARRAY NAME="StatusDescriptions" TYPE="string">
-</PROPERTY.ARRAY>
-<PROPERTY.ARRAY NAME="OperationalStatus" TYPE="uint16">
-</PROPERTY.ARRAY>
-<PROPERTY NAME="InstallDate" TYPE="datetime">
-</PROPERTY>
-<PROPERTY NAME="InstanceID" TYPE="string">
-</PROPERTY>
-<PROPERTY NAME="Caption" TYPE="string">
-</PROPERTY>
-<PROPERTY NAME="Description" TYPE="string">
-<VALUE>Small Footprint CIM Broker 1.3.6preview</VALUE>
 </PROPERTY>
 <PROPERTY NAME="ElementName" TYPE="string">
 <VALUE>sfcb</VALUE>
@@ -69,13 +74,5 @@
 </PROPERTY>
 <PROPERTY NAME="CreationClassName" TYPE="string">
 <VALUE>CIM_IndicationService</VALUE>
-</PROPERTY>
-<PROPERTY NAME="PrimaryOwnerName" TYPE="string">
-</PROPERTY>
-<PROPERTY NAME="PrimaryOwnerContact" TYPE="string">
-</PROPERTY>
-<PROPERTY NAME="StartMode" TYPE="string">
-</PROPERTY>
-<PROPERTY NAME="Started" TYPE="boolean">
 </PROPERTY>
 </INSTANCE>

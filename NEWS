@@ -17,6 +17,7 @@ New features:
 - 1664637 Reduced size class repository / classProviderSf
 - 2919072 IndicationProfile: CIM_IndicationService ModifyInstance
 - 2908425 IndicationProfile: Reliable Indications, removal
+- 2922610 IndicationProfile: CIM_ElementCapabilities
 
 Bugs fixed:
 

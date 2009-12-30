@@ -3,6 +3,13 @@
 	* cimXmlGen.c:
 	[ 2923826 ] Leak on XML generation if including qualifiers
 
+	* elementCapabilitiesProvider.c, 20_indication.mof, Makefile.am, 
+	  default.reg.in, interopServerProvider.c, 
+	  test/xmltest/ECTP_RI_IS.lines, 
+	  test/xmltest/enumerateinstancenames.CIM_IndicationService.lines:
+	[ 2922610 ] IndicationProfile: CIM_ElementCapabilities
+	(patch by Sean Swehla)
+
 2009-12-28 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 
 	* enumerateInstance_CIM_IndicationService.lines, SAE_03_AI-IF.lines:

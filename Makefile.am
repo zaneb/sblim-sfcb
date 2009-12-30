@@ -446,7 +446,7 @@ noinst_HEADERS=array.h   httpComm.h control.h    providerMgr.h \
 	selectexp.h queryOperation.h \
 	sfcVersion.h mrwlock.h sqlStatement.h avltree.h \
         cimcClientSfcbLocal.h $(QUALREP_HEADER) cmpidtx.h classSchemaMem.h \
-        objectpath.h instance.h $(SLP_HEADER) sfcbenum.h
+        objectpath.h instance.h $(SLP_HEADER) sfcbenum.h classProviderCommon.h
 
 man_MANS=$(MANFILES)
 
@@ -536,9 +536,9 @@ endif
 
 uninstall-local:
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/default.reg
-	rm -f $(DESTDIR)$(sfcbstatedir)/stage/root/interop/10_interop.mof
+	rm -f $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop/10_interop.mof
 if INDICATIONS
-	rm -f $(DESTDIR)$(sfcbstatedir)/stage/root/interop/20_indication.mof
+	rm -f $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop/20_indication.mof
 	rm -f $(DESTDIR)$(sfcbstatedir)/stage/mofs/indication.mof
 endif
 if DOCS

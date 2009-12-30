@@ -1,6 +1,8 @@
 2009-12-28 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* enumerateInstance_CIM_IndicationService.lines, SAE_03_AI-IF.lines
-	[2908425 ] IndicationProfile: Reliable Indications, removal [ Fixing test failures ]
+	* enumerateInstance_CIM_IndicationService.lines, SAE_03_AI-IF.lines:
+
+	[2908425 ] IndicationProfile: Reliable Indications, removal 
+	(Fixing test failures)
 
 2009-12-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
@@ -25,8 +27,11 @@
 	[ 2920387 ] IndicationProfile: CIM_IndicationService doesn't persist
 
 2009-12-23  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* test/xmltest/modifyInstance_ServerProv.*, enumerateInstance_CIM_IndicationService.lines
-	[ 2919072 ] IndicationProfile: CIM_IndicationService ModifyInstance [ Test case failures updated ]
+	
+	* test/xmltest/modifyInstance_ServerProv.*, 
+	  enumerateInstance_CIM_IndicationService.lines
+	[ 2919072 ] IndicationProfile: CIM_IndicationService ModifyInstance
+	(Test case failures updated)
 
 2009-12-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
@@ -86,15 +91,20 @@
 	[ 2913067 ] Unused arg for newProviderRegister()
 
 2009-12-09 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* test/xmltest/execQuery24/25.*,enumerateInstanceNames.SFCB_IndicationServiceCapabilities.*, enumerateInstances.SFCB_IndicationServiceCapabilities.*, test/unittests/newDateTime.c, test/unittests/Makefile.am
+
+	* test/xmltest/execQuery24/25.*,
+	  enumerateInstanceNames.SFCB_IndicationServiceCapabilities.*, 
+	  enumerateInstances.SFCB_IndicationServiceCapabilities.*, 
+	  test/unittests/newDateTime.c, test/unittests/Makefile.am:
 	[  2859885 ] New exec query and enumeration test cases
 
 2009-12-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopProvider.c, 
-	  test/TestProviders/tests/IndTest3CreateSubscription.lines,IndTest3CreateSubscription.xml,
-	    IndTest5DeleteSubscription.xml,
-	  test/xmltest/Indication03CreateSubscription.OK, Indication11DeleteSubscription.xml:
+	  test/TestProviders/tests/IndTest3CreateSubscription.lines,
+	  IndTest3CreateSubscription.xml, IndTest5DeleteSubscription.xml,
+	  test/xmltest/Indication03CreateSubscription.OK, 
+	  Indication11DeleteSubscription.xml:
 	[ 2908421 ] IndicationProfile: IndicationSubscription - RI props
 		Change classname when CIM_IndicationSubscription is created.
 
@@ -116,12 +126,16 @@
 	[ 2859885 ] unittest case for generic list functions
 
 2009-11-18  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* msgQueue.h, msgqueue.c, providerMgr.c, sfcBroker.c, test/TestProviders/cmpiTestAssociationProvider.c
+
+	* msgQueue.h, msgqueue.c, providerMgr.c, sfcBroker.c, 
+	  test/TestProviders/cmpiTestAssociationProvider.c:
 	[ 2532149 ] sfcb: instance ops against non-instance MI report no error
 
 2009-11-18  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+
 	* configure.ac, test/TestProviders/cmpiTestInstanceProvider.c
-	[ 2859978 ] TestProviders for SFCB (added threading based functions support)
+	[ 2859978 ] TestProviders for SFCB 
+	(added threading based functions support)
 
 2009-11-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
@@ -191,7 +205,8 @@
 	Testcases
 
 2009-10-21 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* configure.ac, test/localtests/Makefile.am, test/localtests/test*.c
+
+	* configure.ac, test/localtests/Makefile.am, test/localtests/test*.c:
 	[ 2883083 ] Test cases when SFCB is configured using local connect option
 
 2009-10-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
@@ -200,12 +215,13 @@
 	[ 2882663 ] IndicationProfile: CIM_ElementConformsToProfile
 
 2009-10-15 Pratyusha Doddpaneni <pratyusha.d@in.ibm.com>
-	* configure.ac
+
+	* configure.ac:
 	[ 2871527 ] TestProviders not switchable
 
 2009-10-14  Sean Swehla  <smswehla@linux.vnet.ibm.com>
 
-	* 10_interop.mof
+	* 10_interop.mof:
 	[ 2875050 ] default MOFs should allow for multiple files
 
 2009-10-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -215,7 +231,7 @@
 
 2009-10-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
-	* Makefile.am, default.reg.in, profileProvider.c
+	* Makefile.am, default.reg.in, profileProvider.c:
 	[ 2864660 ] IndicationProfile: CIM_RegisteredProfile
 
 2009-10-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
@@ -224,15 +240,21 @@
 	[ 2875050 ] default MOFs should allow for multiple files
 
 2009-10-11 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* Makefile.am, test/schema/Test_Query.*, test/TestProviders/cmpiTestExecQueryProvider.c,
-	test/TestProviders/tests/execQuery*.*
+
+	* Makefile.am, test/schema/Test_Query.*, 
+	  test/TestProviders/cmpiTestExecQueryProvider.c,
+	  test/TestProviders/tests/execQuery*.*:
 	[2859978] TestProviders for SFCB 
 
 2009-10-10 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* test/TestProviders/cmpiTestInstanceProvider.c
-	[2859978] TestProviders for SFCB ( Typo error in the sample instance provider )
-	* test/TestProviders/tests/Test7ExecQuery*.*
-	[2859978] TestProviders for SFCB (ExecQuery test cases for sample InstanceProvider )
+
+	* test/TestProviders/cmpiTestInstanceProvider.c:
+	[ 2859978 ] TestProviders for SFCB 
+	(Typo in the sample instance provider)
+
+	* test/TestProviders/tests/Test7ExecQuery*.*:
+	[ 2859978 ] TestProviders for SFCB 
+	(ExecQuery test cases for sample InstanceProvider)
 
 2009-10-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
@@ -240,8 +262,9 @@
 	[ 2875822 ] IndicationProfile: CIM_HostedService
 
 2009-10-05 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* test/schema/Test_Misc.reg, test/schema/Test_Misc.mof
-	[ 2859978 ] TestProviders for SFCB ( Updating with schema files )
+
+	* test/schema/Test_Misc.reg, test/schema/Test_Misc.mof:
+	[ 2859978 ] TestProviders for SFCB (Updating with schema files)
 
 2009-10-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
@@ -261,7 +284,7 @@
 
 2009-10-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* interopServerProvider.c, indication.mof, default.reg.in
+	* interopServerProvider.c, indication.mof, default.reg.in:
 	[ 2850167 ] IndicationProfile: CIM_ServiceAffectsElement creation
 
 2009-09-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -273,8 +296,11 @@
 	[ 2871055 ] Creation of IndicationHandlerCIMXML fails if missing prop
 
 2009-10-25 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* Makefile.am, test/TestProviders/cmpiTestMiscProvider.c, test/TestProviders/tests/TestMisc*.*
-	[ 2859978 ] TestProviders for SFCB ( Inclusion of test cases for new provider )	
+
+	* Makefile.am, test/TestProviders/cmpiTestMiscProvider.c, 
+	  test/TestProviders/tests/TestMisc*.*:
+	[ 2859978 ] TestProviders for SFCB 
+	(Inclusion of test cases for new provider)
 
 2009-09-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
@@ -305,7 +331,8 @@
 	[ 2863774 ] interopProvider needs IndividualSubscriptionSupported prop
 	
 2009-09-18  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* Makefile.am, test/stageschema.sh
+
+	* Makefile.am, test/stageschema.sh:
 	[ 2859978 ] TestProviders for SFCB
 
 2009-09-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -324,22 +351,27 @@
          [ 2691765 ] --disable-debug option is not working.
 
 2009-09-08  Surendra Kodali
+
          * sfcBroker.c:
          [ 2726890 ] sfcbd is starting with invalid options
 
 2009-09-08  Surendra Kodali
+
         * mofpp.c:
         [ 2726835 ] closing file two times in mofpp.c causes corruption
 
 2009-09-03  Pratyusha Doddapaneni
+
         * result.c:
 	[ 2531949 ] GetInstance call ends up with SIGSEGV when Released
 
 2009-09-03  Pratyusha Doddapaneni
+
 	* configure.ac:
 	[ 2835364 ] No check for lcov when code coverage is enabled.
 
 2009-09-03  Pratyusha Doddapaneni
+
 	* classProviderGz.c:
         [ 2832552 ] Memory leak in classProviderGz.c
 
@@ -376,7 +408,8 @@
 	[ 2840384 ] Have httpAdapter not run as root
 
 2009-08-25 Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
-	* configure.ac, test/slptest/slpTest.sh, test/slptest/Makefile.am
+
+	* configure.ac, test/slptest/slpTest.sh, test/slptest/Makefile.am:
 	[ 2844044 ] Script to test slp functionality
 
 2009-08-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
@@ -408,7 +441,7 @@
 
 2009-08-05  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
 
-	* cimXmlGen.c
+	* cimXmlGen.c:
 	[ 2727830 ] No valid variable in error message in cimXmlGen.c 
 
 2009-07-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
@@ -417,7 +450,7 @@
 	[ 2825221 ] No validation for PersistenceType property
 	(take 2)
 
-	* test/xml/indCIMXMLHandler-verify_PersistenceType.*
+	* test/xml/indCIMXMLHandler-verify_PersistenceType.*:
 	Test for above fix
 
 2009-07-28  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
@@ -438,19 +471,19 @@
 
 2009-07-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
-	* cmpios.h
+	* cmpios.h:
 	[ 2825365 ] class provider crashing on 64 bit machines
 	(patch from Surendra Kodali)
 
 2009-07-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* Makefile.am
+	* Makefile.am:
 	[ 2802113 ] make footprint doesn't account for .so files
 	(patch from Pratayusha Doddapaneni)
 
 2009-07-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
-	* test/ABT/MonitorABT
+	* test/ABT/MonitorABT:
 	[ 2821718 ] Former reports included in the report zip file if ABT fails
 	(patch from Pratayusha Doddapaneni)
 

@@ -3,6 +3,6 @@
 <KEYVALUE VALUETYPE="string">CIM_IndicationService</KEYVALUE>
 </KEYBINDING>
 <KEYBINDING NAME="SystemCreationClassName">
-<KEYVALUE VALUETYPE="string">CIM_ObjectManager</KEYVALUE>
+<KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE>
 </KEYBINDING>
 </INSTANCENAME>

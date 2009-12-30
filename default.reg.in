@@ -70,6 +70,12 @@
 @LOAD_INDICATION_PROVIDER@   type: instance
 @LOAD_INDICATION_PROVIDER@   namespace: root/interop
 #
+@LOAD_INDICATION_PROVIDER@[SFCB_ElementCapabilities]
+@LOAD_INDICATION_PROVIDER@   provider: ElementCapabilities
+@LOAD_INDICATION_PROVIDER@   location: sfcElementCapabilitiesProvider
+@LOAD_INDICATION_PROVIDER@   type: association
+@LOAD_INDICATION_PROVIDER@   namespace: root/interop
+#
 [SFCB_RegisteredProfile]
    provider: ProfileProvider
    location: sfcProfileProvider

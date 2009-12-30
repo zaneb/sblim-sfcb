@@ -28,3 +28,7 @@ instance of SFCB_RegisteredProfile
   RegisteredVersion = "1.0.0";
   AdvertiseTypes = 3;
 };
+
+class SFCB_ElementCapabilities : CIM_ElementCapabilities
+{
+};

@@ -145,6 +145,7 @@ sfcblib_LTLIBRARIES = \
    libsfcInteropProvider.la \
    libsfcInteropServerProvider.la \
    libsfcProfileProvider.la \
+   libsfcElementCapabilitiesProvider.la \
    libsfcClassProvider.la \
    libsfcClassProviderGz.la \
    libsfcClassProviderSf.la \
@@ -331,6 +332,11 @@ libsfcProfileProvider_la_SOURCES = \
    profileProvider.c 
 libsfcProfileProvider_la_LIBADD=-lsfcBrokerCore
 libsfcProfileProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+
+libsfcElementCapabilitiesProvider_la_SOURCES = \
+   elementCapabilitiesProvider.c 
+libsfcElementCapabilitiesProvider_la_LIBADD=-lsfcBrokerCore
+libsfcElementCapabilitiesProvider_la_DEPENDENCIES=libsfcBrokerCore.la
 
 libsfcClassProviderGz_la_SOURCES = \
    classProviderGz.c

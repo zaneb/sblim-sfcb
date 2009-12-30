@@ -802,7 +802,10 @@ static void param2xml(CMPIParameter *pdata, CMPIConstClass * cls, ClParameter *p
       SFCB_APPENDCHARS_BLOCK(sb, "\">\n");
    } 
  
-   if (qsb) sb->ft->appendChars(sb, (char *) qsb->hdl);
+   if (qsb) {
+     sb->ft->appendChars(sb, (char *) qsb->hdl);
+     qsb->ft->release(qsb);
+   }
    sb->ft->appendChars(sb, etag);
 }
 

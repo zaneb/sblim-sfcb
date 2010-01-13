@@ -949,7 +949,7 @@ static int doHttpRequest(CommHndl conn_fd)
    }
 
    len = inBuf.content_length;
-   if (len == 0) {
+   if (len == UINT_MAX) {
      if (!discardInput) {
         genError(conn_fd, &inBuf, 411, "Length Required", NULL);
      }

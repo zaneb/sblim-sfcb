@@ -50,6 +50,7 @@ Bugs fixed:
 - 2920407 addProviders() doesn't release UtilList
 - 2923826 Leak on XML generation if including qualifiers
 - 2923885 Makefile.am has some minor omissions
+- 2891367 Error processing content-length
 
 Changes in 1.3.5
 ================

@@ -1,3 +1,8 @@
+2009-01-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	[ 2891367 ] Error processing content-length
+
 2009-12-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlGen.c:

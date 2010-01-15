@@ -1,4 +1,4 @@
-Changes in 1.3.6
+Changes in 1.3.7
 ================
 
 New features:
@@ -8,6 +8,7 @@ Bugs fixed:
 
 - 2891367 Error processing content-length
 - 2933087 Small leak in cimXmlRequest:getProperty()
+- 2932809 sfcb 1.3.6 crashes when provider user is set to sfcb
 
 Changes in 1.3.6
 ================

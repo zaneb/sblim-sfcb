@@ -206,7 +206,8 @@ ProviderRegister *newProviderRegister()
             info->id= ++id;
             // Set the default provider uid
             info->uid=provuid;
-            info->user=strdup(provuser);
+            if (!provSFCB)
+               info->user=strdup(provuser);
             break;
          case 2:
             if (strcmp(rv.id, "provider") == 0)

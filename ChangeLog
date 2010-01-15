@@ -1,3 +1,8 @@
+2010-01-15  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlRequest.c:
+	[ 2933087 ] Small leak in cimXmlRequest:getProperty()
+
 2009-01-13 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

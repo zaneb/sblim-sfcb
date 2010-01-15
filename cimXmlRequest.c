@@ -2208,8 +2208,10 @@ static RespSegments getProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
       if (resp) {
     free(resp);
       }
+      CMRelease(tmpString);
       _SFCB_RETURN(rs);
    }
+   CMRelease(tmpString);
    closeProviderContext(&binCtx);
 
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));

@@ -1,3 +1,8 @@
+2010-01-18  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerRegister.h, providerRegister.c, providerMgr.c:
+	[ 2934540 ] sfcb may respond with incorrect association provider
+
 2010-01-15 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerRegister.c

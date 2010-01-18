@@ -137,6 +137,8 @@ struct _Provider_Register_FT;
 
 ProviderRegister *newProviderRegister();
 
+void addProviderToHT(ProviderInfo *info, UtilHashTable *ht);
+
 #ifdef __cplusplus
 }
 #endif

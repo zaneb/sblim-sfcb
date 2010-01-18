@@ -88,10 +88,9 @@ static ProviderRegister *pClone(ProviderRegister * br)
    return NULL;
 }
 
-static void addProviderToHT(ProviderInfo *info, ProviderRegister *br)
+void addProviderToHT(ProviderInfo *info, UtilHashTable *ht)
 {
     ProviderInfo *checkDummy;
-    UtilHashTable *ht = ((ProviderBase *) br->hdl)->ht;
     
     /* first we add the provider to the providerRegister with the classname
      * as a key*/
@@ -199,7 +198,7 @@ ProviderRegister *newProviderRegister()
                else if (qualiProvInfoPtr==NULL) {
                   if (strcmp(info->className,"$QualifierProvider$")==0) qualiProvInfoPtr=info;
                }
-               addProviderToHT(info, br);
+               addProviderToHT(info, ((ProviderBase *) br->hdl)->ht);
             }
             info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
             info->className = strdup(rv.id);
@@ -295,7 +294,7 @@ ProviderRegister *newProviderRegister()
       }
 
       if (info) {
-      	 addProviderToHT(info, br);
+      	 addProviderToHT(info, ((ProviderBase *) br->hdl)->ht);
       }
    }
    if (in) {

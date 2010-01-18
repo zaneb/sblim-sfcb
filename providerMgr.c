@@ -468,6 +468,7 @@ static void processIndProviderList(int *requestor, OperationHdr * req)
 
 #endif
 
+
 /* -------------
  * ---
  *      Association Provider support
@@ -490,29 +491,32 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
      assocProviderHt->ft->setReleaseFunctions(assocProviderHt, free, NULL);
    }
 
-   info = (ProviderInfo *) assocProviderHt->ft->get(assocProviderHt, className);
-   if (info) _SFCB_RETURN(info);
+   for (info = (ProviderInfo *) assocProviderHt->ft->get(assocProviderHt, className); info; info=info->nextInRegister) {
+       if (nameSpaceOk(info, nameSpace)) _SFCB_RETURN(info);
+   }
 
    cls = className ? strdup(className) : NULL;
    while (cls != NULL) {
-      info = pReg->ft->getProvider(pReg, cls, type);
-      if (info) {
-	assocProviderHt->ft->put(assocProviderHt, strdup(className), info);
-	free(cls);
-	_SFCB_RETURN(info);
-      }
-      else {
-         CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, &rc);
+
+     for (info = pReg->ft->getProvider(pReg, cls, type); info; info=info->nextInRegister) {
+       if (nameSpaceOk(info, nameSpace)) {
+	 fprintf(stderr, "provider is: %s\n", info->providerName);	  
+	 addProviderToHT(info, assocProviderHt);
 	 free(cls);
-         if (cc == NULL) {
-            _SFCB_RETURN(NULL);
-         }
-         cls = (char*)cc->ft->getCharSuperClassName(cc);
-         if (cls) {
-	   cls = strdup(cls);
-	 }
-	 CMRelease(cc);
-      }
+	 _SFCB_RETURN(info);
+       }
+     }
+
+     CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, &rc);
+     free(cls);
+     if (cc == NULL) {
+       _SFCB_RETURN(NULL);
+     }
+     cls = (char*)cc->ft->getCharSuperClassName(cc);
+     if (cls) {
+       cls = strdup(cls);
+     }
+     CMRelease(cc);
    }
    
    if(!disableDefaultProvider) {

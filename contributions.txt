@@ -131,3 +131,7 @@ Chad Smith, HP
 Mihai Ibanescu, rPath
 ---------------------
 06/04/2009 [ 2766344 ] Allow the client trust store to be a directory
+
+Duncan Mac-Vicar P., Novell
+---------------------
+01/15/2010 [ 2932809 ] sfcb 1.3.6 crashes when provider user is set to sfcb

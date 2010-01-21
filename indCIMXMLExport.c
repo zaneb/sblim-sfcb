@@ -336,6 +336,10 @@ int exportIndication(char *url, char *payload, char **resp, char **msg)
          fprintf(out,"%s\n",payload);
          fprintf(out,"=========== End of Indication ===========\n");
          fclose(out);
+      } else {
+         rc=1;
+         mlogf(M_ERROR,M_SHOW,"Unable to open file to process indication: %s\n", url);
+         _SFCB_TRACE(1,("--- Unable to open file: %s",url));
       }
       _SFCB_RETURN(rc); 
    }

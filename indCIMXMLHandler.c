@@ -382,7 +382,7 @@ CMPIStatus deliverInd(
   sb=segments2stringBuffer(xs.segments);
   if (exportIndication((char*)dest->hdl,(char*)sb->ft->getCharPtr(sb), &resp, &msg)) {
      // change rc
-     setStatus(&st,CMPI_RC_ERR_NOT_FOUND,NULL);
+     setStatus(&st,CMPI_RC_ERR_FAILED,NULL);
   }
   RespSegment rs = xs.segments[5];
   UtilStringBuffer* usb = (UtilStringBuffer*)rs.txt;

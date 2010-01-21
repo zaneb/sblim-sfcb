@@ -10,6 +10,7 @@ Bugs fixed:
 - 2933087 Small leak in cimXmlRequest:getProperty()
 - 2932809 sfcb 1.3.6 crashes when provider user is set to sfcb
 - 2934540 sfcb may respond with incorrect association provider
+- 2935931 Indications to file:// urls never fail.
 
 Changes in 1.3.6
 ================

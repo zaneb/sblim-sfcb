@@ -499,7 +499,7 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
 
      for (info = pReg->ft->getProvider(pReg, cls, type); info; info=info->nextInRegister) {
        if (nameSpaceOk(info, nameSpace)) {
-         addProviderToHT(info, assocProviderHt);
+         addProviderToHT(info, assocProviderHt, 0);
          free(cls);
          _SFCB_RETURN(info);
        }

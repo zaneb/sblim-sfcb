@@ -51,7 +51,7 @@ static void freeInfoPtr(ProviderInfo *info)
 {
    int n=0;
    if(info->nextInRegister) {
-      freeInfoPtr(info->nextInRegister);
+     freeInfoPtr(info->nextInRegister);
    }
    free(info->className); 
    free(info->providerName); 
@@ -88,10 +88,9 @@ static ProviderRegister *pClone(ProviderRegister * br)
    return NULL;
 }
 
-void addProviderToHT(ProviderInfo *info, UtilHashTable *ht)
+void addProviderToHT(ProviderInfo *info, UtilHashTable *ht, int freeable)
 {
     ProviderInfo *checkDummy;
-    
     /* first we add the provider to the providerRegister with the classname
      * as a key*/
 	
@@ -102,8 +101,8 @@ void addProviderToHT(ProviderInfo *info, UtilHashTable *ht)
      * register but append it to the one already found or to its master*/
         if(strcmp(checkDummy->providerName, info->providerName) == 0) {
             /* double registration - discard */
-            freeInfoPtr(info);
-            return;
+          if (freeable) freeInfoPtr(info);
+          return;
         } else {
             checkDummy->nextInRegister = info;
         }
@@ -198,7 +197,7 @@ ProviderRegister *newProviderRegister()
                else if (qualiProvInfoPtr==NULL) {
                   if (strcmp(info->className,"$QualifierProvider$")==0) qualiProvInfoPtr=info;
                }
-               addProviderToHT(info, ((ProviderBase *) br->hdl)->ht);
+               addProviderToHT(info, ((ProviderBase *) br->hdl)->ht, 1);
             }
             info = (ProviderInfo *) calloc(1, sizeof(ProviderInfo));
             info->className = strdup(rv.id);
@@ -294,7 +293,7 @@ ProviderRegister *newProviderRegister()
       }
 
       if (info) {
-      	 addProviderToHT(info, ((ProviderBase *) br->hdl)->ht);
+	addProviderToHT(info, ((ProviderBase *) br->hdl)->ht, 1);
       }
    }
    if (in) {

@@ -531,7 +531,9 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
           atArray != NULL || 
           CMGetArrayElementAt(atArray, 0, &st).value.uint16 == 3) {
 
+#ifdef HAVE_SLP
         kill(slppid, SIGHUP);  /* restart SLP to update RegisteredProfiles */
+#endif
       }
    }
 
@@ -564,9 +566,11 @@ CMPIStatus InternalProviderDeleteInstance(CMPIInstanceMI * mi,
 
    deleteBlob(bnss,cns,key);
 
+#ifdef HAVE_SLP
    if (isa(nss, cns, "cim_registeredprofile")) {
           kill(slppid, SIGHUP); /* restart SLP to update RegisteredProfiles */
    }
+#endif
 
    _SFCB_RETURN(st);
 }

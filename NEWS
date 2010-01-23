@@ -11,6 +11,7 @@ Bugs fixed:
 - 2932809 sfcb 1.3.6 crashes when provider user is set to sfcb
 - 2934540 sfcb may respond with incorrect association provider
 - 2935931 Indications to file:// urls never fail.
+- 2937577 Some SLP-specific code not ifdef'd
 
 Changes in 1.3.6
 ================

@@ -264,18 +264,21 @@ int stopNextProc()
 
 static void stopProc(void *p)
 {
-   ProviderInfo *pInfo;
+   ProviderInfo *pInfo, *temp;
    CMPIContext *ctx = NULL;
 
    ctx = native_new_CMPIContext(MEM_NOT_TRACKED,NULL);
 //   for (pInfo=curProvProc->firstProv; pInfo; pInfo=pInfo->next) {
    for (pInfo=activProvs; pInfo; pInfo=pInfo->next) {
+   for (temp=activProvs;temp;temp=temp->next) {
+      if((strcmp(temp->providerName,pInfo->providerName)==0) && (strcmp(temp->className,pInfo->className)!=0)) break;
       if (pInfo->classMI) pInfo->classMI->ft->cleanup(pInfo->classMI, ctx);
       if (pInfo->instanceMI) pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx, 1);
       if (pInfo->associationMI) pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx, 1);
       if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx, 1);
       if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx, 1);
       //dlclose(pInfo->library);
+    }
    }
    mlogf(M_INFO,M_SHOW,"---  stopped %s %d\n",processName,getpid());
    ctx->ft->release(ctx);
@@ -352,7 +355,7 @@ void* providerIdleThread()
    struct timespec idleTime;
    time_t next;
    int rc,val,doNotExit,noBreak=1;
-   ProviderInfo *pInfo;
+   ProviderInfo *pInfo, *temp;
    ProviderProcess *proc;
    CMPIContext *ctx = NULL;
    CMPIStatus crc;
@@ -385,6 +388,8 @@ void* providerIdleThread()
                      ctx = native_new_CMPIContext(MEM_TRACKED,NULL);
                      noBreak=0;
                      for (crc.rc=0,pInfo = activProvs; pInfo; pInfo = pInfo->next) {
+    		     for(temp=activProvs;temp;temp=temp->next) {
+			if((strcmp(temp->providerName,pInfo->providerName)==0) && (strcmp(temp->className,pInfo->className)!=0)) break;
                         if (pInfo->library==NULL) continue;
                         if (pInfo->indicationMI!=NULL) continue;
                         if (crc.rc==0 && pInfo->instanceMI) 
@@ -407,7 +412,8 @@ void* providerIdleThread()
 			   pthread_mutex_destroy(&pInfo->initMtx);
                         }   
                         else doNotExit=1;
-                     }  
+                       }
+		     }  
                      if (doNotExit==0) {
                         dumpTiming(currentProc);
                         _SFCB_TRACE(1, ("--- Exiting %s-%d",processName,currentProc));
@@ -2622,7 +2628,7 @@ char *opsName[] = {
 static void *processProviderInvocationRequestsThread(void *prms)
 {
    BinResponseHdr *resp=NULL;
-   ProviderInfo *pInfo;
+   ProviderInfo *pInfo, *temp;
    ProvHandler hdlr;
    Parms *parms = (Parms *) prms;
    BinRequestHdr *req = parms->req;

@@ -1,3 +1,8 @@
+2010-01-28  Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	[ 2655854 ] Common Provider invokes Init and CleanUp more than once
+
 2010-01-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerRegister.c:

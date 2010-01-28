@@ -371,7 +371,12 @@ static void resetProvider(ProviderRegister * br, int pid)
    for (it = bb->ht->ft->getFirst(bb->ht, (void **) &key, (void **) &info);
         key && it && info;
         it = bb->ht->ft->getNext(bb->ht, it, (void **) &key, (void **) &info)) {
-      if (info->pid==pid) info->pid=0;
+
+     /* reset pid, but don't return immediately; a proc may have multiple provs  */
+     while (info) {
+       if (info->pid==pid) { info->pid=0; }       
+       info=info->nextInRegister;
+     }
    }     
 }
 

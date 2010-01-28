@@ -1,3 +1,9 @@
+2010-01-28 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/TestProviders/tests/GenMI.pl, IndRetryTest.sh, RICreateHandler.XML
+	  RIEnumIS.XML, RIGetSub.XML, Makefile.am:
+	[ 2920773 ] Tests for reliable indications
+
 2010-01-28  Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* providerDrv.c:

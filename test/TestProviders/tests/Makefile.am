@@ -19,4 +19,4 @@ else
 endif
 
 #Some wbemcat tests
-TESTS = xmltest.sh 
+TESTS = xmltest.sh IndRetryTest.sh

@@ -490,19 +490,30 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
      assocProviderHt->ft->setReleaseFunctions(assocProviderHt, free, NULL);
    }
 
-   for (info = (ProviderInfo *) assocProviderHt->ft->get(assocProviderHt, className); info; info=info->nextInRegister) {
-       if (nameSpaceOk(info, nameSpace)) _SFCB_RETURN(info);
+   info = (ProviderInfo *) assocProviderHt->ft->get(assocProviderHt, className);
+   /* there's a matching provider in the list, return it if the ns is right */
+   while(info) {
+      if (nameSpaceOk(info,nameSpace)) {
+         _SFCB_TRACE(1,("Provider found for %s",className));
+         _SFCB_RETURN(info);
+      }
+      info = info->nextInRegister;
    }
 
    cls = className ? strdup(className) : NULL;
    while (cls != NULL) {
-
-     for (info = pReg->ft->getProvider(pReg, cls, type); info; info=info->nextInRegister) {
+     /* find the FIRST matching prov for this class; add to ht even if ns doesn't match */
+     info = pReg->ft->getProvider(pReg, cls, type);
+     if (assocProviderHt->ft->get(assocProviderHt, cls) == NULL) {
+       assocProviderHt->ft->put(assocProviderHt, strdup(cls), info);
+     }
+     while (info) {
+       /* if ns matches, we can return; don't add to ht; first in list is already there */
        if (nameSpaceOk(info, nameSpace)) {
-         addProviderToHT(info, assocProviderHt, 0);
          free(cls);
          _SFCB_RETURN(info);
        }
+       info=info->nextInRegister;
      }
 
      CMPIConstClass *cc = (CMPIConstClass *) _getConstClass(nameSpace, cls, &rc);

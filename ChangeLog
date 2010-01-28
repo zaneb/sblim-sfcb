@@ -8,6 +8,9 @@
 	* providerRegister.c:
 	[ 2939874 ] Serious provider id mismatch after provider reload
 
+	* providerRegister.h, providerRegister.c, providerMgr.c:
+	[ 2934540 ] sfcb may respond with incorrect association provider (refix)
+	
 2010-01-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* internalProvider.c:

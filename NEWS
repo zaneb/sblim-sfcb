@@ -14,6 +14,7 @@ Bugs fixed:
 - 2937577 Some SLP-specific code not ifdef'd
 - 2939874 Serious provider id mismatch after provider reload
 - 2655854 Common Provider invokes Init and CleanUp more than once
+- 2875050 default MOFs should allow for multiple files
 
 Changes in 1.3.6
 ================

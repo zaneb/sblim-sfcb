@@ -504,7 +504,7 @@ static ProviderInfo *getAssocProvider(char *className, char *nameSpace)
    while (cls != NULL) {
      /* find the FIRST matching prov for this class; add to ht even if ns doesn't match */
      info = pReg->ft->getProvider(pReg, cls, type);
-     if (assocProviderHt->ft->get(assocProviderHt, cls) == NULL) {
+     if (info && assocProviderHt->ft->get(assocProviderHt, cls) == NULL) {
        assocProviderHt->ft->put(assocProviderHt, strdup(cls), info);
      }
      while (info) {

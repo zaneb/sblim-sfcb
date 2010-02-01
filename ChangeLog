@@ -1,3 +1,7 @@
+2010-02-01  Pratyusha Doddapaneni <pratyusha.d@in.ibm.com>
+	* Makefile.am
+	[ 2875050 ] default MOFs should allow for multiple files ( fixed the build breaks while make install )
+
 2010-01-28  Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* Makefile.am:

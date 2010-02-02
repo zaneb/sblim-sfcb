@@ -114,7 +114,7 @@ static void addProviderToHT(ProviderInfo *info, UtilHashTable *ht)
 ProviderRegister *newProviderRegister()
 {
    FILE *in;
-   char *dir,*provuser;
+   char *dir,*provuser = NULL;
    char fin[1024], *stmt = NULL;
    ProviderInfo *info = NULL;
    int err = 0, n = 0, i;

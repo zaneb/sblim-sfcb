@@ -2628,7 +2628,7 @@ char *opsName[] = {
 static void *processProviderInvocationRequestsThread(void *prms)
 {
    BinResponseHdr *resp=NULL;
-   ProviderInfo *pInfo, *temp;
+   ProviderInfo *pInfo;
    ProvHandler hdlr;
    Parms *parms = (Parms *) prms;
    BinRequestHdr *req = parms->req;

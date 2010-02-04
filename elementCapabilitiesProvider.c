@@ -51,8 +51,6 @@
 
 
 static const CMPIBroker *_broker;
-static CMPIStatus invClassSt = { CMPI_RC_ERR_INVALID_CLASS, NULL };
-static CMPIStatus notSuppSt = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
 static CMPIStatus okSt = { CMPI_RC_OK, NULL };
 
 void ElementCapabilitiesInitInstances(const CMPIContext * ctx) {

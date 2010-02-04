@@ -1,3 +1,8 @@
+2010-02-04  Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	[ 2946101 ] possible race condition initializing providers
+
 2010-02-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c, elementCapabilitiesProvider.c:

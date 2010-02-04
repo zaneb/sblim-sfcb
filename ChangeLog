@@ -1,3 +1,8 @@
+2010-02-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* Makefile.am:
+	[ 2931327 ] sblim-sfcb-1.3.6 tarball is incomplete
+
 2010-02-04  Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* providerDrv.c:

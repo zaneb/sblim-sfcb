@@ -15,6 +15,7 @@ Bugs fixed:
 - 2939874 Serious provider id mismatch after provider reload
 - 2655854 Common Provider invokes Init and CleanUp more than once
 - 2875050 default MOFs should allow for multiple files
+- 2945277 SFCB crashes on subscription without filter or handler prop
 
 Changes in 1.3.6
 ================

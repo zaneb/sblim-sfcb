@@ -527,8 +527,8 @@ static CMPIStatus processSubscription(
 	const CMPIObjectPath *cop)
 {
    CMPIStatus st = { CMPI_RC_OK, NULL };
-   Handler *ha;
-   Filter *fi;
+   Handler *ha = NULL;
+   Filter *fi = NULL;
    Subscription *su;
    CMPIObjectPath *op;
    char *key,*skey;
@@ -548,9 +548,13 @@ static CMPIStatus processSubscription(
       
    _SFCB_TRACE(1,("--- getting new subscription filter"));
    op = CMGetProperty(ci, "filter", &st).value.ref;
+   if (op) {
    key = normalizeObjectPathCharsDup(op);
+     if (key) {
    fi = getFilter(key);
-   if(key) free(key);
+       free(key);
+     }
+   }
    
    if (fi == NULL) {
       _SFCB_TRACE(1,("--- cannot find specified subscription filter"));
@@ -560,9 +564,13 @@ static CMPIStatus processSubscription(
    
    _SFCB_TRACE(1,("--- getting new subscription handle"));
    op = CMGetProperty(ci, "handler", &st).value.ref;
+   if (op) {
    key = normalizeObjectPathCharsDup(op);
+     if (key) {
    ha = getHandler(key);
-   if(key) free(key);
+       free(key);
+     }
+   }
       
    if (ha == NULL) {
       _SFCB_TRACE(1,("--- cannot find specified subscription handler"));

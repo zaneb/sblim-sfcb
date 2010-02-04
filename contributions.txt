@@ -97,6 +97,7 @@ Klaus Kampf, Novell
 02/06/2009 [ 2561165 ] The genSslCert.sh SSL certificate setup has tempfile races
 05/01/2009 [ 2784240 ] Possible array access overflow in cimXmlParser
 08/26/2009 [ 2844812 ] CMPIConnect2 doesn't init CMPIStatus completely
+02/04/2010 [ 2945277 ] SFCB crashes on subscription without filter or handler prop
 
 Mike Brasher, Inova
 -------------------

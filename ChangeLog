@@ -3,6 +3,10 @@
 	* providerDrv.c, elementCapabilitiesProvider.c:
 	Cleaned up unused vars
 
+	* interopProvider.c:
+	[ 2945277 ] SFCB crashes on subscription without filter or handler prop 
+	(patch by Klaus Kampf)
+
 2010-02-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerRegister.c:

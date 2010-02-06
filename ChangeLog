@@ -3,6 +3,9 @@
 	* cimXmlGen.c:
 	[ 2946885 ] BEAM errors found in cimXmlGen
 
+	* classProvider.c:
+	[ 2946890 ] classProvider may try to closedir(NULL)
+
 2010-02-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am:

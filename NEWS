@@ -19,6 +19,7 @@ Bugs fixed:
 - 2946106 possible race condition initializing providers
 - 2931327 sblim-sfcb-1.3.6 tarball is incomplete
 - 2946885 BEAM errors found in cimXmlGen
+- 2946890 classProvider may try to closedir(NULL)
 
 Changes in 1.3.6
 ================

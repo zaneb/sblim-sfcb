@@ -419,31 +419,33 @@ static UtilHashTable *gatherNameSpaces(char *dn, UtilHashTable *ns, int first)
    }          
        
    dir=opendir(dn);
-   if (dir) while ((de=readdir(dir))!=NULL) {
-     if (strcmp(de->d_name,".")==0) continue;
-     if (strcmp(de->d_name,"..")==0) continue;
-     l=strlen(dn)+strlen(de->d_name)+4;
-     n=(char*)malloc(l+8);
-     strcpy(n,dn);
-     strcat(n,"/");
-     strcat(n,de->d_name);
-     dir_test = opendir(n);
-     if (dir_test == NULL) {
+   if (dir) {
+     while ((de=readdir(dir))!=NULL) {
+       if (strcmp(de->d_name,".")==0) continue;
+       if (strcmp(de->d_name,"..")==0) continue;
+       l=strlen(dn)+strlen(de->d_name)+4;
+       n=(char*)malloc(l+8);
+       strcpy(n,dn);
+       strcat(n,"/");
+       strcat(n,de->d_name);
+       dir_test = opendir(n);
+       if (dir_test == NULL) {
+         free(n);
+         continue;
+       }
+       closedir(dir_test);
+       cr=newClassRegister(n);
+       if (cr) {
+         ns->ft->put(ns, strdup(n+nsBaseLen), cr);
+         gatherNameSpaces(n,ns,0);
+       }
        free(n);
-       continue;
      }
-     closedir(dir_test);
-     cr=newClassRegister(n);
-     if (cr) {
-       ns->ft->put(ns, strdup(n+nsBaseLen), cr);
-       gatherNameSpaces(n,ns,0);
-     }
-     free(n);
+     closedir(dir);  
    }
-   else if (first) {
+   else if (first || dir==NULL) {
       mlogf(M_ERROR,M_SHOW,"--- Repository %s not found\n",dn);
    }
-   closedir(dir);  
    return ns;     
 } 
 

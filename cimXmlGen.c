@@ -320,7 +320,7 @@ CMPIValue makeFromEmbeddedObject(XtokValue value, char *ns)
 CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, char* ns)
 {
    CMPIValue value;
-   CMPIType t;
+   CMPIType t = 0;
 
    if (type==0) {
       type=guessType(val.value);
@@ -535,7 +535,9 @@ static int lnsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
        SFCB_APPENDCHARS_BLOCK(sb, "<NAMESPACE NAME=\"");
        sb->ft->appendChars(sb, ns);
        SFCB_APPENDCHARS_BLOCK(sb, "\"/>\n");
-       ns = nsp + 1;
+       if (nsp) {
+	 ns = nsp + 1;
+       }
      } while (nsp);
      free(nsc);
      SFCB_APPENDCHARS_BLOCK(sb, "</LOCALNAMESPACEPATH>\n");  

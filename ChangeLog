@@ -1,3 +1,8 @@
+2010-02-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* Makefile.am:
+	[ 2948812 ] footprint.pl missing from release tarball
+
 2010-02-05  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlGen.c:

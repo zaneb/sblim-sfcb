@@ -20,6 +20,7 @@ Bugs fixed:
 - 2931327 sblim-sfcb-1.3.6 tarball is incomplete
 - 2946885 BEAM errors found in cimXmlGen
 - 2946890 classProvider may try to closedir(NULL)
+- 2948812 footprint.pl missing from release tarball
 
 Changes in 1.3.6
 ================

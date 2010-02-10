@@ -452,7 +452,7 @@ man_MANS=$(MANFILES)
 
 EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 	sfcbunstage.sh.in sfcbuuid.sh.in sfcb.init-redhat.in sfcb.init-suse.in \
-	sfcb.init-none.in cimXmlParser.c test
+	sfcb.init-none.in cimXmlParser.c footprint.pl test
 
 dist_sfcbdata_SCRIPTS=genSslCert.sh getSchema.sh test/stageschema.sh
 

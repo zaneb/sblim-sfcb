@@ -38,6 +38,8 @@
 #include "selectexp.h"
 #include "config.h"
 
+#include <pthread.h>
+
 #ifdef HAVE_QUALREP
 #include "qualifier.h"
 #endif
@@ -60,6 +62,8 @@ int enumUnLock(CMPIEnumeration * ) ;
 #define SFCB_ASM(x)
 #endif
 
+
+static pthread_mutex_t resultsocketMutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern CMPIBroker *Broker;
 
@@ -1029,7 +1033,10 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
    ((OperationHdr *) buf)->className.data = (void *) l;
    l += ohdr->className.length;
    
-   if (localMode) sockets=resultSockets;
+   if (localMode){
+	   pthread_mutex_lock(&resultsocketMutex);
+	   sockets=resultSockets;
+   }
    else sockets=getSocketPair("getProviderContext");   
    
    _SFCB_TRACE(1,("--- Sending mgr request - to %d from %d", sfcbSockets.send,
@@ -1040,9 +1047,12 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
    if (rc < 0) {
       mlogf(M_ERROR,M_SHOW,"--- spSendReq/spSendMsg failed to send on %d (%d)\n", sfcbSockets.send, rc);
       ctx->rc = rc;
-      close (sockets.send);
-      close (sockets.receive);
-      return rc;
+      if(!localMode){
+    	  closeSocket(&sockets,COM_ALL,"getProviderContext");
+      } else {
+    	  pthread_mutex_unlock(&resultsocketMutex);
+      }
+      _SFCB_RETURN(rc);
    }
 
    _SFCB_TRACE(1, ("--- Sending mgr request done"));
@@ -1077,8 +1087,9 @@ int getProviderContext(BinRequestContext * ctx, OperationHdr * ohdr)
    }
 
    if (!localMode) {
-      close (sockets.send);
-      close (sockets.receive);
+	  closeSocket(&sockets,COM_ALL,"getProviderContext");
+   } else {
+	   pthread_mutex_unlock(&resultsocketMutex);
    }
    _SFCB_RETURN(ctx->rc);
 }
@@ -1266,17 +1277,21 @@ BinResponseHdr *invokeProvider(BinRequestContext * ctx)
    ComSockets sockets;
    _SFCB_ENTER(TRACE_PROVIDERMGR | TRACE_CIMXMLPROC, "invokeProvider");
 
-   if (localMode) sockets=resultSockets;
+   if (localMode){
+	   pthread_mutex_lock(&resultsocketMutex);
+	   sockets=resultSockets;
+   }
    else sockets=getSocketPair("invokeProvider");
    
    BinResponseHdr *resp=intInvokeProvider(ctx, sockets);
     
    if (!localMode) {
-      close(sockets.receive);
-      close(sockets.send);
+	  closeSocket(&sockets,COM_ALL,"invokeProvider");
+   } else {
+	   pthread_mutex_unlock(&resultsocketMutex);
    }
    
-   return resp;
+   _SFCB_RETURN(resp);
 }
 
 BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
@@ -1287,7 +1302,10 @@ BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
    ComSockets sockets;
    int i;
 
-   if (localMode) sockets=resultSockets;
+   if (localMode){
+	   pthread_mutex_lock(&resultsocketMutex);
+	   sockets=resultSockets;
+   }
    else sockets=getSocketPair("invokeProvider");
    
    resp = malloc(sizeof(BinResponseHdr *) * (binCtx->pCount));
@@ -1314,8 +1332,9 @@ BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
    }
    
    if (!localMode) {
-      close(sockets.receive);
-      close(sockets.send);
+	  closeSocket(&sockets,COM_ALL,"invokeProvider");
+   } else {
+	   pthread_mutex_unlock(&resultsocketMutex);
    }
    
    _SFCB_RETURN(resp);

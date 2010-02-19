@@ -1,5 +1,11 @@
 2010-02-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* providerMgr.c:
+	[ 2952912 ] resultSockets variable is not used threadsafe 
+	(patch by Till Steinbach )
+
+2010-02-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* internalProvider.c:
 	[ 2952616 ] internalProvider is not Threadsafe
 	(patch by Till Steinbach )

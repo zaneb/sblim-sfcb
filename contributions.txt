@@ -140,4 +140,5 @@ Duncan Mac-Vicar P., Novell
 Till Steinbach
 ---------------------
 02/19/2010 [ 2952616 ] internalProvider is not Threadsafe
+02/19/2010 [ 2952912 ] resultSockets variable is not used threadsafe
 

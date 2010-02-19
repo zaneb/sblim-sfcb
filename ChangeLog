@@ -1,3 +1,8 @@
+2009-02-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 2950773 ] Leak in indCIMXMLHandler.c
+
 2010-02-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerMgr.c:

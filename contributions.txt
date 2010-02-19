@@ -136,3 +136,8 @@ Mihai Ibanescu, rPath
 Duncan Mac-Vicar P., Novell
 ---------------------
 01/15/2010 [ 2932809 ] sfcb 1.3.6 crashes when provider user is set to sfcb
+
+Till Steinbach
+---------------------
+02/19/2010 [ 2952616 ] internalProvider is not Threadsafe
+

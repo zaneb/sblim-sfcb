@@ -1,3 +1,9 @@
+2010-02-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* internalProvider.c:
+	[ 2952616 ] internalProvider is not Threadsafe
+	(patch by Till Steinbach )
+
 2010-02-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* Makefile.am:

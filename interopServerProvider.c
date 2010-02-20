@@ -782,6 +782,7 @@ void ServerProviderInitInstances(const CMPIContext * ctx) {
   CMSetProperty(ci,"SubscriptionRemovalAction",&subRemoval,CMPI_uint16);
   CMSetProperty(ci,"SubscriptionRemovalTimeInterval",&subRemovalInterval,CMPI_uint32);
   CBCreateInstance(_broker, ctxLocal, op, ci, &st);
+  CMRelease(ctxLocal);
   return;
 }
 

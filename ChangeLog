@@ -1,3 +1,8 @@
+2010-02-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* interopServerProvider.c:
+	[ 2949454 ] Memory leak in ServerProviderInitInstances()
+
 2009-02-19 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

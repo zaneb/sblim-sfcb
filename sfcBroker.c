@@ -60,16 +60,6 @@ static int startSLP = 1;
 int sfcBrokerPid=0;
 #endif // LOCAL_CONNECT_ONLY_ENABLE
 
-//#define USE_THREADS
-
-// for use by thread in startHttpd, startDbpd
-struct adapterThreadParams {
-  int argc;
-  char* argv;
-  int sslMode;
-  int sfcPid;
-};
-
 extern void setExFlag(unsigned long f);
 extern char *parseTarget(const char *target);
 extern UtilStringBuffer *instanceToString(CMPIInstance * ci, char **props);
@@ -167,51 +157,6 @@ static int stopNextAdapter()
    }
    return 0;
 }
-
-
-#ifdef USE_THREADS
-// thread-based adapter functions
-
-static void addStartedThreadAdapter(pthread_t tid)
-{
- 
-   StartedThreadAdapter *sa=(StartedThreadAdapter*)malloc(sizeof(StartedThreadAdapter));
-
-   sa->stopped=0;
-   sa->tid=tid;
-   sa->next=lastStartedThreadAdapter;
-   lastStartedThreadAdapter=sa;
-}
-
-static int testStartedThreadAdapter(pthread_t tid, int *left) 
-{
-   StartedThreadAdapter *sa=lastStartedThreadAdapter;
-   int stopped=0;
-   
-   *left=0;
-   while (sa) {
-     if (pthread_equal(sa->tid, tid)) stopped=sa->stopped=1;
-      if (sa->stopped==0) (*left)++;
-      sa=sa->next;
-   }
-   return stopped;
-}         
-
-static int stopNextThreadAdapter()
-{
-   StartedThreadAdapter *sa=lastStartedThreadAdapter;
-   
-   while (sa) {
-      if (sa->stopped==0) {
-         sa->stopped=1;
-         pthread_exit(sa->tid);
-         return sa->tid;
-      }   
-      sa=sa->next;
-   }
-   return 0;
-}
-#endif
 
 static pthread_mutex_t sdMtx=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  sdCnd=PTHREAD_COND_INITIALIZER;
@@ -408,34 +353,9 @@ static void handleSigAbort(int sig)
 
 
 #ifndef LOCAL_CONNECT_ONLY_ENABLE
-#ifdef USE_THREADS
-void* startHttpThread(void* params) {
-  struct adapterThreadParams* p = (struct adapterThreadParams*)params;
-  currentProc=getpid();
-
-  httpDaemon(p->argc, p->argv, p->sslMode, p->sfcPid);
-  closeSocket(&sfcbSockets,cRcv,"startHttpd");
-  closeSocket(&resultSockets,cAll,"startHttpd");
-
-}
-#endif
 
 static int startHttpd(int argc, char *argv[], int sslMode)
 {
-#ifdef USE_THREADS
-
-   int pid,sfcPid=currentProc;
-   struct adapterThreadParams htparams = {argc, argv, sslMode, sfcPid};
-   pthread_t httpThread;
-   pthread_create(&httpThread, NULL, &startHttpThread, &htparams);
-   //newThread(&startHttpThread, &htparams, 0);
-
-   pthread_yield();
-
-   addStartedThreadAdapter(httpThread);
-
-#else
-
    int pid,sfcPid=currentProc;
    int httpSFCB,rc;
    char *httpUser;
@@ -491,7 +411,6 @@ static int startHttpd(int argc, char *argv[], int sslMode)
       addStartedAdapter(pid);
       return 0;
    }
-#endif
    return 0;
 }
 

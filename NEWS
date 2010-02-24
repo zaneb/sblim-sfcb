@@ -8,6 +8,7 @@ Bugs fixed:
 - 2952912 resultSockets variable is not used threadsafe
 - 2950773 Leak in indCIMXMLHandler.c
 - 2949454 Memory leak in ServerProviderInitInstances()
+- 2958167 Remove USE_THREADS sections of httpAdapter
 
 Changes in 1.3.7
 ================

@@ -145,17 +145,6 @@ typedef struct _buffer {
  #define USE_INET6
 #endif
 
-//#define USE_THREADS
-//for use by the process thread in handleHttpRequest()
-struct processThreadParams {
-   int breakloop;
-   CommHndl conn_fd;
-   int connFd;
-   fd_set httpfds;
-   struct timeval httpTimeout;
-   int isReady;
-};
-
 void initHttpProcCtl(int p, int sslmode)
 {
    httpProcSemKey=ftok(SFCB_BINARY,'H' + sslmode);
@@ -1037,106 +1026,6 @@ static int doHttpRequest(CommHndl conn_fd)
 }
 
 
-#ifdef USE_THREADS
-/**
- * from handleHttpRequest()
- *
- */
-void* processThreadFunc(void* params) {
-  //cast the param struct 
-  struct processThreadParams* p = (struct processThreadParams*)params;
-
-   _SFCB_ENTER(TRACE_HTTPDAEMON, "handleHttpRequest-processthread");
-
-  processName="CIMXML-Processor";
-  
-  localMode=0;
-  if (doFork) {
-    _SFCB_TRACE(1,("--- Forked xml handler %d", currentProc))
-  }
-
-  _SFCB_TRACE(1,("--- Started xml handler %d %d", currentProc,
-		 resultSockets.receive));
-
-  if (getenv("SFCB_PAUSE_HTTP")) for (p->breakloop=0;p->breakloop==0;) {
-    fprintf(stderr,"-#- Pausing - pid: %d\n",currentProc);
-    sleep(5);
-  }   
-
-  p->conn_fd.socket=p->connFd;
-  p->conn_fd.file=fdopen(p->connFd,"a");
-  p->conn_fd.buf = NULL;
-  if (p->conn_fd.file == NULL) {
-    mlogf(M_ERROR,M_SHOW,"--- failed to create socket stream - continue with raw socket: %s\n",strerror(errno));
-  } else {
-    p->conn_fd.buf = malloc(SOCKBUFSZ);
-    if (p->conn_fd.buf) {
-      setbuffer(p->conn_fd.file,p->conn_fd.buf,SOCKBUFSZ);
-    } else {
-      mlogf(M_ERROR,M_SHOW,"--- failed to create socket buffer - continue unbuffered: %s\n",strerror(errno));
-    }
-  }
-  if (sfcbSSLMode) {
-#if defined USE_SSL
-    BIO *sslb;
-    BIO *sb=BIO_new_socket(p->connFd,BIO_NOCLOSE);
-    if (!(->conn_fd.ssl = SSL_new(ctx)))
-      intSSLerror("Error creating SSL object");
-    SSL_set_bio(p->conn_fd.ssl, sb, sb);
-    if (SSL_accept(p->conn_fd.ssl) <= 0)
-      intSSLerror("Error accepting SSL connection");
-    sslb = BIO_new(BIO_f_ssl());
-    BIO_set_ssl(sslb,p->conn_fd.ssl,BIO_CLOSE);
-    p->conn_fd.bio=BIO_new(BIO_f_buffer());
-    BIO_push(p->conn_fd.bio,sslb);
-    if (BIO_set_write_buffer_size(p->conn_fd.bio,SOCKBUFSZ)) { 
-    } else {
-      p->conn_fd.bio=NULL;
-    }
-#endif
-  } else {
-#if defined USE_SSL
-    p->conn_fd.bio=NULL;
-    p->conn_fd.ssl=NULL;
-#endif
-  }
-      
-  numRequest = 0;
-  FD_ZERO(&p->httpfds);
-  FD_SET(p->conn_fd.socket,&p->httpfds);
-  do {
-    numRequest += 1;
-        
-    if (doHttpRequest(p->conn_fd)) {
-      /* eof reached - leave */
-      break;
-    }
-    if (keepaliveTimeout==0 || numRequest >= keepaliveMaxRequest ) {
-      /* no persistence wanted or exceeded - quit */
-      break;
-    }
-    /* wait for next request or timeout */
-    p->httpTimeout.tv_sec=keepaliveTimeout;
-    p->httpTimeout.tv_usec=keepaliveTimeout;
-    p->isReady = select(p->conn_fd.socket+1,&p->httpfds,NULL,NULL,&p->httpTimeout);
-    if (p->isReady == 0) {
-      _SFCB_TRACE(1,("--- HTTP connection timeout, quit %d ", currentProc));
-      break;
-    } else if (p->isReady < 0) {
-      _SFCB_TRACE(1,("--- HTTP connection error, quit %d ", currentProc));
-      break;
-    }
-  } while (1);
-
-  commClose(p->conn_fd);
-  if (!doFork) return;
-
-  _SFCB_TRACE(1, ("--- Xml handler exiting %d", currentProc));
-  dumpTiming(currentProc);
-
-return;
-}
-#endif
 
 /**
  * called by httpDaemon
@@ -1155,173 +1044,6 @@ static void handleHttpRequest(int connFd)
    _SFCB_ENTER(TRACE_HTTPDAEMON, "handleHttpRequest");
 
    _SFCB_TRACE(1, ("--- Forking xml handler"));
-
-#ifdef USE_THREADS
-   if (doFork) {
-//       semAcquire(httpWorkSem,0);
-//       semAcquire(httpProcSem,0);
-//       for (httpProcIdX=0; httpProcIdX<hMax; httpProcIdX++)
-//          if (semGetValue(httpProcSem,httpProcIdX+1)==0) break;
-//       procReleaseUnDo.sem_num=httpProcIdX+1; 
-
-      sessionId++;
-      //r = fork();
-      struct processThreadParams ptparams = {breakloop, conn_fd, connFd, httpfds, httpTimeout, isReady};
-      _SFCB_TRACE(1, ("--- Spawning HTTP process thread"));
-      processThreadFunc(&ptparams);
-
-      //child's thread of execution
-//       if (r==0) {
-//          currentProc=getpid();
-//          processName="CIMXML-Processor";
-//          semRelease(httpProcSem,0);
-//          semAcquireUnDo(httpProcSem,0);
-//          semReleaseUnDo(httpProcSem,httpProcIdX+1);
-//          semRelease(httpWorkSem,0);
-//          atexit(uninitGarbageCollector);                      |
-//          atexit(sunsetControl);
-//       }
-      // parent's thread of execution
-      //else if (r>0) {
-         running++;
-         _SFCB_EXIT();
-      //}
-   }
-   //else r = 0;
-
-   // fork() failed
-//    if (r < 0) {
-//       char *emsg=strerror(errno);
-//       mlogf(M_ERROR,M_SHOW,"--- fork handler: %s\n",emsg);
-//       exit(1);
-//    }
-
-   // child's thread of execution || doFork=0
-   // moved this hunk to processThreadFunc for process thread to work on; this block remains for when doFork=0
-   //if (r == 0) {
-   if (doFork == 0) {
-
-      localMode=0;
-      if (doFork) {
-         _SFCB_TRACE(1,("--- Forked xml handler %d", currentProc))
-      }
-
-      _SFCB_TRACE(1,("--- Started xml handler %d %d", currentProc,
-                   resultSockets.receive));
-
-      if (getenv("SFCB_PAUSE_HTTP")) for (breakloop=0;breakloop==0;) {
-         fprintf(stderr,"-#- Pausing - pid: %d\n",currentProc);
-         sleep(5);
-      }   
-
-      conn_fd.socket=connFd;
-      conn_fd.file=fdopen(connFd,"a");
-
-     if (conn_fd.file == NULL) {
-	mlogf(M_ERROR,M_SHOW,"--- failed to create socket stream - continue with raw socket: %s\n",strerror(errno));
-      } else {
-	conn_fd.buf = malloc(SOCKBUFSZ);
-	if (conn_fd.buf) {
-	  setbuffer(conn_fd.file,conn_fd.buf,SOCKBUFSZ);
-	} else {
-	  mlogf(M_ERROR,M_SHOW,"--- failed to create socket buffer - continue unbuffered: %s\n",strerror(errno));
-	}
-      }
-      if (sfcbSSLMode) {
-#if defined USE_SSL
-	BIO *sslb;
-	BIO *sb;
-	long flags = fcntl(connFd,F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl(connFd,F_SETFL,flags);
-	sb=BIO_new_socket(connFd,BIO_NOCLOSE);
-	if (!(conn_fd.ssl = SSL_new(ctx)))
-	  intSSLerror("Error creating SSL object");
-	SSL_set_bio(conn_fd.ssl, sb, sb);
-	while(1) {
-	  int sslacc, sslerr;
-	  sslacc = SSL_accept(conn_fd.ssl);
-	  if (sslacc == 1) {
-	    /* accepted */
-	    break;
-	  }
-	  sslerr = SSL_get_error(conn_fd.ssl,sslacc);
-	  if (sslerr == SSL_ERROR_WANT_WRITE || 
-	      sslerr == SSL_ERROR_WANT_READ) {
-	    /* still in handshake */
-	    FD_ZERO(&httpfds);
-	    FD_SET(connFd,&httpfds);
-	    httpTimeout.tv_sec=5;
-	    httpTimeout.tv_usec=0;
-	    if (sslerr == SSL_ERROR_WANT_WRITE) {
-	      isReady = select(connFd+1,NULL,&httpfds,NULL,&httpTimeout);
-	    } else {
-	      isReady = select(connFd+1,&httpfds,NULL,NULL,&httpTimeout);
-	    }
-	    if (isReady == 0) {
-	      intSSLerror("Timeout error accepting SSL connection");
-	    } else if (isReady < 0) {
-	      intSSLerror("Error accepting SSL connection");
-	    }
-	  } else {
-	    /* unexpected error */
-	    intSSLerror("Error accepting SSL connection");
-	  } 
-	}
-	flags ^= O_NONBLOCK;
-	fcntl(connFd,F_SETFL,flags);
-	sslb = BIO_new(BIO_f_ssl());
-	BIO_set_ssl(sslb,conn_fd.ssl,BIO_CLOSE);
-	conn_fd.bio=BIO_new(BIO_f_buffer());
-	BIO_push(conn_fd.bio,sslb);
-	if (BIO_set_write_buffer_size(conn_fd.bio,SOCKBUFSZ)) { 
-	} else {
-	  conn_fd.bio=NULL;
-	}
-#endif
-      } else {
-#if defined USE_SSL
-	conn_fd.bio=NULL;
-	conn_fd.ssl=NULL;
-#endif
-      }
-      
-      numRequest = 0;
-      FD_ZERO(&httpfds);
-      FD_SET(conn_fd.socket,&httpfds);
-      do {
-	numRequest += 1;
-        
-        if (doHttpRequest(conn_fd)) {
-	  /* eof reached - leave */
-	  break;
-	}
-	if (keepaliveTimeout==0 || numRequest >= keepaliveMaxRequest ) {
-	  /* no persistence wanted or exceeded - quit */
-	  break;
-	}
-	/* wait for next request or timeout */
-	httpTimeout.tv_sec=keepaliveTimeout;
-	httpTimeout.tv_usec=keepaliveTimeout;
-	isReady = select(conn_fd.socket+1,&httpfds,NULL,NULL,&httpTimeout);
-	if (isReady == 0) {
-	  _SFCB_TRACE(1,("--- HTTP connection timeout, quit %d ", currentProc));
-	  break;
-	} else if (isReady < 0) {
-	  _SFCB_TRACE(1,("--- HTTP connection error, quit %d ", currentProc));
-	  break;
-	}
-      } while (1);
-
-      commClose(conn_fd);
-      if (!doFork) return;
-
-      _SFCB_TRACE(1, ("--- Xml handler exiting %d", currentProc));
-      dumpTiming(currentProc);
-      return;
-   }
-
-#else /* end threads section, start forked process section */
 
    if (doFork) {
       semAcquire(httpWorkSem,0);
@@ -1478,8 +1200,6 @@ static void handleHttpRequest(int connFd)
       dumpTiming(currentProc);
       exit(0);
    }
-
-#endif  //end forked section
 
 }
 
@@ -1754,14 +1474,11 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 //   memInit();
     currentProc=getpid();
 
-/* don't want these if we're using threads */
-#ifndef USE_THREADS
     setSignal(SIGCHLD, handleSigChld,0);
     setSignal(SIGUSR1, handleSigUsr1,0);
     setSignal(SIGINT, SIG_IGN,0);
     setSignal(SIGTERM, SIG_IGN,0);
     setSignal(SIGHUP, SIG_IGN,0);
-#endif
 
     commInit();
 

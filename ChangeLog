@@ -1,3 +1,8 @@
+2010-02-24  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c, sfcBroker.c:
+	[ 2958167 ] Remove USE_THREADS sections of httpAdapter
+
 2010-02-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopServerProvider.c:

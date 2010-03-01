@@ -134,10 +134,9 @@ CMPIData getPropertyQualsAt(CMPIConstClass * cc, CMPICount i, CMPIString ** name
       rv.type = CMPI_string;
    }
    else if (rv.type == CMPI_ref) { 
-      char *msg;
       if ((rv.state & CMPI_nullValue)==0) 
          rv.value.ref = getObjectPath(
-            (char*)ClObjectGetClString(&cls->hdr,(ClString *) & rv.value.chars), &msg);
+            (char*)ClObjectGetClString(&cls->hdr,(ClString *) & rv.value.chars), NULL);
    }
    if (rv.type & CMPI_ARRAY && rv.value.array) {
       rv.value.array =

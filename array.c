@@ -361,9 +361,8 @@ CMPIArray *internal_native_make_CMPIArray(CMPIData * av, CMPIStatus * rc,
 	      arraySetElementNotTrackedAt((CMPIArray *) array, i, (CMPIValue *) chars, CMPI_chars);
 	  } else if (av[i + 1].type == CMPI_ref) {
 	      CMPIValue value;
-	      char *msg = "";
 	      char *chars = (char *) ClObjectGetClString(hdr, (ClString *) & av[i + 1].value.chars);
-	      value.ref = getObjectPath(chars,&msg);	      
+	      value.ref = getObjectPath(chars,NULL);	      
 	      arraySetElementNotTrackedAt((CMPIArray *) array, i, &value, CMPI_ref);
 	  } else if (av[i + 1].type == CMPI_instance) {
               value.inst = (void *)ClObjectGetClObject(hdr, (ClString *) & av[i + 1].value.inst);

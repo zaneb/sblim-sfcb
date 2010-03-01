@@ -9,6 +9,7 @@ Bugs fixed:
 - 2950773 Leak in indCIMXMLHandler.c
 - 2949454 Memory leak in ServerProviderInitInstances()
 - 2958167 Remove USE_THREADS sections of httpAdapter
+- 2948647 getObjectPath may dereference NULL pointer
 
 Changes in 1.3.7
 ================

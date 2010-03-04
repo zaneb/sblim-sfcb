@@ -1,12 +1,24 @@
-# (C) Copyright IBM Corp 2004
-# All rights reserved.
+# $Id$  
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  This
-# file and program are licensed under a BSD style license.  See
-# the Copying file included with the OpenHPI distribution for
-# full licensing terms.
+#  Makefile.am
+# 
+#   © Copyright IBM Corp. 2009
+# 
+#  THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
+#  ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+#  CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+# 
+#  You can obtain a current copy of the Eclipse Public License from
+#  http://www.opensource.org/licenses/eclipse-1.0.php
+# 
+#  Author:        Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+#  Contributions: 
+# 
+#  Description:
+# 
+#  Makefile process input for sfcb tests.
+# 
+# 
 
 MAINTAINERCLEANFILES = Makefile.in
 

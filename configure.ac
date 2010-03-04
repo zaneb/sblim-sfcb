@@ -198,6 +198,8 @@ do
             test_gcov=yes;;
         wbemcli)
             test_wbemcli=yes;;
+        pywbem)
+            test_pywbem=yes;;
         unit|unittest)
             test_unit=yes;;
         xml|xmltest)
@@ -224,6 +226,8 @@ AM_CONDITIONAL(UNITTEST,[test "$test_unit" == "yes"])
 AM_CONDITIONAL(GCOV,[test "$test_gcov" == "yes"])
 AM_CONDITIONAL(WCTEST,[test "$test_wbemcli" == "yes"])
 AM_CONDITIONAL(XMLTEST,[test "$test_xml" == "yes"])
+AM_CONDITIONAL(PYWBEMTEST,[test "$test_pywbem" == "yes"])
+AM_CONDITIONAL(UDSTEST,[test "$enable_uds" == "yes"])
 AM_CONDITIONAL(CMDTEST,[test "$test_cmd" == "yes"])
 AM_CONDITIONAL(SLPTEST,[test "$test_slp" == "yes"])
 AM_CONDITIONAL(PROVTEST,[test "$test_providers" == "yes"])
@@ -247,6 +251,11 @@ if [test "$enable_tests"]; then
     if [test "$test_wbemcli" == "yes"]; then
         TEST_SUBDIRS="$TEST_SUBDIRS wbemcli"
         AC_CONFIG_FILES([test/wbemcli/Makefile])
+    fi
+
+    if [test "$test_pywbem" == "yes"]; then
+        TEST_SUBDIRS="$TEST_SUBDIRS pywbem"
+        AC_CONFIG_FILES([test/pywbem/Makefile])
     fi
 
     if [test "$test_xml" == "yes"]; then

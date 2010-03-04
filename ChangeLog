@@ -1,3 +1,9 @@
+2010-03-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* configure.ac, test/pywbem/Makefile.am, test/pywbem/check_pywbem.py,
+	  test/pywbem/ecn_interop.py:
+	[ 2963601 ] pywbem tests
+
 2010-03-01 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* args.c, array.c, constClass.c, instance.c, internalProvider.c, objectpath.c:

@@ -1,3 +1,8 @@
+2010-03-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c, sfcBroker.c:
+	[ 2961422 ] Single HTTP Adapter
+
 2010-03-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* Makefile.am in test subdirs

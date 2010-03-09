@@ -1,3 +1,8 @@
+2010-03-09 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* instance.c:
+	[ 2966804 ] setObjectPath returns uninitialized pointer
+
 2010-03-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c, sfcBroker.c:

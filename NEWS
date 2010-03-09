@@ -14,6 +14,7 @@ Bugs fixed:
 - 2958167 Remove USE_THREADS sections of httpAdapter
 - 2948647 getObjectPath may dereference NULL pointer
 - 2963746 Incorrect license in test makefiles
+- 2966804 setObjectPath returns uninitialized pointer
 
 Changes in 1.3.7
 ================

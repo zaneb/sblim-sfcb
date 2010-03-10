@@ -1,3 +1,8 @@
+2010-03-10 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	[ 2968246 ] connect2 builds unnecessary struct
+
 2010-03-09 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* instance.c:

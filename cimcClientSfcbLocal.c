@@ -1649,10 +1649,14 @@ static Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, c
 			 const char * certFile, const char * keyFile,
 			 CMPIStatus *rc)
 {  
-   ClientEnc *cc = (ClientEnc*)calloc(1, sizeof(ClientEnc));
+   ClientEnc *cc;
 
    if (rc) CMSetStatus(rc, 0);
    
+   if (localConnect(ce,rc)<0) return NULL;
+
+   cc = (ClientEnc*)calloc(1, sizeof(ClientEnc));
+
    cc->enc.hdl		= &cc->data;
    cc->enc.ft		= &clientFt;
 
@@ -1671,8 +1675,6 @@ static Client *CMPIConnect2(ClientEnv* ce, const char *hn, const char *scheme, c
    cc->certData.trustStore = trustStore ? strdup(trustStore) : NULL;
    cc->certData.certFile = certFile ? strdup(certFile) : NULL;
    cc->certData.keyFile = keyFile ? strdup(keyFile) : NULL;
-
-   if (localConnect(ce,rc)<0) return NULL;
 
    return (Client*)cc;
 }

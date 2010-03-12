@@ -1,6 +1,12 @@
 2010-03-12 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* value.c:
+	[ 2968656 ] cimcClientSfcbLocal.c does not clone return value
+	(patch by Klaus Kaempf)
+
+2010-03-12 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* value.c:
 	[ 2968198 ] CMPI_chars in sfcb - see #2967257
 	(patch by Klaus Kaempf)
 

@@ -17,6 +17,8 @@ Bugs fixed:
 - 2966804 setObjectPath returns uninitialized pointer
 - 2968246 connect2 builds unnecessary struct
 - 2968198 CMPI_chars in sfcb - see #2967257
+- 2968658 cimcClientSfcbLocal.c does not clone return value
+
 
 Changes in 1.3.7
 ================

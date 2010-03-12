@@ -185,12 +185,19 @@ char *sfcb_value2Chars(CMPIType type, CMPIValue * value)
 
 	 case CMPI_filter:
 	   break;
-
+		 
+	 case CMPI_chars:
+	   if (value->chars) {
+	     size = strlen((char *) value->chars);
+	     p = malloc(size + 3);
+	     sprintf(p, "\"%s\"", (char *) value->chars);
+	     return p;
+	   }
+	   break;
 	 case CMPI_string:
 	 case CMPI_numericString:
 	 case CMPI_booleanString:
 	 case CMPI_dateTimeString:
-	 case CMPI_classNameString:
 	   if (value->string->hdl) {
 	     size = strlen((char *) value->string->hdl);
 	     p = malloc(size + 8);

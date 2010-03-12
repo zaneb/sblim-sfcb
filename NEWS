@@ -16,6 +16,7 @@ Bugs fixed:
 - 2963746 Incorrect license in test makefiles
 - 2966804 setObjectPath returns uninitialized pointer
 - 2968246 connect2 builds unnecessary struct
+- 2968198 CMPI_chars in sfcb - see #2967257
 
 Changes in 1.3.7
 ================

@@ -1757,6 +1757,7 @@ static int ccValidate(X509 *certificate, char ** principal, int mode)
 	      "--- Certificate authentication exit %s not found\n",dlName);
 	result = 0;
       } 
+      dlclose(authLib);
     }
   } else {
     mlogf(M_ERROR,M_SHOW,

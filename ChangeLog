@@ -1,3 +1,9 @@
+2010-03-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	[ 2969129 ] Missing dlclose() in httpAdapter.c
+	(patch by Tim Potter)
+
 2010-03-12 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* value.c:

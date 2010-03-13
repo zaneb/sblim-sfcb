@@ -42,6 +42,7 @@ Tim Potter, HP
 02/19/2008 [ 1893300 ] More memory leaks in associators and associatorNames
 02/19/2008 [ 1896551 ] Memory leak on loadProvider() failure
 04/08/2008 [ 1893302 ] New CMPI arrays not tracked
+03/12/2010 [ 2969129 ] Missing dlclose() in httpAdapter.c
 
 Peter Mellquist, HP
 -------------------
@@ -98,6 +99,8 @@ Klaus Kampf, Novell
 05/01/2009 [ 2784240 ] Possible array access overflow in cimXmlParser
 08/26/2009 [ 2844812 ] CMPIConnect2 doesn't init CMPIStatus completely
 02/04/2010 [ 2945277 ] SFCB crashes on subscription without filter or handler prop
+03/12/2010 [ 2968656 ] cimcClientSfcbLocal.c does not clone return value
+03/12/2010 [ 2968198 ] CMPI_chars in sfcb - see #2967257
 
 Mike Brasher, Inova
 -------------------

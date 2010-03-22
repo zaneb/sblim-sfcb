@@ -1,3 +1,8 @@
+2010-03-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerRegister.c:
+	[ 2974807 ] Can't have > 2 providers registered for the same classname
+
 2010-03-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

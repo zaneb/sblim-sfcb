@@ -787,6 +787,7 @@ static void methProvider(int *requestor, OperationHdr * req)
    char *className = (char *) req->className.data;
    char *nameSpace = (char *) req->nameSpace.data;
    ProviderInfo *info;
+   short          retcode;
    
    _SFCB_ENTER(TRACE_PROVIDERMGR, "methProvider");
    if (strcmp(className, "$ClassProvider$") == 0)
@@ -796,7 +797,15 @@ static void methProvider(int *requestor, OperationHdr * req)
       if (info->type!=FORCE_PROVIDER_NOTFOUND &&
           (rc = forkProvider(info, req, NULL)) == CMPI_RC_OK) {
          _SFCB_TRACE(1,("--- responding with  %s %p",info->providerName,info));
-         spSendCtlResult(requestor, &info->providerSockets.send, MSG_X_PROVIDER,
+       if(!(req->options & OH_Internal)
+          && info->location
+          && *info->location
+          && (strncmp(info->location, "sfc", 3) == 0)) {
+         retcode = MSG_X_SFCB_PROVIDER;
+       } else {
+         retcode = MSG_X_PROVIDER;
+       }
+         spSendCtlResult(requestor, &info->providerSockets.send, retcode,
             0, getProvIds(info).ids, req->options);
       }                   
       else {

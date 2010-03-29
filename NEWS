@@ -20,6 +20,7 @@ Bugs fixed:
 - 2968658 cimcClientSfcbLocal.c does not clone return value
 - 2969129 Missing dlclose() in httpAdapter.c
 - 2974807 Can't have > 2 providers registered for the same classname
+- 2961560 Disallow InvokeMethod calls to internal provider methods
 
 
 Changes in 1.3.7

@@ -1,3 +1,8 @@
+2010-03-29 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* cimXmlRequest.c, msgqueue.c, msgqueue.h, providerMgr.c:
+	[ 2961560 ] Disallow InvokeMethod calls to internal provider methods
+
 2010-03-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerRegister.c:

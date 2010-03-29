@@ -44,6 +44,7 @@
 #define MSG_X_EXTENDED_CTL_MSG   7
 #define MSG_X_FAILED             8
 #define MSG_X_LOCAL              9
+#define MSG_X_SFCB_PROVIDER      10
 
 #if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
 #else

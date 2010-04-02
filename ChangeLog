@@ -1,3 +1,8 @@
+2010-04-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* 20_indication.mof, profileProvider.c, interopServerProvider.c:
+	[ 2980820 ] Indication Profile 1.1 New attr values.
+
 2010-03-29 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* cimXmlRequest.c, msgqueue.c, msgqueue.h, providerMgr.c:

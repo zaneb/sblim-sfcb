@@ -615,7 +615,7 @@ int main(int argc, char *argv[])
       usage(1);
    }
 
-   startLogging("sfcb",syslogLevel);
+   startLogging(syslogLevel);
 
    mlogf(M_INFO,M_SHOW,"--- %s V" sfcHttpDaemonVersion " started - %d\n", name, currentProc);
 

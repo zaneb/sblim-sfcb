@@ -1,3 +1,8 @@
+2010-04-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c, sfcBroker.c, mlog.h, mlog.c:
+	[ 2982924 ] Use a logging process to write to syslog
+
 2010-04-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* 20_indication.mof, profileProvider.c, interopServerProvider.c:

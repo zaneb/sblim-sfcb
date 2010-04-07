@@ -6,6 +6,9 @@
 	* providerDrv.c:
 	[ 2979028 ] Modify SFCB to not abort for socket errors 
 	(patch by John Powell)
+
+	* queryStatement.c:
+	[ 2979030 ] Restart the lexer when filter creation ends in a parsing err
 	
 2010-04-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 

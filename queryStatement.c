@@ -28,6 +28,7 @@
 #include "mlog.h"
 
 extern int sfcQueryparse(QLControl*);
+extern void sfcQueryrestart(FILE *input_file); /*  Used on queryParse() error */
 extern CMPIBroker *Broker;
 extern void *qsAlloc(QLStatement *qs, unsigned int size);
 
@@ -263,6 +264,15 @@ QLStatement *parseQuery(int mode, const char *query, const char *lang, const cha
    } else ctl.statement->lang=0;
    
    *rc=sfcQueryparse(&ctl);
+
+   /* If there was a parser error, we need to restart the lexer, otherwise
+    * the lexer will keep this invalid query and pointers to its tokens in its
+    * state machine, and the next query that comes in will fail to parse as
+    * well. */
+   if (*rc != 0) {
+     sfcQueryrestart(0);
+   }
+
    if (sns) qs->sns=strdup(sns);
    else sns=NULL;
    

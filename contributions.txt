@@ -111,6 +111,7 @@ John Powell, VMWare
 12/12/2008 [ 2390523 ] buffer overrun in cimslpSLP.c
 12/18/2008 [ 2390515 ] Fix multiple resource leaks in SFCB detected by Coverity
 01/20/2009 [ 2390533 ] Memory leak in httpAdapter.c
+04/07/2010 [ 2979028 ] Modify SFCB to not abort for socket errors
 
 Norm Paxton, Novell
 -------------------

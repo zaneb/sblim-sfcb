@@ -2797,7 +2797,11 @@ void processProviderInvocationRequests(char *name)
                      (void **) &parms->req, &rl, &mqg);
       if (mqg.rdone) {
 	int debug_break = 0;
-         if (rc!=0)mlogf(M_ERROR,M_SHOW,"oops\n");               
+	if (rc!=0) {
+	  mlogf(M_ERROR,M_SHOW, "spRecvReq returned error %d. Skipping message.\n", rc);
+	  free(parms);
+	  continue;
+	}               
 
          _SFCB_TRACE(1, ("--- Got something op:%d-prov:%p on R%d-%lu", 
             parms->req->operation,parms->req->provId,

@@ -3,6 +3,10 @@
 	* cimcClientSfcbLocal.c, sfcBroker.c, mlog.h, mlog.c:
 	[ 2982924 ] Use a logging process to write to syslog
 
+	* providerDrv.c:
+	[ 2979028 ] Modify SFCB to not abort for socket errors 
+	(patch by John Powell)
+	
 2010-04-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* 20_indication.mof, profileProvider.c, interopServerProvider.c:

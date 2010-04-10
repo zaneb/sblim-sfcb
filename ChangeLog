@@ -1,3 +1,8 @@
+2010-04-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* [ 2984214 ] double free error cimXmlGen.c: triggered by AssocatorNames 
+	(patch by Chad Smith)
+
 2010-04-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c, sfcBroker.c, mlog.h, mlog.c:

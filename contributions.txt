@@ -48,6 +48,10 @@ Peter Mellquist, HP
 -------------------
 01/07/2008 [ 1866424 ] Indication sending via https does not include client cert 
 
+Chad Smith, HP
+--------------
+04/09/2010 [ 2984214 ] double free error cimXmlGen.c: triggered by AssocatorNames
+
 J. Vinodhini, AMI
 -----------------
 03/14/2008 [ 1914551 ] sfcb file descriptor leaks

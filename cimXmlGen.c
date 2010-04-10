@@ -561,10 +561,10 @@ static int nsPath2xml(CMPIObjectPath * ci, UtilStringBuffer * sb)
        } else {
         SFCB_APPENDCHARS_BLOCK(sb, "localhost");
       }
+      free (hn);
    }
    SFCB_APPENDCHARS_BLOCK(sb, "</HOST>\n");
    
-   free (hn);
    lnsPath2xml(ci, sb);
    SFCB_APPENDCHARS_BLOCK(sb, "</NAMESPACEPATH>\n");
    _SFCB_RETURN(0);

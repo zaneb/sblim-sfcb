@@ -64,7 +64,7 @@ UtilList* tableReferenceList = NULL;
 UtilList* eList = NULL;
 UtilList* whereList = NULL;
 UtilList* assignmentList = NULL;
-static char* semanticError(char* s1, char* s2, char* s3);
+static char* semanticError(const char* s1, const char* s2, const char* s3);
 static UtilList* cloneAL();
 
 %}
@@ -480,7 +480,7 @@ expressionlight://erlaubt operationen der Art +=,...
 	| TOK_IDENTIFIER '-' number {$$ = newExpressionLight($1,SUB,$3);}
 	| TOK_IDENTIFIER '*' number {$$ = newExpressionLight($1,MUL,$3);}
 	| TOK_IDENTIFIER '/' number {$$ = newExpressionLight($1,DIV,$3);}
-	| TOK_CONCAT TOK_STRING {$$ = newExpressionLight($1,CONCAT,$2);}
+ 	| TOK_CONCAT TOK_STRING {$$ = newExpressionLight(NULL,CONCAT,$2);}
 	| TOK_STRING {$$ = newExpressionLight(NULL,ASS,$1);}
 	| number {$$ = newExpressionLight(NULL,ASN,$1);}
 ;
@@ -1783,7 +1783,7 @@ static UtilList* cloneAL(){
 	return res;
 }
 
-static char* semanticError(char* s1, char* s2, char* s3){
+static char* semanticError(const char* s1, const char* s2, const char* s3){
 	char *message = (char *) malloc(strlen(s1)+strlen(s2)+strlen(s3)+1);
 	strcpy(message,s1);
 	strcat(message,s2);

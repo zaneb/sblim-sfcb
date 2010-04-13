@@ -150,8 +150,8 @@ struct call;
 typedef struct call Call;
 
 struct call {
-	char * tableName;
-	char * procedureName; 
+	const char * tableName;
+	const char * procedureName; 
 	UtilList * keyList;
 	UtilList * parameterList;
 	void (*free)();
@@ -161,7 +161,7 @@ struct call {
 
 
 struct updIns {
-	char * tname;
+	const char * tname;
 	UtilList * colList; 
 	UtilList * assignmentList;
 	UtilList * where;
@@ -171,7 +171,7 @@ struct updIns {
 
 
 struct insert {
-	char * tname;
+	const char * tname;
 	FullSelect* fs;
 	UtilList * tupelList; 
 	void (*free)();
@@ -181,19 +181,19 @@ struct insert {
 struct expressionLight {
 	int op;
 	int sqltype;
-	char * name;
-	char * value; 
+	const char * name;
+	const char * value; 
 	void (*free)();
 	
 };
 
 struct classDef {
 	int fieldCount;
-	char * className;
+	const char * className;
 	UtilList * fieldNameList; //Columns stecken da drin
 	int fNameLength;
-	char * superclass;
-	char * description;
+	const char * superclass;
+	const char * description;
 };
 
 
@@ -201,7 +201,7 @@ struct classDef {
 
 
 struct sqlWarning {
-	char* sqlstate;
+	const char* sqlstate;
 	char* reason;
 	void (*setWarning)();
 	void (*free)();
@@ -212,7 +212,7 @@ struct resultSet {
 	char* query;
 	char* meta;
 	char* tupel;
-	void (*setWarning)(ResultSet *this, char* s, char *r);
+	void (*setWarning)(ResultSet *this, const char* s, char *r);
 	void (*addMeta)(ResultSet *this, Projection* prj);
 	int (*addSet)(ResultSet *this, AvlTree* t);
 	void (*free)();
@@ -223,7 +223,7 @@ struct sqlStatement {
 	int type;//select, insert, update...
 	ResultSet* rs;
 	void* stmt;
-	char* db;//namespace
+	const char* db;//namespace
 	//int currentType;
 	UtilList* cnode;
 	FullSelect * lasttos, *lastFs;//um Sigma in fs einfügen zu können. wenn der parser das sigma erstellt hat ist aber setB schon gefüllt und das aktuelle fs schon vom stack genommen.
@@ -253,7 +253,7 @@ struct subSelect {
 	CrossJoin* cross;
 	int isSet;
 	AvlTree* set;
-	char* setName;
+	const char* setName;
 	char* aliasName;
 	void (*free)();
 	void (*addNode)(SubSelect* this,int type, void* value);
@@ -269,13 +269,13 @@ struct projection {
 };
 
 struct column {
-	char* tableName;
-	char* tableAlias;
-	char* colName;
-	char* colAlias;
+	const char* tableName;
+	const char* tableAlias;
+	const char* colName;
+	const char* colAlias;
 	int colSQLType;
 	int isKey;
-	char *description;
+	const char *description;
 	void (*free)();
 };
 
@@ -328,44 +328,44 @@ struct sigma{
 
 
 /*Konstruktoren, zu den oben definierten Datentypen*/
-ResultSet* newResultSet(char* query);
+ResultSet* newResultSet(const char* query);
 //SqlStatement* newSqlStatement(int type, ResultSet* rs);
 FullSelect* newFullSelect();
 SubSelect* newSubSelect();
 SubSelect* newSubSelectC(SubSelect* sbsA,SubSelect* sbsB, int type);
 Projection* newProjection(int mode, UtilList* ul);
-Column* newColumn(char* tableName,char* tableAlias, char* colName, char* colAlias, int colSQLType,int isKey);
+Column* newColumn(const char* tableName, const char* tableAlias, const char* colName, const char* colAlias, int colSQLType,int isKey);
 Selection* newSelection(UtilList* orderBy, int fetchFirst);
 CrossJoin* newCrossJoin(SubSelect* sbsA,SubSelect* sbsB, int type);
 Row* newRow(int size);
 Order *newOrder(int nr, int type, int order);
 Sigma* newSigma(Column* colA, int op,char* value, Column* colB,char* valueB);
-ExpressionLight* newExpressionLight(char* name, int op,char* value);
-UpdIns* newUpdIns(char* tname, UtilList* colList,UtilList* assignmentList,UtilList* where);
-Insert* newInsert(char* tname);
-ClassDef* newClassDef(int fieldCount, char * className, UtilList * fieldNameList, int fNameLength, char * superclass);
+ExpressionLight* newExpressionLight(const char* name, int op, const char* value);
+UpdIns* newUpdIns(const char* tname, UtilList* colList,UtilList* assignmentList,UtilList* where);
+Insert* newInsert(const char* tname);
+ClassDef* newClassDef(int fieldCount, const char * className, UtilList * fieldNameList, int fNameLength, const char * superclass);
 Call* newCall(char * tname, char * pname, UtilList * klist, UtilList * pList);
 
 
 
 
 /*Definition der Schnittstelle zum CIMOM, über die Zugfriff auf die Daten erlangt wird*/
-CMPIEnumeration * enumInstances(char * ns, char * cn);
-int createInstance(char * ns, char * cn, UtilList * ins);
-int createClass(char * ns, char * cn, char * scn, UtilList * colDef);
-int deleteClass(char * ns, char * cn);
-CMPIValue * string2cmpival(char * value, int type);
-int deleteInstance(char * ns, char * cn, UtilList *al);
-int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl);
-UtilList * getClassNames(char * ns, char *filter);
-UtilList * invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl);
+CMPIEnumeration * enumInstances(const char * ns, const char * cn);
+int createInstance(const char * ns, const char * cn, UtilList * ins);
+int createClass(const char * ns, const char * cn, const char * scn, UtilList * colDef);
+int deleteClass(const char * ns, const char * cn);
+CMPIValue * string2cmpival(const char * value, int type);
+int deleteInstance(const char * ns, const char * cn, UtilList *al);
+int updateInstance(const char * ns, const char * cn, UtilList *al,UtilList *kl);
+UtilList * getClassNames(const char * ns, const char *filter);
+UtilList * invokeMethod(const char * ns, const char * cn, const char * mn, UtilList *pl,UtilList *kl);
 ClassDef * getClassDef(const char *ns, const char *cn);
 
 /*Der Teil des SQL-Prozessors, der die Metaanfragen bearbeitet*/
 /*geht über den Parser, das Ergebnis-Resultset muss noch als Antwort codiert werden*/
-ResultSet *createRS(char *query, int *rc);
+ResultSet *createRS(const char *query, int *rc);
 /*die Anfrage wird innerhalb der Funktion bearbeitet und gleich als Antworstring codiert*/
-char * processMetaTables(char * filter, char* db);
-char * processMetaColumns(char * filter,char * filtercol, char* db);
-char * processSuperTables(char * filter, char* db);
-char * processKeyTable(char * filter,char * db);
+char * processMetaTables(const char * filter, const char* db);
+char * processMetaColumns(const char * filter,const char * filtercol, const char* db);
+char * processSuperTables(const char * filter, const char* db);
+char * processKeyTable(const char * filter, const char * db);

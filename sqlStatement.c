@@ -1,4 +1,3 @@
-
 /*
  * sqlStatement.c
  *
@@ -58,7 +57,7 @@ extern CMPIConstClass *relocateSerializedConstClass(void *area);
 extern CMPIConstClass *getConstClass(const char *ns, const char *cn);
 extern CMPIConstClass initConstClass(ClClass *cl);
 extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
-extern CMPIValue str2CMPIValue(CMPIType type, char *val, XtokValueReference *ref);
+extern CMPIValue str2CMPIValue(CMPIType type, const char *val, XtokValueReference *ref);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
 extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array, CMPICount index, CMPIValue * val, CMPIType type);
 extern void closeProviderContext(BinRequestContext * ctx);
@@ -79,7 +78,7 @@ extern int sfcSqlparse(void* stmt);
 extern UtilList *newList();
 extern UtilStringBuffer *newStringBuffer(int s);
 
-static char *q = NULL;
+static const char *current_query = NULL;
 static int ofs = 0;
 static ResultSet* rs = NULL;
 
@@ -106,8 +105,8 @@ static void freeSel(Selection** this);
 static void freeRow(Row** this);
 static void freeOr(Order** this);
 static void freeIns(Insert** this);
-static void setWarningRs(ResultSet *this, char* s, char *r);
-static void setWarning(SqlWarning *this, char* s, char *r);
+static void setWarningRs(ResultSet *this, const char* s, char *r);
+static void setWarning(SqlWarning *this, const char* s, char *r);
 static void negateSi(Sigma* this);
 static void freeSi(Sigma** this);
 static void freeExL(ExpressionLight** this);
@@ -116,7 +115,7 @@ static void addWhereListSbs(SubSelect* this, UtilList *ul);
 
 
 /*Konstruktoren*/
-Call* newCall(char * tname, char * pname, UtilList * klist, UtilList * plist) {
+Call* newCall(const char * tname, const char * pname, UtilList * klist, UtilList * plist) {
 	Call* this = (Call*) calloc(1, sizeof(Call));
 	this->tableName = tname;
 	this->procedureName = pname;
@@ -134,7 +133,7 @@ SqlWarning* newSqlWarning() {
 	return this;
 }
 
-Insert* newInsert(char* tname) {
+Insert* newInsert(const char* tname) {
 	Insert* this = (Insert*) calloc(1, sizeof(Insert));
 	this->tname = tname;
 	this->tupelList = newList();
@@ -142,12 +141,12 @@ Insert* newInsert(char* tname) {
 	return this;
 }
 
-ResultSet* newResultSet(char* query) {
+ResultSet* newResultSet(const char* query) {
 	ResultSet* this = (ResultSet*) calloc(1, sizeof(ResultSet));
 	this->sw = newSqlWarning();
-	this->sw->reason = "Parsing in Progress";
+	this->sw->reason = strdup("Parsing in Progress");
    	this->sw->sqlstate = "!!!!!";
-	this->query = query;
+	this->query = strdup(query);
 	this->setWarning = setWarningRs; 
 	this->addMeta = addMetaRset;
 	this->addSet = addSetRset;
@@ -204,7 +203,7 @@ Projection* newProjection(int mode, UtilList* ul) {
 	return this;
 }
 
-ExpressionLight* newExpressionLight(char* name, int op,char* value) {
+ExpressionLight* newExpressionLight(const char* name, int op, const char* value) {
 	ExpressionLight* this = (ExpressionLight*) calloc(1, sizeof(ExpressionLight));
 	this->op = op;
 	this->name = name;
@@ -213,7 +212,7 @@ ExpressionLight* newExpressionLight(char* name, int op,char* value) {
 	return this;	
 }
 
-Column* newColumn(char* tableName,char* tableAlias, char* colName, char* colAlias, int colSQLType,int isKey) {
+Column* newColumn(const char* tableName, const char* tableAlias, const char* colName, const char* colAlias, int colSQLType,int isKey) {
 	Column* this = (Column*) calloc(1, sizeof(Column));
 	if(tableName!=NULL){
 //		this->tableName = (char*) malloc(sizeof(tableName));
@@ -255,7 +254,7 @@ CrossJoin* newCrossJoin(SubSelect* sbsA,SubSelect* sbsB, int type){
 	return this;
 }
 
-UpdIns* newUpdIns(char* tname, UtilList* colList,UtilList* assignmentList,UtilList* where){
+UpdIns* newUpdIns(const char* tname, UtilList* colList,UtilList* assignmentList,UtilList* where){
 	UpdIns* this = (UpdIns*) calloc(1, sizeof(UpdIns));	
 	this->tname = tname;
 	this->colList = colList;
@@ -274,7 +273,7 @@ Row* newRow(int size){
 	return this;
 }
 
-ClassDef* newClassDef(int fieldCount, char * className, UtilList * fieldNameList, int fNameLength,char * superclass) {
+ClassDef* newClassDef(int fieldCount, const char * className, UtilList * fieldNameList, int fNameLength, const char * superclass) {
 	ClassDef* this = (ClassDef*) calloc(1, sizeof(ClassDef));	
 	this->className = className;
 	this->fieldCount = fieldCount;
@@ -298,9 +297,9 @@ Sigma* newSigma(Column* colA, int op,char* value, Column* colB,char* valueB){
 	Sigma* this = (Sigma*) calloc(1, sizeof(Sigma));
 	this->colA = colA;
 	this->op = op;
-	this->value = value;
+	this->value = strdup(value);
 	this->colB = colB;
-	this->valueB = valueB;
+	this->valueB = strdup(valueB);
 	this->link = UNDEF;
 	this->free = freeSi;
 	this->negate = negateSi;
@@ -547,8 +546,6 @@ static void freeCall(Call** this) {
 /*Destruktor*/
 static void freeWarn(SqlWarning** this) {
 	SqlWarning * t = *this;
-	FREE(t->reason);
-	FREE(t->sqlstate);
 	FREE(t);
 }
 /*
@@ -750,7 +747,7 @@ static int addSetRset(ResultSet *this, AvlTree *t){
 	
 	//printf("afsf\n");
 	if(t==NULL){
-		this->sw->reason = "INTERNAL ERROR";
+                this->sw->reason = strdup("INTERNAL ERROR");
 		this->sw->sqlstate ="XX000";
 		return 1;	
 	}
@@ -1088,7 +1085,7 @@ static int calculateStm(SqlStatement* this) {
 	FullSelect* fs;
 	Insert * ins;
 	UpdIns * tupel; 
-	int i,c,tos;
+	int i,c=0,tos;
 	AvlNode *p, **stack;
 	ClassDef *cd;
 	SubSelect * sb;
@@ -1113,12 +1110,12 @@ static int calculateStm(SqlStatement* this) {
 
 			  r = newRow(ul->ft->size(ul));
 			  for(el = (ExpressionLight*)ul->ft->getFirst(ul),i=0;el;el = (ExpressionLight*)ul->ft->getNext(ul),i++){
-			    r->row[i] = el->value;
+			    r->row[i] = strdup(el->value);
 			    char * tmp = r->row[i];			    
 			    while(*tmp!=0){
 			      if(*tmp=='\n')
 				*tmp=',';
-			      *tmp++;
+			      tmp++;
 			    }// printf("--- ::: %s \n###%s\n",r->row[i], el->name);
 			    colList->ft->append(colList,newColumn("CALL",NULL, el->name, NULL,el->sqltype,NKEY));
 			  }	
@@ -1128,13 +1125,13 @@ static int calculateStm(SqlStatement* this) {
 			  this->rs->addSet(this->rs,t);
 			  
 			  this->rs->addMeta(this->rs,pi);
-			  this->rs->sw->reason = "Successful Completion";
+			  this->rs->sw->reason = strdup("Successful Completion");
 			  this->rs->sw->sqlstate = "00000";
 			  return 0;
 			  //this->rs->meta = "<EMPTY>";
 			  //this->rs->tupel = "METHOD INVOKED";
 			}else{
-				this->rs->sw->reason = "SQL ROUTINE EXCEPTION";
+			        this->rs->sw->reason = strdup("SQL ROUTINE EXCEPTION");
 				this->rs->sw->sqlstate ="2F000";	
 				return 1;
 			}
@@ -1146,7 +1143,7 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->meta = "<EMPTY>";
 				this->rs->tupel	= "TABLE CREATED";
 			}else{
-				this->rs->sw->reason = "INTERNAL ERROR";
+			        this->rs->sw->reason = strdup("INTERNAL ERROR");
 				this->rs->sw->sqlstate ="XX000";	
 			}
 			return c;
@@ -1205,7 +1202,7 @@ static int calculateStm(SqlStatement* this) {
 					}
 					//printf("...\n");
 					if((c=deleteInstance(this->db,tupel->tname,al))!=0){
-						this->rs->sw->reason = "INTERNAL ERROR";
+                                                this->rs->sw->reason = strdup("INTERNAL ERROR");
 						this->rs->sw->sqlstate ="XX000";
 						return 1;
 					}
@@ -1243,11 +1240,11 @@ static int calculateStm(SqlStatement* this) {
 				//printf("insert... %d\n",ins->tupelList->ft->size(ins->tupelList));
 				if((c=createInstance(this->db,ins->tname,tupel->assignmentList))!=0){
 					if(c==CMPI_RC_ERR_ALREADY_EXISTS){
-						this->rs->sw->reason = "WARNING:\nTupel already insered";
+					        this->rs->sw->reason = strdup("WARNING:\nTupel already insered");
 						this->rs->sw->sqlstate ="01000";
 					}
 					else{
-						this->rs->sw->reason = "INTERNAL ERROR:\nINSERT into Table: error...";
+					        this->rs->sw->reason = strdup("INTERNAL ERROR:\nINSERT into Table: error...");
 						this->rs->sw->sqlstate ="XX000";
 					}
 					return 1;
@@ -1259,7 +1256,7 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->tupel	= "INSTANCE CREATED";
 			}
 			else{
-				this->rs->sw->reason = "INTERNAL ERROR";
+			        this->rs->sw->reason = strdup("INTERNAL ERROR");
 				this->rs->sw->sqlstate ="XX000";	
 			}	
 			return c;
@@ -1313,7 +1310,7 @@ static int calculateStm(SqlStatement* this) {
 					}
 					//printf("...\n");
 					if((c=updateInstance(this->db,tupel->tname,tupel->assignmentList,al))!=0){
-						this->rs->sw->reason = "INTERNAL ERROR:\nUPDATE WHERE: error...";
+					  this->rs->sw->reason = strdup("INTERNAL ERROR:\nUPDATE WHERE: error...");
 						this->rs->sw->sqlstate ="XX000";
 						return 1;
 					}
@@ -1325,7 +1322,7 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->meta = "<EMPTY>";
 				this->rs->tupel	= "TUPEL(S) UPDATED";
 			}else{
-				this->rs->sw->reason = "INTERNAL ERROR";
+			        this->rs->sw->reason = strdup("INTERNAL ERROR");
 				this->rs->sw->sqlstate ="XX000";	
 			}
 		
@@ -1339,7 +1336,7 @@ static int calculateStm(SqlStatement* this) {
 				this->rs->meta = "<EMPTY>";
 				this->rs->tupel	= "TABLE DROPED";
 			}else{
-				this->rs->sw->reason = "INTERNAL ERROR";
+			        this->rs->sw->reason = strdup("INTERNAL ERROR");
 				this->rs->sw->sqlstate ="XX000";	
 			}
 			//printf("return DROP: %d\n",c);
@@ -1353,7 +1350,7 @@ static int calculateStm(SqlStatement* this) {
 			
 			return c;
 		default://Fehlermeldung, obwohl es nicht vorkommen sollte...
-			this->rs->sw->reason = "FEATURE NOT SUPPORTED:\nNot supported";
+		        this->rs->sw->reason = strdup("FEATURE NOT SUPPORTED:\nNot supported");
 				this->rs->sw->sqlstate ="0A000";
 				return 1;	
 			break;
@@ -1490,7 +1487,7 @@ static AvlTree * fetchfirst(AvlTree * t,int ff){
 /*zwei Select-Statements werden über die Operation verknüpft zu einem. Fallunterschedungen, je nachdem, welchen Typ die einzenen Operanden haben*/
 static AvlTree* calculateFSel(FullSelect* this,char *db) {
   //printf("calculateFSel() %p\n",this);
-	AvlTree* avlt;
+	AvlTree* avlt = NULL;
 	 
 	if(this->type==EMPTY){
 		if(this->typeA==SUB){ 
@@ -1657,7 +1654,7 @@ static void freeSSel(SubSelect** this) {
 	//printf("freeSSel 1\n");
 	t->cross->free(&(t->cross));
 	//printf("freeSSel 2\n");
-	//FREE(t->aliasName);
+	FREE(t->aliasName);
 	//printf("freeSSel 3\n");
 	//FREE(t->setName);
 	//printf("freeSSel 4\n");
@@ -1709,6 +1706,9 @@ static char * value2string(CMPIData d){
          case CMPI_uint64:
             ul = d.value.uint64;
             break;
+	 default:
+	    ul = 0; 
+	    break;
          }
          sprintf(sp,"%llu", ul);
       }
@@ -1728,6 +1728,9 @@ static char * value2string(CMPIData d){
          case CMPI_sint64:
             sl = d.value.sint64;
             break;
+	 default:
+	    ul = 0; 
+	    break;
          }
          sprintf(sp,"%lld", sl);
       }
@@ -1797,7 +1800,7 @@ static void extractValue(CMPIData d, UtilStringBuffer * sb){
  * dauert ein enumInst länger und ist unnötig, wenn ein Syntaxfehler vorliegt)
  * Das kann man aber nicht machen, da enumInst nicht alle Properties zurückgibt!
  */
-static int getColumnNr(char * name,UtilList * ul){
+static int getColumnNr(const char * name,UtilList * ul){
 	Column *col;
 	int i;
 	for(i=0,col = (Column*) ul->ft->getFirst(ul);col;col = (Column*) ul->ft->getNext(ul),i++){
@@ -2055,7 +2058,7 @@ AvlTree * crossproduct(AvlTree* setA,AvlTree* setB,UtilList  *ul, int type){
 static AvlTree* calculateSSel(SubSelect* this,char * db) {
 	//printf("-- 0\n");
 	if(this->isSet!=1){
-		AvlTree *setA, *setB;
+		AvlTree *setA = NULL, *setB = NULL;
 		if(this->cross->setA!=NULL){
 			//printf("-- 1A\n");
 			setA = this->cross->setA->calculate(this->cross->setA);
@@ -2323,36 +2326,36 @@ static AvlTree* calculateCJoin(CrossJoin* this) {
 }
 
 
-static void setWarning(SqlWarning *this, char* s, char *r){
+static void setWarning(SqlWarning *this, const char* s, char *r){
 	this->reason = r;
 	this->sqlstate = s; 
 }
 
-static void setWarningRs(ResultSet *this, char* s, char *r){
+static void setWarningRs(ResultSet *this, const char* s, char *r){
 	this->sw->reason = r;
 	this->sw->sqlstate = s;
 }
 
-void setSqlWarning(char* s, char *r){
+void setSqlWarning(const char* s, char *r){
 	rs->sw->reason = r;
 	rs->sw->sqlstate = s;
 }
 
 //Sollte eine Object-Methode werden!!!
-void setMeta(char *meta){
+void setMeta(const char *meta){
 	rs->meta = meta;  
 }
 
 
 int sqlInput(char* buffer, int* done, int requested)
 {	
-    int left = strlen(q) - ofs;
+    int left = strlen(current_query) - ofs;
     if (left == 0) {
       *done = 0;
       return 0;
     }
     if (left < requested) requested = left;
-    memcpy(buffer,q+ofs,requested);
+    memcpy(buffer,current_query+ofs,requested);
     ofs += requested;
     *done = requested;
     return *done;
@@ -2361,14 +2364,14 @@ int sqlInput(char* buffer, int* done, int requested)
 
 
 /*wird vom SQL-Prozessor aufgerufen, wenn eine Anfage (Komanndo der Gruppe 2) bearbeitet werden soll*/
-ResultSet *createRS(char *query, int *rc){//wird CommHndl noch benutzt?
+ResultSet *createRS(const char *query, int *rc){//wird CommHndl noch benutzt?
 
 	int p;
 	
  	rs = newResultSet(query);
 	SqlStatement * stm = newSqlStatement(UNDEF,rs);
 	
-	q = query;
+	current_query = query;
    	ofs = 0;
 
     p = sfcSqlparse(stm);
@@ -2431,8 +2434,8 @@ char * type2cmpiString(int type){
 /*Hilfsfunktion für enumInstances*/
 CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp, int arrLen){
    	int i, c, j;
-   	void *object;
-   	CMPIArray *ar;
+        CMPIValue       value;
+        CMPIArray       *ar;
    	CMPIEnumeration *enm;
    	CMPIStatus rc;
 
@@ -2440,8 +2443,8 @@ CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp,
    	ar = NewCMPIArray(arrLen, binCtx->type, NULL);
    	for (c = 0, i = 0; i < binCtx->rCount; i++) {
       	for (j = 0; j < resp[i]->count; c++, j++) {
-         	object = relocateSerializedInstance(resp[i]->object[j].data);
-         	rc=arraySetElementNotTrackedAt(ar,c, &object, binCtx->type);//object???.
+          value.inst = relocateSerializedInstance(resp[i]->object[j].data);
+          rc = arraySetElementNotTrackedAt(ar, c, &value, binCtx->type);   // object???.
       	}
    	}
 
@@ -2454,7 +2457,7 @@ CMPIEnumeration * createEnum(BinRequestContext * binCtx, BinResponseHdr ** resp,
 
 /*Es folgt die Implementation der Schnittstelle zu den Providern. Genauere Erklärung siehe Tabelle in der Arbeit*/
 
-CMPIEnumeration * enumInstances(char * ns, char * cn) {
+CMPIEnumeration * enumInstances(const char * ns, const char * cn) {
 
  	RequestHdr * hdr = NULL;
    	XtokEnumInstances reqq;
@@ -2463,7 +2466,9 @@ CMPIEnumeration * enumInstances(char * ns, char * cn) {
 	reqq.op.nameSpace = setCharsMsgSegment(ns);
     reqq.op.className = setCharsMsgSegment(cn);
     reqq.flags = 0;//
-	reqq.propertyList = NULL;
+       reqq.propertyList.max = 0;
+       reqq.propertyList.next = 0;
+       reqq.propertyList.values = NULL;
     reqq.properties = 0;
 
 	RequestHdr  hdrq;	
@@ -2521,7 +2526,7 @@ CMPIEnumeration * enumInstances(char * ns, char * cn) {
 }
 
 
-int  createInstance(char * ns, char * cn, UtilList * ins) {
+int  createInstance(const char * ns, const char * cn, UtilList * ins) {
 	RequestHdr * hdr = NULL;
    	
    	XtokCreateInstance reqq;
@@ -2594,7 +2599,7 @@ int  createInstance(char * ns, char * cn, UtilList * ins) {
 }
 
 
-int createClass(char * ns, char * cn, char * scn, UtilList * colDef) {
+int createClass(const char * ns, const char * cn, const char * scn, UtilList * colDef) {
    	//printf("%s %s %s\n",ns,cn,scn);
 	RequestHdr * hdr = NULL;
    	
@@ -2604,8 +2609,8 @@ int createClass(char * ns, char * cn, char * scn, UtilList * colDef) {
 	reqq.op.type = OPS_CreateClass;
 	reqq.op.nameSpace=setCharsMsgSegment(ns);
 	reqq.op.className=setCharsMsgSegment(cn);
-	reqq.superClass=scn;
-	reqq.cls.className = cn;
+	reqq.superClass = (char*)scn;
+	reqq.cls.className = (char*)cn;
 	
 	RequestHdr  hdrq;	
 	unsigned long size = sizeof(XtokCreateClass);
@@ -2653,7 +2658,7 @@ int createClass(char * ns, char * cn, char * scn, UtilList * colDef) {
 	      	d.state=CMPI_goodValue;
 	      	//d.value=//str2CMPIValue(col->colSQLType,NULL,NULL);       
 	      	d.type=col->colSQLType;
-	      	propId=ClClassAddProperty(cl,col->colName,d);//(cl, p->name, d);
+                propId = ClClassAddProperty(cl, col->colName, d, NULL); // (cl, p->name,
 	//      	qs=&p->val.qualifiers;
 	      	prop=((ClProperty*)ClObjectGetClSection(&cl->hdr,&cl->properties))+propId-1;
 	//      	for (q=qs->first; q; q=q->next) {
@@ -2704,7 +2709,7 @@ int createClass(char * ns, char * cn, char * scn, UtilList * colDef) {
    	return 1;
 }
 
-int deleteClass(char * ns, char * cn) {
+int deleteClass(const char * ns, const char * cn) {
 	
 	RequestHdr * hdr = NULL;
    	
@@ -2713,7 +2718,7 @@ int deleteClass(char * ns, char * cn) {
 	reqq.op.type = OPS_DeleteClass;
 	reqq.op.nameSpace=setCharsMsgSegment(ns);
 	reqq.op.className=setCharsMsgSegment(cn);
-	reqq.className = cn;
+	reqq.className = (char*)cn;
 	
 	
 	RequestHdr  hdrq;	
@@ -2770,14 +2775,14 @@ int deleteClass(char * ns, char * cn) {
 
 
 /*Hilfssfunktion für die Erzeugung einer Instanz, da während der SQL-Verarbeitung alle Daten als Strings behandelt werden*/
-CMPIValue * string2cmpival(char * value, int type){
+CMPIValue * string2cmpival(const char * value, int type){
 	CMPIValue * val = (CMPIValue*) calloc(1, sizeof(CMPIValue));
 	switch (type & ~CMPI_ARRAY) {
    		case CMPI_chars:
-   			val->chars = value;
+		        val->chars = strdup(value);
    			break; 
    		case CMPI_string:
-      		val->string = sfcb_native_new_CMPIString(value, NULL);
+		  val->string = sfcb_native_new_CMPIString(value, NULL, 0);
    			//val->chars = value;
    			break; 
    		case CMPI_sint64:
@@ -2829,7 +2834,7 @@ CMPIValue * string2cmpival(char * value, int type){
 }
 
 
-int deleteInstance(char * ns, char * cn, UtilList *al) {
+int deleteInstance(const char * ns, const char * cn, UtilList *al) {
    	RequestHdr * hdr = NULL;
    	
     XtokDeleteInstance reqq;
@@ -2897,7 +2902,7 @@ int deleteInstance(char * ns, char * cn, UtilList *al) {
    	return 1;
 }
 
-int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl) {
+int updateInstance(const char * ns, const char * cn, UtilList *al,UtilList *kl) {
 	RequestHdr * hdr = NULL;
    	
     XtokModifyInstance reqq;
@@ -2905,7 +2910,9 @@ int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl) {
 	reqq.op.type = OPS_ModifyInstance;
 	reqq.op.nameSpace=setCharsMsgSegment(ns);
 	reqq.op.className=setCharsMsgSegment(cn);
-	reqq.propertyList = NULL;
+        reqq.propertyList.max = 0;
+        reqq.propertyList.next = 0;
+        reqq.propertyList.values = NULL;
 	reqq.properties=0;
 	//printf("1 %s %s\n",ns,cn);
 	
@@ -2992,7 +2999,7 @@ int updateInstance(char * ns, char * cn, UtilList *al,UtilList *kl) {
 }
 
 //filter: *<pattern>* mit strstr!=NULL
-UtilList * getClassNames(char * ns, char *filter) {
+UtilList * getClassNames(const char * ns, const char *filter) {
 
  	UtilList *cn;
  	RequestHdr * hdr = NULL;
@@ -3052,22 +3059,22 @@ UtilList * getClassNames(char * ns, char *filter) {
       		CMPIArray *ar = NewCMPIArray(l, binCtx.type, NULL);
    			//printf("l: %d\n",l);
       		for (c = 0, i = 0; i < binCtx.rCount; i++) {
-      			void *object;
+                        union { CMPIValue value; CMPIConstClass *class; } object;
       			for (j = 0; j < resp[i]->count; c++, j++) {
          			if (binCtx.type == CMPI_ref)
-            			object = relocateSerializedObjectPath(resp[i]->object[j].data);
+                                object.value.ref = relocateSerializedObjectPath(resp[i]->object[j].data);
          			else if (binCtx.type == CMPI_instance)
-            			object = relocateSerializedInstance(resp[i]->object[j].data);
+                                object.value.inst = relocateSerializedInstance(resp[i]->object[j].data);
          			else if (binCtx.type == CMPI_class) {
-            			object=relocateSerializedConstClass(resp[i]->object[j].data);
+                                object.class = relocateSerializedConstClass(resp[i]->object[j].data);
          			}   
-         			arraySetElementNotTrackedAt(ar,c, (CMPIValue*)&object, binCtx.type);
+                                arraySetElementNotTrackedAt(ar, c, &object.value, binCtx.type);
       			}
    			}
       		CMPIEnumeration *enm = sfcb_native_new_CMPIEnumeration(ar, NULL);
    			while (CMHasNext(enm, NULL)) {
    				CMPIObjectPath *cop = CMGetNext(enm, NULL).value.ref;
-         		char *kk = opGetClassNameChars(cop);
+         		const char *kk = opGetClassNameChars(cop);
          		if(filter==NULL||strstr(kk,filter)!=NULL){
          			cn->ft->append(cn,kk);
          			//printf("%s\n",kk);
@@ -3082,7 +3089,7 @@ UtilList * getClassNames(char * ns, char *filter) {
 }
 
 
-UtilList * invokeMethod(char * ns, char * cn, char * mn, UtilList *pl,UtilList *kl) {
+UtilList * invokeMethod(const char * ns, const char * cn, const char * mn, UtilList *pl,UtilList *kl) {
    	RequestHdr * hdr = NULL;
   //printf("%s %s %s\n",ns,cn,mn);
     XtokMethodCall reqq;
@@ -3196,7 +3203,7 @@ ClassDef * getClassDef(const char *ns, const char *cn){
     CMPIConstClass * ccl = getConstClass(ns,cn);
         
     CMPIStatus rc;
-  	CMPIString **name = NULL;
+  	CMPIString *name;
   	unsigned long quals = 0;
   	int count = 0;
   	if(ccl==NULL)
@@ -3212,24 +3219,27 @@ ClassDef * getClassDef(const char *ns, const char *cn){
    	
    	
    	
-	char *dscr;
+	char *dscr = NULL;
 	UtilList *ul = newList();
 	ClassDef *cld = newClassDef(count,ccl->ft->getCharClassName(ccl),ul,0,ccl->ft->getCharSuperClassName(ccl));
 	
 	int m,j;
+        /* Extract class description */
 	for (i = 0, m = ClClassGetQualifierCount(cls); i < m; i++) {
-        CMPIString *name;
         CMPIData data = ccl->ft->getQualifierAt(ccl, i, &name, NULL);
+
         if(strcmp("Description",name->hdl)==0){
         	cld->description = (char*)data.value.string->hdl;
         }
     }
+        /* Extract property descriptions */
 	for (i = 0, l = cls->properties.used; i < l; i++) {
-  		CMPIData cd = ccl->ft->getPropertyAt(ccl, i, name, &rc);
+                CMPIData cd = ccl->ft->getPropertyAt(ccl, i, &name, &rc);
    		for (j = 0, m = ClClassGetPropQualifierCount(cls,i); j < m; j++) {
-	        CMPIString *name;
-	        CMPIData data = ccl->ft->getPropQualifierAt(ccl, i,j, &name, NULL);
-	        if(strcmp("Description",name->hdl)==0){
+                CMPIString *pqname;
+                CMPIData data =
+                ccl->ft->getPropQualifierAt(ccl, name->hdl, j, &pqname, NULL);
+                if (strcmp("Description", pqname->hdl) == 0) {
 	        	dscr = (char*)data.value.string->hdl;
 	        }
     	}		
@@ -3251,7 +3261,7 @@ ClassDef * getClassDef(const char *ns, const char *cn){
 /*es folgen die weiteren Prozessor-Funktionen
 */
 //leifert EMPTYSET zurueck, falls keine Tabelle zum Muster passt!
-char * processMetaTables(char * filter, char* db){
+char * processMetaTables(const char * filter, const char* db){
 	ResultSet * rs = newResultSet(NULL);
 	UtilList *ul = getClassNames(db,filter);
 	char *cn;
@@ -3261,16 +3271,16 @@ char * processMetaTables(char * filter, char* db){
 	for(cn=(char*)ul->ft->getFirst(ul);cn;cn=(char*)ul->ft->getNext(ul)){
 		cd = getClassDef(db,cn);
 		r = newRow(10);
-		r->row[0] = "NULL";
-		r->row[1] = "NULL";
-		r->row[2] = cd->className;
-		r->row[3] = "TABLE";
-		r->row[4] = cd->description;
-		r->row[5] = "NULL";
-		r->row[6] = "NULL";
-		r->row[7] = "NULL";
-		r->row[8] = "NULL";
-		r->row[9] = "NULL";
+		r->row[0] = strdup("NULL");
+	        r->row[1] = strdup("NULL");
+		r->row[2] = strdup(cd->className);
+		r->row[3] = strdup("TABLE");
+		r->row[4] = strdup(cd->description);
+		r->row[5] = strdup("NULL");
+		r->row[6] = strdup("NULL");
+		r->row[7] = strdup("NULL");
+		r->row[8] = strdup("NULL");
+		r->row[9] = strdup("NULL");
 		
 		t->insert(t,r);
 
@@ -3309,7 +3319,7 @@ char * processMetaTables(char * filter, char* db){
 }
 
 
-char * processMetaColumns(char * filter,char * filtercol, char* db){
+char * processMetaColumns(const char * filter, const char * filtercol, const char* db){
 	ResultSet * rs = newResultSet(NULL);
 	UtilList *ul = getClassNames(db,filter);
 	char *cn;
@@ -3325,28 +3335,28 @@ char * processMetaColumns(char * filter,char * filtercol, char* db){
 				continue;
 			
 			r = newRow(22);
-			r->row[0] = "NULL";
-			r->row[1] = "NULL";
-			r->row[2] = cd->className;
-			r->row[3] = col->colName;
-			r->row[4] = int2String(col->colSQLType);
-			r->row[5] = type2sqlString(col->colSQLType);
-			r->row[6] = "0";//Column-size. siehe java
-			r->row[7] = "0";//not used
-			r->row[8] = "0";//??
-			r->row[9] = "0";//??
-			r->row[10] = "0";//unknown -> in java.api nachschlagen
-			r->row[11] = col->description;
-			r->row[12] = "NULL";
-			r->row[13] = "0";//not used
-			r->row[14] = "0";//not used
-			r->row[15] = "0";//das hier zu berechnen ist zu aufwendig. im jdbc gibts glaub ich solch eine Methode	
-			r->row[16] = int2String(i+1); 
-			r->row[17] = "";
-			r->row[18] = "NULL";
-			r->row[19] = "NULL";
-			r->row[20] = "NULL";
-			r->row[21] = "0";
+			r->row[0] = strdup("NULL");
+			r->row[1] = strdup("NULL");
+			r->row[2] = strdup(cd->className);
+			r->row[3] = strdup(col->colName);
+			r->row[4] = strdup(int2String(col->colSQLType));
+			r->row[5] = strdup(type2sqlString(col->colSQLType));
+			r->row[6] = strdup("0");//Column-size. siehe java
+			r->row[7] = strdup("0");//not used
+			r->row[8] = strdup("0");//??
+			r->row[9] = strdup("0");//??
+			r->row[10] = strdup("0");//unknown -> in java.api nachschlagen
+			r->row[11] = strdup(col->description);
+			r->row[12] = strdup("NULL");
+			r->row[13] = strdup("0");//not used
+			r->row[14] = strdup("0");//not used
+			r->row[15] = strdup("0");//das hier zu berechnen ist zu aufwendig. im jdbc gibts glaub ich solch eine Methode	
+			r->row[16] = strdup(int2String(i+1)); 
+			r->row[17] = strdup("");
+			r->row[18] = strdup("NULL");
+			r->row[19] = strdup("NULL");
+			r->row[20] = strdup("NULL");
+			r->row[21] = strdup("0");
 			t->insert(t,r);
 			
 		}			
@@ -3396,7 +3406,7 @@ char * processMetaColumns(char * filter,char * filtercol, char* db){
 }
 
 	
-char * processSuperTables(char * filter, char* db){
+char * processSuperTables(const char * filter, const char* db){
 	ResultSet * rs = newResultSet(NULL);
 	UtilList *ul = getClassNames(db,filter);
 	char *cn;
@@ -3406,10 +3416,10 @@ char * processSuperTables(char * filter, char* db){
 	for(cn=(char*)ul->ft->getFirst(ul);cn;cn=(char*)ul->ft->getNext(ul)){
 		cd = getClassDef(db,cn);
 		r = newRow(4);
-		r->row[0] = "NULL";
-		r->row[1] = "NULL";
-		r->row[2] = cd->className;
-		r->row[3] = cd->superclass;
+		r->row[0] = strdup("NULL");
+		r->row[1] = strdup("NULL");
+		r->row[2] = strdup(cd->className);
+	        r->row[3] = strdup(cd->superclass);
 		
 		t->insert(t,r);
 
@@ -3441,7 +3451,7 @@ char * processSuperTables(char * filter, char* db){
 }	
 
 	
-char * processKeyTable(char * filter,char * db){
+char * processKeyTable(const char * filter, const char * db){
 	ResultSet * rs = newResultSet(NULL);
 	ClassDef * cd = getClassDef(db,filter);
 	Column * col;
@@ -3470,12 +3480,12 @@ char * processKeyTable(char * filter,char * db){
 		i++;
 	
 		r = newRow(6);
-		r->row[0] = "NULL";
-		r->row[1] = "NULL";
-		r->row[2] = cd->className;
-		r->row[3] = col->colName;
-		r->row[4] = "???";//ist das i?
-		r->row[5] = "NULL";
+		r->row[0] = strdup("NULL");
+		r->row[1] = strdup("NULL");
+		r->row[2] = strdup(cd->className);
+		r->row[3] = strdup(col->colName);
+		r->row[4] = strdup("???");//ist das i?
+		r->row[5] = strdup("NULL");
 		
 		t->insert(t,r);
 

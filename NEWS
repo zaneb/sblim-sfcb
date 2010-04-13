@@ -26,6 +26,7 @@ Bugs fixed:
 - 2979028 Modify SFCB to not abort for socket errors
 - 2979030 Restart the lexer when filter creation ends in a parsing err
 - 2984214 double free error cimXmlGen.c: triggered by AssocatorNames
+- 2978514 Compilation with --enable-jdbc fails
 
 Changes in 1.3.7
 ================

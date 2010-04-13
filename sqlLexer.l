@@ -25,6 +25,7 @@ extern int sqlInput(char* buffer, int* numRead, int numRequested);
 extern int yyErr(const char*);
 extern char * yyStrcpy(char *txt, int len);
 extern void setSqlWarning(char* s, char *r);
+extern char * sfcQueryStrcpy(char *txt, int len);
 
 #undef YY_INPUT
 #define YY_INPUT(BUF, NREAD, NREQUESTED) sqlInput(BUF, &NREAD, NREQUESTED)
@@ -682,7 +683,7 @@ QL_TRACE(("LEX: %s [???]\n", yytext));
     {
     tokenpos+=yyleng;
 	size_t n = strlen(yytext);
-	yylval.strValue=sfcQueryStrcpy(yytext,n);
+	yylval.strValue = sfcQueryStrcpy(yytext, n);
     }
 
     return TOK_IDENTIFIER;

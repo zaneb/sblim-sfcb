@@ -105,6 +105,7 @@ Klaus Kampf, Novell
 02/04/2010 [ 2945277 ] SFCB crashes on subscription without filter or handler prop
 03/12/2010 [ 2968656 ] cimcClientSfcbLocal.c does not clone return value
 03/12/2010 [ 2968198 ] CMPI_chars in sfcb - see #2967257
+04/13/2010 [ 2978514 ] Compilation with --enable-jdbc fails
 
 Mike Brasher, Inova
 -------------------

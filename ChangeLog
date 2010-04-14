@@ -6,12 +6,14 @@
 
 2010-04-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
-	* [ 2978514 ] Compilation with --enable-jdbc fails
+	* dbpAdapter.c, sqlLexer.l, sqlParser.y, sqlStatement.c, sqlStatement.h:
+	[ 2978514 ] Compilation with --enable-jdbc fails
 	(patch by Klaus Kampf)
 
 2010-04-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
-	* [ 2984214 ] double free error cimXmlGen.c: triggered by AssocatorNames 
+	* cimXmlGen.c:
+	[ 2984214 ] double free error cimXmlGen.c: triggered by AssocatorNames 
 	(patch by Chad Smith)
 
 2010-04-07  Chris Buccella  <buccella@linux.vnet.ibm.com>

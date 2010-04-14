@@ -4,6 +4,10 @@
 	[ 2979043 ] Fix leak in msgqueue.c during an error condition
 	(patch by John Powell)
 
+	* queryStatement.c, providerDrv.c:
+	[ 2979036 ] Always reset lexer and add error handing to activateFilter()
+	(patch by John Powell)
+
 2010-04-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* dbpAdapter.c, sqlLexer.l, sqlParser.y, sqlStatement.c, sqlStatement.h:

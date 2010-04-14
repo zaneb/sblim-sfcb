@@ -119,6 +119,7 @@ John Powell, VMWare
 04/07/2010 [ 2979028 ] Modify SFCB to not abort for socket errors
 04/07/2010 [ 2979030 ] Restart the lexer when filter creation ends in a parsing err
 04/14/2010 [ 2979043 ] Fix leak in msgqueue.c during an error condition
+04/14/2010 [ 2979036 ] Always reset lexer and add error handing to activateFilter()
 
 Norm Paxton, Novell
 -------------------

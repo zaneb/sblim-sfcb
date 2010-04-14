@@ -1,3 +1,9 @@
+2010-04-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* msgqueue.c:
+	[ 2979043 ] Fix leak in msgqueue.c during an error condition
+	(patch by John Powell)
+
 2010-04-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* [ 2978514 ] Compilation with --enable-jdbc fails

@@ -118,6 +118,7 @@ John Powell, VMWare
 01/20/2009 [ 2390533 ] Memory leak in httpAdapter.c
 04/07/2010 [ 2979028 ] Modify SFCB to not abort for socket errors
 04/07/2010 [ 2979030 ] Restart the lexer when filter creation ends in a parsing err
+04/14/2010 [ 2979043 ] Fix leak in msgqueue.c during an error condition
 
 Norm Paxton, Novell
 -------------------

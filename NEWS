@@ -6,6 +6,7 @@ New features:
 - 2963601 pywbem tests
 - 2961422 Single HTTP Adapter
 - 2980820 Indication Profile 1.1: New attr values.
+- 2990169 Bump downloaded CIM schema to 2.25
 
 Bugs fixed:
 - 2952616 internalProvider is not Threadsafe

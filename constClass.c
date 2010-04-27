@@ -291,6 +291,19 @@ static CMPIData getPropQualifier(CMPIConstClass * cc, const char* cp, const char
        return rv_notFound;
      }
    }
+   if (strcasecmp(cpq, "embeddedobject") == 0) {
+     unsigned long quals;
+     getPropertyQualsAt(cc,p-1,NULL,&quals,NULL,rc);
+     if (quals &  ClProperty_Q_EmbeddedObject) {
+       rv.type = CMPI_boolean;
+       rv.state = CMPI_goodValue;
+       rv.value.boolean = 1;
+       return rv;
+     } else {
+       return rv_notFound;
+     }
+   }
+
 
    for (i=0; i<num;i++) {
      if (ClClassGetPropQualifierAt(cls, p-1, i, &rv, &n) == 0 && strcasecmp(cpq,n) == 0) {

@@ -1,3 +1,8 @@
+2010-04-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* constClass.c, instance.c:
+	[ 2993137 ] CMSetProperty fails for CMPIInstance for EmbeddedObject
+
 2010-04-20  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* getSchema.sh.pre.in:

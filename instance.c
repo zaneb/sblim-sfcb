@@ -918,7 +918,6 @@ static void instFillDefaultProperties(struct native_instance *inst,
 	 CMPIData pqd = cc->ft->getPropQualifier(cc, CMGetCharsPtr(pn, NULL), "EmbeddedObject", NULL);
 	 if ((pqd.state == CMPI_goodValue) && (pqd.value.boolean = 1)) {
 	    pd.type = CMPI_instance;
-	    fprintf(stderr, "yes, %s qual of %s is EO\n", CMGetCharPtr(pn), cn);
 	 }
 
 	 if (ps.rc == CMPI_RC_OK && pn ) {

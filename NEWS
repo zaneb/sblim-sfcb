@@ -30,6 +30,7 @@ Bugs fixed:
 - 2978514 Compilation with --enable-jdbc fails
 - 2979043 Fix leak in msgqueue.c during an error condition
 - 2979036 Always reset lexer and add error handing to activateFilter()
+- 2993137 CMSetProperty fails for CMPIInstance for EmbeddedObject
 
 Changes in 1.3.7
 ================

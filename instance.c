@@ -913,6 +913,14 @@ static void instFillDefaultProperties(struct native_instance *inst,
       while (pc > 0) {
 	 pc -= 1;
 	 pd = cc->ft->getPropertyAt(cc,pc,&pn,&ps);
+
+	 /* if this prop is an EmbeddedObject, force type to CMPI_instance to allow CMSetProperty with a CMPI_Instance */
+	 CMPIData pqd = cc->ft->getPropQualifier(cc, CMGetCharsPtr(pn, NULL), "EmbeddedObject", NULL);
+	 if ((pqd.state == CMPI_goodValue) && (pqd.value.boolean = 1)) {
+	    pd.type = CMPI_instance;
+	    fprintf(stderr, "yes, %s qual of %s is EO\n", CMGetCharPtr(pn), cn);
+	 }
+
 	 if (ps.rc == CMPI_RC_OK && pn ) {
 	    vp = &pd.value;
 	    if (pd.state & CMPI_nullValue) {

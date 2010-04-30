@@ -26,6 +26,14 @@ class DMY_RegisteredSubProfile : CIM_RegisteredSubProfile
 class SFCB_RegisteredProfile : CIM_RegisteredProfile
  {
  };
+instance of SFCB_RegisteredProfile
+{
+  InstanceID = "CIM:SFCB_PR";
+  RegisteredOrganization = 2;
+  RegisteredName = "Profile Registration";
+  RegisteredVersion = "1.0.0";
+  AdvertiseTypes = 3;
+};
 
 class DMY_Namespace : CIM_Namespace
 {

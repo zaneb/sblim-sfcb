@@ -23,7 +23,7 @@
 [$ProfileProvider$]
    provider: ProfileProvider
    location: sfcProfileProvider
-   type: instance method
+   type: instance
    unload: never
    namespace: root/interop
 #
@@ -79,7 +79,7 @@
 [SFCB_RegisteredProfile]
    provider: ProfileProvider
    location: sfcProfileProvider
-   type: instance method
+   type: instance
    unload: never
    namespace: root/interop
 #

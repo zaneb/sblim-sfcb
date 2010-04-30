@@ -1,3 +1,9 @@
+2010-04-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerRegister.c:
+	[ 2980524 ] providerRegister should collate namespaces
+	(patch by Klaus Kaempf)
+
 2010-04-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* constClass.c, instance.c:

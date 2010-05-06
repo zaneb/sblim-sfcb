@@ -31,7 +31,7 @@ generateIndication (const char *methodname, const CMPIContext * ctx)
   if (enabled)
     {
       cop =
-        CMNewObjectPath (broker, "root/cimv2",
+        CMNewObjectPath (broker, "root/interop",
                          "Test_Indication", &rc);
       inst = CMNewInstance (broker, cop, &rc);
 

@@ -1,3 +1,8 @@
+2010-05-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/TestProviders/cmpiTestIndicationProvider.c:
+	[ 2997928 ] Namespace incorrect in test_providers
+
 2010-04-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerRegister.c:

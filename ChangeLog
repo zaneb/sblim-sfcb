@@ -1,5 +1,10 @@
 2010-05-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* test/TestProviders/tests/IndRetryTest.sh:
+	[ 2997961 ] IndRetryTest.sh leaves IndicationSubscription modded
+
+2010-05-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* test/TestProviders/cmpiTestIndicationProvider.c:
 	[ 2997928 ] Namespace incorrect in test_providers
 

@@ -253,6 +253,16 @@ else
 fi
 
 cleanup
+
+# Set Indication_Service back to the defaults
+./GenMI.pl 20 3 2592000 2
+if [ $? -ne 0 ] 
+then
+    echo " GenMI.pl FAILED"
+    exit 1; 
+fi
+sendxml RIModIS.XML /dev/null
+
 rm RIEnumIS.result
 
 exit $RC

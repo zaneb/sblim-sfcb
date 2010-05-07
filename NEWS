@@ -33,6 +33,7 @@ Bugs fixed:
 - 2979036 Always reset lexer and add error handing to activateFilter()
 - 2993137 CMSetProperty fails for CMPIInstance for EmbeddedObject
 - 2997928 Namespace incorrect in test_providers
+- 2997961 IndRetryTest.sh leaves IndicationSubscription modded
 
 Changes in 1.3.7
 ================

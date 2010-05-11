@@ -36,6 +36,7 @@
 #include "native.h"
 #include "objectpath.h"
 #include <time.h>
+#include "instance.h"
 
 #define LOCALCLASSNAME "InteropProvider"
 
@@ -657,8 +658,8 @@ void initInterOp(
       }
       CMRelease(enm);
    } 
-   _SFCB_TRACE(1,("--- checking for sfcb_indicationsubscription"));
-   op=CMNewObjectPath(broker,"root/interop","sfcb_indicationsubscription",&st);
+   _SFCB_TRACE(1,("--- checking for cim_indicationsubscription"));
+   op=CMNewObjectPath(broker,"root/interop","cim_indicationsubscription",&st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
    enm = _broker->bft->enumerateInstances(_broker, ctxLocal, op, NULL, &st);
    CMRelease(ctxLocal);
@@ -674,6 +675,26 @@ void initInterOp(
    }
       
    _SFCB_EXIT(); 
+}
+
+/*
+ for CIM_IndicationSubscription we use the DeliveryFailureTime property to track
+ when indication delivery first failed.  However, this property is not a part of
+ the mof supplied by the DMTF, so we need to filter it out of instances being
+ returned to the client
+*/
+void
+filterInternalProps(CMPIInstance* ci)
+{
+
+  CMPIStatus      pst = { CMPI_RC_OK, NULL };
+  CMGetProperty(ci, "DeliveryFailureTime", &pst);
+  /* prop is set, need to clear it out */
+  if (pst.rc != CMPI_RC_ERR_NOT_FOUND) {
+    filterFlagProperty(ci, "DeliveryFailureTime");
+  }
+
+  return;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -733,9 +754,18 @@ CMPIStatus InteropProviderEnumInstances(
    enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
    CMRelease(ctxLocal);
                                       
-   while(enm && enm->ft->hasNext(enm, &st)) {
-       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);   
-   }   
+   while (enm && enm->ft->hasNext(enm, &st)) {
+
+     CMPIInstance* ci = (enm->ft->getNext(enm, &st)).value.inst;
+
+     /* need to check IndicationSubscription, since it may contain props used internally by sfcb */
+     CMPIObjectPath* cop = CMGetObjectPath(ci, &st);
+     if (strcasecmp(CMGetCharPtr(CMGetClassName(cop, NULL)), "cim_indicationsubscription") == 0) {
+       filterInternalProps(ci);
+     }
+
+     CMReturnInstance(rslt, ci);
+   }
    if(enm) CMRelease(enm);
    _SFCB_RETURN(st);
 }
@@ -759,6 +789,11 @@ CMPIStatus InteropProviderGetInstance(
 
    ci = _broker->bft->getInstance(_broker, ctxLocal, cop, properties, &st);
    if (st.rc==CMPI_RC_OK) {
+     /* need to check IndicationSubscription, since it may contain props used internally by sfcb */
+     if (strcasecmp(CMGetCharPtr(CMGetClassName(cop, NULL)), "cim_indicationsubscription") == 0) {
+       filterInternalProps(ci);
+     }
+
       CMReturnInstance(rslt, ci);
    }
    
@@ -796,13 +831,7 @@ CMPIStatus InteropProviderCreateInstance(
    memLinkObjectPath(copLocal);
    
    if(isa(nss, cns, "cim_indicationsubscription")) {
-      _SFCB_TRACE(1,("--- create sfcb_indicationsubscription"));
-
-      if (strcasecmp(cns,"CIM_IndicationSubscription")==0) {
-        // Set the class name to our defined extension class
-        CMSetClassName(copLocal,"SFCB_IndicationSubscription");
-        CMSetObjectPath(ciLocal, copLocal);
-      }
+      _SFCB_TRACE(1,("--- create cim_indicationsubscription"));
 
       st=processSubscription(_broker,ctx,ciLocal,copLocal);
    }

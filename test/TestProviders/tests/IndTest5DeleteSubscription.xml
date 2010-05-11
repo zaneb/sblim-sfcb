@@ -8,7 +8,7 @@
           <NAMESPACE NAME="interop"/>
         </LOCALNAMESPACEPATH>
         <IPARAMVALUE NAME="InstanceName">
-          <INSTANCENAME CLASSNAME="SFCB_IndicationSubscription">
+          <INSTANCENAME CLASSNAME="CIM_IndicationSubscription">
             <KEYBINDING NAME="Filter">
               <VALUE.REFERENCE>
                 <INSTANCENAME CLASSNAME="CIM_IndicationFilter">

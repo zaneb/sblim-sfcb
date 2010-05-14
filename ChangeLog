@@ -1,3 +1,9 @@
+2010-05-14 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* 10_interop.mof, default.reg.in, indCIMXMLHandler.c, 
+		interopServerProvider.c, test/TestProviders/tests/IndRetryTest.sh:
+	[ 2994969 ] Persist failing indications
+
 2010-05-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* test/TestProviders/tests/IndRetryTest.sh:

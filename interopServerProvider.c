@@ -753,8 +753,8 @@ void ServerProviderInitInstances(const CMPIContext * ctx) {
   CMPIInstance * ci = NULL;
   CMPIContext * ctxLocal;
   CMPIBoolean filterCreation=1;
-  CMPIUint16 retryAttempts=3; /* only try to deliver indications once */
-  CMPIUint32 retryInterval=20;
+  CMPIUint16 retryAttempts=3; /* retry indications 3 times */
+  CMPIUint32 retryInterval=20;/* at a 20 second interval */
   CMPIUint16 subRemoval=2; /* 2 == "Remove" */
   CMPIUint32 subRemovalInterval=2592000; /* 30 days */
 

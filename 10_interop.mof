@@ -72,3 +72,13 @@ class DMY_HostedService : CIM_HostedService
 class DMY_ElementConformsToProfile : CIM_ElementConformsToProfile
 {
 };
+
+class SFCB_IndicationElement : CIM_ManagedElement
+{
+    [key] uint32 IndicationID;
+    uint32 RetryCount;
+    sint32 LastDelivery;
+    CIM_Indication ref ind;
+    CIM_IndicationSubscription ref sub;
+    CIM_ListenerDestination ref ld;
+};

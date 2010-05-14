@@ -72,6 +72,7 @@ sendInd () {
     echo -n " initial ..."
     # Invoke method to generate the indication
     sendxml IndTest4CallMethod.xml /dev/null
+    sleep 5; # Wait due to deadlock prevention in localmode (indCIMXMLHandler.c)
     # Check if it was sent
     if [ -f $ODIR/SFCB_Listener.txt ]
     then

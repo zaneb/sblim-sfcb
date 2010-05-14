@@ -125,3 +125,11 @@
    type: instance association
    namespace: root/interop
 #
+[SFCB_IndicationElement]
+   provider: InternalProvider
+   location: sfcInternalProvider
+   type: instance method association
+   unload: never
+   namespace: root/interop
+#
+

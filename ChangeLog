@@ -3,6 +3,9 @@
 	* internalProvider.c:
 	[ 3001879 ] Remove SLP sections from internalProvider
 
+	* httpAdapter.c:
+	[ 3001896 ] httpAdapter can crash on bad content length
+	
 2010-05-14 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* 10_interop.mof, default.reg.in, indCIMXMLHandler.c, 

@@ -38,8 +38,6 @@
 #include "native.h"
 #include "objectpath.h"
 
-#include "cimslp.h"
-
 #define LOCALCLASSNAME "InternalProvider"
 
 static char * interopNs = "root/interop";
@@ -158,19 +156,6 @@ static BlobIndex *_getIndex(const char *ns, const char *cn)
       return bi;
    else return NULL;
  }
-
-
-extern int isChild(const char *ns, const char *parent, const char* child);
-
-static int isa(const char *sns, const char *child, const char *parent)
-{
-   int rv;
-   _SFCB_ENTER(TRACE_INTERNALPROVIDER, "isa");
-   
-   if (strcasecmp(child,parent)==0) return 1;
-   rv=isChild(sns,parent,child);
-   _SFCB_RETURN(rv);
-}
 
 
 /* ------------------------------------------------------------------ *
@@ -469,18 +454,6 @@ CMPIStatus InternalProviderCreateInstance(CMPIInstanceMI * mi,
    
    if (rslt) { 
      CMReturnObjectPath(rslt, cop);
-     if (isa(nss, cns, "cim_registeredprofile")) {
-        CMPIArray* atArray;
-        atArray = CMGetProperty(ci, "AdvertiseTypes", &st).value.array;
-#ifdef HAVE_SLP
-        if (st.rc == CMPI_RC_OK || 
-            atArray != NULL || 
-            CMGetArrayElementAt(atArray, 0, &st).value.uint16 == 3) {
-	  if (slppid > 1) /* sanity check */
-            kill(slppid, SIGHUP);  /* restart SLP to update RegisteredProfiles */
-        }
-#endif
-     }
    }
    free(key);
    _SFCB_RETURN(st);
@@ -530,20 +503,6 @@ CMPIStatus InternalProviderModifyInstance(CMPIInstanceMI * mi,
    getSerializedInstance(ci,blob);
    addBlob(bnss,cns,key,blob,(int)len);
    free(blob);
-
-   if (isa(nss, cns, "cim_registeredprofile")) {
-      CMPIArray* atArray;
-      atArray = CMGetProperty(ci, "AdvertiseTypes", &st).value.array;
-      if (st.rc == CMPI_RC_OK || 
-          atArray != NULL || 
-          CMGetArrayElementAt(atArray, 0, &st).value.uint16 == 3) {
-
-#ifdef HAVE_SLP
-        kill(slppid, SIGHUP);  /* restart SLP to update RegisteredProfiles */
-#endif
-      }
-   }
-
    free(key);
    _SFCB_RETURN(st);
 }
@@ -575,13 +534,6 @@ CMPIStatus InternalProviderDeleteInstance(CMPIInstanceMI * mi,
    }
 
    deleteBlob(bnss,cns,key);
-
-#ifdef HAVE_SLP
-   if (isa(nss, cns, "cim_registeredprofile")) {
-          kill(slppid, SIGHUP); /* restart SLP to update RegisteredProfiles */
-   }
-#endif
-
    free(key);
    _SFCB_RETURN(st);
 }

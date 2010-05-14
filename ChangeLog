@@ -1,3 +1,8 @@
+2010-05-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* internalProvider.c:
+	[ 3001879 ] Remove SLP sections from internalProvider
+
 2010-05-14 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* 10_interop.mof, default.reg.in, indCIMXMLHandler.c, 

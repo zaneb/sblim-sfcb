@@ -839,7 +839,7 @@ static int doHttpRequest(CommHndl conn_fd)
            exit(1);
          }
          unsigned int maxLen;
-         if (getControlUNum("httpMaxContentLength", &maxLen) != 0) {
+         if ((getControlUNum("httpMaxContentLength", &maxLen) != 0) || (maxLen == 0)) {
            genError(conn_fd, &inBuf, 501, "Server misconfigured (httpMaxContentLength)", NULL);
            _SFCB_TRACE(1, ("--- exiting: bad config httpMaxContentLength"));
            commClose(conn_fd);

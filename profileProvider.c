@@ -249,4 +249,4 @@ CMPIStatus ProfileProviderMethodCleanup(CMPIMethodMI * mi,
  * ------------------------------------------------------------------ */
 
 CMInstanceMIStub(ProfileProvider, ProfileProvider, _broker, CMNoHook); 
-CMIMethodMIStub(ProfileProvider, ProfileProvider, _broker, CMNoHook); 
+CMMethodMIStub(ProfileProvider, ProfileProvider, _broker, CMNoHook); 

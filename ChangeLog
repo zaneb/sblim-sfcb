@@ -1,3 +1,8 @@
+2010-05-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* profileProvider.c, providerMgr.c, default.reg.in:
+	[ 3002851 ] SLP needs to register at startup
+
 2010-05-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* internalProvider.c:

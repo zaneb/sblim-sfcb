@@ -23,7 +23,7 @@
 [$ProfileProvider$]
    provider: ProfileProvider
    location: sfcProfileProvider
-   type: instance
+   type: instance method
    unload: never
    namespace: root/interop
 #

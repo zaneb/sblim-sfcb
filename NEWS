@@ -38,6 +38,7 @@ Bugs fixed:
 - 3001879 Remove SLP sections from internalProvider
 - 3001896 httpAdapter can crash on bad content length
 - 3001915 Possible heap corruption in httpAdapter
+- 3002851 SLP needs to register at startup
 
 Changes in 1.3.7
 ================

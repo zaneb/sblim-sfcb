@@ -47,8 +47,8 @@ useChunking:    true
 #chunkSize: 50000
 
 ## Maximum ContentLength of an HTTP request allowed.
-## Default is 0 (no limit)
-#httpMaxContentLength: 0
+## Default is 100000000
+#httpMaxContentLength: 100000000
 
 ## Enable basic authentication for HTTP and HTTPS connections
 ## Default is false

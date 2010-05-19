@@ -1,3 +1,8 @@
+2010-05-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 3004358 ] indCIMXMLHanlder ci can leak on error condition
+
 2010-05-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* profileProvider.c, providerMgr.c, default.reg.in:

@@ -236,6 +236,7 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    CMPIString* dest = CMGetProperty(ciLocal, "destination", &st).value.string;
    if (dest == NULL || CMGetCharPtr(dest) == NULL) {
      setStatus(&st,CMPI_RC_ERR_FAILED,"Destination property not found; is required");
+     CMRelease(ciLocal);
      _SFCB_RETURN(st);              
    }
    else { /* if no scheme is given, assume http (as req. for param by mof) */
@@ -257,6 +258,7 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    }
    else if (persistence.value.uint16 < 1 || persistence.value.uint16 > 3) {
      setStatus(&st,CMPI_RC_ERR_FAILED,"PersistenceType property must be 1, 2, or 3");
+     CMRelease(ciLocal);
      _SFCB_RETURN(st);              
    }
    else {

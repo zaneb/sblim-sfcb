@@ -145,10 +145,6 @@ enableHttps:    @SFCB_CONF_HTTPS@
 ## Default is 5989
 httpsPort:      5989
 
-## Max number of HTTP processes for HTTPS.  
-## Default is 8
-httpsProcs:     8
-
 ## Filename containing the private key for the server's certificate. The file 
 ## must be in PEM format and may not be passphrase-protected. 
 ## Default is @sysconfdir@/sfcb/file.pem

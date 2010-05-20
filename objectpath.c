@@ -301,6 +301,38 @@ char *sfcb_pathToChars(const CMPIObjectPath * cop, CMPIStatus * rc, char *str)
    return str;
 }
 
+CMPIData
+__oft_getPropertyQualifier(const CMPIObjectPath * op,
+                           const char *pName,
+                           const char *qName,
+                           CMPIStatus *rc)
+{
+  CMPIConstClass *cl = NULL;
+  CMPIString     *cn = NULL;
+  CMPIString     *ns = NULL;
+  char           *cn_char = NULL;
+  char           *ns_char = NULL;
+  CMPIStatus      st = { 0, NULL };
+  CMPIData        retVal = { CMPI_null, CMPI_nullValue, {0} };
+  
+  cn = CMGetClassName(op, &st);
+  if(st.rc) goto invalid_handle;
+  cn_char = CMGetCharPtr(cn);
+ 
+  ns = CMGetNameSpace(op, &st);
+  if(st.rc) goto invalid_handle;
+  ns_char = CMGetCharPtr(ns);
+
+  cl = getConstClass(ns_char, cn_char);
+  if(cl) {
+    return(cl->ft->getPropQualifier(cl, pName, qName, rc));
+  }
+
+invalid_handle:
+  if(rc) rc->rc = CMPI_RC_ERR_INVALID_HANDLE;
+  return retVal;
+}
+
 static CMPIString *__oft_toString(const CMPIObjectPath * cop, CMPIStatus * rc)
 {
    char str[4096] = { 0 };
@@ -358,7 +390,7 @@ static CMPIObjectPathFT oft = {
    __oft_setNameSpaceFromObjectPath,
    __oft_setHostAndNameSpaceFromObjectPath,
    NULL,
-   NULL,
+   __oft_getPropertyQualifier,
    NULL,
    NULL,
     __oft_toString

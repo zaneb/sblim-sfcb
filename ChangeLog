@@ -45,6 +45,11 @@
 	* constClass.c, instance.c:
 	[ 2993137 ] CMSetProperty fails for CMPIInstance for EmbeddedObject
 
+2010-04-20 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+        * objectpath.c:
+        [ 2990091 ] Implement getPropertyQualifier in CMPIObjectPath
+
 2010-04-20  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* getSchema.sh.pre.in:

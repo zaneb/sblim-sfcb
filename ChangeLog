@@ -1,3 +1,8 @@
+2010-05-20  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* instance.c:
+	[ 3004996 ] Typo in instance.c
+
 2010-05-19  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

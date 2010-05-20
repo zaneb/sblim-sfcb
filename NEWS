@@ -40,6 +40,7 @@ Bugs fixed:
 - 3001896 httpAdapter can crash on bad content length
 - 3001915 Possible heap corruption in httpAdapter
 - 3002851 SLP needs to register at startup
+- 3004996 Typo in instance.c
 
 Changes in 1.3.7
 ================

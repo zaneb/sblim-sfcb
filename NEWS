@@ -11,6 +11,7 @@ New features:
 - 2980524 providerRegister should collate namespaces
 - 2994969 Persist failing indications
 - 2964568 Indication stress test
+- 2987170 Handle SLP in a provider
 
 Bugs fixed:
 - 2952616 internalProvider is not Threadsafe
@@ -41,6 +42,9 @@ Bugs fixed:
 - 3001896 httpAdapter can crash on bad content length
 - 3001915 Possible heap corruption in httpAdapter
 - 3002851 SLP needs to register at startup
+- 3004257 slp information in README is not current
+- 3004232 configure.ac allows slp-standalone and checks for sfcc
+- 3003508 slpTests.sh uses bash-isms
 - 3004996 Typo in instance.c
 - 3004992 Sporadic deadlock on multiple failing indications
 - 3005424 Memory leak on error responses

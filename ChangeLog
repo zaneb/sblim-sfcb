@@ -1,3 +1,15 @@
+2010-05-21 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* tests/slptest/slpTests.sh, Makefile.am, README,
+          cimslp.c, cimslp.h, cimslpCMPI.c, cimslpCMPI.h 
+	  cimslpSLP.c, cimslpSLP.h, cimslpUtil.c, cimslpUtil.h,
+          configure.ac, control.c, profileProvider.c,
+          sfcBroker.c, sfcb.cfg.pre.in
+        [ 3004257 ] slp information in README is not current
+        [ 3004232 ] configure.ac allows slp-standalone and checks for sfcc
+        [ 3003508 ] slpTests.sh uses bash-isms
+        [ 2987170 ] Handle SLP in a provider
+
 2010-05-21 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 	* indCIMXMLHandler.c:
 	[ 3005508 ] Warning in indCIMXMLHandler.c 

@@ -1,3 +1,7 @@
+2010-05-21 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+	* indCIMXMLHandler.c:
+	[ 3005508 ] Warning in indCIMXMLHandler.c 
+
 2010-05-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlParser.c:

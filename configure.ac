@@ -167,7 +167,8 @@ if test "$enable_default_properties" == "yes"; then
 fi
 
 if test "$enable_slp" == "standalone"; then
-   AC_DEFINE(HAVE_SLP_ALONE,,[SLP standalone support enabled.])
+   # AC_DEFINE(HAVE_SLP_ALONE,,[SLP standalone support enabled.])
+   AC_MSG_ERROR([standalone slp agent is no longer supported.])
 fi
 
 if test "$enable_slp" == "yes"; then
@@ -426,7 +427,6 @@ AC_SUBST(SFCB_CONF_HTTP)
 
 if test "$enable_slp"; then
 	#defined in acinclude.m4
-	CHECK_SFCC  
 	AC_CHECK_LIB(cmpisfcc,cmciConnect,[],[AC_MSG_ERROR(no. Sorry cannot find libcmpisfcc.)])
 	
 	AC_CHECK_HEADERS([slp.h],[],[AC_MSG_ERROR(no. Sorry cannot find slp.h.)])

@@ -91,16 +91,6 @@ HTTP_ADAPTER_LIBS = libsfcHttpAdapter.la
 HTTP_ADAPTER_LIBS_LINK = -lsfcHttpAdapter
 endif
 
-if SLP
-SLP_LIBS = libslpAgent.la
-SLP_LIB = -lslpAgent
-SLP_HEADER = cimslpCMPI.h cimslp.h cimslpSLP.h cimslpUtil.h
-else
-SLP_LIBS =
-SLP_LIB =
-SLP_HEADER =
-endif
-
 if SLP_HOSTNAME_LIB
 SLP_HOSTNAME_LIBS = libsfcSlpHostname.la
 else
@@ -157,8 +147,6 @@ sfcblib_LTLIBRARIES = \
    libsfcObjectImplSwapI32toP32.la \
    libcimcClientSfcbLocal.la \
    $(QUALREP_LIBS) \
-   $(SLP_LIBS) \
-   $(SLP_HOSTNAME_LIBS) \
    $(INDICATION_LIBS) \
    $(PAM_LIBS) 
 
@@ -172,18 +160,18 @@ sfcblib_LTLIBRARIES += \
    libTestIndicationProvider.la
 endif
 
-if SLP_ALONE
-SLP_PROGRAMFILES = cimslp
-cimslp_SOURCES = \
-	cimslp.c \
-	cimslpCMPI.c \
-	cimslpSLP.c \
-	cimslpUtil.c 
-
-cimslp_LDADD=-lslp -lcmpisfcc -lsfcBrokerCore
-else
+# if SLP_ALONE
+# SLP_PROGRAMFILES = cimslp
+# cimslp_SOURCES = \
+# 	cimslp.c \
+# 	cimslpCMPI.c \
+# 	cimslpSLP.c \
+# 	cimslpUtil.c 
+# 
+# cimslp_LDADD=-lslp -lcmpisfcc -lsfcBrokerCore
+# else
 SLP_PROGRAMFILES = 
-endif
+# endif
 
 sbin_PROGRAMS = \
    sfcbd 
@@ -286,8 +274,10 @@ libsfcHttpAdapter_la_LIBADD=-lsfcBrokerCore $(CIMXMLCODEC_LIBS_LINK)
 libsfcHttpAdapter_la_DEPENDENCIES=libsfcBrokerCore.la $(CIMXMLCODEC_LIBS)
 endif
 
+if SLP_HOSTNAME_LIB
 libsfcSlpHostname_la_SOURCES = \
    sfcSlpHostname.c
+endif
 
 libsfcBasicAuthentication_la_SOURCES = \
    sfcBasicAuthentication.c
@@ -329,9 +319,10 @@ libsfcIndCIMXMLHandler_la_DEPENDENCIES=libsfcBrokerCore.la libsfcInternalProvide
 	$(CIMXMLCODEC_LIBS) $(HTTP_ADAPTER_LIBS)
 
 libsfcProfileProvider_la_SOURCES = \
-   profileProvider.c 
-libsfcProfileProvider_la_LIBADD=-lsfcBrokerCore
-libsfcProfileProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+   profileProvider.c \
+   $(SLP_SRC)
+libsfcProfileProvider_la_LIBADD=-lsfcBrokerCore 
+libsfcProfileProvider_la_DEPENDENCIES=libsfcBrokerCore.la 
 
 libsfcElementCapabilitiesProvider_la_SOURCES = \
    elementCapabilitiesProvider.c 
@@ -405,13 +396,10 @@ libsfcCimXmlCodec_la_DEPENDENCIES=libsfcBrokerCore.la
 endif
 
 if SLP
-libslpAgent_la_CFLAGS = $(AM_CFLAGS)
-libslpAgent_la_SOURCES = \
-    cimslp.c \
-    cimslpCMPI.c \
-    cimslpSLP.c \
-    cimslpUtil.c
-libslpAgent_la_LIBADD=-lslp -lcmpisfcc
+SLP_SRC = cimslp.c \
+          cimslpCMPI.c \
+          cimslpSLP.c \
+          cimslpUtil.c
 endif
 
 if QUALREP
@@ -422,7 +410,7 @@ libsfcQualifierProvider_la_DEPENDENCIES=libsfcBrokerCore.la libsfcFileRepository
 endif
 
 sfcbd_SOURCES=sfcBroker.c
-sfcbd_LDADD=-lsfcBrokerCore $(CIMXMLCODEC_LIBS_LINK) $(HTTP_ADAPTER_LIBS_LINK) $(SLP_LIB)
+sfcbd_LDADD=-lsfcBrokerCore $(CIMXMLCODEC_LIBS_LINK) $(HTTP_ADAPTER_LIBS_LINK)
 sfcbd_DEPENDENCIES=libsfcBrokerCore.la $(CIMXMLCODEC_LIBS) $(HTTP_ADAPTER_LIBS)
 
 sfcbmofpp_SOURCES=mofpp.c

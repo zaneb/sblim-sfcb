@@ -199,6 +199,9 @@ certificateAuthLib:   sfcCertificateAuthentication
 ##-------------------------------------- SLP -----------------------------------
 ## These options only apply if configured with --enable-slp
 
+## Enable registration of service:wbem with slp
+#enableSlp: true
+
 ## Time interval in seconds in which the slp process refreshes information.
 ## Default is 600
 #slpRefreshInterval: 600

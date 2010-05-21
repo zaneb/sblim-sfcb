@@ -17,20 +17,26 @@
  *
  * some helper functions
  *
-*/
+ */
 
 #ifndef _cimslpUtil_h
 #define _cimslpUtil_h
 
-#include <cmci.h>
-
-/*#define freeArr(arr) \
-	{int freeStrArrN=0;if (arr) {while (arr[freeStrArrN]) free(arr[freeStrArrN++]);free(arr);}}
-*/      
+#include "cmpidt.h"
+#include "cmpimacs.h"
+/*
+ * #define freeArr(arr) \ {int freeStrArrN=0;if (arr) {while
+ * (arr[freeStrArrN]) free(arr[freeStrArrN++]);free(arr);}} 
+ */
 #define freeStr(str) \
 	{if (str) free(str);}
 
-void freeInstArr(CMPIInstance ** arr);
-void freeArr(char ** arr);
+void            freeInstArr(CMPIInstance **arr);
+void            freeArr(char **arr);
 
 #endif
+/* MODELINES */
+/* DO NOT EDIT BELOW THIS COMMENT */
+/* Modelines are added by 'make pretty' */
+/* -*- Mode: C; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
+/* vi:set ts=2 sts=2 sw=2 expandtab: */

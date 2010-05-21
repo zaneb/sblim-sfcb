@@ -77,6 +77,7 @@ Control init[] = {
    {"dbpsProcs",        1, "8"},
 #endif
 #ifdef HAVE_SLP
+   {"enableSlp",         2, "true"},
    {"slpRefreshInterval",         1, "600"},
    {"slpHostnameLib",   0, "sfcSlpHostname"},
 #endif

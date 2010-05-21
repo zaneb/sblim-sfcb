@@ -7,56 +7,56 @@ failure=0
 rc=0
 
 slptool register service:test://localhost "(test-suite=sfcb-test suite)"
-if [ $? == 0 ]; then
-    let success="$success+1"
-    echo "Service register success"
+if [ "$?" = "0" ]; then
+    success=$(($success+1))
+    echo "Service registration: Success"
 else
-    let failure="$failure+1"
-    echo "Service registration Failed"
+    failure=$((failure+1))
+    echo "Service registration: Failure"
 fi
 
-if  [ $? == 0 ] ; then
+if  [ "$?" = "0" ] ; then
 
    slptool unicastfindsrvs 127.0.0.1  service:test
-   if [ $? == 0 ]; then
-       let success="$success+1"
+   if [ "$?" = "0" ]; then
+       success=$((success+1))
    else
-       let failure="$failure+1"
+       failure=$((failure+1))
    fi
 
    slptool unicastfindsrvs 127.0.0.1  service:test "(test-suite=sfcb-test suite)"
-   if [ $? == 0 ]; then
-       let success="$success+1"
+   if [ "$?" = "0" ]; then
+       success=$((success+1))
    else
-       let failure="$failure+1"
+       failure=$((failure+1))
    fi
 
    slptool unicastfindattrs 127.0.0.1 service:test
-   if [ $? == 0 ]; then
-       let success="$success+1"
+   if [ "$?" = "0" ]; then
+       success=$((success+1))
    else
-       let failure="$failure+1"
+       failure=$((failure+1))
    fi
 
    slptool unicastfindattrs 127.0.0.1 service:test://localhost test-suite 
-   if [ $? == 0 ]; then
-       let success="$success+1"
+   if [ "$?" = "0" ]; then
+       success=$((success+1))
    else
-       let failure="$failure+1"
+       failure=$((failure+1))
    fi
 
    slptool deregister service:test://localhost
-   if [ $? == 0 ]; then
-       let success="$success+1"
-       echo "Service deregister Success"
+   if [ "$?" = "0" ]; then
+       success=$((success+1))
+       echo "Service deregistration: Success"
    else
-       let failure="$failure+1"
-       echo "Service deregistration Failed" 
+       failure=$((failure+1))
+       echo "Service deregistration: Failure" 
    fi
 
 fi
 
-echo "$success tests were Success : $failure tests Failed"
+echo $success tests succeeded : $failure tests failed
 echo "***** SLP Tests Completed *****"
 
 

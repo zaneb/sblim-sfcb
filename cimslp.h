@@ -18,12 +18,24 @@
  * Control functions, main if running standlone, or slpAgent
  * function if running in sfcb
  *
-*/
+ */
 
 #ifndef _cimslp_h
 #define _cimslp_h
 
-int slpAgent();
-int slppid;
+#include <slp.h>
+#include "cimslpCMPI.h"
+#include "cimslpSLP.h"
+
+int             slpAgent();
+int             slppid;
+void            setUpDefaults(cimomConfig * cfg);
+void            setUpTimes(int *slpLifeTime, int *sleepTime);
+void            freeCFG(cimomConfig * cfg);
 
 #endif
+/* MODELINES */
+/* DO NOT EDIT BELOW THIS COMMENT */
+/* Modelines are added by 'make pretty' */
+/* -*- Mode: C; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
+/* vi:set ts=2 sts=2 sw=2 expandtab: */

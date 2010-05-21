@@ -69,10 +69,15 @@ sendInd () {
     # and 1 on failure. The failure of delivery here
     # is not necessarily a test failure depending on the
     # test case.
-    echo -n " initial ..."
-    # Invoke method to generate the indication
-    sendxml IndTest4CallMethod.xml /dev/null
-    sleep 5; # Wait due to deadlock prevention in localmode (indCIMXMLHandler.c)
+    if [ $1 = "single" ]
+    then
+        echo -n " initial ..."
+        # Invoke method to generate the indication
+        sendxml IndTest4CallMethod.xml /dev/null
+        sleep 5; # Wait due to deadlock prevention in localmode (indCIMXMLHandler.c)
+    else
+        sendxml IndTest4CallMethod.xml /dev/null
+    fi
     # Check if it was sent
     if [ -f $ODIR/SFCB_Listener.txt ]
     then
@@ -121,7 +126,7 @@ sendxml RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
-sendInd 
+sendInd single
 if [ $? -eq 0 ] 
 then
     echo " FAILED"
@@ -156,7 +161,7 @@ sendxml RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
-sendInd 
+sendInd single
 if [ $? -eq 0 ] 
 then
     echo " FAILED"
@@ -165,7 +170,7 @@ else
     # make odir, should retry and succeed
     echo -n " retry ..."
     odir make
-    sleep 4
+    sleep 10
     if [ -f $ODIR/SFCB_Listener.txt ]
     then
         echo " PASSED"
@@ -193,7 +198,7 @@ sendxml RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
-sendInd 
+sendInd single
 if [ $? -eq 0 ] 
 then
     RC=1 
@@ -201,7 +206,7 @@ then
 else
     # Still no odir, so keeps failing, and should disable sub
     echo -n " disable ..."
-    sleep 5
+    sleep 10
     sendxml RIGetSub.XML ./RIGetSubDisable.result
     grep -A1 '"SubscriptionState"' ./RIGetSubDisable.result | grep '<VALUE>4</VALUE>' >/dev/null 2>&1
     if [ $? -eq 1 ] 
@@ -232,7 +237,7 @@ sendxml RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
-sendInd 
+sendInd single
 if [ $? -eq 0 ] 
 then
     RC=1 
@@ -240,7 +245,7 @@ then
 else
     # Still no odir, so keeps failing, and should remove sub
     echo -n " remove ..."
-    sleep 5
+    sleep 10
     sendxml RIGetSub.XML ./RIGetSubRemove.result
     grep '<VALUE>' ./RIGetSubRemove.result >/dev/null 2>&1
     if [ $? -eq 0 ] 
@@ -253,8 +258,53 @@ else
     fi
 fi
 
+###
+# Flood
+###
 cleanup
+init
+lim=1000
+echo -n  "  Indication flood: "
+./GenMI.pl 10 3 300 1
+if [ $? -ne 0 ] 
+then
+    echo " GenMI.pl FAILED"
+    exit 1; 
+fi
+sendxml RIModIS.XML /dev/null
 
+i=0
+j=0
+while [ $j -lt $lim ]
+do
+    sendInd flood
+    if [ $j -eq 100 ] # Let this many fail
+    then
+        odir make
+    fi
+    if [ $i -eq 50 ]
+    then 
+        echo -n "."
+        i=0
+    else
+        i=$((i+1))
+    fi
+    j=$((j+1))
+done
+sleep 20 # Let the retries catch up
+count=$(grep IndicationTime $ODIR/SFCB_Listener.txt  | wc -l)
+if [ $count -eq $lim ] 
+then
+    echo " $count of $lim: PASSED"
+else
+    echo " $count of $lim: FAILED"
+    RC=1
+fi
+
+###
+# Cleanup and exit
+###
+cleanup
 # Set Indication_Service back to the defaults
 ./GenMI.pl 20 3 2592000 2
 if [ $? -ne 0 ] 
@@ -263,7 +313,5 @@ then
     exit 1; 
 fi
 sendxml RIModIS.XML /dev/null
-
 rm RIEnumIS.result
-
 exit $RC

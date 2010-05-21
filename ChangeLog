@@ -1,5 +1,10 @@
 2010-05-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* test/TestProviders/tests/IndRetryTest.sh:
+	[ 2964568 ] Indication stress test
+
+2010-05-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* indCIMXMLHandler.c:
 	[ 3004992 ] Sporadic deadlock on multiple failing indications
 

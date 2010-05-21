@@ -10,6 +10,7 @@ New features:
 - 2990169 Bump downloaded CIM schema to 2.25
 - 2980524 providerRegister should collate namespaces
 - 2994969 Persist failing indications
+- 2964568 Indication stress test
 
 Bugs fixed:
 - 2952616 internalProvider is not Threadsafe

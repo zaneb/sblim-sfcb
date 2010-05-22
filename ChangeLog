@@ -21,6 +21,10 @@
 
 	* Makefile.am:
 	[ 3005574 ] make clean does not remove cimXmlParserProcessed.c
+
+	* Makefile.am:
+	[ 2987170 ] Handle SLP in a provider
+        (missing cimslp headers in no_inst_HEADERS)
 	
 2010-05-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 

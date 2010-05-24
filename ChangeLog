@@ -1,3 +1,9 @@
+2010-05-24  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* configure.ac
+	[ 3004232 ] configure.ac allows slp-standalone and checks for sfcc
+	(second hunk was not applied)
+
 2010-05-21 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* tests/slptest/slpTests.sh, Makefile.am, README,

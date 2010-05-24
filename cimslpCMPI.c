@@ -55,6 +55,117 @@ getInterOpNS()
   return retArr;
 }
 
+/* this is pulled from SFCC; 
+   TODO: combine this with SFCC's (and value.c's as well)
+ */
+char * value2Chars (CMPIType type, CMPIValue *value)
+{
+  char str[2048], *p;
+  unsigned int size;
+  CMPIString *cStr;
+
+  str[0]=0;
+  if (type & CMPI_ARRAY) {
+  }
+  else if (type & CMPI_ENC) {
+
+    switch (type) {
+    case CMPI_instance:
+      break;
+
+    case CMPI_ref:
+      if (value->ref) {
+	cStr=value->ref->ft->toString(value->ref,NULL);
+	p = strdup((char *) cStr->hdl);
+	CMRelease(cStr);
+      } else {
+	p = strdup("NULL");
+      }
+
+      return p;
+
+    case CMPI_args:
+      break;
+
+    case CMPI_filter:
+      break;
+
+    case CMPI_string:
+    case CMPI_numericString:
+    case CMPI_booleanString:
+    case CMPI_dateTimeString:
+    case CMPI_classNameString:
+      return strdup((value->string && value->string->hdl) ?
+		    (char*)value->string->hdl : "NULL");
+
+    case CMPI_dateTime:
+      if (value->dateTime) {
+	cStr=CMGetStringFormat(value->dateTime,NULL);
+	p = strdup((char *) cStr->hdl);
+	CMRelease(cStr);
+      } else
+	p = strdup("NULL");
+      return p;
+    }
+
+  }
+  else if (type & CMPI_SIMPLE) {
+
+    switch (type) {
+    case CMPI_boolean:
+      return strdup(value->boolean ? "true" : "false");
+
+    case CMPI_char16:
+      break;
+    }
+
+  }
+  else if (type & CMPI_INTEGER) {
+
+    switch (type) {
+    case CMPI_uint8:
+      sprintf(str, "%u", value->uint8);
+      return strdup(str);
+    case CMPI_sint8:
+      sprintf(str, "%d", value->sint8);
+      return strdup(str);
+    case CMPI_uint16:
+      sprintf(str, "%u", value->uint16);
+      return strdup(str);
+    case CMPI_sint16:
+      sprintf(str, "%d", value->sint16);
+      return strdup(str);
+    case CMPI_uint32:
+      sprintf(str, "%lu", value->uint32);
+      return strdup(str);
+    case CMPI_sint32:
+      sprintf(str, "%ld", value->sint32);
+      return strdup(str);
+    case CMPI_uint64:
+      sprintf(str, "%llu", value->uint64);
+      return strdup(str);
+    case CMPI_sint64:
+      sprintf(str, "%lld", value->sint64);
+      return strdup(str);
+    }
+
+  }
+  else if (type & CMPI_REAL) {
+
+    switch (type) {
+    case CMPI_real32:
+      sprintf(str, "%g", value->real32);
+      return strdup(str);
+    case CMPI_real64:
+      sprintf(str, "%g", value->real64);
+      return strdup(str);
+    }
+
+  }
+  return strdup(str);
+}
+
+
 CMPIInstance  **
 myGetInstances(const CMPIBroker *_broker, const CMPIContext * ctx,
                const char *path, const char *objectname,

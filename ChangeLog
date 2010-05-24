@@ -4,6 +4,9 @@
 	[ 3004232 ] configure.ac allows slp-standalone and checks for sfcc
 	(second hunk was not applied)
 
+	* cimslpCMPI.h, cimslpCMPI.c:
+	[ 3006687 ] ProfileProvider depends on sfcc
+
 2010-05-21 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* tests/slptest/slpTests.sh, Makefile.am, README,

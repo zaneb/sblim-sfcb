@@ -57,8 +57,6 @@ typedef struct {
   char           *keyFile;
 } cimomConfig;
 
-extern char    *value2Chars(CMPIType type, CMPIValue * value);
-
 void            initializeService(cimSLPService * rs);
 cimSLPService   getSLPData(cimomConfig cfg, const CMPIBroker *_broker,
                            const CMPIContext *ctx,

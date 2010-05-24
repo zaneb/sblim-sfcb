@@ -61,7 +61,6 @@ getInterOpNS()
 char * value2Chars (CMPIType type, CMPIValue *value)
 {
   char str[2048], *p;
-  unsigned int size;
   CMPIString *cStr;
 
   str[0]=0;
@@ -136,10 +135,10 @@ char * value2Chars (CMPIType type, CMPIValue *value)
       sprintf(str, "%d", value->sint16);
       return strdup(str);
     case CMPI_uint32:
-      sprintf(str, "%lu", value->uint32);
+      sprintf(str, "%u", value->uint32);
       return strdup(str);
     case CMPI_sint32:
-      sprintf(str, "%ld", value->sint32);
+      sprintf(str, "%d", value->sint32);
       return strdup(str);
     case CMPI_uint64:
       sprintf(str, "%llu", value->uint64);

@@ -51,6 +51,7 @@ Bugs fixed:
 - 3005508 Warning in indCIMXMLHandler.c 
 - 3005574 make clean does not remove cimXmlParserProcessed.c
 - 3006687 ProfileProvider depends on sfcc
+- 3006690 Remove startSLPAgent sections from sfcBroker
 
 Changes in 1.3.7
 ================

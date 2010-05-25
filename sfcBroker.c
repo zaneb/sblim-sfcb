@@ -50,11 +50,6 @@
 #include "config.h"
 #endif
 
-#ifdef HAVE_SLP
-#include "cimslp.h"
-static int startSLP = 0;
-#endif
-
 int sfcBrokerPid=0;
 
 extern void setExFlag(unsigned long f);
@@ -442,16 +437,6 @@ static int startDbpd(int argc, char *argv[], int sslMode)
 
 #endif
 
-#ifdef HAVE_SLP
-
-static int startSLPAgent()
-{
-    slpAgent();
-    return 0;
-}
-
-#endif
-
 static void usage(int status)
 {
     if (status != 0)
@@ -768,13 +753,6 @@ int main(int argc, char *argv[])
 #endif	
 
 
-#ifdef HAVE_SLP
-   //Start SLP Agent
-   if (startSLP) {
-		startSLPAgent();
-   }
-#endif
-   
    setSignal(SIGSEGV, handleSigSegv,SA_ONESHOT);
    setSignal(SIGCHLD, handleSigChld,0);
    

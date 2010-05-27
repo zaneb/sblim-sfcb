@@ -363,7 +363,7 @@ updateSLPReg(const CMPIContext *ctx, int slpLifeTime)
                                                 // digits 
     sprintf(cfgHttps.port, "%d", (int) i);
     getControlChars("sslClientTrustStore", &cfgHttps.trustStore);
-    getControlChars("sslCertificateFilePath:", &cfgHttps.certFile);
+    getControlChars("sslCertificateFilePath", &cfgHttps.certFile);
     getControlChars("sslKeyFilePath", &cfgHttps.keyFile);
 
     service = getSLPData(cfgHttps, _broker, ctx, https_url);

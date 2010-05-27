@@ -1,3 +1,8 @@
+2010-05-25 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* profileProvider.c:
+	[ 2994737 ] cimslp fails to get sslCertificateFilePath config value
+
 2010-05-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* sfcBroker.c:

@@ -1,7 +1,14 @@
-2010-05-25 Sean Swehla <smswehla@linux.vnet.ibm.com>
+2010-05-27 Sean Swehla <smswehla@linux.vnet.ibm.com>
+
+	* cimslpSLP.c:
+	[ 2984485 ] Possible access to freed memory in cimslpSLP.c
+        (based on patch by Klaus Kämpf)
+
+2010-05-27 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* profileProvider.c:
 	[ 2994737 ] cimslp fails to get sslCertificateFilePath config value
+        (patch by Klaus Kämpf)
 
 2010-05-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
 

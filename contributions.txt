@@ -107,6 +107,8 @@ Klaus Kampf, Novell
 03/12/2010 [ 2968198 ] CMPI_chars in sfcb - see #2967257
 04/13/2010 [ 2978514 ] Compilation with --enable-jdbc fails
 04/30/2010 [ 2980524 ] providerRegister should collate namespaces
+05/27/2010 [ 2994737 ] cimslp fails to get sslCertificateFilePath config value
+05/27/2010 [ 2984485 ] Possible access to freed memory in cimslpSLP.c
 
 Mike Brasher, Inova
 -------------------

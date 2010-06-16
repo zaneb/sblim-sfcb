@@ -2,7 +2,8 @@
 
 	* instance.c:
 	[ 3016295 ] Initialise refcount in CMPIInstance clone
-
+	(patch by Tim Potter)
+	
 2010-05-27 Sean Swehla <smswehla@linux.vnet.ibm.com>
 
 	* cimslpSLP.c:

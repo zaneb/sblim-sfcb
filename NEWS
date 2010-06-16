@@ -6,6 +6,7 @@ New features:
 Bugs fixed:
 - 2994737 cimslp fails to get sslCertificateFilePath config value
 - 2984485 Possible access to freed memory in cimslpSLP.c
+- 3016295 Initialise refcount in CMPIInstance clone
 
 Changes in 1.3.8
 ================

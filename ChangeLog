@@ -1,3 +1,9 @@
+2010-06-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	[ 2950521 ] Provider operations are wrongly traced
+	(patch by Till Steinbach)
+
 2010-06-16  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* instance.c:

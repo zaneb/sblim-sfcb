@@ -508,7 +508,7 @@ static void replaceClArray(ClObjectHdr * hdr, int id, CMPIData d)
    i = addClArray(hdr, d);
    fb = getArrayBufPtr(hdr);   
    fb->iUsed--;
-   fb->indexPtr[id - 1] = i;
+   fb->indexPtr[id - 1] = fb->indexPtr[i-1];
 
    _SFCB_EXIT();
 }

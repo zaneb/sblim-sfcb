@@ -275,7 +275,6 @@ getSLPData(cimomConfig cfg, const CMPIBroker *_broker,
   int             err;
 
   err = 1;
-  setupControl(configfile);
   if (getControlChars("slpHostnamelib", &ln) == 0) {
     libraryName(NULL, ln, dlName, 512);
     if ((hostnameLib = dlopen(dlName, RTLD_LAZY))) {
@@ -284,7 +283,6 @@ getSLPData(cimomConfig cfg, const CMPIBroker *_broker,
         err = 0;
     }
   }
-  sunsetControl();
   if (err)
     mlogf(M_ERROR, M_SHOW,
           "--- SLP Hostname exit %s not found. Defaulting to system hostname.\n",

@@ -328,7 +328,6 @@ updateSLPReg(const CMPIContext *ctx, int slpLifeTime)
   _SFCB_ENTER(TRACE_SLP, "updateSLPReg");
 
   pthread_mutex_lock(&slpUpdateMtx);
-  setupControl(configfile);
 
   getControlBool("enableSlp", &enableSlp);
   if(!enableSlp) {
@@ -440,6 +439,7 @@ slpUpdate(void *args)
             timeLeft, slp_shutting_down ? "true" : "false"));
   }
   //End loop
+  sunsetControl();
   if(http_url) {
     _SFCB_TRACE(2, ("--- Deregistering http advertisement"));
     deregisterCIMService(http_url);

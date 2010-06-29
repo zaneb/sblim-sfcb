@@ -12,6 +12,7 @@ Bugs fixed:
 - 3022941 Remove HAVE_SLP_ALONE sections
 - 3022934 SLP code calls setupControl more than once
 - 3023079 slpUpdate does not release ctx on exit
+- 2920363 make test fails if sfcb is running under valgrind
 
 Changes in 1.3.8
 ================

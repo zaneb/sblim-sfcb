@@ -12,6 +12,9 @@
 	* profileProvider.c: 
 	[ 3023079 ] slpUpdate does not release ctx on exit
 
+	* test/running.sh, test/finaltest/finalcheck.sh:
+	[ 2920363 ] make test fails if sfcb is running under valgrind
+
 2010-06-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c:

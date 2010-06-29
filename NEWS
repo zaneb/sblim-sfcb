@@ -11,6 +11,7 @@ Bugs fixed:
 - 3016863 Data corruption when replacing array properties
 - 3022941 Remove HAVE_SLP_ALONE sections
 - 3022934 SLP code calls setupControl more than once
+- 3023079 slpUpdate does not release ctx on exit
 
 Changes in 1.3.8
 ================

@@ -439,6 +439,7 @@ slpUpdate(void *args)
             timeLeft, slp_shutting_down ? "true" : "false"));
   }
   //End loop
+  CMRelease(ctx);
   sunsetControl();
   if(http_url) {
     _SFCB_TRACE(2, ("--- Deregistering http advertisement"));

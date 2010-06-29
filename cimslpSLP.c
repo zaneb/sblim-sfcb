@@ -304,11 +304,6 @@ registerCIMService(cimSLPService css, int slpLifeTime, char **urlsyntax,
   if(callbackerr != SLP_OK)
     _SFCB_TRACE(2, ("--- SLP registration error, *urlsyntax = \"%s\"\n", *urlsyntax));
 
-#ifdef HAVE_SLP_ALONE
-  printf("url_syntax: %s\n", css.url_syntax);
-  printf("attrsting: %s\n", attrstring);
-#endif
-
   if ((err != SLP_OK) || (callbackerr != SLP_OK)) {
     printf("Error registering service with slp %i\n", err);
     retCode = err;

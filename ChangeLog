@@ -3,6 +3,9 @@
 	* objectImpl.c:
 	[ 3016863 ] Data corruption when replacing array properties
 
+	* cimslp.c, cimslpSLP.c:
+	[ 3022941 ] Remove HAVE_SLP_ALONE sections
+
 2010-06-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c:

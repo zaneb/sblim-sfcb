@@ -440,7 +440,6 @@ slpUpdate(void *args)
   }
   //End loop
   CMRelease(ctx);
-  sunsetControl();
   if(http_url) {
     _SFCB_TRACE(2, ("--- Deregistering http advertisement"));
     deregisterCIMService(http_url);

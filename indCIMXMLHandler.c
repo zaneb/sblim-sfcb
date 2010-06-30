@@ -241,8 +241,8 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    }
    else { /* if no scheme is given, assume http (as req. for param by mof) */
      char* ds = CMGetCharPtr(dest);
-     if (strchr(ds, ':') == NULL) {
-       char* prefix = "http:";
+     if (strstr(ds, "://") == NULL) {
+       char* prefix = "http://";
        int n = strlen(ds)+strlen(prefix)+1;
        char* newdest = (char*)malloc(n*sizeof(char));
        strcpy(newdest, prefix);

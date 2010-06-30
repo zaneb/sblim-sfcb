@@ -110,6 +110,7 @@ Klaus Kampf, Novell
 04/30/2010 [ 2980524 ] providerRegister should collate namespaces
 05/27/2010 [ 2994737 ] cimslp fails to get sslCertificateFilePath config value
 05/27/2010 [ 2984485 ] Possible access to freed memory in cimslpSLP.c
+06/30/2010 [ 2968599 ] Wrong trace msg for invokeMethod (local interface)
 
 Mike Brasher, Inova
 -------------------

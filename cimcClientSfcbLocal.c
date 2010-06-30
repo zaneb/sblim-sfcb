@@ -1175,7 +1175,7 @@ static CMPIData invokeMethod(
    CMPIData retval={0,CMPI_notFound,{0l}};
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
    
-   _SFCB_ENTER(TRACE_CIMXMLPROC, "referenceNames");
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "invokeMethod");
 
    
    CMPIString *ns=cop->ft->getNameSpace(cop,NULL);

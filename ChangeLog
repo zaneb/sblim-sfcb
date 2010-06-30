@@ -4,6 +4,10 @@
 	[ 2950545 ] indCIMXMLHandler destination schema correction wrong
 	(proposed by Till Steinbach)
 
+	* cimcClientSfcbLocal.c:
+	[ 2968599 ] Wrong trace msg for invokeMethod (local interface)
+	(patch by Klaus Kaempf)
+
 2010-06-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* objectImpl.c:

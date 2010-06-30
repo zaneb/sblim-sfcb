@@ -1,5 +1,8 @@
 2010-06-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* cimXmlRequest.c:
+	[ 3023502 ] Memory leak on CreateClass
+
 	* indCIMXMLHandler.c:
 	[ 2950545 ] indCIMXMLHandler destination schema correction wrong
 	(proposed by Till Steinbach)

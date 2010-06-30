@@ -874,7 +874,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    tmp = cl;
    cl = ClClassRebuildClass(cl,NULL); 
-   free(tmp);
+   ClClassFreeClass(tmp);
    cls=initConstClass(cl);
 
    sreq.principal = setCharsMsgSegment(ctx->principal);
@@ -898,6 +898,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
       resp = invokeProvider(&binCtx);
       closeProviderContext(&binCtx);
       resp->rc--;
+      ClClassFreeClass(cl);
       if (resp->rc == CMPI_RC_OK) {
 	if (resp) {
 	  free(resp);

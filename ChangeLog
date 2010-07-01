@@ -1,3 +1,8 @@
+2010-07-01  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* profileProvider.c:
+	[ 3022919 ] profileProvider (SLP) has increasing memory usage over time
+
 2010-06-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimXmlRequest.c:

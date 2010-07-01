@@ -323,11 +323,10 @@ updateSLPReg(const CMPIContext *ctx, int slpLifeTime)
   long            i;
   int             errC = 0;
 
-  extern char    *configfile;
-
   _SFCB_ENTER(TRACE_SLP, "updateSLPReg");
 
   pthread_mutex_lock(&slpUpdateMtx);
+  void* hc = markHeap();
 
   getControlBool("enableSlp", &enableSlp);
   if(!enableSlp) {
@@ -374,6 +373,7 @@ updateSLPReg(const CMPIContext *ctx, int slpLifeTime)
   
   freeCFG(&cfgHttp);
   freeCFG(&cfgHttps);
+  releaseHeap(hc);
   pthread_mutex_unlock(&slpUpdateMtx);
   return;
 }

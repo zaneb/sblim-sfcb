@@ -1,5 +1,9 @@
 2010-07-01  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* indCIMXMLHandler.c:
+	[ 2952628 ] Handler is not removed from interop-Hashtable when CI fails
+	(based on patch by Till Steinbach)
+
 	* profileProvider.c:
 	[ 3022919 ] profileProvider (SLP) has increasing memory usage over time
 

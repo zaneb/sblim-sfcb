@@ -17,6 +17,7 @@ Bugs fixed:
 - 2968599 Wrong trace msg for invokeMethod (local interface)
 - 3023502 Memory leak on CreateClass
 - 3022919 profileProvider (SLP) has increasing memory usage over time
+- 2952628 Handler is not removed from interop-Hashtable when CI fails
 
 Changes in 1.3.8
 ================

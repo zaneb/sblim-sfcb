@@ -276,7 +276,10 @@ static void stopProc(void *p)
       if (pInfo->instanceMI) pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx, 1);
       if (pInfo->associationMI) pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx, 1);
       if (pInfo->methodMI) pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx, 1);
-      if (pInfo->indicationMI) pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx, 1);
+      if (pInfo->indicationMI) {
+	pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx, 1);
+	pInfo->indicationMI->ft->disableIndications(pInfo->indicationMI, ctx);
+      }
       //dlclose(pInfo->library);
     }
    }

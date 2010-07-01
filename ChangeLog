@@ -1,5 +1,8 @@
 2010-07-01  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* providerDrv.c:
+	[ 3017845 ] disableIndications not called on provider shutdown
+
 	* indCIMXMLHandler.c:
 	[ 2952628 ] Handler is not removed from interop-Hashtable when CI fails
 	(based on patch by Till Steinbach)

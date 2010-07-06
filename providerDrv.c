@@ -394,13 +394,14 @@ void* providerIdleThread()
     		     for(temp=activProvs;temp;temp=temp->next) {
 			if((strcmp(temp->providerName,pInfo->providerName)==0) && (strcmp(temp->className,pInfo->className)!=0)) break;
                         if (pInfo->library==NULL) continue;
-                        if (pInfo->indicationMI!=NULL) continue;
                         if (crc.rc==0 && pInfo->instanceMI) 
                            crc = pInfo->instanceMI->ft->cleanup(pInfo->instanceMI, ctx,0);
                         if (crc.rc==0 && pInfo->associationMI) 
                            crc = pInfo->associationMI->ft->cleanup(pInfo->associationMI, ctx,0);
                         if (crc.rc==0 && pInfo->methodMI) 
                            crc = pInfo->methodMI->ft->cleanup(pInfo->methodMI, ctx,0);
+                        if (crc.rc==0 && pInfo->indicationMI) 
+                           crc = pInfo->indicationMI->ft->cleanup(pInfo->indicationMI, ctx,0);
                         _SFCB_TRACE(1, ("--- Cleanup rc: %d %s-%d",crc.rc,processName,currentProc));
                         if (crc.rc==CMPI_RC_NEVER_UNLOAD) doNotExit=1;
                         if (crc.rc==CMPI_RC_DO_NOT_UNLOAD) doNotExit=noBreak=1;

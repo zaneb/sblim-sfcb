@@ -160,3 +160,8 @@ Till Steinbach
 02/19/2010 [ 2952912 ] resultSockets variable is not used threadsafe
 06/17/2010 [ 2950521 ] Provider operations are wrongly traced
 07/01/2010 [ 2952628 ] Handler is not removed from interop-Hashtable when CI fails
+
+sto (SF id)
+------------------
+07/08/2010 [ 3003509 ] sfcb must configure IndicationFilterName
+

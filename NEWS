@@ -21,6 +21,7 @@ Bugs fixed:
 - 3017845 disableIndications not called on provider shutdown
 - 3010272 Indication providers always unloaded when idle
 - 3003509 sfcb must configure IndicationFilterName
+- 3012365 enableIndications() only called once per provider group
 
 Changes in 1.3.8
 ================

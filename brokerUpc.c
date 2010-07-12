@@ -39,7 +39,6 @@
 
 #ifdef SFCB_INCL_INDICATION_SUPPORT 
 #include "selectexp.h"
-extern int indicationEnabled;
 #endif
 
 extern MsgSegment setArgsMsgSegment(const CMPIArgs * args);
@@ -116,13 +115,6 @@ static CMPIStatus deliverIndication(const CMPIBroker* mb, const CMPIContext* ctx
    CMPIObjectPath *op=NULL;
    
    _SFCB_ENTER(TRACE_INDPROVIDER | TRACE_UPCALLS, "deliverIndication");
-   
-   if (indicationEnabled==0) {      
-      _SFCB_TRACE(1,("--- Provider not enabled for indications"));
-      printf("Provider not enabled for indications\n");
-      setStatus(&st,CMPI_RC_ERR_FAILED, "Provider not enabled for indications");
-      _SFCB_RETURN(st);
-   }
 
    NativeSelectExp *se=activFilters;
    

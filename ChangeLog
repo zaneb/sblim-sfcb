@@ -1,3 +1,9 @@
+2010-07-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* brokerUpc.c, providerDrv.c, providerRegister.h
+	[ 3012365 ] enableIndications() only called once per provider group
+	(patch by Tim Potter)
+
 2010-07-08 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 	* interopProvider.c
 	[ 3003509 ] sfcb must configure IndicationFilterName 

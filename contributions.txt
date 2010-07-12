@@ -44,6 +44,7 @@ Tim Potter, HP
 04/08/2008 [ 1893302 ] New CMPI arrays not tracked
 03/12/2010 [ 2969129 ] Missing dlclose() in httpAdapter.c
 06/16/2010 [ 3016295 ] Initialise refcount in CMPIInstance clone
+07/12/2010 [ 3012365 ] enableIndications() only called once per provider group
 
 Peter Mellquist, HP
 -------------------

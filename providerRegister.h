@@ -61,6 +61,7 @@ typedef struct _ProviderInfo {
    pthread_mutex_t initMtx;
    time_t lastActivity;
    int startSeq;
+   int indicationEnabled;
    struct _ProviderInfo *next;
    struct _ProviderInfo *nextInRegister; /*not actually next in Register,but
    pointer to the next provider serving the same class (for indications)*/

@@ -1,3 +1,8 @@
+2010-07-14  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	[ 3026606 ] Prov idle unload may not call all cleanup functions
+
 2010-07-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* brokerUpc.c, providerDrv.c, providerRegister.h

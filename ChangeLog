@@ -1,3 +1,8 @@
+2010-08-20  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* Makefile.am:
+	[ 3049645 ] SLP hostname lib won't build
+
 2010-08-20 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 	*  cimXmlRequest.c test/TestProviders/cmpiTestMethodProvider.c,
 		test/schema/root/cimv2/Test_Method.mof 

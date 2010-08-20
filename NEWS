@@ -1,8 +1,6 @@
 Changes in 1.3.9
 ================
 
-New features:
-
 Bugs fixed:
 - 2994737 cimslp fails to get sslCertificateFilePath config value
 - 2984485 Possible access to freed memory in cimslpSLP.c
@@ -25,6 +23,7 @@ Bugs fixed:
 - 3026606 Prov idle unload may not call all cleanup functions
 - 3048944 Bump downloaded CIM schema to 2.26
 - 3048960 method array types not filled in
+- 3049645 SLP hostname lib won't build
 
 Changes in 1.3.8
 ================

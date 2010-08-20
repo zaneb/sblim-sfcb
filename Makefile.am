@@ -148,7 +148,8 @@ sfcblib_LTLIBRARIES = \
    libcimcClientSfcbLocal.la \
    $(QUALREP_LIBS) \
    $(INDICATION_LIBS) \
-   $(PAM_LIBS) 
+   $(PAM_LIBS) \
+   $(SLP_HOSTNAME_LIBS)
 
 if TEST_ENABLED 
 sfcblib_LTLIBRARIES += \

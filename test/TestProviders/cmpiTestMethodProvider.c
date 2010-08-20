@@ -72,7 +72,14 @@ CMPIStatus TestMethodProviderInvokeMethod (
             val2.string = str2;
             /* Adds a value of str2 string to out array argument */
             rc = CMAddArg(out, argName, &val2, CMPI_string);
+        } else if (!strcmp("CheckArrayNoType", methodName)) {
+            data = CMGetArg(in, "IntArray", &rc);
+            CMPIType atype=data.value.array->ft->getSimpleType(data.value.array,&rc); 
+            sprintf(result,"Datatype is %u",atype);
+            str1 = CMNewString(_broker, result, &rc);
+            val1.string = str1;
         }
+
     }
     CMReturnData (rslt, (CMPIValue *) &val1, CMPI_string);
     CMReturnDone (rslt);

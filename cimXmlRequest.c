@@ -2028,7 +2028,7 @@ int updateMethodParamTypes(RequestHdr *hdr) {
       if (isEI) continue;
     }
 
-    if (ptok->type==0) {
+    if ((ptok->type==0) || (ptok->type == CMPI_ARRAY)) {
       /* Type was unknown, fill it in */
       // printf("parameter %s missing type, using %s\n", sname, paramType(pdata.type));
       ptok->type = pdata.type;
@@ -2077,7 +2077,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
 
    for (p = req->paramValues.first; p; p = p->next) {
      /* Update untyped params (p->type==0) and verify those that were specified */
-     if (p->type==0 || vmpt) {
+     if (p->type==0 || p->type == CMPI_ARRAY || vmpt) {
        rc = updateMethodParamTypes(hdr);
 
        if (rc != CMPI_RC_OK) {

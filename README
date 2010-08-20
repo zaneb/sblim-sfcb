@@ -1536,10 +1536,6 @@ would like it to be advertised via slp, ensure that the AdvertiseTypes property
 is set to {3}.  Any other state will prevent the profile name from being 
 included in the slp advertisement.
 
-Creation and deletion of profiles which are handled by sfcb's profile provider
-will automatically update the slp advertisements. All other changes will be
-handled when slpRefreshInterval has been reached.
-
 26. Files
 =========
 /usr/local/sbin/sfcbd

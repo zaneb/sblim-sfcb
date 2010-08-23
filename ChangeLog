@@ -1,3 +1,8 @@
+2010-08-23  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* predicate.c:
+	[ 3051707 ] Leak in predicate.c
+
 2010-08-20  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* Makefile.am:

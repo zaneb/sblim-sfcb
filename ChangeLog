@@ -1,3 +1,8 @@
+2010-08-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* predicate.c:
+	Pulled out 3051707 patch for the time being
+
 2010-08-23  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* predicate.c:

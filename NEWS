@@ -25,7 +25,6 @@ Bugs fixed:
 - 3048960 method array types not filled in
 - 3049645 SLP hostname lib won't build
 - 3035165 objectSize in objectImpl.c is not used thread safe
-- 3051707 Leak in predicate.c
 
 Changes in 1.3.8
 ================

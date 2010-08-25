@@ -3,6 +3,9 @@
 	* predicate.c:
 	Pulled out 3051707 patch for the time being
 
+	* interopProvider.c:
+	[ 3053240 ] Leak on indication delivery
+
 2010-08-23  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* predicate.c:

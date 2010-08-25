@@ -1105,7 +1105,8 @@ CMPIStatus InteropProviderInvokeMethod(
       char *suName;
       char *filtername = NULL;
       CMPIArgs *hin=CMNewArgs(_broker,NULL);
-      CMPIInstance *ind=CMGetArg(in,"indication",NULL).value.inst;
+      CMPIInstance *indo=CMGetArg(in,"indication",NULL).value.inst;
+      CMPIInstance *ind=CMClone(indo,NULL); /* we need this because we add IndicationFilterName */
       void *filterId=(void*)CMGetArg(in,"filterid",NULL).value.
 #if SIZEOF_INT == SIZEOF_VOIDP	
 	uint32;
@@ -1127,6 +1128,7 @@ CMPIStatus InteropProviderInvokeMethod(
       }
 
       CMAddArg(hin,"indication",&ind,CMPI_instance);
+      CMRelease(ind); /* this is ok since AddArg will make a copy */
       CMAddArg(hin,"nameSpace",ns,CMPI_chars);
       
       if (subscriptionHt) for (i = subscriptionHt->ft->getFirst(subscriptionHt, 

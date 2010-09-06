@@ -1,0 +1,108 @@
+SFCB: STATIC COMPILATION and uClibc HOWTO
+Author: Rodolfo Kohn, Intel
+=========================================
+
+This howto explains how to execute a static compilation of a minimum-disk-footprint sfcb configuration.
+Additional providers must be compiled statically. A provider example is included.
+The whole sfcb CIMOM and the included provider disk footprint uses around 300 KB.
+Moreover, it is described how to compile with uClibc for embedded environments such as uClinux.
+
+Steps for static compilation with sfcb 1.3.7
+--------------------------------------------
+If you have the tarball for version 1.3.7, apply patch sfcbd-1.3.7-minfootprint.patch
+1-unpack the tarball
+2-apply patch: patch < static_sfcb_tarball.patch
+3-Execute:
+
+libtoolize --force --copy
+aclocal
+autoconf
+automake
+
+Note: you also need to execute the above commands in mofc subfolder
+
+Modify *.prv files to include your providers. An example of INTEL_Processor is shown.
+
+At this moment you can execute configure, make, make install
+./configure --prefix=/home/rodolk/uclibc/ucwbem/sfcb/ --disable-indications --disable-qualifierrep --disable-debug --disable-default-properties --enable-static --disable-shared --enable-minfootprint
+
+
+
+Steps for compiling with uClibc
+-------------------------------
+Generate uclibc toolchain
+
+1-Download buildroot toolchain from http://buildroot.uclibc.org/download.html
+
+2-Unpack the tarball
+
+3-Follow instructions in http://www.uclibc.org/toolchains.html to build the toolchain
+You do not need to include libz or curl to run sfcbd after applying the current patch.
+
+4-Get the root file system from [buildroot directory]/output/images/
+
+For example: [buildroot directory]/output/images/rootfs.i686.ext2
+
+To mount it: 
+sudo mount -o loop rootfs.i686.ext2 root_fs/
+
+To change root directory (Only once you have installed everything)
+sudo chroot root_fs /bin/su -
+
+5-For cross-compilation update PATH to point to cross-compiler
+export PATH=$PATH:[buildroot directory]/output/staging/usr/bin
+
+6-For cross-compilation move to sfcb folder and configure, make, install, and strip the executable (to discard symbols):
+./configure --prefix=/home/rodolk/uclibc/ucwbem/sfcb/ --disable-indications --disable-qualifierrep --disable-debug --disable-default-properties --enable-static --disable-shared --enable-minfootprint --host=i686-linux CC=i686-linux-gcc
+make
+make install
+strip -s /home/rodolk/uclibc/ucwbem/sfcb/sbin/sfcbd
+
+Note: replace "/home/rodolk/uclibc/ucwbem/sfcb" by your own installation folder
+
+
+
+Installation of necessary files in uclibc root filesystem
+---------------------------------------------------------
+
+The only files needed for execution:
+-etc/sfcb/sfcb.cfg
+-sbin/sfcbd
+-/var/lib/sfcb/registration/*
+
+Copy the files to the uclibc filesystem:
+sudo cp /home/rodolk/uclibc/ucwbem/sfcb/etc/sfcb/sfcb.cfg root_fs/etc/
+sudo cp /home/rodolk/uclibc/ucwbem/sfcb/sbin/sfcbd root_fs/usr/bin
+
+Modify path for registrationDir in sfcb.cfg properly:
+/var/lib/sfcb/registration
+providerDirs is not important since we compiled statically.
+
+
+NOTE: At the moment, registration directory with the compiled repository must be generated with a normal sfcb installation and 
+then modified and copied.
+-Create a normal installation of sfcb, intall mof and registration files 
+-Modify /usr/local/var/lib/sfcb/stage/default.reg so that ClassProvider is used instead of ClassProviderGz
+-Install the necessary mof and reg files
+-Execute:
+sudo sfcbrepos -f
+
+-Then copy the registration directory to the root filesystem created
+
+sudo mkdir root_fs/var/lib/sfcb
+sudo mv registration/ root_fs/var/lib/sfcb/
+
+It is possible to use the example registration files for using with the example provider:
+tar -xvf ucregistration_example.tar -C root_fs/var/lib/
+
+Note: In order to be able to execute the example provider, it is necessary to have the /proc filesystem and the file cpuinfo.
+This must be done when the root filesystem is configured.
+
+
+
+
+
+
+
+
+

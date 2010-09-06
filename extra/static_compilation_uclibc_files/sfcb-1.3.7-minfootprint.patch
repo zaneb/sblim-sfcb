@@ -1,0 +1,444 @@
+diff -rupN sblim-sfcb-1.3.7/classSchema2c.c sblim-sfcb-1.3.7-minfootprint/classSchema2c.c
+--- sblim-sfcb-1.3.7/classSchema2c.c	2008-12-18 19:34:33.000000000 -0200
++++ sblim-sfcb-1.3.7-minfootprint/classSchema2c.c	2010-03-07 10:20:20.307368831 -0200
+@@ -340,7 +340,9 @@ int main(int argc, char *argv[])
+ 	      argv[0]);
+       return -1;
+    }
+-   
++
++#ifndef SFCB_MINFOOTPRINT
++  
+    if (swapMode) {
+      void *swapLib=dlopen("libsfcObjectImplSwapI32toP32.so", RTLD_LAZY);
+      if (swapLib==NULL) {
+@@ -353,6 +355,7 @@ int main(int argc, char *argv[])
+        exit(16);
+      }
+    }
++#endif /* SFCB_MINFOOTPRINT */
+ 
+    fname=argv[argidx];
+    
+diff -rupN sblim-sfcb-1.3.7/configure.ac sblim-sfcb-1.3.7-minfootprint/configure.ac
+--- sblim-sfcb-1.3.7/configure.ac	2010-02-17 17:19:11.000000000 -0200
++++ sblim-sfcb-1.3.7-minfootprint/configure.ac	2010-03-07 23:30:51.553920878 -0200
+@@ -56,6 +56,10 @@ AC_ARG_ENABLE(slp,
+ 	[AC_HELP_STRING([--enable-slp],
+ 		[include slp agent for SFCB - EXPERIMENTAL.])])
+ 		
++AC_ARG_ENABLE(minfootprint,
++	[AC_HELP_STRING([--enable-minfootprint],
++		[Build SFCB with minimum disk footprint. Static link only. Shared libraries are disabled. - EXPERIMENTAL.])])
++
+ AC_ARG_ENABLE(slp-hostname-lib,
+    [AC_HELP_STRING([--enable-slp-hostname-lib],
+       [aquire hostname for slp registration from external library.])])
+@@ -158,6 +162,14 @@ if test "$enable_debug" == "yes"; then
+    SFCB_CPPFLAGS="-D SFCB_DEBUG $SFCB_CPPFLAGS"
+ fi
+ 
++if test "$enable_minfootprint" == "yes"; then
++   AC_DEFINE(HAVE_MINFOOTPRINT,1,[Minimum disk footprint enabled. Dynamic link disabled.])
++   SFCB_CPPFLAGS="-D SFCB_MINFOOTPRINT $SFCB_CPPFLAGS"
++   if test "$enable_static" != "yes" -o "$enable_shared" != "no" ; then
++      AC_MSG_ERROR([For minimum disk footprint set --enable_static and --disable-shared.])
++   fi
++fi
++
+ if test "$enable_jdbc" == "yes"; then
+    AC_DEFINE(HAVE_JDBC,1,[JDBC support enabled.])
+ fi
+@@ -381,8 +393,11 @@ fi
+ 
+ # Checks for libraries.
+ AC_CHECK_LIB(pthread,main)
+-AC_CHECK_LIB(dl,main)
+-AC_CHECK_LIB(z,main,[SFCB_LIBZ=-lz],[AC_MSG_ERROR([Could not find required libz])])
++if test "$enable_minfootprint" != "yes"; then
++   AC_CHECK_LIB(dl,main)
++   AC_CHECK_LIB(z,main,[SFCB_LIBZ=-lz],[AC_MSG_ERROR([Could not find required libz])])
++fi
++
+ if test "$enable_indications" = "yes" ; then
+    LOAD_INDICATION_PROVIDER=
+    AC_DEFINE(HAVE_INDICATIONS,1,[Indication support enabled.])
+@@ -427,7 +442,11 @@ fi
+ # Checks for header files.
+ AC_HEADER_STDC
+ AC_HEADER_SYS_WAIT
+-AC_CHECK_HEADERS([fcntl.h limits.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h unistd.h zlib.h])
++if test "$enable_minfootprint" == "yes"; then
++   AC_CHECK_HEADERS([fcntl.h limits.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h unistd.h])
++else
++   AC_CHECK_HEADERS([fcntl.h limits.h netdb.h netinet/in.h stdlib.h string.h sys/socket.h sys/time.h unistd.h zlib.h])
++fi
+ 
+ # Checks for typedefs, structures, and compiler characteristics.
+ AC_C_BIGENDIAN
+@@ -490,6 +509,7 @@ AM_CONDITIONAL(DOCS,[test "$enable_docs"
+ AM_CONDITIONAL(IPV6,[test "$enable_ipv6" == "yes"])
+ AM_CONDITIONAL(LOCAL_CONNECT_NO_INDICATION,[test "$enable_local_connect_only" == "yes" -a "$enable_indications" == "no"])
+ AM_CONDITIONAL(LOCAL_CONNECT_ONLY,[test "$enable_local_connect_only" == "yes"])
++AM_CONDITIONAL(MINFOOTPRINT,[test "$enable_minfootprint" == "yes"]) 
+ 
+ AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
+ 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 
+@@ -517,6 +537,7 @@ echo -e "default instance properties"\\t
+ echo -e "uds"\\t\\t\\t\\t"${enable_uds:-no}"
+ echo -e "tests"\\t\\t\\t\\t"${enable_tests:-no}"
+ echo -e "debug"\\t\\t\\t\\t"${enable_debug:-no}"
++echo -e "Min disk footprint"\\t\\t"${enable_minfootprint:-no}"
+ echo =================================================================
+ echo
+ echo "sfcb configuration complete.  you may now run 'make'"
+diff -rupN sblim-sfcb-1.3.7/extern_declarations.prv sblim-sfcb-1.3.7-minfootprint/extern_declarations.prv
+--- sblim-sfcb-1.3.7/extern_declarations.prv	1969-12-31 21:00:00.000000000 -0300
++++ sblim-sfcb-1.3.7-minfootprint/extern_declarations.prv	2010-03-05 21:10:07.517724855 -0200
+@@ -0,0 +1,4 @@
++ADD_EXTERN_METHOD(ClassProvider)
++ADD_EXTERN_CLASS(ClassProvider)
++ADD_EXTERN_INSTANCE(INTEL_Processor)
++
+diff -rupN sblim-sfcb-1.3.7/extra_providers.prv sblim-sfcb-1.3.7-minfootprint/extra_providers.prv
+--- sblim-sfcb-1.3.7/extra_providers.prv	1969-12-31 21:00:00.000000000 -0300
++++ sblim-sfcb-1.3.7-minfootprint/extra_providers.prv	2010-03-05 21:10:07.517724855 -0200
+@@ -0,0 +1,5 @@
++EXTRA_PROVIDERS = \
++    ../providers/INTEL_Processor/cpuinfo.c \
++    ../providers/INTEL_Processor/intelmsr.c \
++    ../providers/INTEL_Processor/intelProcessorProvider.c 
++
+diff -rupN sblim-sfcb-1.3.7/fixed_entry_points.prv sblim-sfcb-1.3.7-minfootprint/fixed_entry_points.prv
+--- sblim-sfcb-1.3.7/fixed_entry_points.prv	1969-12-31 21:00:00.000000000 -0300
++++ sblim-sfcb-1.3.7-minfootprint/fixed_entry_points.prv	2010-03-05 21:10:07.517724855 -0200
+@@ -0,0 +1,4 @@
++   CHECK_PROV_TYPE(ClassProvider, Class)
++   CHECK_PROV_TYPE(ClassProvider, Method)
++   CHECK_PROV_TYPE(INTEL_Processor, Instance)
++
+diff -rupN sblim-sfcb-1.3.7/httpAdapter.c sblim-sfcb-1.3.7-minfootprint/httpAdapter.c
+--- sblim-sfcb-1.3.7/httpAdapter.c	2010-01-13 14:25:50.000000000 -0200
++++ sblim-sfcb-1.3.7-minfootprint/httpAdapter.c	2010-03-07 10:22:06.689368271 -0200
+@@ -70,7 +70,7 @@
+ #include <grp.h>
+ #endif
+ 
+-unsigned long exFlags = 0;
++//unsigned long exFlags = 0;
+ static char *name;
+ static int debug;
+ static int doBa;
+@@ -223,11 +223,13 @@ int baValidate(char *cred, char **princi
+       char *ln;
+       err=1;
+       if (getControlChars("basicAuthlib", &ln)==0) {
++#ifndef SFCB_MINFOOTPRINT
+          libraryName(NULL,ln,dlName, 512);
+         if ((authLib=dlopen(dlName, RTLD_LAZY))) {
+             authenticate= dlsym(authLib, "_sfcBasicAuthenticate");
+             if (authenticate) err=0;
+          }
++#endif /* SFCB_MINFOOTPRINT */
+       }
+       if (err) mlogf(M_ERROR,M_SHOW,"--- Authentication exit %s not found\n",dlName);
+    }
+@@ -237,8 +239,12 @@ int baValidate(char *cred, char **princi
+    } 
+    else {
+      *principal=strdup(auth);
++#ifndef SFCB_MINFOOTPRINT
+      if (authenticate(auth,pw)) 
+        ret = 1;
++#else
++       ret = 1;
++#endif /* SFCB_MINFOOTPRINT */
+    }
+ 
+    free(auth);
+@@ -1902,6 +1908,8 @@ static int ccValidate(X509 *certificate,
+   _SFCB_ENTER(TRACE_HTTPDAEMON, "ccValidate");
+   
+   if (getControlChars("certificateAuthlib", &ln)==0) {
++#ifndef SFCB_MINFOOTPRINT
++
+     libraryName(NULL,ln,dlName, 512);
+     if ((authLib=dlopen(dlName, RTLD_LAZY))) {
+       validate= dlsym(authLib, "_sfcCertificateAuthenticate");
+@@ -1913,6 +1921,7 @@ static int ccValidate(X509 *certificate,
+ 	result = 0;
+       } 
+     }
++#endif /* SFCB_MINFOOTPRINT */
+   } else {
+     mlogf(M_ERROR,M_SHOW,
+ 	  "--- Certificate authentication exit not configured\n");	
+diff -rupN sblim-sfcb-1.3.7/Makefile.am sblim-sfcb-1.3.7-minfootprint/Makefile.am
+--- sblim-sfcb-1.3.7/Makefile.am	2010-02-10 18:51:15.000000000 -0200
++++ sblim-sfcb-1.3.7-minfootprint/Makefile.am	2010-03-07 23:39:43.956500968 -0200
+@@ -48,7 +48,11 @@ AM_CPPFLAGS=-DSFCB_CONFDIR=\"$(sfcbconfd
+         @SFCB_CMPI_PLATFORM@ 
+ AM_LDFLAGS=@SFCB_LDFLAGS@
+ 
+-SUBDIRS=. $(MOFC_DIR) test
++if MINFOOTPRINT
++   SUBDIRS=.
++else
++   SUBDIRS=. $(MOFC_DIR) test
++endif
+ 
+ if GCOV
+ AM_CFLAGS=@SFCB_CFLAGS@ -ftest-coverage -fprofile-arcs
+@@ -117,6 +121,24 @@ QUALREP_FILES =
+ QUALREP_HEADER =
+ endif
+ 
++include extra_providers.prv
++
++if MINFOOTPRINT
++   INTEROP_LIBS =
++   OTHERCLASSPROV_LIBS =
++   UTILFIX_STATIC_LINK = genericlist.c
++   BROKERCOREFIX_STATIC_LINK = classProvider.c \
++      $(EXTRA_PROVIDERS)
++else
++   INTEROP_LIBS = libsfcInteropProvider.la \
++      libsfcInteropServerProvider.la
++   OTHERCLASSPROV_LIBS = libsfcClassProviderGz.la \
++      libsfcClassProviderSf.la \
++      libsfcClassProviderMem.la
++   UTILFIX_STATIC_LINK =
++   BROKERCOREFIX_STATIC_LINK =
++endif
++
+ if JDBC
+ JDBC_FILES = \
+     dbpAdapter.c \
+@@ -137,19 +159,17 @@ endif
+ sfcb_sharedobjects = \
+    $(sfcblibdir)/*.so
+ 
++
+ sfcblib_LTLIBRARIES = \
+    libsfcUtil.la \
+    libsfcBrokerCore.la \
+    libsfcFileRepository.la \
+    libsfcInternalProvider.la \
+-   libsfcInteropProvider.la \
+-   libsfcInteropServerProvider.la \
++   $(INTEROP_LIBS) \
+    libsfcProfileProvider.la \
+    libsfcElementCapabilitiesProvider.la \
+    libsfcClassProvider.la \
+-   libsfcClassProviderGz.la \
+-   libsfcClassProviderSf.la \
+-   libsfcClassProviderMem.la \
++   $(OTHERCLASSPROV_LIBS) \
+    $(CIMXMLCODEC_LIBS) \
+    $(HTTP_ADAPTER_LIBS) \
+    libsfcBasicAuthentication.la \
+@@ -199,6 +219,7 @@ libsfcUtil_la_SOURCES = \
+ 	sfcUtil/utilFactory.c \
+ 	sfcUtil/utilHashtable.c \
+ 	sfcUtil/utilStringBuffer.c \
++	$(UTILFIX_STATIC_LINK) \
+ 	sfcUtil/libsfcUtil.Versions
+ libsfcUtil_la_LDFLAGS = -Wl,--version-script,$(srcdir)/sfcUtil/libsfcUtil.Versions
+ 
+@@ -237,6 +258,7 @@ libsfcBrokerCore_la_SOURCES = \
+     cimXmlGen.c \
+     mrwlock.c \
+     mlog.c \
++    $(BROKERCOREFIX_STATIC_LINK) \
+     $(JDBC_FILES) \
+     $(QUALREP_FILES)
+ 
+@@ -311,6 +333,7 @@ libsfcObjectImplSwapI32toP32_la_SOURCES 
+ libsfcObjectImplSwapI32toP32_la_LIBADD=-lsfcBrokerCore
+ libsfcObjectImplSwapI32toP32_la_DEPENDENCIES=libsfcBrokerCore.la
+ 
++if !MINFOOTPRINT
+ libsfcInteropProvider_la_SOURCES = \
+    interopProvider.c 
+ libsfcInteropProvider_la_LIBADD=-lsfcBrokerCore
+@@ -320,6 +343,7 @@ libsfcInteropServerProvider_la_SOURCES =
+    interopServerProvider.c 
+ libsfcInteropServerProvider_la_LIBADD=-lsfcBrokerCore 
+ libsfcInteropServerProvider_la_DEPENDENCIES=libsfcBrokerCore.la
++endif
+ 
+ libsfcIndCIMXMLHandler_la_SOURCES = \
+    indCIMXMLHandler.c \
+@@ -338,6 +362,7 @@ libsfcElementCapabilitiesProvider_la_SOU
+ libsfcElementCapabilitiesProvider_la_LIBADD=-lsfcBrokerCore
+ libsfcElementCapabilitiesProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+ 
++if !MINFOOTPRINT
+ libsfcClassProviderGz_la_SOURCES = \
+    classProviderGz.c
+ libsfcClassProviderGz_la_LIBADD=-lsfcBrokerCore @SFCB_LIBZ@
+@@ -347,16 +372,19 @@ libsfcClassProviderSf_la_SOURCES = \
+    classProviderSf.c
+ libsfcClassProviderSf_la_LIBADD=-lsfcBrokerCore @SFCB_LIBZ@
+ libsfcClassProviderSf_la_DEPENDENCIES=libsfcBrokerCore.la
++endif
+ 
+ libsfcClassProvider_la_SOURCES = \
+    classProvider.c
+ libsfcClassProvider_la_LIBADD=-lsfcBrokerCore
+ libsfcClassProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+ 
++if !MINFOOTPRINT
+ libsfcClassProviderMem_la_SOURCES = \
+    classProviderMem.c classSchemaMem.c interop_classSchema.c
+ libsfcClassProviderMem_la_LIBADD=-lsfcBrokerCore
+ libsfcClassProviderMem_la_DEPENDENCIES=libsfcBrokerCore.la
++endif
+ 
+ # Building providers in the test/TestProviders directory
+ if TEST_ENABLED
+diff -rupN sblim-sfcb-1.3.7/providerDrv.c sblim-sfcb-1.3.7-minfootprint/providerDrv.c
+--- sblim-sfcb-1.3.7/providerDrv.c	2010-02-04 17:20:38.000000000 -0200
++++ sblim-sfcb-1.3.7-minfootprint/providerDrv.c	2010-03-07 10:22:55.537367587 -0200
+@@ -401,6 +401,7 @@ void* providerIdleThread()
+                         _SFCB_TRACE(1, ("--- Cleanup rc: %d %s-%d",crc.rc,processName,currentProc));
+                         if (crc.rc==CMPI_RC_NEVER_UNLOAD) doNotExit=1;
+                         if (crc.rc==CMPI_RC_DO_NOT_UNLOAD) doNotExit=noBreak=1;
++#ifndef SFCB_MINFOOTPRINT
+                         if (crc.rc==0) {
+                            _SFCB_TRACE(1, ("--- Unloading provider %s-%d",pInfo->providerName,currentProc));
+                            dlclose(pInfo->library);
+@@ -412,6 +413,9 @@ void* providerIdleThread()
+ 			   pthread_mutex_destroy(&pInfo->initMtx);
+                         }   
+                         else doNotExit=1;
++#else
++                        doNotExit=1;
++#endif /* SFCB_MINFOOTPRINT */
+                        }
+ 		     }  
+                      if (doNotExit==0) {
+@@ -2456,6 +2460,7 @@ static int doLoadProvider(ProviderInfo *
+    fullname = malloc(fullname_max_length);
+    dir=strtok_r(dircpy," \t",&dirlast);
+    info->library = NULL;
++#ifndef SFCB_MINFOOTPRINT
+    while (dir) {
+      libraryName(dir, (char *) info->location, fullname, fullname_max_length);
+      if (stat(fullname,&stbuf) == 0) {
+@@ -2472,6 +2477,9 @@ static int doLoadProvider(ProviderInfo *
+      }
+      dir=strtok_r(NULL, " \t", &dirlast);
+    }
++#else
++   info->library = (void *)0xFF;
++#endif /* SFCB_MINFOOTPRINT */
+    free(dircpy);
+    free(fullname);
+ 
+diff -rupN sblim-sfcb-1.3.7/support.c sblim-sfcb-1.3.7-minfootprint/support.c
+--- sblim-sfcb-1.3.7/support.c	2009-12-21 22:18:29.000000000 -0200
++++ sblim-sfcb-1.3.7-minfootprint/support.c	2010-03-07 10:23:41.733368535 -0200
+@@ -49,6 +49,9 @@ int collectStat=0;            /**< flag 
+ unsigned long exFlags = 0;    /**< flag determining whether extra options are enabled (currently only determines interop support) */
+ int localClientMode=0;        /**< flag determining whether local client connections are enabled */
+ 
++
++#ifndef SFCB_MINFOOTPRINT
++
+ void *loadLibib(const char *libname)
+ {
+    char filename[255];
+@@ -56,7 +59,6 @@ void *loadLibib(const char *libname)
+    return dlopen(filename, RTLD_LAZY);
+ }
+ 
+-
+ static void *getGenericEntryPoint(void *library, const char *ptype)
+ {
+    char entry_point[255];
+@@ -77,6 +79,68 @@ static void *getFixedEntryPoint(const ch
+    return sym;
+ }
+ 
++#else
++
++static void *getGenericEntryPoint(void *library, const char *ptype)
++{
++   return NULL;
++}
++
++#define ADD_EXTERN_METHOD(prstr) \
++   extern CMPIMethodMI* prstr##_Create_MethodMI(const CMPIBroker* brkr, const CMPIContext *ctx,  CMPIStatus *rc);
++
++#define ADD_EXTERN_CLASS(prstr) \
++   extern CMPIClassMI* prstr##_Create_ClassMI(const CMPIBroker* brkr, const CMPIContext *ctx);
++
++#define ADD_EXTERN_INSTANCE(prstr) \
++   extern CMPIInstanceMI* prstr##_Create_InstanceMI(const CMPIBroker* brkr, const CMPIContext *ctx,  CMPIStatus *rc);
++
++
++
++#define CHECK_PROV_TYPE(prstr, tystr) \
++   if (strcmp(provider, #prstr) == 0 && strcmp(ptype, #tystr) == 0) \
++   { \
++      return (void *)prstr##_Create_##tystr##MI; \
++   } 
++
++
++#include "extern_declarations.prv"
++
++
++static void *getFixedEntryPoint(const char *provider,
++                                     void *library, const char *ptype)
++{
++             mlogf(M_ERROR,M_SHOW,"ACA-20 %s %s\n", provider, ptype);
++
++
++#include "fixed_entry_points.prv"
++/*      if (strcmp(ptype, "Property") == 0)
++      {
++         return (void *)ClassProvider_Create_PropertyMI;
++      }
++      if (strcmp(ptype, "Indication") == 0)
++      {
++         return (void *)ClassProvider_Create_IndicationMI;
++      }*/
++/*   if (strcmp(provider, "ServerProvider") == 0)
++   {
++      if (strcmp(ptype, "Instance") == 0)
++      {
++         return (void *)ServerProvider_Create_InstanceMI;
++      }
++   }*/
++      
++   return NULL;
++}
++
++#endif /* SFCB_MINFOOTPRINT */
++
++
++
++
++
++
++
+ 
+ typedef CMPIInstanceMI *(*GENERIC_InstanceMI) (CMPIBroker * broker,
+                                                CMPIContext * ctx,
+@@ -362,6 +426,7 @@ void *memAddEncObj(int mode, void *ptr, 
+ int memAdd(void *ptr, int *memId);
+ 
+ 
++#ifndef SFCB_MINFOOTPRINT
+ 
+ void *tool_mm_load_lib(const char *libname)
+ {
+@@ -369,6 +434,7 @@ void *tool_mm_load_lib(const char *libna
+    snprintf(filename, 255, "lib%s.so", libname);
+    return dlopen(filename, RTLD_LAZY);
+ }
++#endif /* SFCB_MINFOOTPRINT */
+ 
+ static void __flush_mt(managed_thread * mt)
+ {

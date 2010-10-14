@@ -26,6 +26,7 @@ Bugs fixed:
 - 3049645 SLP hostname lib won't build
 - 3035165 objectSize in objectImpl.c is not used thread safe
 - 3053240 Leak on indication delivery
+- 3086143 set cmpi status in getPropQualifier
 
 Changes in 1.3.8
 ================

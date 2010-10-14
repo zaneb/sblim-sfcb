@@ -167,3 +167,7 @@ sto (SF id)
 ------------------
 07/08/2010 [ 3003509 ] sfcb must configure IndicationFilterName
 
+
+Janny Au, Avocent
+-----------------
+10/14/2010 [ 3086143 ] set cmpi status in getPropQualifier

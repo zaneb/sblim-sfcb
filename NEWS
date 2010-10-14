@@ -3,6 +3,7 @@ Changes in 1.3.10
 
 Bugs fixed:
 - 3086143 set cmpi status in getPropQualifier
+- 3086145 check datetime format in chars2bin
 
 Changes in 1.3.9
 ================

@@ -2,6 +2,11 @@
 
 	* constClass.c:
 	[ 3086143 ] set cmpi status in getPropQualifier
+	(patch by Janny Au)
+	
+	* datetime.c:
+	[ 3086145 ] check datetime format in chars2bin
+	(patch by Janny Au)
 
 2010-08-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
 

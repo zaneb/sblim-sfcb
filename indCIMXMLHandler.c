@@ -232,6 +232,16 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    }
 
    CMPIInstance* ciLocal = CMClone(ci, NULL);
+   CMPIObjectPath* copLocal = CMClone(cop, NULL);
+
+   CMPIString *sysname=ciLocal->ft->getProperty(ciLocal,"SystemName",&st).value.string;
+   if (sysname == NULL || sysname->hdl == NULL) {
+     char hostName[512];
+     hostName[0]=0;
+     gethostname(hostName,511); /* should be the same as SystemName of IndicationService */
+     CMAddKey(copLocal, "SystemName", hostName, CMPI_chars);
+     CMSetProperty(ciLocal,"SystemName",hostName,CMPI_chars);
+   }
 
    CMPIString* dest = CMGetProperty(ciLocal, "destination", &st).value.string;
    if (dest == NULL || CMGetCharPtr(dest) == NULL) {
@@ -266,24 +276,25 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    }
    CMSetProperty(ciLocal, "persistencetype", &persistenceType, CMPI_uint16);
 
-            CMPIString *str=CDToString(_broker,cop,NULL);
-            CMPIString *ns=CMGetNameSpace(cop,NULL);
+            CMPIString *str=CDToString(_broker,copLocal,NULL);
+            CMPIString *ns=CMGetNameSpace(copLocal,NULL);
             _SFCB_TRACE(1,("--- handler %s %s",(char*)ns->hdl,(char*)str->hdl));
             
    in=CMNewArgs(_broker,NULL);
    CMAddArg(in,"handler",&ciLocal,CMPI_instance);
-   CMAddArg(in,"key",&cop,CMPI_ref);
+   CMAddArg(in,"key",&copLocal,CMPI_ref);
    op=CMNewObjectPath(_broker,"root/interop","cim_indicationsubscription",&st);
    rv=CBInvokeMethod(_broker,ctx,op,"_addHandler",in,out,&st);
 
    if (st.rc==CMPI_RC_OK) {
-      st=InternalProviderCreateInstance(NULL,ctx,rslt,cop,ciLocal);
+      st=InternalProviderCreateInstance(NULL,ctx,rslt,copLocal,ciLocal);
    }
    else {
      rv=CBInvokeMethod(_broker,ctx,op,"_removeHandler",in,out,NULL);
    }
 
    CMRelease(ciLocal);
+   CMRelease(copLocal);
    _SFCB_RETURN(st);
 }
 

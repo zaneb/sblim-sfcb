@@ -889,6 +889,18 @@ CMPIStatus InteropProviderCreateInstance(
           CMSetStatus(&st, CMPI_RC_OK);
        }
         
+      /* SystemName is a key property.  According to DSP1054, the CIMOM must 
+         provide this if the client does not */
+      CMPIString *sysname=ciLocal->ft->getProperty(ciLocal,"SystemName",&st).value.string;
+      if (sysname == NULL || sysname->hdl == NULL) {
+ 	char hostName[512];
+ 	hostName[0]=0;
+	gethostname(hostName,511); /* should be the same as SystemName of IndicationService */
+	CMAddKey(copLocal, "SystemName", hostName, CMPI_chars);
+	CMSetProperty(ciLocal,"SystemName",hostName,CMPI_chars);
+      }
+
+
       for (ql=(char*)lang->hdl,i=0,n=0,m=strlen(ql); i<m; i++) {
          if (ql[i]>' ') lng[n++]=ql[i];
          if (n>=15) break;
@@ -901,7 +913,7 @@ CMPIStatus InteropProviderCreateInstance(
          _SFCB_RETURN(st);  
       }   
               
-      key=normalizeObjectPathCharsDup(cop);
+      key=normalizeObjectPathCharsDup(copLocal);
       if (getFilter(key)) {
          free(key);
          setStatus(&st,CMPI_RC_ERR_ALREADY_EXISTS,NULL);

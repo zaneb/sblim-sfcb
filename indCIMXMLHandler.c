@@ -45,6 +45,8 @@ extern void setStatus(CMPIStatus *st, CMPIrc rc, char *msg);
 
 extern ExpSegments exportIndicationReq(CMPIInstance *ci, char *id);
 
+extern void memLinkObjectPath(CMPIObjectPath *op);
+
 static const CMPIBroker *_broker;
 
 static int interOpNameSpace(const CMPIObjectPath *cop, CMPIStatus *st) 
@@ -232,7 +234,9 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    }
 
    CMPIInstance* ciLocal = CMClone(ci, NULL);
+   memLinkInstance(ciLocal);
    CMPIObjectPath* copLocal = CMClone(cop, NULL);
+   memLinkObjectPath(copLocal);
 
    CMPIString *sysname=ciLocal->ft->getProperty(ciLocal,"SystemName",&st).value.string;
    if (sysname == NULL || sysname->hdl == NULL) {
@@ -293,8 +297,6 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
      rv=CBInvokeMethod(_broker,ctx,op,"_removeHandler",in,out,NULL);
    }
 
-   CMRelease(ciLocal);
-   CMRelease(copLocal);
    _SFCB_RETURN(st);
 }
 

@@ -96,6 +96,10 @@ char * opsName[];
 
 #endif
 
+#ifndef PROVIDERLOAD_DLFLAG
+#define PROVIDERLOAD_DLFLAG (RTLD_NOW | RTLD_GLOBAL)
+#endif
+
 extern CMPIBroker *Broker;
 
 extern unsigned long exFlags;
@@ -2562,9 +2566,9 @@ static int doLoadProvider(ProviderInfo *info, char *dlName, int dlName_length)
    while (dir) {
      libraryName(dir, (char *) info->location, fullname, fullname_max_length);
      if (stat(fullname,&stbuf) == 0) {
-       info->library = dlopen(fullname, RTLD_NOW | RTLD_GLOBAL);
+       info->library = dlopen(fullname, PROVIDERLOAD_DLFLAG);
        if (info->library == NULL) {
-	 mlogf(M_ERROR,M_SHOW,"*** dlopen error: %s\n",dlerror());
+         mlogf(M_ERROR,M_SHOW,"*** dlopen: %s error: %s\n", fullname, dlerror());
        } else {
 	 _SFCB_TRACE(1, ("--- Loaded provider library %s for %s-%d",
 			 fullname,

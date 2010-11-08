@@ -172,3 +172,7 @@ Janny Au, Avocent
 -----------------
 10/14/2010 [ 3086143 ] set cmpi status in getPropQualifier
 10/14/2010 [ 3086145 ] check datetime format in chars2bin
+
+Chris Poblete, Dell
+-------------------
+11/08/2010 [ 3101155 ] Failed to load provider libraries due to symbol conflicts

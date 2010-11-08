@@ -1,3 +1,9 @@
+2010-11-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	[ 3101155 ] Failed to load provider libraries due to symbol conflicts
+	(patch by Chris Poblete)
+
 2010-10-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopProvider.c, indCIMXMLHandler.c:

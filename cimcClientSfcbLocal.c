@@ -26,6 +26,9 @@
 #include "mlog.h"
 #include <syslog.h>
 
+#include "control.h"
+#include "objectImpl.h"
+
 #include "providerMgr.h"
 #include "queryOperation.h"
 
@@ -34,7 +37,7 @@
       { if (st != NULL) { (st)->rc=(rcp); \
         (st)->msg=NewCMPIString((chars),NULL); }}
         
-#define NewCMPIString sfcb_native_new_CMPIString
+//#define NewCMPIString sfcb_native_new_CMPIString
    
 extern unsigned long _sfcb_trace_mask; 
 
@@ -140,6 +143,8 @@ struct _ClientConnection {
 
 char *getResponse(ClientConnection *con, CMPIObjectPath *cop);
 ClientConnection *initConnection(ClientData *cld);
+
+static CMPIConstClass * getClass(Client * ,CMPIObjectPath * ,CMPIFlags ,char ** ,CMPIStatus * );
 
 /* --------------------------------------------------------------------------*/
 
@@ -1158,6 +1163,258 @@ static CMPIEnumeration * referenceNames(
    _SFCB_RETURN(NULL);
 }
 
+static CMPIValue convertFromStringValue(
+   CMPIValue strcval, 
+   CMPIType strctype, 
+   CMPIType xtype,
+   CMPIStatus *prc)
+{
+   char *sval = NULL;
+   char *scheck  = NULL;
+   CMPIValue newcval;
+
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "convertFromStringValue");
+
+   // expected incoming type is either string or string array
+   // incoming array type must match expected array type 
+   if ((xtype & CMPI_ARRAY) ^ (strctype & CMPI_ARRAY)) {
+      if (prc) CMSetStatus(prc, CMPI_RC_ERR_INVALID_PARAMETER);
+      return newcval; 	
+   }
+
+   if (CMPI_chars == strctype) {
+      sval = strcval.chars;
+   } else if (CMPI_string == strctype) {
+      sval = (char *)CMGetCharsPtr(strcval.string, NULL);
+   }
+
+   // convert to expected type
+   switch (xtype) {
+      case CMPI_string:
+         newcval.string = sfcb_native_new_CMPIString(sval, NULL,0);
+         break;
+      case CMPI_char16:
+         newcval.char16 = *sval;
+         break;
+      case CMPI_dateTime:
+         newcval.dateTime = NewCMPIDateTimeFromChars(sval, NULL);
+         break;
+      case CMPI_real64:
+         newcval.real64 = (CMPIReal64) strtod(sval, &scheck);
+         break;
+      case CMPI_sint64:
+         newcval.sint64 = strtoll(sval, &scheck, 0); 
+         break;
+      case CMPI_uint64:
+         newcval.uint64 = strtoull(sval, &scheck, 0); 
+         break;
+      case CMPI_real32:
+         newcval.real32 = (CMPIReal32) strtod(sval, &scheck);
+         break;
+      case CMPI_sint32:
+         newcval.sint32 = strtol(sval, &scheck, 0);
+         break;
+      case CMPI_uint32:
+         newcval.uint32 = strtoul(sval, &scheck, 0);
+         break;
+      case CMPI_sint16:
+         newcval.sint16 = (CMPISint16) strtol(sval, &scheck, 0);
+         break;
+      case CMPI_uint16:
+         newcval.uint16 = (CMPIUint16) strtoul(sval, &scheck, 0);
+         break;
+      case CMPI_uint8:
+         newcval.uint8 = (CMPIUint8) strtoul(sval, &scheck, 0);
+         break;
+      case CMPI_sint8:
+         newcval.sint8 = (CMPISint8) strtol(sval, &scheck, 0);
+         break;
+      case CMPI_boolean:
+         if ((strcasecmp(sval, "false") == 0))  {
+            newcval.boolean = 0; 
+         } else if ((strcasecmp(sval, "true") == 0)) {
+            newcval.boolean = 1;
+         } else {
+            scheck = sval; // set failure case
+         }
+         break;
+      default:
+         if (xtype & CMPI_ARRAY) {
+            if (!(strctype & CMPI_ARRAY)) {
+               // incoming is not array -> convert to array
+               newcval.array = NewCMPIArray(1, (xtype ^ CMPI_ARRAY), NULL);
+               CMPIValue arrayvalue = convertFromStringValue(strcval, strctype, (xtype ^ CMPI_ARRAY), prc);
+               if (prc && (prc->rc == CMPI_RC_OK)) {
+                  CMSetArrayElementAt(newcval.array, 0, &arrayvalue, (xtype ^ CMPI_ARRAY));
+               } else {
+                  // conversion failed
+                  CMRelease(newcval.array);
+                  scheck = sval; // set failure case
+               }			
+            } else {
+               // convert to and from arrays
+               int ii, arcount = CMGetArrayCount(strcval.array, NULL);
+               newcval.array = NewCMPIArray(arcount, (xtype ^ CMPI_ARRAY), NULL);
+               for (ii = 0; ii < arcount; ii++) {
+                  CMPIValue arvalue;
+                  CMPIData data = CMGetArrayElementAt(strcval.array, ii, NULL);
+                  arvalue = convertFromStringValue(data.value, (strctype ^ CMPI_ARRAY), (xtype ^ CMPI_ARRAY), prc);
+                  if (prc && (prc->rc == CMPI_RC_OK)) {
+                     CMSetArrayElementAt(newcval.array, ii, &arvalue, (xtype ^ CMPI_ARRAY));
+                  } else {
+                     // conversion failed
+                     CMRelease(newcval.array);
+                     scheck = sval; // set failure case
+                     break;
+                  }            
+               }
+            } 
+         } else {
+            _SFCB_TRACE(1,("--- cannot convert value: %s to type: %u",sval,xtype));
+            if (prc) CMSetStatus(prc, CMPI_RC_ERR_INVALID_PARAMETER);  
+         }
+   } // switch
+
+   // detect if conversion failed
+   if (scheck && *scheck) {
+      _SFCB_TRACE(1,("--- failed conversion of value: %s to type: %u",sval,xtype));
+      if (prc) CMSetStatus(prc, CMPI_RC_ERR_INVALID_PARAMETER);
+   }
+
+   _SFCB_RETURN(newcval);
+} // convertFromStringValue
+
+static CMPIArgs * convertFromStringArguments(
+   CMPIConstClass *cls, 
+   const char *method, 
+   CMPIArgs *argsin, 
+   CMPIStatus *prc)
+{
+   CMPIArgs *argsnew;
+   ClClass *cl;
+   ClMethod *meth;
+   char *mname;
+   int mm, ii, jj, incount, vmpt = 0;
+
+   _SFCB_ENTER(TRACE_CIMXMLPROC, "convertFromStringArguments");
+
+   if (!cls) {
+      _SFCB_TRACE(1,("--- class not found"));
+      goto error1;
+   }
+   cl = (ClClass *)cls->hdl;
+
+   // check that the method specified in the request exist in the class definition
+   _SFCB_TRACE(4,("--- class method count: %u", ClClassGetMethodCount(cl)));
+   for (jj = 0, mm = ClClassGetMethodCount(cl); jj < mm; jj++) {
+      ClClassGetMethodAt(cl, jj, NULL, &mname, NULL);
+      _SFCB_TRACE(4,("--- index: %u name: %s", jj, mname));
+      if (strcasecmp(method, mname) == 0) {
+         break;
+      }
+   }
+   if (jj == mm) {
+      _SFCB_TRACE(1,("--- failed to find matching method: %s in class", method));
+      goto error1;
+   }
+   meth = ((ClMethod*)ClObjectGetClSection(&cl->hdr, &cl->methods)) + jj;
+
+   argsnew = NewCMPIArgs(NULL);
+   if (getControlBool("validateMethodParamTypes", &vmpt)) {
+      vmpt=1;
+   }
+
+   // loop through the method parameters in the request
+   incount = CMGetArgCount(argsin, NULL);
+   for (ii = 0; ii < incount; ii++) {
+      CMPIString *name;
+      char *sname;
+      CMPIData cdata = CMGetArgAt(argsin,ii,&name,NULL);
+      CMPIParameter cparam;
+      int pp, pm;
+
+      _SFCB_TRACE(4,("--- index: %u name: %s type: %u",ii,(char*)name->hdl,cdata.type)); 
+      // loop through the method parameters defined in the class
+      for (pp = 0, pm = ClClassGetMethParameterCount(cl, jj); pp < pm; pp++) {
+         ClClassGetMethParameterAt(cl, meth, pp, &cparam, &sname);
+         _SFCB_TRACE(4,("--- class cparam: %s",sname)); 
+         if (strcasecmp(sname, (char*)name->hdl) == 0) {
+            _SFCB_TRACE(4,("--- match found: %s at index: %u",(char*)name->hdl,pp)); 
+            break;
+         }
+      }
+      if (pp == pm) {
+         _SFCB_TRACE(1,("--- parameter: %s not found\n",(char*)name->hdl));
+         if (0 != vmpt) {
+            goto error2;
+         }
+         goto addacopy;
+      }
+      _SFCB_TRACE(4,("--- name: %s datatype: %u registeredtype: %u",(char*)name->hdl,cdata.type,cparam.type)); 
+      if (cdata.type == 0) {
+         _SFCB_TRACE(1,("--- type is 0 so data value could be anything, not converting"));
+         if (0 != vmpt) {
+            goto error2;
+         }
+         goto addacopy;
+      }
+      if (cdata.type != cparam.type) {
+         // request parameter type does not match corresponding class definition
+         if ((cdata.type & CMPI_ref) == CMPI_ref) {
+            // incoming type is reference
+            if (!(cdata.type & CMPI_ARRAY) && (cparam.type & CMPI_ARRAY)) {
+               // incoming is not array, class definition is array -> change to array type
+               CMPIValue refcval;
+               refcval.array = NewCMPIArray(1, (cparam.type ^ CMPI_ARRAY), NULL);
+               CMSetArrayElementAt(refcval.array, 0, &cdata.value, (cparam.type ^ CMPI_ARRAY));
+               CMAddArg(argsnew, (char*)name->hdl, &refcval, cparam.type);
+               continue;
+            }
+            else if((cdata.type & CMPI_ARRAY) && !(cparam.type & CMPI_ARRAY)) {
+               // incoming is array, class definition is not array -> ERROR
+               if(prc) CMSetStatus(prc, CMPI_RC_ERR_INVALID_PARAMETER);
+               goto error2;
+            }
+            // type already matched
+            goto addacopy;    
+         } else {
+            // incoming type must be string
+            if (!(cdata.type & CMPI_chars) && !(cdata.type & CMPI_string)) {
+               _SFCB_TRACE(1,("--- type mismatch but user type is not string, not converting")); 
+               if (0 != vmpt) {
+                  goto error2;
+               }
+               goto addacopy;
+            }
+            // convert the string value to defined type
+            CMPIValue newcval = convertFromStringValue(cdata.value, cdata.type, cparam.type, prc);
+            if (prc && (prc->rc != CMPI_RC_OK)) {
+               if (0 != vmpt) {
+                  goto error2;
+               }
+               // clear the rc value since we are ignoring the conversion failure
+               prc->rc = CMPI_RC_OK;
+               goto addacopy;
+            }
+            CMPIStatus lrc = CMAddArg(argsnew, (char*)name->hdl, &newcval, cparam.type);
+            _SFCB_TRACE(4,("--- IN argument: %s updated with ptype: %u status: %u",(char*)name->hdl,cparam.type,lrc.rc)); 
+            continue;
+         }
+      }
+addacopy:
+      CMAddArg(argsnew, (char*)name->hdl, &cdata.value, cdata.type);
+   } // for
+
+   _SFCB_RETURN(argsnew);
+
+error2:
+   CMRelease(argsnew);
+error1:
+   _SFCB_TRACE(1,("--- conversion failed, returning a copy of the source")); 
+   _SFCB_RETURN(argsin);
+} // convertFromStringArguments
+
+
 static CMPIData invokeMethod(
 	Client * mb,
 	CMPIObjectPath * cop,
@@ -1171,6 +1428,7 @@ static CMPIData invokeMethod(
    BinResponseHdr *resp;
    BinRequestContext binCtx;
    OperationHdr oHdr={OPS_InvokeMethod,0,5};
+   CMPIArgs *argsin = NULL;
    CMPIArgs   *argsout;
    CMPIData retval={0,CMPI_notFound,{0l}};
    if (rc) CMSetStatus(rc, CMPI_RC_OK);
@@ -1186,9 +1444,13 @@ static CMPIData invokeMethod(
 
    memset(&binCtx,0,sizeof(BinRequestContext));
 
+   argsin = convertFromStringArguments(getClass(mb, cop, 0, NULL, rc), 
+      method, in, rc);
+
+   if(rc && rc->rc == CMPI_RC_OK) {
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
-   sreq.in = setArgsMsgSegment(in);
+      sreq.in = setArgsMsgSegment(argsin);
    sreq.out = setArgsMsgSegment(NULL);
    sreq.method = setCharsMsgSegment(method);
 
@@ -1211,6 +1473,8 @@ static CMPIData invokeMethod(
 
       closeSockets(&binCtx);
       closeProviderContext(&binCtx);
+         if (argsin != in)
+            CMRelease(argsin);
 
       resp->rc--;
       if (resp->rc == CMPI_RC_OK) {
@@ -1242,6 +1506,10 @@ static CMPIData invokeMethod(
    }
    else ctxErrResponse(&binCtx,rc);
    closeProviderContext(&binCtx);
+   }
+  
+   if (argsin != in)
+      CMRelease(argsin);
    
    _SFCB_RETURN(retval);
 }
@@ -1747,6 +2015,20 @@ ClientEnv* _Create_SfcbLocal_Env(char *id)
     env->ft=&localFT;
     // enable logging when called from sfcc
     startLogging(LOG_ERR);
+
+    // enable trace logging
+    _SFCB_TRACE_INIT();
+    {
+       char *var;
+       int tracemask = 0, tracelevel = 0;
+       if (NULL != (var = getenv("SFCB_TRACE"))) {
+          tracelevel = atoi(var);
+       }
+       if (NULL != (var = getenv("SFCB_TRACE_MASK"))) {
+          tracemask = atoi(var);
+       }
+       _SFCB_TRACE_START(tracelevel, tracemask);
+    }
     
     return env;
  }

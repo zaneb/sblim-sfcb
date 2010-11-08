@@ -176,3 +176,4 @@ Janny Au, Avocent
 Chris Poblete, Dell
 -------------------
 11/08/2010 [ 3101155 ] Failed to load provider libraries due to symbol conflicts
+11/08/2010 [ 3101148 ] SfcbLocal method parameter type conversion and validation

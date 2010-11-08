@@ -1504,6 +1504,12 @@ approriate home page for these clients for more information. In general,
 *any* CIM client that adheres to the CIMXML-over-http standard should work
 with sfcbd (except for the unsupported CIM operations mentioned in Section 1). 
 
+The library libcimcClientSfcbLocal.so is loaded by sfcc as the backend 
+component for the LOCAL connection. SfcbLocal library uses the Sfcb trace 
+logging for debugging. To enable debug logging for this library, applications 
+using sfcc will need to define SFCB_TRACE, SFCB_TRACE_MASK and 
+SFCB_TRACE_FILE environment variables. See help on traceMask for information
+on SFCB_TRACE_MASK. 
 
 25. SLP Support
 ===============

@@ -1,5 +1,9 @@
 2010-11-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* cimcClientSfcbLocal.c:
+	[ 3101148 ] SfcbLocal method parameter type conversion and validation
+	(patch by Chris Poblete)
+
 	* providerDrv.c:
 	[ 3101155 ] Failed to load provider libraries due to symbol conflicts
 	(patch by Chris Poblete)

@@ -1,3 +1,9 @@
+2010-11-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c, msgqueue.c, sfcb.cfg.pre.in:
+	[ 3101154 ] Daemon clients failed SfcbLocal connect due to permission
+	(patch by Chris Poblete)	
+
 2010-11-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c:

@@ -110,6 +110,7 @@ Control init[] = {
    {"certificateAuthLib",   0, "sfcCertificateAuthentication"},
    {"localSocketPath",   0, "/tmp/sfcbLocalSocket"},
    {"httpSocketPath",   0, "/tmp/sfcbHttpSocket"},
+   {"socketPathGroupPerm",   0, NULL},
    
    {"traceFile",   0, "stderr"},
    {"traceLevel",   1, "0"},

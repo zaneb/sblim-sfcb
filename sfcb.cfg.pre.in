@@ -78,6 +78,12 @@ basicAuthLib:   @SFCB_CONF_BASICAUTHLIB@
 ## Default is /tmp/sfcbLocalSocket
 #localSocketPath: /tmp/sfcbLocalSocket
 
+## The group name to use to set permission for the named socket. This is
+## useful for daemon clients where worker threads are running with permission
+## different than the permission for the named socket. For example, sfcb may
+## be running as root while a web server using sfcb may be running as daemon.
+## Default is NULL which means no change to the default permission.
+#socketPathGroupPerm: daemon
 
 ##---------------------------- Provider-Related -------------------------------
 

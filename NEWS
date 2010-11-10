@@ -8,6 +8,7 @@ Bugs fixed:
 - 3101155 Failed to load provider libraries due to symbol conflicts
 - 3101148 SfcbLocal method parameter type conversion and validation
 - 3101154 Daemon clients failed SfcbLocal connect due to permission
+- 3097310 localConnect in cimcClientSfcbLocal.c accesses free'd memory
 
 Changes in 1.3.9
 ================

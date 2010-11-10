@@ -1802,6 +1802,7 @@ static pthread_mutex_t lcc_mutex = PTHREAD_MUTEX_INITIALIZER;
 int localConnect(ClientEnv* ce, CMPIStatus *st) 
 {
    static struct sockaddr_un serverAddr;
+   serverAddr.sun_path[0] = '\0';
    int sock,rc=0,sfcbSocket;
    void *idData;
    unsigned long int l;
@@ -1829,20 +1830,25 @@ int localConnect(ClientEnv* ce, CMPIStatus *st)
      if (socketName==NULL) {
        setupControl(NULL);
        rc=getControlChars("localSocketPath", &socketName);    
-       sunsetControl();
-       if (rc) {
+       if (rc == 0) {
+	 strcpy(serverAddr.sun_path,socketName);	 
+	 sunsetControl();
+       }
+       else {
 	 if (st) {
 	   st->rc=CMPI_RC_ERR_FAILED;
 	   st->msg=ce->ft->newString(ce,"failed to open sfcb local socket",NULL);
 	 }
          fprintf(stderr,"--- Failed to open sfcb local socket (%d)\n",rc);
+	 sunsetControl();
 	 close(sock);
 	 CONNECT_UNLOCK_RETURN(-2);
        }
      }   
      
      serverAddr.sun_family=AF_UNIX;
-     strcpy(serverAddr.sun_path,socketName);
+     if (serverAddr.sun_path == '\0')
+       strcpy(serverAddr.sun_path,socketName);
      
      if (connect(sock,(struct sockaddr*)&serverAddr,
 		 sizeof(serverAddr.sun_family)+strlen(serverAddr.sun_path))<0) {

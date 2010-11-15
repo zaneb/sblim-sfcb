@@ -2449,7 +2449,6 @@ int initProvider(ProviderInfo *info, unsigned int sessionId, char** errorStr)
 
    pthread_mutex_lock(&info->initMtx);
    if (info->initialized==0) {  
-     info -> initialized = 1;
    
      ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
      ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)"$$",CMPI_chars);
@@ -2520,7 +2519,6 @@ int initProvider(ProviderInfo *info, unsigned int sessionId, char** errorStr)
      
      if (rc) {
        rc = -2;
-       info -> initialized = 0;
        if (errstr != NULL) {
           *errorStr = sfcb_snprintf("Error initializing provider %s from %s for class %s.  %s", 
                            info->providerName, info->location, 
@@ -2531,6 +2529,7 @@ int initProvider(ProviderInfo *info, unsigned int sessionId, char** errorStr)
                            info->providerName, info->location, info->className);
        }
      } else {
+       info -> initialized = 1;
        *errorStr = NULL;
      }
    }

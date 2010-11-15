@@ -1,3 +1,8 @@
+2010-11-15  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	[ 3087577 ] Provider MI accessed before finished initializing
+
 2010-11-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c:

@@ -10,6 +10,7 @@ Bugs fixed:
 - 3101154 Daemon clients failed SfcbLocal connect due to permission
 - 3097310 localConnect in cimcClientSfcbLocal.c accesses free'd memory
 - 3087577 Provider MI accessed before finished initializing
+- 3109469 Potential Buffer Overflow in msgqueue.c:localConnectServer()
 
 Changes in 1.3.9
 ================

@@ -1,3 +1,8 @@
+2010-11-18  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* mofpp.c:
+	[ 3054618 ] mofpp is overaggressive when detecting comments
+
 2010-11-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* msgqueue.c:

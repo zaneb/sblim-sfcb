@@ -70,10 +70,11 @@ int incOK(char *str, char **s, char **e, char **ifn, FILE **f)
 
 void processFile(char *fn, FILE *in, FILE *out)
 {
-   char *s,*e,rec[10000],*ifn=NULL;
+   char *s,*e,*es,rec[10000],*ifn=NULL;
    FILE *incFile;
    int comment=0;
    int nl=0;
+   int qs=0;
    
    while (fgets(rec, sizeof(rec), in)) {
       nl++;
@@ -108,28 +109,42 @@ void processFile(char *fn, FILE *in, FILE *out)
             }
          }
 
-         while ((s = strstr(s,"/"))) {
-            if (*(s+1) == '/') {
-               if ((e = strstr(s+2,"\r\n"))) {
-                  strcpy(s,e+2);
-               } else if ((e = strstr(s+2,"\n"))) {
-                  strcpy(s,e+1);
-               } else {
-                  *s = 0;
-                  comment = 1;
-                  break;
-               }
-            } else if (*(s+1) == '*') {
-               if ((e = strstr(s+2,"*/"))) {
-                  strcpy(s,e+2);
-               } else {
-                  *s = 0;
-                  comment = 2;
-                  break;
-               }
-            } else {
-               s++;
-            }
+         while ((*s == ' ') || (*s == '\t')) {
+           s++;
+         }
+         es = s;
+         qs = 0;
+         if (*s == '"') {
+           qs = 1;
+           /* find end of the string */
+           es++;
+           while ((s = strstr(es, "\""))) {
+             es = s+1; /* end of quoted string */
+           }
+         }
+         
+         while ((s = strstr(es, "/"))) {
+           if (*(s+1) == '/') {
+             if ((e = strstr(s+2,"\r\n"))) {
+               strcpy(s,e+2);
+             } else if ((e = strstr(s+2,"\n"))) {
+               strcpy(s,e+qs);
+             } else {
+               *s = 0;
+               comment = 1;
+               break;
+             }
+           } else if (*(s+1) == '*') {
+             if ((e = strstr(s+2,"*/"))) {
+               strcpy(s,e+2);
+             } else {
+               *s = 0;
+               comment = 2;
+               break;
+             }
+           } else {
+             s++;
+           }
          }
 
          fprintf(out,"%s",rec);

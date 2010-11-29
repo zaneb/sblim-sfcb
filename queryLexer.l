@@ -71,6 +71,7 @@ BLANK [ \t\n]
 IDENT_CHAR [A-Za-z_]
 
 %option nounput
+%option noinput
 
 %%
 

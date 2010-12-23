@@ -4,6 +4,7 @@ Changes in 1.3.11
 Bugs fixed:
 
 - 3130727 CMPIPropertyMIFT.setProperty() missing objectpath keys
+- 3054618 mofpp is overaggressive when detecting comments
 
 Changes in 1.3.10
 =================

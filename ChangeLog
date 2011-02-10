@@ -1,3 +1,8 @@
+2011-02-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	[ 3162016 ] sfcbd Segmentation fault in cleanupCimXmlRequest
+
 2010-12-23  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* mofpp.c:

@@ -1,3 +1,8 @@
+2011-02-11  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* brokerUpc.c:
+	[ 3172080 ] deliverIndication does not check for matching FROM classes
+
 2011-02-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

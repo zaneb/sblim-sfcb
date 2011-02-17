@@ -7,6 +7,7 @@ Bugs fixed:
 - 3054618 mofpp is overaggressive when detecting comments
 - 3162016 sfcbd Segmentation fault in cleanupCimXmlRequest
 - 3172080 deliverIndication does not check for matching FROM classes
+- 3185178 Wrong classname for returned instances from execQuery
 
 Changes in 1.3.10
 =================

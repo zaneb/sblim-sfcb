@@ -254,7 +254,7 @@ static CMPIStatus __rft_returnInstance(const CMPIResult * result,
          if (irc==1) {
             if (r->qs->allProps==0) {
                instance=
-                  r->qs->ft->cloneAndFilter(r->qs,(CMPIInstance *)instance,r->qs->cop,r->qs->keys);
+		       r->qs->ft->cloneAndFilter(r->qs,(CMPIInstance *)instance,CMGetObjectPath(instance, NULL),r->qs->keys);
                releaseInstance=1;
             }     
          }   
@@ -262,7 +262,7 @@ static CMPIStatus __rft_returnInstance(const CMPIResult * result,
       }
       else {
          if (r->qs->allProps==0) {
-            instance=r->qs->ft->cloneAndFilter(r->qs,(CMPIInstance *)instance,r->qs->cop,r->qs->keys);
+		 instance=r->qs->ft->cloneAndFilter(r->qs,(CMPIInstance *)instance,CMGetObjectPath(instance,NULL), r->qs->keys);
             releaseInstance=1;
          }
       }        

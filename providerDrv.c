@@ -100,6 +100,22 @@ char * opsName[];
 #define PROVIDERLOAD_DLFLAG (RTLD_NOW | RTLD_GLOBAL)
 #endif
 
+#ifndef HAVE_OPTIMIZED_ENUMERATION
+     /* not a special provider, perform class name substitution if call is for a
+        parent class of the class the provider is registered for */
+#define REPLACE_CN(info,path)  \
+   if (info->className && info->className[0] != '$') {  \
+     char * classname = CMGetCharPtr(CMGetClassName(path,NULL));  \
+     char * namespace = CMGetCharPtr(CMGetNameSpace(path,NULL));  \
+     if (classname && namespace && strcasecmp(info->className,classname)) {  \
+       CMPIObjectPath * provPath = CMNewObjectPath(Broker,namespace,info->className,NULL);  \
+       if (provPath && CMClassPathIsA(Broker,provPath,classname,NULL)) {   \
+	 _SFCB_TRACE(1, ("--- Replacing class name %s",info->className));  \
+	 path = provPath;  \
+       }  }  }
+#endif
+
+
 extern CMPIBroker *Broker;
 
 extern unsigned long exFlags;
@@ -1740,19 +1756,7 @@ static BinResponseHdr *enumInstances(BinRequestHdr * hdr, ProviderInfo * info,
    char **props=NULL;
 
 #ifndef HAVE_OPTIMIZED_ENUMERATION
-   if (info->className && info->className[0] != '$') {
-     /* not a special provider, perform class name substitution if call is for a
-        parent class of the class the provider is registered for */
-     char * classname = CMGetCharPtr(CMGetClassName(path,NULL));
-     char * namespace = CMGetCharPtr(CMGetNameSpace(path,NULL));
-     if (classname && namespace && strcasecmp(info->className,classname)) {
-       CMPIObjectPath * provPath = CMNewObjectPath(Broker,namespace,info->className,NULL);
-       if (provPath && CMClassPathIsA(Broker,provPath,classname,NULL)) {
-	 _SFCB_TRACE(1, ("--- Replacing class name %s",info->className));
-	 path = provPath;
-       }
-     }
-   }
+   REPLACE_CN(info,path);
 #endif
 
    if (req->hdr.flags & FL_localOnly) flgs|=CMPI_FLAG_LocalOnly;
@@ -1795,19 +1799,7 @@ static BinResponseHdr *enumInstanceNames(BinRequestHdr * hdr,
    CMPIFlags flgs=0;
 
 #ifndef HAVE_OPTIMIZED_ENUMERATION
-   if (info->className && info->className[0] != '$') {
-     /* not a special provider, perform class name substitution if call is for a
-        parent class of the class the provider is registered for */
-     char * classname = CMGetCharPtr(CMGetClassName(path,NULL));
-     char * namespace = CMGetCharPtr(CMGetNameSpace(path,NULL));
-     if (classname && namespace && strcasecmp(info->className,classname)) {
-       CMPIObjectPath * provPath = CMNewObjectPath(Broker,namespace,info->className,NULL);
-       if (provPath && CMClassPathIsA(Broker,provPath,classname,NULL)) {
-	 _SFCB_TRACE(1, ("--- Replacing class name %s",info->className));
-	 path = provPath;
-       }
-     }
-   }
+   REPLACE_CN(info,path);
 #endif
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
@@ -1922,6 +1914,10 @@ static BinResponseHdr *execQuery(BinRequestHdr * hdr, ProviderInfo * info, int r
          resp = errorResp(&rci);
          _SFCB_RETURN(resp);
       }
+
+#ifndef HAVE_OPTIMIZED_ENUMERATION
+      REPLACE_CN(info,path);
+#endif
 
       qs->propSrc.getValue=queryGetValue;
       qs->propSrc.sns=qs->sns;

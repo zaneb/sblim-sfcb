@@ -1,3 +1,8 @@
+2011-02-23  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* providerDrv.c: 
+	[ 3175770 ] execQuery returns multiple instances of same object
+
 2011-02-17  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* result.c: 

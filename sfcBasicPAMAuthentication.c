@@ -59,7 +59,6 @@ static int _sfcBasicAuthenticateRemote(char *user, char *pw, char *rhost)
   pam_handle_t *pamh = NULL;
   int rc, retval;
    
-  
   rc = pam_start(SFCB_PAM_APP, user, &sfcConvStruct, & pamh);
 
   if (rc == PAM_SUCCESS) {
@@ -75,10 +74,13 @@ static int _sfcBasicAuthenticateRemote(char *user, char *pw, char *rhost)
     }
     rc = pam_acct_mgmt(pamh, PAM_SILENT);
   }
-  
   if (rc == PAM_SUCCESS) {
     retval = 1;
-  } else {
+  } 
+  else if (rc == PAM_NEW_AUTHTOK_REQD || rc == PAM_ACCT_EXPIRED) {
+    retval = -1;
+  }
+  else {
     retval = 0;
   }
   

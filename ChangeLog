@@ -1,3 +1,8 @@
+2011-03-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c, sfcBasicPAMAuthentication.c:
+	[ 3203290 ] Basic Auth Should Consider Expired Passwords
+
 2011-02-23  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c: 

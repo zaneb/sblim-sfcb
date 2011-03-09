@@ -1,5 +1,9 @@
 2011-03-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* cimXmlGen.c:
+	[ 3202420 ] CDATA value in a string property is improperly XML escaped
+	(patch by Chris Poblete)
+
 	* httpAdapter.c, sfcBasicPAMAuthentication.c:
 	[ 3203290 ] Basic Auth Should Consider Expired Passwords
 

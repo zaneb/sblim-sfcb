@@ -64,7 +64,7 @@ char *XMLEscape(char *in, int *outlen)
 {
    int i, l, o, n;
    char *out;
-   char *rep;
+   char *rep, *end;
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "XMLEscape");
 
@@ -82,6 +82,19 @@ char *XMLEscape(char *in, int *outlen)
 	rep = "&gt;";
 	break;
       case '<':
+
+	/* skip escaping if this is a CDATA section */
+	if ((in[i+1] == '!') && ((l-i) > 11)) {   /* do minimum check, then check if enough chars to compare */
+	  rep = &in[i];
+	  if (!strncmp(rep, "<![CDATA[", 9)) {   /* now look for the cdata start marker */
+	    if ((end = strstr(rep, "]]>"))) {   /* valid cdata should have end marker */
+	      n = ((end-rep)+3);
+	      i += (n - 1);
+	      break;
+	    } /* else, bad format */
+	  }
+	}
+
 	n = 4;
 	rep = "&lt;";
 	break;

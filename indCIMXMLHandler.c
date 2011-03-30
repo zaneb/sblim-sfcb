@@ -238,6 +238,21 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    CMPIObjectPath* copLocal = CMClone(cop, NULL);
    memLinkObjectPath(copLocal);
 
+   CMPIString     *ccn = ciLocal->ft->getProperty(ciLocal, "creationclassname",
+						  &st).value.string;
+   if (CMIsNullObject(ccn)) {
+     setStatus(&st, CMPI_RC_ERR_FAILED,
+	       "CreationClassName property not found");
+     _SFCB_RETURN(st);
+   }
+   CMPIString     *sccn = ciLocal->ft->getProperty(ciLocal, "systemcreationclassname",
+						   &st).value.string;
+   if (CMIsNullObject(sccn)) {
+     setStatus(&st, CMPI_RC_ERR_FAILED,
+	       "SystemCreationClassName property not found");
+     _SFCB_RETURN(st);
+   }
+
    CMPIString *sysname=ciLocal->ft->getProperty(ciLocal,"SystemName",&st).value.string;
    if (sysname == NULL || sysname->hdl == NULL) {
      char hostName[512];

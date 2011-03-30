@@ -11,6 +11,7 @@ Bugs fixed:
 - 3175770 execQuery returns multiple instances of same object
 - 3203290 Basic Auth Should Consider Expired Passwords
 - 3202420 CDATA value in a string property is improperly XML escaped
+- 3038078 Can create indication filters and destinations w/o key props
 
 Changes in 1.3.10
 =================

@@ -1,4 +1,10 @@
+2011-03-31  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* elementCapabiltiesProvider.c:
+	[ 3265502 ] CMPIContext not released in elementCapabilitiesProvider
+
 2011-03-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* queryOperation.c
 	[ 3206663 ] Enum CQL filter on NULL cause segfault and incorrect rsp
 	(based on patch by  cpoblete)

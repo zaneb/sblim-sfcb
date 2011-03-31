@@ -13,6 +13,7 @@ Bugs fixed:
 - 3202420 CDATA value in a string property is improperly XML escaped
 - 3038078 Can create indication filters and destinations w/o key props
 - 3206663 Enum CQL filter on NULL cause segfault and incorrect rsp
+- 3265502 CMPIContext not released in elementCapabilitiesProvider
 
 Changes in 1.3.10
 =================

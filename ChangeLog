@@ -1,3 +1,8 @@
+2011-03-30 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+	* queryOperation.c
+	[ 3206663 ] Enum CQL filter on NULL cause segfault and incorrect rsp
+	(based on patch by  cpoblete)
+
 2011-03-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopProvider.c, indCIMXMLHandler.c:

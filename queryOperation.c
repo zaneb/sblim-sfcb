@@ -197,6 +197,14 @@ static int  charsCompare(QLOperand* self, QLOperand* op, QLPropertySource* src)
       ov=getPropValue(op, src, &type).chars;
    else ov=op->charsVal;
    
+   if (sov == NULL || ov == NULL) {
+      if (sov == NULL && ov == NULL)
+         return 0; // both null
+      if (sov == NULL)
+         return -1; // left only null
+      return 1; // right only null
+   } 
+
    if (type==QL_Chars) return strcmp(sov,ov);
    return -2;
 }
@@ -258,7 +266,20 @@ static int propCompare(QLOperand* self, QLOperand* op,
       ; // what should we do here ?  
    }
    
-   rc=nop->ft->compare(nop,op,src);
+   if (nop) {
+    rc=nop->ft->compare(nop,op,src);
+   } else {
+      rc=-2;
+      if ((type == QL_Null) && (op->type == QL_PropertyName)) {
+         // both are property names
+         v=getPropValue(op, src, &type);
+         if (type == QL_Null) {
+            rc=0; // both are NULL, a match
+         }
+      } 
+   }
+   
+
    QL_TRACE(fprintf(stderr,"propCompare(%s) %d\n",self->propertyName->propName,rc));
    return rc;
 }

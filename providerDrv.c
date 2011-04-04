@@ -1830,6 +1830,9 @@ CMPIValue queryGetValue(QLPropertySource* src, char* name, QLOpd *type)
    CMPIValue v={(long long)0};
    
    if (rc.rc==CMPI_RC_OK) {
+      if (d.state == CMPI_nullValue) {
+         *type=QL_Null;
+      } else {
       if ((d.type & CMPI_SINT) == CMPI_SINT) { 
          if (d.type==CMPI_sint32) v.sint64=d.value.sint32;
          else if (d.type==CMPI_sint16) v.sint64=d.value.sint16;
@@ -1873,6 +1876,7 @@ CMPIValue queryGetValue(QLPropertySource* src, char* name, QLOpd *type)
       default:
          *type=QL_Invalid;
       }
+     }
    }
    else *type=QL_NotFound;
    return v;

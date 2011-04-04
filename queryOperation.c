@@ -756,11 +756,21 @@ int _isNullEvaluate(QLOperation *op, QLPropertySource* source)
    exit(16);
 }
 
+static int __NullEvaluate(QLOperation *op, QLPropertySource* source, int invert)
+{
+   QLOpd type;
+   CMPIValue v = getPropValue(op->lhod, source, &type);
+
+   if (invert)
+      return ((type != QL_Null));
+
+   return ((type == QL_Null));
+}
+
+
 int isNullEvaluate(QLOperation *op, QLPropertySource* source) 
 {
-   QLOperand *opd=NULL;// op->lhod->ft->resolveProperty(op->lhod,source);
-   if (opd==NULL) return 1;
-   return 0;
+   return __NullEvaluate(op, source, 0);
 }
 
 char* isNullToString(QLOperation *op) 
@@ -797,9 +807,7 @@ int _isNotNullEvaluate(QLOperation *op, QLPropertySource* source)
 
 int isNotNullEvaluate(QLOperation *op, QLPropertySource* source) 
 {
-   QLOperand *opd=NULL;// op->lhod->ft->resolveProperty(op->lhod,source);
-   if (opd==NULL) return 0;
-   return 1;
+   return __NullEvaluate(op, source, 1);
 }
 
 char* isNotNullToString(QLOperation *op) 

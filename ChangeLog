@@ -1,3 +1,9 @@
+2011-04-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* queryOperation.c, providerDrv.c
+	[ 3261868 ] Enum CQL filter on NULL cause incorrect rsp
+	(based on patch by  cpoblete)
+
 2011-03-31  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* elementCapabiltiesProvider.c:

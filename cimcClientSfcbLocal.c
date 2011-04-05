@@ -779,11 +779,20 @@ static CMPIEnumeration * execQuery(
    
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    qs=parseQuery(MEM_TRACKED,query,lang,NULL,&irc);
+
+   if (irc) {
+      CIMCSetStatusWithChars(rc, CMPI_RC_ERR_INVALID_QUERY,
+         "syntax error in query.");
+      _SFCB_RETURN(NULL);
+   }
    
    fCls=qs->ft->getFromClassList(qs);
    if (fCls==NULL || *fCls==NULL) {
      mlogf(M_ERROR,M_SHOW,"--- from clause missing\n");
-     abort();
+     CIMCSetStatusWithChars(rc, CMPI_RC_ERR_INVALID_QUERY,
+        "required from clause is missing.");
+     _SFCB_RETURN(NULL);
+
    }
    oHdr.className = setCharsMsgSegment(*fCls);
 

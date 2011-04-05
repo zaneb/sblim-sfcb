@@ -1,3 +1,9 @@
+2011-04-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	[ 3213591 ] Local intf client abort abnormally on enum filter syntax err
+	(patch by cpoblete)
+
 2011-04-04 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* queryOperation.c, providerDrv.c

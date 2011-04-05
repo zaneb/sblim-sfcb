@@ -4,6 +4,7 @@ Changes in 1.3.12
 Bugs fixed:
 
 - 3261868 Enum CQL filter on NULL cause incorrect rsp
+- 3213591 Local intf client abort abnormally on enum filter syntax err
 
 Changes in 1.3.11
 =================

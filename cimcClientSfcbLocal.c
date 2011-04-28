@@ -1186,7 +1186,7 @@ static CMPIValue convertFromStringValue(
 
    // expected incoming type is either string or string array
    // incoming array type must match expected array type 
-   if ((xtype & CMPI_ARRAY) ^ (strctype & CMPI_ARRAY)) {
+   if (!(xtype & CMPI_ARRAY) && (strctype & CMPI_ARRAY)) {
       if (prc) CMSetStatus(prc, CMPI_RC_ERR_INVALID_PARAMETER);
       return newcval; 	
    }

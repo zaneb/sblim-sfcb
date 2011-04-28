@@ -1,5 +1,9 @@
 2011-04-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* cimcClientSfcbLocal.c:
+	[ 3202466 ] Single item on method param of array type rejected via Local
+	(patch by Chris Poblete)
+
 	* queryOperation.c: 
 	[ 3291646 ] Unused var in __NullEvaluate
 

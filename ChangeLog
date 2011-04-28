@@ -1,3 +1,8 @@
+2011-04-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* queryOperation.c: 
+	[ 3291646 ] Unused var in __NullEvaluate
+
 2011-04-05 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c:

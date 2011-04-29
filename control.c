@@ -57,6 +57,9 @@ static UtilHashTable *ct = NULL;
 
 char * configfile = NULL;
 
+// Control initial values
+// { property, type, value}
+// Type: 0=string, 1=num, 2=bool, 3=unstripped string
 Control init[] = {
    {"httpPort",         1, "5988"},
    {"enableHttp",       2, "true"},
@@ -119,6 +122,11 @@ Control init[] = {
    {"httpMaxContentLength", 1, "100000000"},
    {"validateMethodParamTypes",	2,	"false"},
    {"maxMsgLen",	1,	"10000000"},
+   {"DeliveryRetryInterval",1,"20"},
+   {"DeliveryRetryAttempts",1,"3"},
+   {"SubscriptionRemovalTimeInterval",1,"2592000"},
+   {"SubscriptionRemovalAction",1,"2"},
+
 };
 
 void sunsetControl()

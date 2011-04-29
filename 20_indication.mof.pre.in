@@ -11,10 +11,10 @@ instance of SFCB_IndicationServiceCapabilities
 {
   InstanceID = "CIM:SFCB_ISC";
   FilterCreationEnabledIsSettable           = FALSE;
-  DeliveryRetryAttemptsIsSettable           = TRUE;
-  DeliveryRetryIntervalIsSettable           = TRUE;
-  SubscriptionRemovalActionIsSettable       = TRUE;
-  SubscriptionRemovalTimeIntervalIsSettable = TRUE;
+  DeliveryRetryAttemptsIsSettable           = SETTABLE;
+  DeliveryRetryIntervalIsSettable           = SETTABLE;
+  SubscriptionRemovalActionIsSettable       = SETTABLE;
+  SubscriptionRemovalTimeIntervalIsSettable = SETTABLE;
   MaxListenerDestinations                   = 100;
   MaxActiveSubscriptions                    = 100;
   SubscriptionsPersisted                    = TRUE;

@@ -1,3 +1,9 @@
+2011-04-29 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* 20_indication.mof.pre.in, Makefile.am, configure.ac
+	control.c, interopServerProvider.c, sfcb.cfg.pre.in:
+	[ 3190623 ] Set *IsSettable propperties to false for IndicationService
+
 2011-04-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c:

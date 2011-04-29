@@ -718,6 +718,29 @@ static CMPIStatus ServerProviderModifyInstance(CMPIInstanceMI * mi,
   
   if(!CMClassPathIsA(_broker, cop, "cim_indicationservice", NULL))
     return rc;
+
+  // Get the settable props
+  int settable=0;
+  CMPIObjectPath *iscop = CMNewObjectPath(_broker, "root/interop", "SFCB_IndicationServiceCapabilities",NULL);
+  CMPIEnumeration *iscenm = _broker->bft->enumerateInstances(_broker, ctx, iscop, NULL, NULL);
+  CMPIData iscinst = CMGetNext(iscenm, NULL);
+  CMPIData iscprop = CMGetProperty(iscinst.value.inst, "DeliveryRetryAttemptsIsSettable", NULL);
+  if (!iscprop.value.boolean) settable++;
+  iscprop = CMGetProperty(iscinst.value.inst, "DeliveryRetryIntervalIsSettable", NULL);
+  if (!iscprop.value.boolean) settable++;
+  iscprop = CMGetProperty(iscinst.value.inst, "SubscriptionRemovalActionIsSettable", NULL);
+  if (!iscprop.value.boolean) settable++;
+  iscprop = CMGetProperty(iscinst.value.inst, "SubscriptionRemovalTimeIntervalIsSettable", NULL);
+  if (!iscprop.value.boolean) settable++;
+
+  if (iscop) CMRelease(iscop);
+  if (iscenm) CMRelease(iscenm);
+
+  // If any of the settable props were false, no MI of indication service allowed
+  // We're assuming that this is the only reason for doing an MI
+  if (settable > 0) return rc;
+
+  // Ok, all is well to continue with the operation...
   ctxLocal = native_clone_CMPIContext(ctx);
   val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
   ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
@@ -753,23 +776,44 @@ void ServerProviderInitInstances(const CMPIContext * ctx) {
   CMPIInstance * ci = NULL;
   CMPIContext * ctxLocal;
   CMPIBoolean filterCreation=1;
-  CMPIUint16 retryAttempts=3; /* retry indications 3 times */
-  CMPIUint32 retryInterval=20;/* at a 20 second interval */
-  CMPIUint16 subRemoval=2; /* 2 == "Remove" */
-  CMPIUint32 subRemovalInterval=2592000; /* 30 days */
+  CMPIUint16      retryAttempts,subRemoval; 
+  CMPIUint32      tmp,retryInterval,subRemovalInterval; 
+   
+  // Get the retry parameters from the config file
+  getControlUNum("DeliveryRetryInterval", &retryInterval);
+  getControlUNum("DeliveryRetryAttempts", &tmp);
+  if (tmp > UINT16_MAX) {
+    // Exceeded max range, set to default
+    mlogf(M_ERROR, M_SHOW, "--- Value for DeliveryRetryAttempts exceeds range, using default.\n");
+    retryAttempts=3;
+  } else {
+    retryAttempts=(CMPIUint16) tmp;
+  }
+  getControlUNum("SubscriptionRemovalTimeInterval", &subRemovalInterval);
+  getControlUNum("SubscriptionRemovalAction",  &tmp);
+  if (tmp > UINT16_MAX) {
+    // Exceeded max range, set to default
+    mlogf(M_ERROR, M_SHOW, "--- Value for SubscriptionRemovalAction exceeds range, using default.\n");
+    subRemoval=2;
+  } else {
+    subRemoval= (CMPIUint16) tmp;
+  }
 
   ctxLocal = native_clone_CMPIContext(ctx);
   val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL,0);
   ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
 
   op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",&st);
-  ci=CMNewInstance(_broker,op,&st);
   CMAddKey(op,"CreationClassName","CIM_IndicationService",CMPI_chars);
   CMAddKey(op,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
   str[0]=str[511]=0;
   gethostname(str,511);
   CMAddKey(op,"SystemName",str,CMPI_chars);
   CMAddKey(op,"Name",getSfcbUuid(),CMPI_chars);
+  // Delete the instance so we can replace with proper values
+  CBDeleteInstance(_broker,ctxLocal,op);
+  ci = CMNewInstance(_broker, op, &st);
+
   CMSetProperty(ci,"CreationClassName","CIM_IndicationService",CMPI_chars);
   CMSetProperty(ci,"SystemCreationClassName","CIM_ComputerSystem",CMPI_chars);
   CMSetProperty(ci,"SystemName",str,CMPI_chars);

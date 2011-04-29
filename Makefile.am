@@ -505,6 +505,15 @@ getSchema.sh: getSchema.sh.pre
 	sed -e s?$$\{prefix\}?$(prefix)?g \
 	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@
 
+if SETTABLERETRY
+20_indication.mof: 20_indication.mof.pre
+	sed -e s?SETTABLE?TRUE?g $< > $@
+else
+20_indication.mof: 20_indication.mof.pre
+	sed -e s?SETTABLE?FALSE?g $< > $@
+endif
+
+
 sfcb: sfcb.$(INIT_STYLE)
 	sed -e s?$$\{prefix\}?$(prefix)?g \
 	-e s?$$\{exec_prefix\}?$(prefix)?g $< > $@

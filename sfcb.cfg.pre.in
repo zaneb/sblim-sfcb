@@ -236,3 +236,25 @@ certificateAuthLib:   sfcCertificateAuthentication
 ## Can be overriden by setting environment variable SFCB_TRACE_LEVEL. 
 ## Default is 0. If trace mask is set (by any method) the default is 1.
 #traceLevel: 0
+
+##----------------------------Reliable Indications ----------------------------
+## Interval between indication retry attempts
+## Default is 20 seconds
+#DeliveryRetryInterval: 20
+
+## Number of retry attempts before giving up
+## Default is 3 attempts (not including initial attempt)
+## A value of 0 disables reliable indications
+#DeliveryRetryAttempts: 3
+
+## The length of time an destination can fail before the subscription
+## removal action below is taken
+## Default is 2592000 seconds (30 days)
+#SubscriptionRemovalTimeInterval: 2592000
+
+## The action taken when the time interval expires
+## Default is 2, remove the subscription
+## Other values: 3, disable the subscription
+##               4, ignore (do nothing)
+#SubscriptionRemovalAction: 2
+

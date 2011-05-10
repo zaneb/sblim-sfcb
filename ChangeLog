@@ -1,3 +1,8 @@
+2011-05-10 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* interopServerProvider.c
+	[ 3287789 ] interopServerProvider not conservative when answering reqs
+
 2011-04-29 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* 20_indication.mof.pre.in, Makefile.am, configure.ac

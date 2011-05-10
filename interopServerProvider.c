@@ -1235,7 +1235,8 @@ CMPIStatus getAssociators(CMPIAssociationMI * mi,
     }
 
     // Handle ElementConformstoProfile
-    if( ( assocClass==NULL ) || ( CMClassPathIsA(_broker,ecpop,assocClass,&rc) == 1 ) ) {
+    if (( ( assocClass==NULL ) || ( CMClassPathIsA(_broker,ecpop,assocClass,&rc) == 1 ) ) 
+        && (CMClassPathIsA(_broker, cop, "cim_indicationservice", &rc) == 1)){
         isop = CMNewObjectPath( _broker, CMGetCharPtr(CMGetNameSpace(cop,&rc)), "CIM_indicationservice", &rc );
         rpop = CMNewObjectPath( _broker, "root/interop", "SFCB_RegisteredProfile", &rc );
         if (( rpop==NULL ) || (isop==NULL) ) {

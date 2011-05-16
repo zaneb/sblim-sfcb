@@ -1,3 +1,8 @@
+2011-05-16 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c
+	[ 3296541 ] CIM_IndicationSubscription corrupts after delilvery fails 
+
 2011-05-10 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopServerProvider.c

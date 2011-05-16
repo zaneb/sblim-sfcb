@@ -645,9 +645,9 @@ void * retryExport (void * lctx)
                 if (sfc == 0 ) {
                     // if the time isn't set, this is the first failure
                     sfc=tv.tv_sec;
-                    cur=cur->next;
                     CMSetProperty(sub,"DeliveryFailureTime",&sfc,CMPI_uint64);
                     CBModifyInstance(_broker, ctxLocal, cur->sub, sub, NULL);
+                    cur=cur->next;
                 } else if (sfc+rtint < tv.tv_sec) {
                     // Exceeded subscription removal threshold, if action is:
                     // 2, delete the sub; 3, disable the sub; otherwise, nothing

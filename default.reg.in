@@ -70,6 +70,13 @@
 @LOAD_INDICATION_PROVIDER@   type: association
 @LOAD_INDICATION_PROVIDER@   namespace: root/interop
 #
+@LOAD_SFCBACCOUNT_PROVIDER@[SFCB_Account]
+@LOAD_SFCBACCOUNT_PROVIDER@   provider: CimAccountPassthroughProvider
+@LOAD_SFCBACCOUNT_PROVIDER@   location: sfccimAccountPassthroughProvider
+@LOAD_SFCBACCOUNT_PROVIDER@   type: method
+@LOAD_SFCBACCOUNT_PROVIDER@   namespace: root/interop
+@LOAD_SFCBACCOUNT_PROVIDER@   parameters: AccountClass=root/cimv2:cim_account
+#
 [SFCB_RegisteredProfile]
    provider: ProfileProvider
    location: sfcProfileProvider

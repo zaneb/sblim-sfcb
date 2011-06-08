@@ -117,6 +117,10 @@ AC_ARG_ENABLE(uds,
 	[AC_HELP_STRING([--enable-uds],
 		[Enable UDS authentication.])])
 
+AC_ARG_ENABLE(expired-pw-update,
+	[AC_HELP_STRING([--enable-expired-pw-update],
+		[allow a user with an expired account to invoke a password update for CIM_Account (see docs).])])
+
 # Size checks
 AC_CHECK_SIZEOF(void*)
 AC_CHECK_SIZEOF(int)
@@ -183,6 +187,13 @@ if test "$enable_slp_hostname_lib" == "yes"; then
    AC_DEFINE(SLP_HOSTNAME_LIB,,[SLP Hostname lib enabled])
 fi
 
+if test "$enable_expired_pw_update" == "yes"; then
+   LOAD_SFCBACCOUNT_PROVIDER=
+   AC_DEFINE(ALLOW_UPDATE_EXPIRED_PW,1,[Expired Account Password Update enabled])
+else
+   LOAD_SFCBACCOUNT_PROVIDER='#'
+fi
+AC_SUBST(LOAD_SFCBACCOUNT_PROVIDER)
 
 # Check and configure requested tests.
 if test "$enable_tests" == "yes"; then
@@ -195,7 +206,7 @@ else
 fi
 fi
 if test "$enable_tests" != ""; then
-    enable_settableretry="yes"
++    enable_settableretry="yes"
 fi
 
 
@@ -511,6 +522,7 @@ AM_CONDITIONAL(DOCS,[test "$enable_docs" == "yes"])
 AM_CONDITIONAL(IPV6,[test "$enable_ipv6" == "yes"])
 AM_CONDITIONAL(LOCAL_CONNECT_NO_INDICATION,[test "$enable_local_connect_only" == "yes" -a "$enable_indications" == "no"])
 AM_CONDITIONAL(LOCAL_CONNECT_ONLY,[test "$enable_local_connect_only" == "yes"])
+AM_CONDITIONAL(ACCOUNT_PASSTHRU,[test "$enable_expired_pw_update" == "yes"])
 
 AC_CONFIG_FILES([Makefile sfcb.spec sfcbrepos.sh sfcbstage.sh sfcbunstage.sh 
 	         sfcbuuid.sh sfcb.cfg.pre getSchema.sh.pre 20_indication.mof.pre
@@ -538,6 +550,7 @@ echo -e "default instance properties"\\t"${enable_default_properties}"
 echo -e "uds"\\t\\t\\t\\t"${enable_uds:-no}"
 echo -e "tests"\\t\\t\\t\\t"${enable_tests:-no}"
 echo -e "debug"\\t\\t\\t\\t"${enable_debug:-no}"
+echo -e "Allow expired account pw update"\\t"${enable_expired_pw_update:-no}"
 echo -e "Settable retry parameters"\\t"${enable_settableretry:-no}"
 echo =================================================================
 echo

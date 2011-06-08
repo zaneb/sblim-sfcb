@@ -1,3 +1,10 @@
+2011-06-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimAccountPassthroughProvider.c, cimAccountPassthrough.mof, 
+	cimXmlRequest.c, cimXmlRequest.h, httpAdapter.c, Makefile.am,
+	configure.ac, default.reg.in:
+	[ 3313833 ] Allow for passthrough for expired user to update password
+	
 2011-05-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* configure.ac

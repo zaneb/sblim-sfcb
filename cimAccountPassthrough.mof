@@ -1,0 +1,12 @@
+[Description ("SFCB_Account is a dummy class used for the sole purpose of " 
+              "allowing an InvokeMethod request from an expired user to "
+              "pass through to the CIM_Account provider in order to update "
+              "the expired password."
+)]
+class SFCB_Account
+{
+        [Description ("Provide the new password to be used in the "
+                      "ModifyInstance operation on CIM_Account. "
+                      )]
+        uint8 UpdateExpiredPassword( [IN] string UserPassword, [OUT] string Message);
+};

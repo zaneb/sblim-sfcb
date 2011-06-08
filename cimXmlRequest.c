@@ -349,6 +349,27 @@ static RespSegments methodErrResponse(RequestHdr * hdr, char *error)
    return rs;
 };
 
+#ifdef ALLOW_UPDATE_EXPIRED_PW
+
+static char    *
+getErrExpiredSegment()
+{
+  char* msg = sfcb_snprintf("<ERROR CODE=\"2\" \
+DESCRIPTION=\"User Account Expired\">\n\
+<INSTANCE CLASSNAME=\"CIM_Error\">\n\
+<PROPERTY NAME=\"ErrorType\" TYPE=\"uint16\">\
+<VALUE>1</VALUE></PROPERTY>\n\
+<PROPERTY NAME=\"OtherErrorType\" TYPE=\"string\">\
+<VALUE>Password Expired</VALUE></PROPERTY>\n\
+<PROPERTY NAME=\"ProbableCause\" TYPE=\"uint16\">\
+<VALUE>117</VALUE></PROPERTY>\n\
+</INSTANCE>\n</ERROR>\n");
+
+  return msg;
+}
+
+#endif /* ALLOW_UPDATE_EXPIRED_PW */
+
 static RespSegments ctxErrResponse(RequestHdr * hdr,
                                           BinRequestContext * ctx, int meth)
 {
@@ -2628,12 +2649,27 @@ static Handler handlers[] = {
    {invokeMethod},              //OPS_InvokeMethod 24
 };
 
-RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx)
+RespSegments sendHdrToHandler(RequestHdr* hdr, CimXmlRequestContext* ctx) {
+
+  RespSegments    rs;
+  Handler         hdlr;
+  HeapControl    *hc;
+
+  hc = markHeap();
+  hdlr = handlers[hdr->opType];
+  rs = hdlr.handler(ctx, hdr);
+  releaseHeap(hc);
+
+  ctx->className = hdr->className;
+  ctx->operation = hdr->opType;
+
+  return rs;
+}
+
+RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx, int flags)
 {
    RespSegments rs;
    RequestHdr hdr;
-   Handler hdlr;
-   HeapControl *hc;
 #ifdef SFCB_DEBUG
    struct rusage us,ue;
    struct timeval sv, ev;
@@ -2668,15 +2704,34 @@ RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx)
        rs = iMethodErrResponse(&hdr,getErrSegment(CMPI_RC_ERR_FAILED,
 						  "invalid imethodcall XML"));
      }
-   } else {
-     hc = markHeap();
-     hdlr = handlers[hdr.opType];
-     rs = hdlr.handler(ctx, &hdr);
-     releaseHeap(hc);
-     
-     ctx->className=hdr.className;
-     ctx->operation=hdr.opType;
+   } 
+
+#ifdef ALLOW_UPDATE_EXPIRED_PW
+   else if (flags) {
+
+     /* pulled from 1.4 branch's buildInvokeMethodRequest() */
+     XtokMethodCall *req = hdr.cimRequest;
+     hdr.className = req->op.className.data;
+
+     /* request from user with an expired password AND requesting password update */
+     if (flags == (HCR_UPDATE_PW | HCR_EXPIRED_PW) && hdr.className &&
+	 (strcasecmp(hdr.className, "SFCB_Account") == 0) && hdr.methodCall) {
+       rs = sendHdrToHandler(&hdr, ctx);
+     }
+     else {    /* expired user tried to invoke non-UpdatePassword request */
+       if (hdr.methodCall) { 
+	 rs = methodErrResponse(&hdr, getErrExpiredSegment());
+       } else {
+	 rs = iMethodErrResponse(&hdr, getErrExpiredSegment());
+       }
+     }
    }
+#endif  /* ALLOW_UPDATE_EXPIRED_PW */
+
+   else {
+     rs = sendHdrToHandler(&hdr, ctx);
+   }
+   
    rs.buffer = hdr.xmlBuffer;
    
    freeCimXmlRequest(hdr);

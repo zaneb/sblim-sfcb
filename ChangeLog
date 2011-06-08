@@ -1,3 +1,9 @@
+2011-05-02 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* configure.ac
+	[ 3190623 ] Set *IsSettable propperties to false for IndicationService
+	Problem with auto-enable when tests are enabled.
+
 2011-05-16 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c

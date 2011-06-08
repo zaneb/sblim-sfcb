@@ -194,6 +194,10 @@ else
     enable_tests="unit,gcov,wbemcli,xml,commands,slp,providers"
 fi
 fi
+if test "$enable_tests" != ""; then
+    enable_settableretry="yes"
+fi
+
 
 OLDIFS="$IFS"
 IFS=","

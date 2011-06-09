@@ -1910,6 +1910,7 @@ static void* release(ClientEnv* ce)
    }
    CONNECT_UNLOCK();
    free(ce);
+   sunsetControl();
    uninitGarbageCollector();
    return lib;
 }

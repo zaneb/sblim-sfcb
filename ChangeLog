@@ -1,3 +1,9 @@
+2011-06-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c, cimcClientSfcbLocal.c:
+	[ 3314383 Memory leak in CimResource_Enumerate_EP
+	(patch by Chris Poblete)
+
 2011-06-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimAccountPassthroughProvider.c, cimAccountPassthrough.mof, 

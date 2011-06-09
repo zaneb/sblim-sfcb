@@ -14,6 +14,7 @@ Bugs fixed:
 - 3287789 interopServerProvider not conservative when answering reqs
 - 3296541 CIM_IndicationSubscription corrupts after delilvery fails
 - 3314383 Memory leak in CimResource_Enumerate_EP
+-3047562 [patch] Create bzip2 tarballs on "make dist"
 
 Changes in 1.3.11
 =================

@@ -112,6 +112,7 @@ Klaus Kampf, Novell
 05/27/2010 [ 2994737 ] cimslp fails to get sslCertificateFilePath config value
 05/27/2010 [ 2984485 ] Possible access to freed memory in cimslpSLP.c
 06/30/2010 [ 2968599 ] Wrong trace msg for invokeMethod (local interface)
+06/09/2011 [ 3047562 ] [patch] Create bzip2 tarballs on "make dist"
 
 Mike Brasher, Inova
 -------------------

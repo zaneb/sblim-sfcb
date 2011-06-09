@@ -1,8 +1,12 @@
 2011-06-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c, cimcClientSfcbLocal.c:
-	[ 3314383 Memory leak in CimResource_Enumerate_EP
+	[ 3314383 ] Memory leak in CimResource_Enumerate_EP
 	(patch by Chris Poblete)
+
+	* Makefile.am
+	[ 3047562 ] [patch] Create bzip2 tarballs on "make dist"
+	(patch by Klaus Kaempf)
 
 2011-06-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 

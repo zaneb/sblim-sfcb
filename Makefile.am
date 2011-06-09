@@ -21,6 +21,8 @@
 # 
 # 
 
+AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
+
 sfcbdocdir=$(datadir)/doc/sfcb-$(VERSION)
 sfcbdatadir=$(datadir)/sfcb
 sfcbconfdir=$(sysconfdir)/sfcb

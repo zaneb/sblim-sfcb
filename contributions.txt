@@ -181,7 +181,8 @@ Chris Poblete, Dell
 11/10/2010 [ 3101154 ] Daemon clients failed SfcbLocal connect due to permission
 03/08/2011 [ 3202420 ] CDATA value in a string property is improperly XML escaped
 04/28/2011 [ 3202466 ] Single item on method param of array type rejected via Local
-06/09/2011 [ 3314383 Memory leak in CimResource_Enumerate_EP
+06/09/2011 [ 3314383 ] Memory leak in CimResource_Enumerate_EP
+06/10/2011 [ 3314762 ] Memory leak in method invoke using SFCB local interface
 
 Josef Moellers
 --------------

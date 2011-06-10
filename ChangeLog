@@ -1,3 +1,9 @@
+2011-06-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimcClientSfcbLocal.c:
+	[ 3314762 ] Memory leak in method invoke using SFCB local interface
+	(patch by Chris Poblete)
+
 2011-06-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c, cimcClientSfcbLocal.c:

@@ -4,6 +4,10 @@
 	[ 3314762 ] Memory leak in method invoke using SFCB local interface
 	(patch by Chris Poblete)
 
+	* control.c:
+	[ 3165732 ] Add ability for client library to specify configuration file
+	(patch by Josef Moellers)
+
 2011-06-09  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* control.c, cimcClientSfcbLocal.c:

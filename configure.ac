@@ -206,7 +206,7 @@ else
 fi
 fi
 if test "$enable_tests" != ""; then
-+    enable_settableretry="yes"
+    enable_settableretry="yes"
 fi
 
 

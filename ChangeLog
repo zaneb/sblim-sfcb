@@ -1,5 +1,8 @@
 2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* providerDrv.c:
+	[ 3324214 ] Remove dead code from providerDrv:loadProvider()
+
 	* httpAdapter.c:
 	[ 3323427 ] Unnecessary NULL check in httpAdapter
 

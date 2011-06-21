@@ -595,7 +595,7 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
          if (nname) free(nname);
          return op;
       }
-      *msg = "No className found";
+      if(msg) *msg = "No className found";
       free(origu);
       if (nname) free(nname);
       return NULL;
@@ -640,7 +640,7 @@ CMPIObjectPath *getObjectPath(char *path, char **msg)
          }
          p++;
          if (*p != ',' && *p != 0) {
-            *msg = "Incorrectly quoted string 2";
+	   if(msg) *msg = "Incorrectly quoted string 2";
             free(origu);
             return NULL;
          }

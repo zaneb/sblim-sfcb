@@ -1,5 +1,8 @@
 2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* objectpath.c:
+	[ 3324198 ] getObjectPath() may deref a NULL pointer
+
 	* objectImpl.c:
 	[ 3324192 ] Erroneous condition in loop in objectImpl:locateParameter()
 

@@ -1,5 +1,8 @@
 2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* trace.c:
+	[ 3324265 ] _sfcb_trace may deref NULL pointers
+
 	* support.c:
 	[ 3324255 ] Unnecessary NULL check in __cleanup_mt()
 

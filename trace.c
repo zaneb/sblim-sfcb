@@ -147,6 +147,9 @@ char *_sfcb_format_trace(char *fmt, ...)
 void _sfcb_trace(int level, char *file, int line, char *msg)
 {
 
+   if (msg == NULL)
+     return;
+
    struct tm cttm;
    struct timeval tv;
    struct timezone tz;
@@ -172,27 +175,26 @@ void _sfcb_trace(int level, char *file, int line, char *msg)
       if (gmtime_r(&sec, &cttm) != NULL) {
          strftime(tm, 20, "%m/%d/%Y %H:%M:%S", &cttm);
       }
-   }
 
-   if (colorTrace) {
-     changeTextColor(0);
-     fprintf(ferr, "[%i] [%s] %d/%p --- %s(%i) : %s\n", level, tm, currentProc, (void *)pthread_self(), file,
-	     line, msg);
-     changeTextColor(1);
-   }
-   else {
-     fprintf(ferr, "[%i] [%s] %d/%p --- %s(%i) : %s\n", level, tm, currentProc, (void *)pthread_self(), file,
-	     line, msg);
+      if (colorTrace) {
+        changeTextColor(0);
+        fprintf(ferr, "[%i] [%s] %d/%p --- %s(%i) : %s\n", level, tm, currentProc, (void *)pthread_self(), file,
+                line, msg);
+        changeTextColor(1);
+      }
+      else {
+        fprintf(ferr, "[%i] [%s] %d/%p --- %s(%i) : %s\n", level, tm, currentProc, (void *)pthread_self(), file,
+                line, msg);
+      }
+
+      free(tm);
+      free(msg);
    }
 
    if ((_SFCB_TRACE_FILE != NULL)) {
       fclose(ferr);
    }
 
-   if (tm)
-      free(tm);
-   if (msg)
-      free(msg);
 }
 
 extern void _sfcb_set_trace_mask(int n)

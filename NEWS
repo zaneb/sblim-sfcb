@@ -17,6 +17,7 @@ Bugs fixed:
 - 3047562 [patch] Create bzip2 tarballs on "make dist"
 - 3314762 Memory leak in method invoke using SFCB local interface
 - 3165732 Add ability for client library to specify configuration file
+- 3323422 Unnecessary NULL check in control.c
 
 Changes in 1.3.11
 =================

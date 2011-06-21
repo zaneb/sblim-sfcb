@@ -1,3 +1,8 @@
+2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c:
+	[ 3323422 ] Unnecessary NULL check in control.c
+
 2011-06-10  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimcClientSfcbLocal.c:

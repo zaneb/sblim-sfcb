@@ -222,10 +222,7 @@ int setupControl(char *fn)
    }
    if (stmt) free(stmt);
 
-
-   if (in) {
-     fclose(in);
-   }
+   fclose(in);
 
    if (err) {
       mlogf(M_INFO,M_SHOW,"--- Broker terminated because of previous error(s)\n");

@@ -22,6 +22,7 @@ Bugs fixed:
 - 3324214 Remove dead code from providerDrv:loadProvider()
 - 3324131 indCIMXMLHandler may return uninitialized CMPIStatus
 - 3324168 gatherNameSpacesData() may closedir() a NULL pointer
+- 3324192 Erroneous condition in loop in objectImpl:locateParameter()
 
 Changes in 1.3.11
 =================

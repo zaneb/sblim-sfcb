@@ -1,5 +1,8 @@
 2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* indCIMXMLHandler.c:
+	[ 3324131 ] indCIMXMLHandler may return uninitialized CMPIStatus
+
 	* providerDrv.c:
 	[ 3324214 ] Remove dead code from providerDrv:loadProvider()
 

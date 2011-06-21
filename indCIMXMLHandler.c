@@ -97,7 +97,7 @@ CMPIStatus IndCIMXMLHandlerEnumInstanceNames(CMPIInstanceMI * mi,
    CMPIContext *ctxLocal;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstanceNames");
-   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
+   if (interOpNameSpace(ref,&st)!=1) _SFCB_RETURN(st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
 
 #ifdef HAVE_OPTIMIZED_ENUMERATION
@@ -153,7 +153,7 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
    CMPIContext *ctxLocal;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstances");
-   if (interOpNameSpace(ref,NULL)!=1) _SFCB_RETURN(st);
+   if (interOpNameSpace(ref,&st)!=1) _SFCB_RETURN(st);
    ctxLocal = prepareUpcall((CMPIContext *)ctx);
 
 #ifdef HAVE_OPTIMIZED_ENUMERATION

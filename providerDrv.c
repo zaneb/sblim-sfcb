@@ -2760,16 +2760,14 @@ static void *processProviderInvocationRequestsThread(void *prms)
          exit(-1);
       }
       
-      if (pInfo && pInfo->library==NULL) { 
+      if (pInfo->library==NULL) { 
          char dlName[512];
          mlogf(M_INFO,M_SHOW,"--- Reloading provider\n");
          doLoadProvider(pInfo,dlName, 512);
       }  
       
-      if (pInfo) {
-	initRc=initProvider(pInfo,req->sessionId, &errstr);
-	_SFCB_TRACE(1, ("--- Provider initialization rc %d",initRc));
-      }
+      initRc=initProvider(pInfo,req->sessionId, &errstr);
+      _SFCB_TRACE(1, ("--- Provider initialization rc %d",initRc));
 
    }
    else pInfo = NULL;

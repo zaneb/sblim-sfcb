@@ -412,7 +412,7 @@ static void __cleanup_mt(void *ptr)
      
      if (mt->hc.memObjs) free(mt->hc.memObjs);
      if (mt->hc.memEncObjs) free(mt->hc.memEncObjs);
-     if (mt) free(mt);
+     free(mt);
    }
    _SFCB_EXIT();
 }

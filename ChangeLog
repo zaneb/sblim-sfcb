@@ -1,5 +1,8 @@
 2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* support.c:
+	[ 3324255 ] Unnecessary NULL check in __cleanup_mt()
+
 	* providerDrv.c:
 	[ 3324247 ] Unnecessary NULL check in providerDrv
 

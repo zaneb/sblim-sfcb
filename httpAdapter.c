@@ -486,10 +486,8 @@ static void writeResponse(CommHndl conn_fd, RespSegments rs)
       if (rs.segments[i].txt) {
          if (rs.segments[i].mode == 2) {
             UtilStringBuffer *sb = (UtilStringBuffer *) rs.segments[i].txt;
-            if (sb) {
-               commWrite(conn_fd, (void*)sb->ft->getCharPtr(sb), ls[i]);
-               sb->ft->release(sb);
-            }
+            commWrite(conn_fd, (void*)sb->ft->getCharPtr(sb), ls[i]);
+            sb->ft->release(sb);
          }
          else {
             commWrite(conn_fd, rs.segments[i].txt, ls[i]);
@@ -596,10 +594,8 @@ static void writeChunkResponse(BinRequestContext *ctx, BinResponseHdr *rh)
          if (rs.segments[i].txt) {
             if (rs.segments[i].mode == 2) {
                UtilStringBuffer *sb = (UtilStringBuffer *) rs.segments[i].txt;
-               if (sb) {
-                  commWrite(*(ctx->commHndl), (void*)sb->ft->getCharPtr(sb), ls[i]);
-                  sb->ft->release(sb);
-               }         
+               commWrite(*(ctx->commHndl), (void*)sb->ft->getCharPtr(sb), ls[i]);
+               sb->ft->release(sb);
             }
             else {
                commWrite(*(ctx->commHndl), rs.segments[i].txt, ls[i]);

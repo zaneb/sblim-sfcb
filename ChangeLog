@@ -1,5 +1,8 @@
 2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* httpAdapter.c:
+	[ 3323427 ] Unnecessary NULL check in httpAdapter
+
 	* control.c:
 	[ 3323422 ] Unnecessary NULL check in control.c
 

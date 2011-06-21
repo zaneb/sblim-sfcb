@@ -21,6 +21,7 @@ Bugs fixed:
 - 3323427 Unnecessary NULL check in httpAdapter
 - 3324214 Remove dead code from providerDrv:loadProvider()
 - 3324131 indCIMXMLHandler may return uninitialized CMPIStatus
+- 3324168 gatherNameSpacesData() may closedir() a NULL pointer
 
 Changes in 1.3.11
 =================

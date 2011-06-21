@@ -120,28 +120,30 @@ static void gatherNameSpacesData(const char *dn, int dbl,
    int l;
    
    dir=opendir(dn);
-   if (dir) while ((de=readdir(dir))!=NULL) {
-     if (strcmp(de->d_name,".")==0) continue;
-     if (strcmp(de->d_name,"..")==0) continue;
-     l=strlen(dn)+strlen(de->d_name)+4;
-     n=(char*)malloc(l+8);
-     strcpy(n,dn);
-     strcat(n,"/");
-     strcat(n,de->d_name);
-     de_test = opendir(n);
-     if (de_test == NULL) {
-       free(n);
-       continue;
-     }
-     closedir(de_test);
+   if (dir) {
+     while ((de=readdir(dir))!=NULL) {
+       if (strcmp(de->d_name,".")==0) continue;
+       if (strcmp(de->d_name,"..")==0) continue;
+       l=strlen(dn)+strlen(de->d_name)+4;
+       n=(char*)malloc(l+8);
+       strcpy(n,dn);
+       strcat(n,"/");
+       strcat(n,de->d_name);
+       de_test = opendir(n);
+       if (de_test == NULL) {
+         free(n);
+         continue;
+       }
+       closedir(de_test);
      
-     genNameSpaceData(n,de->d_name,dbl,rslt,op,ci,nsOpt);
-     if (nsOpt!=1) { 
-        if (nsOpt==0) gatherNameSpacesData(n,dbl,rslt,op,ci,nsOpt);
+       genNameSpaceData(n,de->d_name,dbl,rslt,op,ci,nsOpt);
+       if (nsOpt!=1) { 
+         if (nsOpt==0) gatherNameSpacesData(n,dbl,rslt,op,ci,nsOpt);
+       }
+       free(n);
      }
-     free(n);
+     closedir(dir);
    }
-   closedir(dir);     
 } 
 
 

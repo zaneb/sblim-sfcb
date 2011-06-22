@@ -2,6 +2,7 @@
 
 	* brokerUpc.c:
 	[ 3324578 ] getInstance() up call does not close provider context
+	(patch by Santosh Bidaralli)
 
 2011-06-21  Chris Buccella  <buccella@linux.vnet.ibm.com>
 

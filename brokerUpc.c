@@ -528,6 +528,7 @@ static CMPIInstance *getInstance(const CMPIBroker * broker,
             if (st.rc==0) 
                inst=CMGetArrayElementAt(r, 0, NULL).value.inst;
 	    if (sreq) free(sreq);
+            closeProviderContext(&binCtx);
             return inst;   
          }
          }

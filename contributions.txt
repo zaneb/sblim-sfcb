@@ -188,3 +188,7 @@ Josef Moellers
 --------------
 11/17/2010 [ 3109469 ] Potential Buffer Overflow in msgqueue.c:localConnectServer()
 06/10/2010 [ 3165732 ] Add ability for client library to specify configuration file
+
+Santosh Bidaralli, Dell
+-----------------------
+06/22/2011 [ 3324578 ] getInstance() up call does not close provider context

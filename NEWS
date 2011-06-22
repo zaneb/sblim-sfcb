@@ -28,6 +28,7 @@ Bugs fixed:
 - 3324255 Unnecessary NULL check in __cleanup_mt()
 - 3324265 _sfcb_trace may deref NULL pointers
 - 3324578 getInstance() up call does not close provider context
+- 3323419 sfcb local interface causes zombie/defunct client processes
 
 Changes in 1.3.11
 =================

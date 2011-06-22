@@ -29,6 +29,7 @@ const char *_mlog_id = "$Id$";
 #include <errno.h>
 #include <signal.h>
 #include "trace.h"              /* for setSignal() */
+#include <sys/wait.h>
  
 FILE           *log_w_stream;
 int             logfds[2] = { 0, 0 };
@@ -108,8 +109,10 @@ void startLogging(int level) {
   * the syslog services that are created in startLogging.
   */
 void closeLogging() {
+   int wstat;
    closelog();
    close(logfds[1]);
+   wait(&wstat); // wait to prevent zombie
 }
 
 

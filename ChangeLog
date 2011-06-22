@@ -1,5 +1,9 @@
 2011-06-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* mlog.c:
+	[ 3323419 ] sfcb local interface causes zombie/defunct client processes
+	(patch by Chris Poblete)
+
 	* brokerUpc.c:
 	[ 3324578 ] getInstance() up call does not close provider context
 	(patch by Santosh Bidaralli)

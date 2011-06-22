@@ -183,6 +183,7 @@ Chris Poblete, Dell
 04/28/2011 [ 3202466 ] Single item on method param of array type rejected via Local
 06/09/2011 [ 3314383 ] Memory leak in CimResource_Enumerate_EP
 06/10/2011 [ 3314762 ] Memory leak in method invoke using SFCB local interface
+06/22/2011 [ 3323419 ] sfcb local interface causes zombie/defunct client processes
 
 Josef Moellers
 --------------

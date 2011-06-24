@@ -2307,6 +2307,7 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
 	   rci = info->indicationMI->ft->deActivateFilter(info->indicationMI, ctx,
 							  (CMPISelectExp*)se, "", path, 1);
 	 }
+	 CMRelease((CMPISelectExp*)se);
 	 TIMING_STOP(hdr,info)
          if (rci.rc==CMPI_RC_OK) {
             resp->rc=1;

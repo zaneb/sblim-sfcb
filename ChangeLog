@@ -1,3 +1,8 @@
+2011-06-24 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+	* indCIMXMLHandler.c, interopProvider.c, sfcBroker.c, control.h,
+	test/TestProviders/tests/IndRetryTest.sh:
+	[ 3274893 ] For SFCB 1.4, set SequenceIdentifier as described in DSP1054 1.2.
+
 2011-06-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* mlog.c:

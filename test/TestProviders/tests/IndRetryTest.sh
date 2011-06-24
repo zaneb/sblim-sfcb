@@ -20,10 +20,22 @@
 # Depends on the GenMI.pl script and several XML files
 # ===========================================================================
 
+# Indication flood limit (don't set less than 101)
+lim=1000
+
+
 sendxml () {
       # Sends the xml file given as argument 1 to wbemcat with appropriate 
       # credentials and protocol. The output of wbemcat will be directed to 
       # argument 2
+      if [ -z $SFCB_TEST_PORT ]
+      then
+            SFCB_TEST_PORT=5988
+      fi
+      if [ -z $SFCB_TEST_PROTOCOL ]
+      then
+          SFCB_TEST_PROTOCOL="http"
+      fi
       if [ "$SFCB_TEST_USER" != "" ] && [ "$SFCB_TEST_PASSWORD" != "" ]; then
            wbemcat -u $SFCB_TEST_USER -pwd $SFCB_TEST_PASSWORD -p $SFCB_TEST_PORT -t $SFCB_TEST_PROTOCOL $1 2>&1 > $2
        else
@@ -263,7 +275,6 @@ fi
 ###
 cleanup
 init
-lim=1000
 echo -n  "  Indication flood: "
 ./GenMI.pl 10 3 300 1
 if [ $? -ne 0 ] 
@@ -295,10 +306,33 @@ sleep 20 # Let the retries catch up
 count=$(grep IndicationTime $ODIR/SFCB_Listener.txt  | wc -l)
 if [ $count -eq $lim ] 
 then
-    echo " $count of $lim: PASSED"
+    echo " received $count of $lim: PASSED"
 else
-    echo " $count of $lim: FAILED"
+    echo " received $count of $lim: FAILED"
     RC=1
+fi
+
+# Check sequence numbers
+echo -n  "  Indication flood sequence numbers: "
+i=1
+f=0
+while [ $i -lt $((lim+1)) ]
+do
+    grep -A1 SequenceNumber $ODIR/SFCB_Listener.txt | grep '<VALUE>'$i'</VALUE>' > /dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+        i=$((i+1))
+    else
+        f=$((f+1))
+        i=$((i+1))
+    fi
+done
+
+if [ $f -eq 0 ]
+then 
+    echo "PASSED"
+else
+    echo "$f missing: FAILED"
 fi
 
 ###

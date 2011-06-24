@@ -27,5 +27,6 @@ int getControlChars(char *id, char **val);
 int getControlUNum(char *id, unsigned int *val);
 int getControlNum(char *id, long *val);
 int getControlBool(char *id, int *val);
+const char      * sfcBrokerStart;
 
 #endif

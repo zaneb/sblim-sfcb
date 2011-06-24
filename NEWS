@@ -4,6 +4,7 @@ Changes in 1.3.12
 New features:
 - 3190623 Set *IsSettable properties to false for IndicationService
 - 3313833 Allow for passthrough for expired user to update password
+- 3274893 For SFCB 1.4, set SequenceIdentifier as described in DSP1054 1.2.
 
 Bugs fixed:
 

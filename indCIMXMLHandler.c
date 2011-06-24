@@ -35,6 +35,8 @@
 #include "internalProvider.h" 
 #include "cimXmlRequest.h" 
 #include "native.h"
+#include "control.h"
+#include "instance.h"
 
 extern void closeProviderContext(BinRequestContext* ctx);
 extern int exportIndication(char *url, char *payload, char **resp, char **msg);
@@ -151,6 +153,7 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
    CMPIStatus st;
    CMPIEnumeration *enm;
    CMPIContext *ctxLocal;
+   CMPIInstance*   ci;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstances");
    if (interOpNameSpace(ref,&st)!=1) _SFCB_RETURN(st);
@@ -164,39 +167,98 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
    if (strcasecmp(CMGetCharPtr(cn), "cim_listenerdestination") == 0) {
      enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
      while(enm && enm->ft->hasNext(enm, &st)) {
-       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+       ci=(enm->ft->getNext(enm, &st)).value.inst;
+       filterInternalProps(ci);
+       CMReturnInstance(rslt, ci);
      }
      refLocal = CMNewObjectPath(_broker,"root/interop","cim_listenerdestinationcimxml",&st);
      enm = _broker->bft->enumerateInstances(_broker, ctxLocal, refLocal, properties, &st);
      while(enm && enm->ft->hasNext(enm, &st)) {
-       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+       ci=(enm->ft->getNext(enm, &st)).value.inst;
+       filterInternalProps(ci);
+       CMReturnInstance(rslt, ci);
      }
      refLocal = CMNewObjectPath(_broker,"root/interop","cim_indicationhandlercimxml",&st);
      enm = _broker->bft->enumerateInstances(_broker, ctxLocal, refLocal, properties, &st);
      while(enm && enm->ft->hasNext(enm, &st)) {
-       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+       ci=(enm->ft->getNext(enm, &st)).value.inst;
+       filterInternalProps(ci);
+       CMReturnInstance(rslt, ci);
      }
      CMRelease(refLocal);
    }
    else {
      enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
      while(enm && enm->ft->hasNext(enm, &st)) {
-       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+       ci=(enm->ft->getNext(enm, &st)).value.inst;
+       filterInternalProps(ci);
+       CMReturnInstance(rslt, ci);
      }
    }
 #else
    enm = _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties, &st);
    while(enm && enm->ft->hasNext(enm, &st)) {
-       CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
+       ci=(enm->ft->getNext(enm, &st)).value.inst;
+       filterInternalProps(ci);
+       CMReturnInstance(rslt, ci);
    }
 #endif
 
    CMRelease(ctxLocal);
    if(enm) CMRelease(enm);
+   if (ci) CMRelease(ci);
 
    _SFCB_RETURN(st);
 }
 
+const char    **
+getKeyList(const CMPIObjectPath * cop)
+{
+  CMPIString     *s;
+  const char    **list;
+  int             i = cop->ft->getKeyCount(cop, NULL);
+  list = malloc((i + 1) * sizeof(char *));
+  list[i] = NULL;
+  while (i) {
+    i--;
+    cop->ft->getKeyAt(cop, i, &s, NULL);
+    list[i] = s->ft->getCharPtr(s, NULL);
+  }
+  return list;
+}
+
+void
+filterInternalProps(CMPIInstance* ci) 
+{
+
+  CMPIStatus      pst = { CMPI_RC_OK, NULL };
+  CMGetProperty(ci, "LastSequenceNumber", &pst);
+  /* prop is set, need to clear it out */
+  if (pst.rc != CMPI_RC_ERR_NOT_FOUND) {
+    filterFlagProperty(ci, "LastSequenceNumber");
+  }
+  CMGetProperty(ci, "SequenceContext", &pst);
+  /* prop is set, need to clear it out */
+  if (pst.rc != CMPI_RC_ERR_NOT_FOUND) {
+    filterFlagProperty(ci, "SequenceContext");
+  }
+
+  return;
+}
+extern int      isChild(const char *ns, const char *parent,
+                        const char *child);
+  
+static int
+isa(const char *sns, const char *child, const char *parent)
+{
+  int             rv;
+  _SFCB_ENTER(TRACE_INDPROVIDER, "isa");
+    
+  if (strcasecmp(child, parent) == 0)
+    return 1;
+  rv = isChild(sns, parent, child);
+  _SFCB_RETURN(rv);
+}
 
 CMPIStatus IndCIMXMLHandlerGetInstance(CMPIInstanceMI * mi,
                                        const CMPIContext * ctx,
@@ -205,8 +267,27 @@ CMPIStatus IndCIMXMLHandlerGetInstance(CMPIInstanceMI * mi,
                                        const char **properties)
 {
    CMPIStatus st;
+   CMPIInstance*   ci;
+   const char** keyList;
+
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerGetInstance");
-   st=InternalProviderGetInstance(NULL,ctx,rslt,cop,properties);
+
+   ci = internalProviderGetInstance(cop, &st);
+
+   if (st.rc == CMPI_RC_OK) {
+    if (isa("root/interop", CMGetCharPtr(CMGetClassName(cop,NULL)), "cim_indicationhandler")) {
+      filterInternalProps(ci);
+    }
+    if (properties) {
+      keyList = getKeyList(ci->ft->getObjectPath(ci, NULL));
+      ci->ft->setPropertyFilter(ci, properties, keyList);
+      if (keyList) {
+        free(keyList);
+      }
+    }
+    CMReturnInstance(rslt, ci);
+   }
+
    _SFCB_RETURN(st);
 }
 
@@ -294,6 +375,37 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
      persistenceType = persistence.value.uint16;
    }
    CMSetProperty(ciLocal, "persistencetype", &persistenceType, CMPI_uint16);
+
+   if (CMClassPathIsA(_broker, copLocal, "cim_listenerdestination", NULL)) {
+    //get the creation timestamp
+    struct timeval  tv;
+    struct timezone tz;
+    char   context[100];
+    gettimeofday(&tv, &tz);
+    struct tm cttm;
+    char * gtime = (char *) malloc(15 * sizeof(char));
+    memset(gtime, 0, 15 * sizeof(char));
+    if (gmtime_r(&tv.tv_sec, &cttm) != NULL) {
+      strftime(gtime, 15, "%Y%m%d%H%M%S", &cttm);
+    }
+
+    // Get the IndicationService name
+    CMPIObjectPath * isop = CMNewObjectPath(_broker, "root/interop", "CIM_IndicationService", NULL);
+    CMPIEnumeration * isenm = _broker->bft->enumerateInstances(_broker, ctx, isop, NULL, NULL);
+    CMPIData isinst = CMGetNext(isenm, NULL);
+    CMPIData mc = CMGetProperty(isinst.value.inst, "Name", NULL);
+
+    // build the context string
+    sprintf (context,"%s#%s#",mc.value.string->ft->getCharPtr(mc.value.string,NULL),gtime);
+    CMPIValue scontext;
+    scontext.string = sfcb_native_new_CMPIString(context, NULL, 0);
+    free(gtime);
+
+    // set the properties
+    CMSetProperty(ciLocal, "SequenceContext", &scontext, CMPI_string);
+    CMPIValue zarro = {.sint64 = 0 };
+    CMSetProperty(ciLocal, "LastSequenceNumber", &zarro, CMPI_sint64);
+   }
 
             CMPIString *str=CDToString(_broker,copLocal,NULL);
             CMPIString *ns=CMGetNameSpace(copLocal,NULL);
@@ -390,10 +502,11 @@ CMPIStatus IndCIMXMLHandlerMethodCleanup(CMPIMethodMI * mi,
 
 CMPIStatus deliverInd(
                 const CMPIObjectPath * ref,
-			    const CMPIArgs * in)
+			    const CMPIArgs * in,
+                CMPIInstance * ind )
 {
   _SFCB_ENTER(TRACE_INDPROVIDER, "deliverInd");  
-  CMPIInstance *hci,*ind;
+  CMPIInstance *hci,*sub;
   CMPIStatus st = { CMPI_RC_OK, NULL };
   CMPIString *dest;
   char strId[64];
@@ -410,7 +523,7 @@ CMPIStatus deliverInd(
 
   dest=CMGetProperty(hci,"destination",&st).value.string;
   _SFCB_TRACE(1,("--- destination: %s\n",(char*)dest->hdl));
-  ind=CMGetArg(in,"indication",NULL).value.inst;
+  sub=CMGetArg(in,"subscription",NULL).value.inst;
 
   sprintf(strId,"%d",id++);
   xs=exportIndicationReq(ind,strId);
@@ -613,7 +726,7 @@ void * retryExport (void * lctx)
                 sleep(rint);
                 pthread_mutex_lock(&RQlock);
             }
-            st=deliverInd(ref,in);
+            st=deliverInd(ref,in, iinst);
             if ( (st.rc == 0) || (cur->count >= maxcount-1) ){
                 // either it worked, or we maxed out on retries
                 // If it succeeded, clear the failtime
@@ -747,7 +860,46 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
    if (interOpNameSpace(ref,&st)==0) _SFCB_RETURN(st);
    
    if (strcasecmp(methodName, "_deliver") == 0) {     
-      st=deliverInd(ref,in);
+
+      // Set the indication sequence values
+      CMPIInstance *indo=CMGetArg(in,"indication",NULL).value.inst;
+      CMPIInstance *ind=CMClone(indo,NULL);
+      CMPIObjectPath * iop=CMGetObjectPath(ind,NULL);
+      CMPIInstance *sub=CMGetArg(in,"subscription",NULL).value.inst;
+      CMPIObjectPath * subop=CMGetObjectPath(sub,NULL);
+      CMPIData handler=CMGetProperty(sub, "Handler", &st);
+      CMPIObjectPath *hop=handler.value.ref;
+      CMPIContext    *ctxLocal = prepareUpcall((CMPIContext *) ctx);
+      CMPIInstance *hdlr=CBGetInstance(_broker, ctxLocal, hop, NULL, &st);
+      CMAddKey(iop,"SFCB_IndicationID",&indID,CMPI_uint32);
+      CMSetProperty(ind,"SFCB_IndicationID",&indID,CMPI_uint32);
+
+      // Build the complete sequence context
+      // Get the stub from the handler
+      CMPIString *context = CMGetProperty(hdlr, "SequenceContext", &st).value.string;
+      // and add the sfcb start time
+      char *cstr=malloc( (strlen(context->ft->getCharPtr(context,NULL)) + strlen(sfcBrokerStart)) * sizeof(char));
+      sprintf(cstr,"%s%s",context->ft->getCharPtr(context,NULL),sfcBrokerStart);
+      context = sfcb_native_new_CMPIString(cstr, NULL, 0); 
+      // and put it in the indication
+      CMSetProperty(ind, "SequenceContext", &context, CMPI_string);
+      free(cstr);
+      CMRelease(context);
+  
+      // Get the proper sequence number
+      CMPIValue lastseq = CMGetProperty(hdlr, "LastSequenceNumber", &st).value;
+      lastseq.sint64++;
+      // Handle wrapping of the signed int
+      if (lastseq.sint64 < 0) lastseq.sint64=1;
+      // Update the last used number in the handler
+      CMSetProperty(hdlr, "LastSequenceNumber", &lastseq.sint64, CMPI_sint64);
+      CBModifyInstance(_broker, ctxLocal, hop, hdlr, NULL);
+      // And the indication
+      CMSetProperty(ind, "SequenceNumber", &lastseq, CMPI_sint64);
+
+      // Now send the indication
+      st = deliverInd(ref, in, ind);
+
       if (st.rc != 0) {
         // Get the retry params from IndService
         CMPIObjectPath *op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
@@ -761,23 +913,16 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
             RTElement *element;
             element = (RTElement *) malloc(sizeof(*element));
             element->ref=ref->ft->clone(ref,NULL);
-            // Get the OP of the subscription
-            CMPIInstance *sub=CMGetArg(in,"subscription",NULL).value.inst;
-            CMPIObjectPath * subop=CMGetObjectPath(sub,NULL);
+            // Get the OP of the subscription and indication
             element->sub=subop->ft->clone(subop,NULL);
-            // Get the OP of the indication
-            CMPIInstance *ind=CMGetArg(in,"indication",NULL).value.inst;
-            CMPIObjectPath * iop=CMGetObjectPath(ind,NULL);
-            // Add the key value
-            CMAddKey(iop,"SFCB_IndicationID",&indID,CMPI_uint32);
-            CMSetProperty(ind,"SFCB_IndicationID",&indID,CMPI_uint32);
             element->ind=iop->ft->clone(iop,NULL);
             // Store other attrs
             element->instanceID=indID;
             element->count=0;
             gettimeofday(&tv, &tz);
             element->lasttry=tv.tv_sec;
-            CBCreateInstance(_broker, ctx, iop, ind, &st);
+            // Push the indication to the repo
+            CBCreateInstance(_broker, ctxLocal, iop, ind, &st);
             if (st.rc != 0) {
                 mlogf(M_ERROR,M_SHOW,"Pushing indication instance to repository failed, rc:%d\n",st.rc);
             }
@@ -795,6 +940,8 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
             }
         }
       }
+      CMRelease(ctxLocal);
+      CMRelease(ind);
    }
    else {
       printf("--- ClassProvider: Invalid request %s\n", methodName);

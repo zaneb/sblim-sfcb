@@ -144,6 +144,55 @@ CMPIStatus IndCIMXMLHandlerEnumInstanceNames(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
+const char    **
+getKeyList(const CMPIObjectPath * cop)
+{
+  CMPIString     *s;
+  const char    **list;
+  int             i = cop->ft->getKeyCount(cop, NULL);
+  list = malloc((i + 1) * sizeof(char *));
+  list[i] = NULL;
+  while (i) {
+    i--;
+    cop->ft->getKeyAt(cop, i, &s, NULL);
+    list[i] = s->ft->getCharPtr(s, NULL);
+  }
+  return list;
+}
+
+void
+filterInternalProps(CMPIInstance* ci) 
+{
+
+  CMPIStatus      pst = { CMPI_RC_OK, NULL };
+  CMGetProperty(ci, "LastSequenceNumber", &pst);
+  /* prop is set, need to clear it out */
+  if (pst.rc != CMPI_RC_ERR_NOT_FOUND) {
+    filterFlagProperty(ci, "LastSequenceNumber");
+  }
+  CMGetProperty(ci, "SequenceContext", &pst);
+  /* prop is set, need to clear it out */
+  if (pst.rc != CMPI_RC_ERR_NOT_FOUND) {
+    filterFlagProperty(ci, "SequenceContext");
+  }
+
+  return;
+}
+extern int      isChild(const char *ns, const char *parent,
+                        const char *child);
+  
+static int
+isa(const char *sns, const char *child, const char *parent)
+{
+  int             rv;
+  _SFCB_ENTER(TRACE_INDPROVIDER, "isa");
+    
+  if (strcasecmp(child, parent) == 0)
+    return 1;
+  rv = isChild(sns, parent, child);
+  _SFCB_RETURN(rv);
+}
+
 CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
                                          const CMPIContext * ctx,
                                          const CMPIResult * rslt,
@@ -153,7 +202,7 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
    CMPIStatus st;
    CMPIEnumeration *enm;
    CMPIContext *ctxLocal;
-   CMPIInstance*   ci;
+   CMPIInstance*   ci=NULL;
 
    _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerEnumInstances");
    if (interOpNameSpace(ref,&st)!=1) _SFCB_RETURN(st);
@@ -206,58 +255,8 @@ CMPIStatus IndCIMXMLHandlerEnumInstances(CMPIInstanceMI * mi,
 
    CMRelease(ctxLocal);
    if(enm) CMRelease(enm);
-   if (ci) CMRelease(ci);
 
    _SFCB_RETURN(st);
-}
-
-const char    **
-getKeyList(const CMPIObjectPath * cop)
-{
-  CMPIString     *s;
-  const char    **list;
-  int             i = cop->ft->getKeyCount(cop, NULL);
-  list = malloc((i + 1) * sizeof(char *));
-  list[i] = NULL;
-  while (i) {
-    i--;
-    cop->ft->getKeyAt(cop, i, &s, NULL);
-    list[i] = s->ft->getCharPtr(s, NULL);
-  }
-  return list;
-}
-
-void
-filterInternalProps(CMPIInstance* ci) 
-{
-
-  CMPIStatus      pst = { CMPI_RC_OK, NULL };
-  CMGetProperty(ci, "LastSequenceNumber", &pst);
-  /* prop is set, need to clear it out */
-  if (pst.rc != CMPI_RC_ERR_NOT_FOUND) {
-    filterFlagProperty(ci, "LastSequenceNumber");
-  }
-  CMGetProperty(ci, "SequenceContext", &pst);
-  /* prop is set, need to clear it out */
-  if (pst.rc != CMPI_RC_ERR_NOT_FOUND) {
-    filterFlagProperty(ci, "SequenceContext");
-  }
-
-  return;
-}
-extern int      isChild(const char *ns, const char *parent,
-                        const char *child);
-  
-static int
-isa(const char *sns, const char *child, const char *parent)
-{
-  int             rv;
-  _SFCB_ENTER(TRACE_INDPROVIDER, "isa");
-    
-  if (strcasecmp(child, parent) == 0)
-    return 1;
-  rv = isChild(sns, parent, child);
-  _SFCB_RETURN(rv);
 }
 
 CMPIStatus IndCIMXMLHandlerGetInstance(CMPIInstanceMI * mi,

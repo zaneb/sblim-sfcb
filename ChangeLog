@@ -1,3 +1,9 @@
+2011-06-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c:
+	[ 3274893 ] For SFCB 1.4, set SequenceIdentifier as described in DSP1054 1.2.
+	Fixed some warnings and a extra free.
+
 2011-06-24  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c:

@@ -558,7 +558,7 @@ endif
 clean-local:
 	rm -f sfcbrepos sfcbstage sfcbunstage sfcbuuid sfcb.cfg getSchema.sh sfcb \
 		sfcb.init-redhat sfcb.init-suse sfcb.init-none sfcb-dox.conf \
-                cimXmlParserProcessed.c \
+                cimXmlParserProcessed.c 20_indication.mof \
 		*.gcno *.gcda *.gcov $(MANFILES)
 	rm -rf doc/* coverage/
 

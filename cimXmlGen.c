@@ -45,6 +45,10 @@
 #define SFCB_ASM(x)
 #endif
 
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 256
+#endif
+
 extern const char *instGetClassName(CMPIInstance * ci);
 extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
                                 const char **name, CMPIStatus * rc);

@@ -1,3 +1,8 @@
+2011-08-04  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* cimXmlGen.c:
+	[ 3386391 ] HOST_NAME_MAX undefined
+
 2011-06-27 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

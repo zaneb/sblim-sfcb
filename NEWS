@@ -4,6 +4,7 @@ Changes in 1.3.13
 Bugs fixed: 
 
 - 3386391 HOST_NAME_MAX undefined
+- 3393324 sfcb process abort in IndCIMXMLHandlerInvokeMethod
 
 Changes in 1.3.12
 =================

@@ -549,6 +549,9 @@ static CMPIStatus processSubscription(
       
    _SFCB_TRACE(1,("--- getting new subscription filter"));
    op = CMGetProperty(ci, "filter", &st).value.ref;
+   /* ht key does not contain ns; need to check for it again here */
+   if (interOpNameSpace(op,&st) != 1) _SFCB_RETURN(st);
+
    if (op) {
    key = normalizeObjectPathCharsDup(op);
      if (key) {
@@ -565,6 +568,9 @@ static CMPIStatus processSubscription(
    
    _SFCB_TRACE(1,("--- getting new subscription handle"));
    op = CMGetProperty(ci, "handler", &st).value.ref;
+   /* ht key does not contain ns; need to check for it again here */
+   if (interOpNameSpace(op,&st) != 1) _SFCB_RETURN(st);
+
    if (op) {
    key = normalizeObjectPathCharsDup(op);
      if (key) {

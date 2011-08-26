@@ -1,3 +1,8 @@
+2011-08-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* interopProvider.c:
+	[ 3398337 ] Namespaces of filter and handler for IndSub not checked
+
 2011-08-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c: 

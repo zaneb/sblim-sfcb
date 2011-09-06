@@ -148,6 +148,10 @@ typedef struct _buffer {
  #define USE_INET6
 #endif
 
+#ifdef USE_INET6
+static int fallback_ipv4;
+#endif
+
 void initHttpProcCtl(int p)
 {
    httpProcSemKey=ftok(SFCB_BINARY,'H');
@@ -1256,6 +1260,7 @@ getSocket()
   if (fd < 0) {
     mlogf(M_INFO, M_SHOW, "--- Using IPv4 address\n");
     fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    fallback_ipv4 = 1;
   }
 #else
   fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -1264,53 +1269,74 @@ getSocket()
   return fd;
 }
 
+
+#ifdef USE_INET6
+static struct sockaddr *
+prepSockAddr6(int port, void *ssin, socklen_t * sin_len)
+{
+  struct sockaddr_in6 *sin = ssin;
+
+  *sin_len = sizeof(*sin);
+  memset(sin, 0, *sin_len);
+
+  sin->sin6_family = AF_INET6;
+  if (httpLocalOnly)
+    sin->sin6_addr = in6addr_loopback;
+  else
+    sin->sin6_addr = in6addr_any;
+  sin->sin6_port = htons(port);
+
+  return (struct sockaddr *) sin;
+}
+#endif
+
+
+static struct sockaddr *
+prepSockAddr4(int port, void *ssin, socklen_t * sin_len)
+{
+  struct sockaddr_in *sin = ssin;
+
+  *sin_len = sizeof(*sin);
+  memset(sin, 0, *sin_len);
+	
+  sin->sin_family = AF_INET;
+  if (httpLocalOnly) {
+    const char *loopback_int = "127.0.0.1";
+    inet_aton(loopback_int, &(sin->sin_addr));
+  } else
+    sin->sin_addr.s_addr = INADDR_ANY;
+  sin->sin_port = htons(port);
+
+  return (struct sockaddr *) sin;
+}
+
+
 static int
 bindToPort(int sock, int port, void *ssin, socklen_t * sin_len)
 {
+  struct sockaddr *sin;
+
+  if (sock < 0)
+    return 1;
+
+  if (getControlBool("httpLocalOnly", &httpLocalOnly))
+    httpLocalOnly = 0;
 
 #ifdef USE_INET6
-  struct sockaddr_in6 *sin = ssin;
-#else
-  struct sockaddr_in *sin = ssin;
+  if (!fallback_ipv4)
+    sin = prepSockAddr6(port, ssin, sin_len);
+  else
 #endif
+    sin = prepSockAddr4(port, ssin, sin_len);
 
-  *sin_len = sizeof(*sin);
-
-  memset(sin, 0, *sin_len);
-
-  if (sock >= 0) {
-    if (getControlBool("httpLocalOnly", &httpLocalOnly))
-      httpLocalOnly = 0;
-
-#ifdef USE_INET6
-    sin->sin6_family = AF_INET6;
-    if (httpLocalOnly)
-      sin->sin6_addr = in6addr_loopback;
-    else
-      sin->sin6_addr = in6addr_any;
-    sin->sin6_port = htons(port);
-#else
-    sin->sin_family = AF_INET;
-    if (httpLocalOnly) {
-      const char     *loopback_int = "127.0.0.1";
-      inet_aton(loopback_int, &(sin->sin_addr));
-    } else
-      sin->sin_addr.s_addr = INADDR_ANY;
-    sin->sin_port = htons(port);
-#endif
-
-    if (bind(sock, (struct sockaddr *) sin, *sin_len) || listen(sock, 10)) {
-      mlogf(M_ERROR, M_SHOW, "--- Cannot listen on port %ld (%s)\n", port,
-            strerror(errno));
-      sleep(1);
-      return 1;
-    }
-
-    return 0;
-
+  if (bind(sock, sin, *sin_len) || listen(sock, 10)) {
+    mlogf(M_ERROR, M_SHOW, "--- Cannot listen on port %ld (%s)\n", port,
+          strerror(errno));
+    sleep(1);
+    return 1;
   }
 
-  return 1;
+  return 0;
 }
 
 #ifdef HAVE_UDS

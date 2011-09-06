@@ -1,3 +1,9 @@
+2011-09-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* httpAdapter.c:
+	[ 3400114 ] sfcb fails to start with ipv6 disabled
+	Patch from kkaempf
+
 2011-08-25  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopProvider.c:

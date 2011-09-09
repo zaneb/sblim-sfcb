@@ -490,6 +490,7 @@ file /usr/local/etc/sfcb/sfcb.cfg. For example:
 	doBasicAuth:    false
 	basicAuthLib:   sfcBasicAuthentication
 	useChunking:    true
+    selectTimeout:  5
 	keepaliveTimeout: 0
 	keepaliveMaxRequest: 10
 	sslKeyFilePath: /usr/local/etc/sfcb/file.pem
@@ -554,8 +555,14 @@ enableSlp
         sfcb should/not advertise wbem services with the DA
         Default=true
 
+selectTimeout
+	Specify the maximum time in seconds for the HTTP select to complete.
+	Default is 5 seconds.
+
 slpRefreshInterval
 	timeinterval in seconds in which the slp process refreshes information
+
+
 
 keepaliveTimeout
         Specify the maximum time in seconds an sfcb HTTP process will wait

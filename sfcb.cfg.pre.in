@@ -58,6 +58,10 @@ doBasicAuth:    @SFCB_CONF_DOBASICAUTH@
 ## Default is: sfcBasicAuthentication
 basicAuthLib:   @SFCB_CONF_BASICAUTHLIB@
 
+## Maximum time in seconds an sfcb HTTP process will wait for select.
+## Default is 5
+#selectTimeout: 5
+
 ## Maximum time in seconds an sfcb HTTP process will wait between two requests
 ## on one connection before terminating. 0 will disable HTTP keep-alive.
 ## Default is 15

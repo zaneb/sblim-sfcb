@@ -88,7 +88,8 @@ static int running=0;
 static long keepaliveTimeout=15;
 static long keepaliveMaxRequest=10;
 static long numRequest;
-struct timeval httpSelectTimeout = {5, 0};  /* 5 sec. timeout for select() before read() */
+static long     selectTimeout = 5; /* default 5 sec. timeout for select() before read() */
+struct timeval httpSelectTimeout = {0, 0};
 
 #if defined USE_SSL
 static SSL_CTX *ctx;
@@ -1566,6 +1567,11 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
     doUdsAuth = 0;
 #endif
 
+  // Get selectTimeout from the config file, or use 5 if not set
+  if (getControlNum("selectTimeout", &selectTimeout))
+    selectTimeout = 5;
+  httpSelectTimeout.tv_sec=selectTimeout;
+
   if (getControlNum("keepaliveTimeout", &keepaliveTimeout))
     keepaliveTimeout = 15;
 
@@ -1632,6 +1638,8 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
     mlogf(M_INFO, M_SHOW,
           "--- Using Unix Socket Peer Cred Authentication\n");
 #endif
+
+  mlogf(M_INFO, M_SHOW, "--- Select timeout: %ld seconds\n",selectTimeout);
 
   if (keepaliveTimeout == 0) {
     mlogf(M_INFO, M_SHOW, "--- Keep-alive timeout disabled\n");

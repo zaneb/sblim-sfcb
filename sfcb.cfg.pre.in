@@ -183,6 +183,11 @@ sslClientTrustStore: @sysconfdir@/sfcb/client.pem
 ## Default is sfcCertificateAuthentication
 certificateAuthLib:   sfcCertificateAuthentication
 
+## List of SSL ciphers to enable.
+## Default is "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH" which disables
+##      weak ciphers.
+sslCiphers: ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH
+
 ##---------------------------------- UDS --------------------------------------
 ## These options only apply if configured with --enable-uds
 

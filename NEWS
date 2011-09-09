@@ -4,6 +4,7 @@ Changes in 1.3.13
 New features:
 
 - 3406823 Make select timeout a config option.
+- 3406825 Make ssl cipher list configurable
 
 Bugs fixed: 
 

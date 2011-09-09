@@ -1421,7 +1421,8 @@ initSSL()
   char           *fnc,
                  *fnk,
                  *fnt,
-                 *fnl;
+                 *fnl,
+                 *sslCiphers;
   int             rc;
   ctx = SSL_CTX_new(SSLv23_method());
   getControlChars("sslCertificateFilePath", &fnc);
@@ -1467,10 +1468,11 @@ initSSL()
   SSL_CTX_set_options(ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 |
                       SSL_OP_SINGLE_DH_USE);
   /*
-   * disable weak ciphers 
+   * Set valid ciphers
    */
-  if (SSL_CTX_set_cipher_list(ctx, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH")
-      != 1)
+  getControlChars("sslCiphers", &sslCiphers);
+  _SFCB_TRACE(1, ("---  sslCiphers = %s", sslCiphers));
+  if (SSL_CTX_set_cipher_list(ctx, sslCiphers) != 1)
     intSSLerror("Error setting cipher list (no valid ciphers)");
 
 }

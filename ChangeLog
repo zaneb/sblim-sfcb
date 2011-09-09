@@ -1,6 +1,11 @@
 2011-09-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c, sfcb.cfg.pre.in, control.c:
+	[ 3406825 ] Make ssl cipher list configurable
+
+2011-09-09 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* httpAdapter.c, sfcb.cfg.pre.in, control.c:
 	[ 3406823 ] Make select timeout a config option.
 
 2011-09-06 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>

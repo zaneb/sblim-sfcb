@@ -126,6 +126,12 @@ else
     PAM_LIBS =
 endif
 
+if ACCOUNT_PASSTHRU
+    ACCOUNT_PASSTHRU_LIBS = libsfccimAccountPassthroughProvider.la 
+else
+    ACCOUNT_PASSTHRU_LIBS = 
+endif
+
 sfcb_sharedobjects = \
    $(sfcblibdir)/*.so
 
@@ -151,7 +157,8 @@ sfcblib_LTLIBRARIES = \
    $(QUALREP_LIBS) \
    $(INDICATION_LIBS) \
    $(PAM_LIBS) \
-   $(SLP_HOSTNAME_LIBS)
+   $(SLP_HOSTNAME_LIBS) \
+   $(ACCOUNT_PASSTHRU_LIBS) 
 
 if TEST_ENABLED 
 sfcblib_LTLIBRARIES += \
@@ -332,6 +339,12 @@ libsfcElementCapabilitiesProvider_la_SOURCES = \
 libsfcElementCapabilitiesProvider_la_LIBADD=-lsfcBrokerCore
 libsfcElementCapabilitiesProvider_la_DEPENDENCIES=libsfcBrokerCore.la
 
+if ACCOUNT_PASSTHRU
+libsfccimAccountPassthroughProvider_la_SOURCES = cimAccountPassthroughProvider.c
+libsfccimAccountPassthroughProvider_la_LIBADD=-lsfcBrokerCore
+libsfccimAccountPassthroughProvider_la_DEPENDENCIES=libsfcBrokerCore.la
+endif
+
 libsfcClassProviderGz_la_SOURCES = \
    classProviderGz.c
 libsfcClassProviderGz_la_LIBADD=-lsfcBrokerCore @SFCB_LIBZ@
@@ -454,7 +467,13 @@ EXTRA_DIST=sfcb.cfg.pre.in sfcb.spec sfcbrepos.sh.in sfcbstage.sh.in \
 
 dist_sfcbdata_SCRIPTS=genSslCert.sh getSchema.sh test/stageschema.sh
 
-dist_sfcbdata_DATA=default.reg 10_interop.mof 20_indication.mof indication.mof
+if ACCOUNT_PASSTHRU
+ACCOUNT_PASSTHRU_MOF = cimAccountPassthrough.mof
+else
+ACCOUNT_PASSTHRU_MOF = 
+endif
+
+dist_sfcbdata_DATA=default.reg 10_interop.mof 20_indication.mof indication.mof $(ACCOUNT_PASSTHRU_MOF)
 
 nodist_bin_SCRIPTS=sfcbrepos sfcbstage sfcbunstage sfcbuuid
 
@@ -538,6 +557,9 @@ install-data-local:
 if INDICATIONS
 	$(INSTALL_DATA) $(srcdir)/20_indication.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 	$(INSTALL_DATA) $(srcdir)/indication.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs
+endif
+if ACCOUNT_PASSTHRU
+	$(INSTALL_DATA) $(srcdir)/cimAccountPassthrough.mof $(DESTDIR)$(sfcbstatedir)/stage/mofs/root/interop
 endif
 if DOCS
 	test -d $(DESTDIR)$(sfcbdocdir)/html || $(mkdir_p) $(DESTDIR)$(sfcbdocdir)/html

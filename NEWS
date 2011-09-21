@@ -12,6 +12,7 @@ Bugs fixed:
 - 3393324 sfcb process abort in IndCIMXMLHandlerInvokeMethod
 - 3398337 Namespaces of filter and handler for IndSub not checked
 - 3400114 sfcb fails to start with ipv6 disabled
+- 3412033 New files from 3313833 missed release tarball
 
 Changes in 1.3.12
 =================

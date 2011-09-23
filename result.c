@@ -168,9 +168,9 @@ static CMPIStatus __rft_release(CMPIResult * result)
 {
    NativeResult *nr = (NativeResult*) result;
 
-   free(nr->data);
-   free(nr->resp);
-   free(result);
+   if (nr->data) { free(nr->data); nr->data = NULL; }
+   if (nr->resp) { free(nr->resp); nr->resp = NULL; }
+   if (result) { free(result); result = NULL; }
 
    CMReturn(CMPI_RC_OK);
 }
@@ -284,13 +284,13 @@ static CMPIStatus __rft_returnInstance(const CMPIResult * result,
 
    if (isInst) {
       size=getInstanceSerializedSize(instance);
-      ptr=nextResultBufferPos(r, MSG_SEG_INSTANCE, size);
+      ptr=nextResultBufferPos(r, MSG_SEG_INSTANCE, (unsigned long)size);
       _SFCB_TRACE(1,("--- Moving instance %d",size));
       getSerializedInstance(instance,ptr); /* memcpy inst to ptr */
    }
    else {
       size=getConstClassSerializedSize((CMPIConstClass*)instance);
-      ptr=nextResultBufferPos(r, MSG_SEG_CONSTCLASS, size);
+      ptr=nextResultBufferPos(r, MSG_SEG_CONSTCLASS, (unsigned long)size);
       _SFCB_TRACE(1,("--- Moving class %d",size));
       getSerializedConstClass((CMPIConstClass*)instance,ptr);
    }

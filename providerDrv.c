@@ -2889,6 +2889,7 @@ void processProviderInvocationRequests(char *name)
       _SFCB_TRACE(1, ("--- Waiting for provider request to R%d-%lu",
                    providerSockets.receive,getInode(providerSockets.receive)));
       parms = (Parms *) malloc(sizeof(*parms));
+      memset(parms, 0, sizeof(*parms));
       
       rc = spRecvReq(&providerSockets.receive, &parms->requestor,
                      (void **) &parms->req, &rl, &mqg);

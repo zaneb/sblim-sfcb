@@ -1180,7 +1180,7 @@ static CMPIValue convertFromStringValue(
 {
    char *sval = NULL;
    char *scheck  = NULL;
-   CMPIValue newcval;
+   CMPIValue newcval = {CMPI_null};
 
    _SFCB_ENTER(TRACE_CIMXMLPROC, "convertFromStringValue");
 

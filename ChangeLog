@@ -1,5 +1,8 @@
 2011-09-27  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* cimcClientSfcbLocal.c:
+	[ 3414482 ] Compiler warning in cimcClientSfcbLocal
+
 	* cimXmlRequest.c:
 	[ 3414236 ] updateMethodParamTypes uses incorrect qualifier count
 

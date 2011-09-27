@@ -2037,7 +2037,6 @@ int updateMethodParamTypes(RequestHdr *hdr) {
     if (param && (ptok->type & CMPI_instance)) {
       int isEI = 0;
       int qcount = ClClassGetMethParmQualifierCount(cl, meth, p);
-      fprintf(stderr, "qcount is %d\n", qcount);
       for (; qcount > 0; qcount--) {
         char* qname;
         ClClassGetMethParamQualifierAt(cl, param, (qcount-1), NULL, &qname);

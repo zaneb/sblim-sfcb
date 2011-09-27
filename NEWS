@@ -14,6 +14,7 @@ Bugs fixed:
 - 3400114 sfcb fails to start with ipv6 disabled
 - 3412033 New files from 3313833 missed release tarball
 - 3413031 fixes to perform check before calling free
+- 3414236 updateMethodParamTypes uses incorrect qualifier count
 
 Changes in 1.3.12
 =================

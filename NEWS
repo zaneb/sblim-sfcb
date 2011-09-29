@@ -16,6 +16,7 @@ Bugs fixed:
 - 3413031 fixes to perform check before calling free
 - 3414236 updateMethodParamTypes uses incorrect qualifier count
 - 3414482 Compiler warning in cimcClientSfcbLocal
+- 2727918 blob has leak in EnumQualifiers
 
 Changes in 1.3.12
 =================

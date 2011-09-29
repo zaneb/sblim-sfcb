@@ -357,6 +357,7 @@ CMPIStatus TestInstanceProviderCreateInstance (
                   properties cannot exists. */
                 if(key1.value.uint8 == key2.value.uint8)
                 {
+		  CMRelease(inst);
                     CMReturn (CMPI_RC_ERR_ALREADY_EXISTS);
                 }
             }
@@ -378,6 +379,7 @@ CMPIStatus TestInstanceProviderCreateInstance (
     {
         CMReturn (CMPI_RC_ERR_NOT_SUPPORTED);
     }
+    CMRelease(inst);
     CMReturn (CMPI_RC_OK);
 }
 

@@ -1,5 +1,9 @@
 2011-09-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* providerDrv.c:
+	[ 3416055 ] SIGSEGV sometimes does not print provider name
+	(patch by Klaus Kaempf)
+
 	* brokerUpc.c:
 	[ 3414700 ] assocClass ignored for assoc upcalls
 

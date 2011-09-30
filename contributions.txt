@@ -113,6 +113,7 @@ Klaus Kampf, Novell
 05/27/2010 [ 2984485 ] Possible access to freed memory in cimslpSLP.c
 06/30/2010 [ 2968599 ] Wrong trace msg for invokeMethod (local interface)
 06/09/2011 [ 3047562 ] [patch] Create bzip2 tarballs on "make dist"
+09/30/2011 [ 3416055 ] SIGSEGV sometimes does not print provider name
 
 Mike Brasher, Inova
 -------------------

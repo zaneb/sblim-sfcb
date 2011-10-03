@@ -1,3 +1,8 @@
+2011-10-03  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indication.mof:
+	[ 3416167 ] CIM_InstDeletion not in class repo by default
+
 2011-09-30  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c:

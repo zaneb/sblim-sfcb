@@ -1,3 +1,8 @@
+2011-10-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* indication.mof:
+	[ 3422650 ] Associators calls to IndicationService depends on cmpi-base
+
 2011-10-03  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indication.mof:

@@ -26,3 +26,8 @@ class DMY_InstDeletion : CIM_InstDeletion
 class SFCB_ServiceAffectsElement : CIM_ServiceAffectsElement
 {
 };
+
+// Allows for assocs calls to interopServerProvider (3422650)
+class DMY_System : CIM_System
+{
+};

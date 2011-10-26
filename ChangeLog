@@ -1,3 +1,8 @@
+2011-10-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* providerDrv.c:
+	[ 3428806 ] type=null in authorizeFilter call
+
 2011-10-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* indication.mof:

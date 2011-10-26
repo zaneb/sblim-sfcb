@@ -2146,7 +2146,7 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    CMPIResult *result = native_new_CMPIResult(0,1,NULL);
    CMPIFlags flgs=0;
    int makeActive=0;
-   char *type = NULL;
+   char *type=(char*)req->type.data;
 
    ctx->ft->addEntry(ctx,CMPIInvocationFlags,(CMPIValue*)&flgs,CMPI_uint32);
    ctx->ft->addEntry(ctx,CMPIPrincipal,(CMPIValue*)req->principal.data,CMPI_chars);
@@ -2161,7 +2161,6 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
    if (se==NULL) {
       char *query=(char*)req->query.data;
       char *lang=(char*)req->language.data;
-      type=(char*)req->type.data;
       char *sns=(char*)req->sns.data;
 
       se=(NativeSelectExp*)NewCMPISelectExp(query,lang,sns,NULL,&rci);

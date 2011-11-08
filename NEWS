@@ -8,6 +8,7 @@ Bugs fixed:
 - 3416167 CIM_InstDeletion not in class repo by default
 - 3422650 Associators calls to IndicationService depends on cmpi-base
 - 3428806 type=null in authorizeFilter call
+- 3419721 reset CMPIValue buffer in str2CMPIValue
 
 Changes in 1.3.13
 =================

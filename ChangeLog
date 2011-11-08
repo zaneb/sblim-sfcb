@@ -1,3 +1,8 @@
+2011-11-07 Narasimha Sharoff <nsharoff@us.ibm.com>
+
+	* cimXmlGen.c:
+	[ 3419721 ] reset CMPIValue buffer in str2CMPIValue
+
 2011-10-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerDrv.c:

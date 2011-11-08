@@ -339,6 +339,7 @@ CMPIValue str2CMPIValue(CMPIType type, XtokValue val, XtokValueReference *ref, c
    CMPIValue value;
    CMPIType t = 0;
 
+   memset(&value, 0, sizeof(CMPIValue));
    if (type==0) {
       type=guessType(val.value);
    }

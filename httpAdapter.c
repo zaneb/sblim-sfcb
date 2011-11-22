@@ -962,6 +962,20 @@ static int doHttpRequest(CommHndl conn_fd)
    if (!authorized && !discardInput && doBa) {
 
      if (inBuf.authorization) {
+
+       /* for PAM, client's IP address is used for host-based authentication */
+        struct sockaddr_storage from;
+        socklen_t from_len = sizeof(from);
+        getsockname(conn_fd.socket, (struct sockaddr *)&from, &from_len);
+#ifdef USE_INET6
+        char ipstr[INET6_ADDRSTRLEN] = {0};
+#else
+        char ipstr[INET_ADDRSTRLEN] = {0};
+#endif
+        if (getnameinfo((struct sockaddr*)&from, from_len, ipstr, sizeof(ipstr), NULL, 0, NI_NUMERICHOST) == 0)
+          extras.clientIp = ipstr;
+	//	fprintf(stderr, "client is: %s\n", ipstr);
+
        barc = baValidate(inBuf.authorization,&inBuf.principal,&extras);
 #ifdef ALLOW_UPDATE_EXPIRED_PW
        if (barc == AUTH_EXPIRED) {

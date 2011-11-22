@@ -28,6 +28,14 @@
 
 #define SFCB_PAM_APP "sfcb"
 
+struct auth_extras {
+  void (*release)(pam_handle_t*);
+  char* clientIp;
+  void* authHandle;
+  const char* role;
+};
+typedef struct auth_extras AuthExtras;
+
 static int sfcBasicConv(int num_msg, const struct pam_message **msg,
 			struct pam_response **resp, void *credentials)
 {
@@ -50,7 +58,7 @@ static int sfcBasicConv(int num_msg, const struct pam_message **msg,
 }
 
 
-static int _sfcBasicAuthenticateRemote(char *user, char *pw, char *rhost)
+static int _sfcBasicAuthenticateRemote(char *user, char *pw, AuthExtras *extras)
 {
   struct pam_conv sfcConvStruct = {
     sfcBasicConv,
@@ -61,17 +69,15 @@ static int _sfcBasicAuthenticateRemote(char *user, char *pw, char *rhost)
    
   rc = pam_start(SFCB_PAM_APP, user, &sfcConvStruct, & pamh);
 
+  if (extras && extras->clientIp) {
+    pam_set_item(pamh, PAM_RHOST, extras->clientIp);
+  }
+
   if (rc == PAM_SUCCESS) {
     rc = pam_authenticate(pamh, PAM_SILENT);
   }
 
   if (rc == PAM_SUCCESS) {
-    /* host based authentication not yet supported 
-       - needs client IP address extraction in httpAdapter
-    */
-    if (rhost) {
-      pam_set_item(pamh, PAM_RHOST, rhost);
-    }
     rc = pam_acct_mgmt(pamh, PAM_SILENT);
   }
   if (rc == PAM_SUCCESS) {
@@ -92,4 +98,10 @@ static int _sfcBasicAuthenticateRemote(char *user, char *pw, char *rhost)
 int _sfcBasicAuthenticate(char *user, char *pw)
 {
   return _sfcBasicAuthenticateRemote(user, pw, NULL);
+}
+
+int
+_sfcBasicAuthenticate2(char *user, char *pw, AuthExtras *extras)
+{
+  return _sfcBasicAuthenticateRemote(user, pw, extras);
 }

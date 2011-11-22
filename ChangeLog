@@ -1,7 +1,10 @@
 2011-11-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* httpAdapter.c, sfcBasicPAMAuthentication.c:
+	[ 3367332 ] RHOST Support for PAM
+
 	* control.c, httpAdapter.c, sfcb.cfg.pre.in:
-	[ 3367333 ] New entry point for authentication library
+	[ 3367333 ] New entry point for authentication librarya
 
 2011-11-07 Narasimha Sharoff <nsharoff@us.ibm.com>
 

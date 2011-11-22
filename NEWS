@@ -4,6 +4,7 @@ Changes in 1.3.14
 New features:
 
 - 3367333 New entry point for authentication library
+- 3367332 RHOST Support for PAM
 
 Bugs fixed: 
 

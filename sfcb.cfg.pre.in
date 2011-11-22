@@ -62,6 +62,11 @@ basicAuthLib:   @SFCB_CONF_BASICAUTHLIB@
 ## Default is 5
 #selectTimeout: 5
 
+## Name of the entry point into the authentication library
+## The return code of this function will determine if auth passes or fails
+## Default is: _sfcBasicAuthenticate
+basicAuthEntry: _sfcBasicAuthenticate
+
 ## Maximum time in seconds an sfcb HTTP process will wait between two requests
 ## on one connection before terminating. 0 will disable HTTP keep-alive.
 ## Default is 15

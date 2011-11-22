@@ -86,6 +86,7 @@ Control init[] = {
 #endif
    {"provProcs",        1, "32"},
    {"basicAuthLib",     0, "sfcBasicAuthentication"},
+   {"basicAuthEntry",   0, "_sfcBasicAuthenticate"},
    {"doBasicAuth",      2, "false"},
    {"doUdsAuth",        2, "false"},
    

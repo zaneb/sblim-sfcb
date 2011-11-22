@@ -1,3 +1,8 @@
+2011-11-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* control.c, httpAdapter.c, sfcb.cfg.pre.in:
+	[ 3367333 ] New entry point for authentication library
+
 2011-11-07 Narasimha Sharoff <nsharoff@us.ibm.com>
 
 	* cimXmlGen.c:

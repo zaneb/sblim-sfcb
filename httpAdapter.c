@@ -130,7 +130,16 @@ extern int inet_aton(const char *cp, struct in_addr *inp);
 static unsigned int sessionId;
 extern char *opsName[];
 
-typedef int (*Authenticate)(char* principal, char* pwd);
+struct auth_extras {
+  void* (*release)(void*);
+  char* clientIp;
+  void* authHandle;
+  const char* role;
+};
+typedef struct auth_extras AuthExtras;
+
+typedef int     (*Authenticate) (char *principal, char *pwd);
+typedef int     (*Authenticate2) (char *principal, char *pwd, AuthExtras *extras);
 
 typedef struct _buffer {
    char *data, *content;
@@ -201,14 +210,16 @@ int remProcCtl()
  * Call the authentication library
  * Return 1 on success, 0 on fail, -1 on expired
  */
-int baValidate(char *cred, char **principal)
+int baValidate(char *cred, char **principal, AuthExtras* extras)
 {
    char *auth,*pw=NULL;
    int i;
    static void *authLib=NULL;
    static Authenticate authenticate=NULL;
+   static Authenticate2 authenticate2=NULL;
    char dlName[512];
    int ret = AUTH_FAIL;
+   char *entry;
 
    if (strncasecmp(cred,"basic ",6)) return AUTH_FAIL;
    auth=decode64(cred+6);
@@ -224,19 +235,28 @@ int baValidate(char *cred, char **principal)
       char *ln;
       if (getControlChars("basicAuthlib", &ln)==0) {
          libraryName(NULL,ln,dlName, 512);
-        if ((authLib=dlopen(dlName, RTLD_LAZY))) {
-            authenticate= dlsym(authLib, "_sfcBasicAuthenticate");
+	 if ((authLib = dlopen(dlName, RTLD_LAZY)) && (getControlChars("basicAuthEntry", &entry) == 0)) {
+	   if (strcmp(entry, "_sfcBasicAuthenticate2") == 0)
+	     authenticate2 = dlsym(authLib, entry);
+	   else 
+	     authenticate = dlsym(authLib, entry);
+
          }
-      }
-      if (authenticate == NULL) {
-	mlogf(M_ERROR,M_SHOW,"--- Authentication exit %s not found or dlsym failed\n",dlName);
-	ret = AUTH_FAIL;
       }
    }
 
-   if (authenticate) {
+  if (authenticate2 == NULL && authenticate == NULL) {
+    mlogf(M_ERROR, M_SHOW, "--- Authentication exit %s not found\n",
+	  dlName);
+    ret = AUTH_FAIL;
+  }
+  else {
      *principal=strdup(auth);
-     ret = authenticate(auth,pw);
+     if (authenticate2)
+       ret = authenticate2(auth, pw, extras);
+     else 
+       ret = authenticate(auth, pw);
+
      if (ret == AUTH_PASS)  ret = AUTH_PASS;
      else if (ret == AUTH_EXPIRED)  ret = AUTH_EXPIRED;
      else  ret = AUTH_FAIL;
@@ -937,10 +957,12 @@ static int doHttpRequest(CommHndl conn_fd)
        }
    }
 #endif
+   AuthExtras      extras = {NULL, NULL, NULL};
+
    if (!authorized && !discardInput && doBa) {
 
      if (inBuf.authorization) {
-       barc = baValidate(inBuf.authorization,&inBuf.principal);
+       barc = baValidate(inBuf.authorization,&inBuf.principal,&extras);
 #ifdef ALLOW_UPDATE_EXPIRED_PW
        if (barc == AUTH_EXPIRED) {
  	 hcrFlags |= HCR_EXPIRED_PW;

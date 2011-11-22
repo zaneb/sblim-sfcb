@@ -1,6 +1,10 @@
 Changes in 1.3.14
 =================
 
+New features:
+
+- 3367333 New entry point for authentication library
+
 Bugs fixed: 
 
 - 3414700 assocClass ignored for assoc upcalls

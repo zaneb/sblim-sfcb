@@ -1,3 +1,8 @@
+2011-11-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* interopProvider.c, indCIMXMLHandler.c, instance.c, instance.h:
+	[ 3433733 ] CreationClassNames should be supplied 
+
 2011-11-22 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* cimXmlParser.c, control.c, httpAdapter.c, sfcb.cfg.pre.in:

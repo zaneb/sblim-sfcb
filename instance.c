@@ -956,6 +956,23 @@ static void instFillDefaultProperties(struct native_instance *inst,
 }
 #endif
 
+/*
+  Set the CreationClassName and SystemCreationClassName
+  According to DSP1001, these need not be specified by the client
+  and should be ignored if provided.
+*/
+void
+setCCN(CMPIObjectPath * cop,
+        CMPIInstance *ci,
+        const char * sccn)
+{
+  CMPIString* ccn = CMGetClassName(cop, NULL);
+  CMAddKey(cop, "creationclassname", CMGetCharPtr(ccn), CMPI_chars);
+  CMSetProperty(ci,"creationclassname", CMGetCharPtr(ccn), CMPI_chars);
+  CMAddKey(cop, "systemcreationclassname", sccn, CMPI_chars);
+  CMSetProperty(ci,"systemcreationclassname", sccn, CMPI_chars);
+}
+
 /****************************************************************************/
 
 /*** Local Variables:  ***/

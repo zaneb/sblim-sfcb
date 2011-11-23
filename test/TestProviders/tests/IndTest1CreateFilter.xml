@@ -9,15 +9,16 @@
         </LOCALNAMESPACEPATH>
         <IPARAMVALUE NAME="NewInstance">
           <INSTANCE CLASSNAME="CIM_IndicationFilter">
-            <PROPERTY NAME="SystemCreationClassName" TYPE="string">
-              <VALUE>CIM_ComputerSystem</VALUE>
-            </PROPERTY>
             <PROPERTY NAME="SystemName" TYPE="string">
               <VALUE>localhost.localdomain</VALUE>
+            </PROPERTY>
+            <PROPERTY NAME="SystemCreationClassName" TYPE="string">
+              <VALUE>CIM_ComputerSystem</VALUE>
             </PROPERTY>
             <PROPERTY NAME="CreationClassName" TYPE="string"> 
               <VALUE>CIM_IndicationFilter</VALUE>
             </PROPERTY>
+
             <PROPERTY NAME="Name" TYPE="string"> 
               <VALUE>Test_Indication_Filter_</VALUE>
             </PROPERTY>

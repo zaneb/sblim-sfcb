@@ -25,5 +25,6 @@ int instanceCompare(CMPIInstance *inst1, CMPIInstance *inst2);
 const char *instGetClassName(CMPIInstance * ci);
 const char *instGetNameSpace(CMPIInstance * ci);
 CMPIStatus      filterFlagProperty(CMPIInstance* ci, const char* id);
+void            setCCN(CMPIObjectPath * cop, CMPIInstance *ci, const char * sccn);
 
 #endif

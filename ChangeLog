@@ -1,3 +1,8 @@
+2011-11-22 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* cimXmlParser.c, control.c, httpAdapter.c, sfcb.cfg.pre.in:
+	[ 3435778 ] Preserve leading/trailing whitespace in values
+
 2011-11-22  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c, sfcBasicPAMAuthentication.c:

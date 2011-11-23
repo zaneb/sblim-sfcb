@@ -94,6 +94,11 @@ basicAuthEntry: _sfcBasicAuthenticate
 ## Default is NULL which means no change to the default permission.
 #socketPathGroupPerm: daemon
 
+## Trim leading and trailing whitespace from XML property values. 
+## Whitespace is space, tab, crlf. Any ascii value <= 32.
+## Default is true
+#trimWhitespace:      true
+
 ##---------------------------- Provider-Related -------------------------------
 
 ## Max number of provider processes.  

@@ -92,6 +92,8 @@ Control init[] = {
    
    {"useChunking",      2, "false"},
    {"chunkSize",        1, "50000"},
+
+   {"trimWhitespace",      2, "true"},
    
    {"keepaliveTimeout",        1, "15"},
    {"keepaliveMaxRequest",     1, "10"},

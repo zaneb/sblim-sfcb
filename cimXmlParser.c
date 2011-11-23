@@ -30,6 +30,8 @@
 #include "trace.h"
 
 
+extern int trimws;
+
 static int attrsOk(XmlBuffer * xb, const XmlElement * e, XmlAttr * r,
                    const char *tag, int etag);
 static char *getValue(XmlBuffer * xb, const char *v);
@@ -438,14 +440,17 @@ static char *getContent(XmlBuffer * xb)
    xb->nulledChar = *(xb->cur);
    *(xb->cur) = 0;
 
-   /* skip leading blanks */
-   while (*start && *start<=' ') start++;
-   if (start == NULL) return "";  // should check for *start == NULL instead? start==NULL shouldn't happen, ever.
    end=xb->cur;
-   /* strip trailing blanks */
-   while (*(end-1)<=' ') {
-     *(end-1) = 0;
-     end -= 1;
+
+   if (trimws) {
+    /* skip leading blanks */
+    while (*start && *start<=' ') start++;
+    if (start == NULL) return "";  // should check for *start == NULL instead? start==NULL shouldn't happen, ever.
+    /* strip trailing blanks */
+    while (*(end-1)<=' ') {
+        *(end-1) = 0;
+        end -= 1;
+    }
    }
    /* unescape */
    help = start;

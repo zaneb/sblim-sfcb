@@ -498,6 +498,7 @@ file /usr/local/etc/sfcb/sfcb.cfg. For example:
     sslCiphers: ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH
 	registrationDir: /usr/local/var/lib/sfcb/registration
 	providerDirs: /usr/local/lib/sfcb /usr/local/lib /usr/local/lib/cmpi
+    trimWhitespace: true
 
 Config Option Descriptions
 --------------------------
@@ -639,6 +640,11 @@ traceMask
 traceFile
 	Specify the trace file for sfcb. Can be overriden by setting environment
 	variable SFCB_TRACE_FILE. Default: stderr.
+
+trimWhitespace
+    Trim leading and trailing whitespace from XML property values. 
+    Whitespace is space, tab, crlf. Any ascii value <= 32.
+    Default is true
 
 After making any changes to sfcb.cfg you must restart sfcb or get it to reload
 the config file by typing 

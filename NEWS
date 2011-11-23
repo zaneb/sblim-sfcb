@@ -5,6 +5,7 @@ New features:
 
 - 3367333 New entry point for authentication library
 - 3367332 RHOST Support for PAM
+- 3435778 Preserve leading/trailing whitespace in values
 
 Bugs fixed: 
 

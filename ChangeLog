@@ -1,3 +1,9 @@
+2011-11-30 Narasimha Sharoff <nsharoff@us.ibm.com>
+
+	* cimXmlGen.c, cimXmlGen.h, cimXmlRequest.c, Makefile.am,
+          sqlStatement.c   Added file - utilTypeCk.c
+	[ 3446179 ] Add a feature to validate CMPI types
+
 2011-11-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* interopProvider.c, indCIMXMLHandler.c, instance.c, instance.h:

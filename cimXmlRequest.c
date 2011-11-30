@@ -370,6 +370,29 @@ DESCRIPTION=\"User Account Expired\">\n\
 
 #endif /* ALLOW_UPDATE_EXPIRED_PW */
 
+/* bugzilla 75543 - feature: report type validation errors for str2CMPIValue */
+static RespSegments valErrResponse(RequestHdr * hdr,
+                   BinRequestContext * ctx, int meth)
+{
+   char msg[256];
+   CMPIrc err;
+   switch (ctx->rc) {
+    case CMPI_RC_ERR_INVALID_PARAMETER:
+      hdr->errMsg = strdup("Invalid parameter provided");
+      err = CMPI_RC_ERR_INVALID_PARAMETER;
+      break;
+   default:
+      sprintf(msg, "Internal error - %d\n", ctx->rc);
+      hdr->errMsg = strdup(msg);
+      err = CMPI_RC_ERR_FAILED;
+   }
+   if (meth) return
+      methodErrResponse(hdr,getErrSegment(err,hdr->errMsg));
+   return
+      iMethodErrResponse(hdr,getErrSegment(err,hdr->errMsg));
+}
+
+
 static RespSegments ctxErrResponse(RequestHdr * hdr,
                                           BinRequestContext * ctx, int meth)
 {
@@ -796,6 +819,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    XtokClass *c;
    CMPIData d;
    CMPIParameter pa;
+   CMPIStatus rc = {CMPI_RC_OK, NULL};
    
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokCreateClass *req = (XtokCreateClass *) hdr->cimRequest;
@@ -813,7 +837,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
        d.value.uint64=0;
      } else {
        d.state=CMPI_goodValue;
-       d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
+       d.value=str2CMPIValue(q->type,q->value,NULL,NULL, &rc);
      }
      d.type=q->type;
      ClClassAddQualifier(&cl->hdr, &cl->qualifiers, q->name, d);
@@ -828,7 +852,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
 	d.value.uint64=0;
       } else {
 	d.state=CMPI_goodValue;
-	d.value=str2CMPIValue(p->valueType,p->val.val,&p->val.ref,req->op.nameSpace.data);
+	d.value=str2CMPIValue(p->valueType,p->val.val,&p->val.ref,req->op.nameSpace.data, &rc);
       }       
       d.type=p->valueType;
       propId=ClClassAddProperty(cl, p->name, d, p->referenceClass);
@@ -841,7 +865,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
 	  d.value.uint64=0;
 	} else {
 	  d.state=CMPI_goodValue;
-	  d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
+	  d.value=str2CMPIValue(q->type,q->value,NULL,NULL, &rc);
 	}
 	d.type=q->type;
 	ClClassAddPropertyQualifier(&cl->hdr, prop, q->name, d);
@@ -864,7 +888,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
 	  d.value.uint64=0;
 	} else {
 	  d.state=CMPI_goodValue;
-	  d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
+	  d.value=str2CMPIValue(q->type,q->value,NULL,NULL, &rc);
 	}
 	d.type=q->type;
 	ClClassAddMethodQualifier(&cl->hdr, meth, q->name, d);
@@ -885,7 +909,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
 	     d.value.uint64=0;
 	   } else {
 	     d.state=CMPI_goodValue;
-	     d.value=str2CMPIValue(q->type,q->value,NULL,NULL);
+	     d.value=str2CMPIValue(q->type,q->value,NULL,NULL, &rc);
 	   }
 	   d.type=q->type;
 	   ClClassAddMethParamQualifier(&cl->hdr, parm, q->name, d);
@@ -1218,6 +1242,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    BinResponseHdr *resp;
    CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, 3);
    XtokProperty *p = NULL;
+   CMPIStatus rc = {CMPI_RC_OK, NULL};
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokCreateInstance *req = (XtokCreateInstance *) hdr->cimRequest;
@@ -1228,7 +1253,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    for (p = req->instance.properties.first; p; p = p->next) {
      if (p->val.val.value){
-       val = str2CMPIValue(p->valueType, p->val.val, &p->val.ref,req->op.nameSpace.data);       
+       val = str2CMPIValue(p->valueType, p->val.val, &p->val.ref,req->op.nameSpace.data, &rc);       
        CMSetProperty(inst, p->name, &val, p->valueType);
      }
    }
@@ -1294,6 +1319,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    XtokInstance *xci;
    XtokInstanceName *xco;
    XtokProperty *p = NULL;
+   CMPIStatus rc = {CMPI_RC_OK, NULL};
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokModifyInstance *req = (XtokModifyInstance *) hdr->cimRequest;
@@ -1323,7 +1349,11 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    inst = TrackedCMPIInstance(path, NULL);
    for (p = xci->properties.first; p; p = p->next) {
      if (p->val.val.value) {
-       val = str2CMPIValue(p->valueType, p->val.val, &p->val.ref,req->op.nameSpace.data);
+       val = str2CMPIValue(p->valueType, p->val.val, &p->val.ref,req->op.nameSpace.data, &rc);
+       if (rc.rc != CMPI_RC_OK) { /* bugzilla 75543 */
+          binCtx.rc = rc.rc;
+          _SFCB_RETURN(valErrResponse(hdr, &binCtx, 0));
+       }
        CMSetProperty(inst, p->name, &val, p->valueType);
      }
    }
@@ -2076,6 +2106,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, 5);
    CMPIArgs *in=TrackedCMPIArgs(NULL);
    XtokParamValue *p;
+   CMPIStatus st = {CMPI_RC_OK, NULL};
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokMethodCall *req = (XtokMethodCall *) hdr->cimRequest;
@@ -2108,7 +2139,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
      }
       
       if (p->value.value) {
-	CMPIValue val = str2CMPIValue(p->type, p->value, &p->valueRef, req->op.nameSpace.data);
+	CMPIValue val = str2CMPIValue(p->type, p->value, &p->valueRef, req->op.nameSpace.data, &st);
 	CMAddArg(in, p->name, &val, p->type);
       }
    }
@@ -2262,6 +2293,7 @@ static RespSegments setProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    SetPropertyReq sreq = BINREQ(OPS_SetProperty, 3);
+   CMPIStatus st = {CMPI_RC_OK, NULL};
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokSetProperty *req = (XtokSetProperty *) hdr->cimRequest;
@@ -2288,7 +2320,7 @@ static RespSegments setProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
       t = req->newVal.type;
    }
    if (t != CMPI_null) {
-      val = str2CMPIValue(t, req->newVal.val, &req->newVal.ref, req->op.nameSpace.data);
+      val = str2CMPIValue(t, req->newVal.val, &req->newVal.ref, req->op.nameSpace.data, &st);
       CMSetProperty(inst, req->propertyName, &val, t);
    }
    else {
@@ -2516,6 +2548,7 @@ static RespSegments setQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    SetQualifierReq sreq = BINREQ(OPS_SetQualifier, 3);
+   CMPIStatus rc = {CMPI_RC_OK, NULL};
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokSetQualifier *req = (XtokSetQualifier *) hdr->cimRequest;
@@ -2552,7 +2585,7 @@ static RespSegments setQualifier(CimXmlRequestContext * ctx, RequestHdr * hdr)
            		"ISARRAY attribute and default value conflict")));   			
 		
 		d.value=str2CMPIValue(d.type, req->qualifierdeclaration.data.value,
-			(XtokValueReference *)&req->qualifierdeclaration.data.valueArray, NULL);		
+			(XtokValueReference *)&req->qualifierdeclaration.data.valueArray, NULL, &rc);		
 		ClQualifierAddQualifier(&q->hdr, &q->qualifierData, req->qualifierdeclaration.name, d);		
      } else { //no default value - rely on ISARRAY attr, check if it's set
      	/*if(!req->qualifierdeclaration.isarrayIsSet)

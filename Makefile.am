@@ -235,6 +235,7 @@ libsfcBrokerCore_la_SOURCES = \
     cimXmlGen.c \
     mrwlock.c \
     mlog.c \
+    utilTypeCk.c \
     $(JDBC_FILES) \
     $(QUALREP_FILES)
 

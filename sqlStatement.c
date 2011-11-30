@@ -57,7 +57,7 @@ extern CMPIConstClass *relocateSerializedConstClass(void *area);
 extern CMPIConstClass *getConstClass(const char *ns, const char *cn);
 extern CMPIConstClass initConstClass(ClClass *cl);
 extern MsgSegment setConstClassMsgSegment(CMPIConstClass * cl);
-extern CMPIValue str2CMPIValue(CMPIType type, const char *val, XtokValueReference *ref);
+extern CMPIValue str2CMPIValue(CMPIType type, const char *val, XtokValueReference *ref, CMPIStatus *status);
 extern MsgSegment setInstanceMsgSegment(CMPIInstance * ci);
 extern CMPIStatus arraySetElementNotTrackedAt(CMPIArray * array, CMPICount index, CMPIValue * val, CMPIType type);
 extern void closeProviderContext(BinRequestContext * ctx);
@@ -2528,6 +2528,7 @@ CMPIEnumeration * enumInstances(const char * ns, const char * cn) {
 
 int  createInstance(const char * ns, const char * cn, UtilList * ins) {
 	RequestHdr * hdr = NULL;
+        CMPIStatus rc = {CMPI_RC_OK, NULL};
    	
    	XtokCreateInstance reqq;
 	reqq.op.count = 2;
@@ -2565,7 +2566,7 @@ int  createInstance(const char * ns, const char * cn, UtilList * ins) {
 	
 	for(el = (ExpressionLight*)ins->ft->getFirst(ins);el;el = (ExpressionLight*)ins->ft->getNext(ins)){	
 		//printf(" %s %s \n", el->value,el->name);
-		val = str2CMPIValue(el->sqltype==CMPI_string?CMPI_chars:el->sqltype, el->value,NULL);//refernzen bis auf weiteres nicht unterstuetzt
+		val = str2CMPIValue(el->sqltype==CMPI_string?CMPI_chars:el->sqltype, el->value,NULL, &rc);//refernzen bis auf weiteres nicht unterstuetzt
 		CMSetProperty(inst, el->name, &val, el->sqltype==CMPI_string?CMPI_chars:el->sqltype);
 	}
 	
@@ -2630,6 +2631,7 @@ int createClass(const char * ns, const char * cn, const char * scn, UtilList * c
    	CreateClassReq sreq = BINREQ(OPS_CreateClass, 3);
    
    	CMPIData d;
+        CMPIStatus rc = {CMPI_RC_OK, NULL};
    	
    
    	memset(&binCtx,0,sizeof(BinRequestContext));
@@ -2643,7 +2645,7 @@ int createClass(const char * ns, const char * cn, const char * scn, UtilList * c
 //   	qs=&c->qualifiers;
 //   	for (q=qs->first; q; q=q->next) {
 //      	d.state=CMPI_goodValue;
-//      	d.value=str2CMPIValue(q->type,q->value,NULL);
+//      	d.value=str2CMPIValue(q->type,q->value,NULL, &rc);
 //      	d.type=q->type;
 //      	ClClassAddQualifier(&cl->hdr, &cl->qualifiers, q->name, d);
 //   	}
@@ -2656,7 +2658,7 @@ int createClass(const char * ns, const char * cn, const char * scn, UtilList * c
 	      	ClProperty *prop;
 	      	int propId;
 	      	d.state=CMPI_goodValue;
-	      	//d.value=//str2CMPIValue(col->colSQLType,NULL,NULL);       
+	      	//d.value=//str2CMPIValue(col->colSQLType,NULL,NULL, &rc);      
 	      	d.type=col->colSQLType;
                 propId = ClClassAddProperty(cl, col->colName, d, NULL); // (cl, p->name,
 	//      	qs=&p->val.qualifiers;
@@ -2667,7 +2669,7 @@ int createClass(const char * ns, const char * cn, const char * scn, UtilList * c
 	         	if(col->isKey==KEY){//bug im sfcb: d.value wird ignoriert und immer true reingeschrieben
 	         		d.state=CMPI_goodValue;
 	         		//printf("::: %d %s\n",col->isKey,col->isKey==KEY?"true":"false");
-	         		d.value=str2CMPIValue(CMPI_boolean,col->isKey==KEY?"true":"false",NULL);
+	         		d.value=str2CMPIValue(CMPI_boolean,col->isKey==KEY?"true":"false",NULL, &rc);
 	         		d.type=CMPI_boolean;
 	         		ClClassAddPropertyQualifier(&cl->hdr, prop, "Key", d);
 	         	}
@@ -2836,6 +2838,7 @@ CMPIValue * string2cmpival(const char * value, int type){
 
 int deleteInstance(const char * ns, const char * cn, UtilList *al) {
    	RequestHdr * hdr = NULL;
+        CMPIStatus rc = {CMPI_RC_OK, NULL};
    	
     XtokDeleteInstance reqq;
 	reqq.op.count = 2;
@@ -2870,7 +2873,7 @@ int deleteInstance(const char * ns, const char * cn, UtilList *al) {
         //valp = getKeyValueTypePtr(type2cmpiString(el->sqltype),el->value,NULL,&val,&type); //type ist char* !!!!!
       	//hier muss ich den valp selber bauen. denn diese getKey... 
       	//arbeitet nur mit strings sauber siehe
-      	 //val = str2CMPIValue(el->value,el->sqltype,NULL);
+      	 //val = str2CMPIValue(el->value,el->sqltype,NULL, &rc);
       	//printf("%s %s %d\n",el->name,el->value,el->sqltype);
       	CMAddKey(path, el->name, string2cmpival(el->value,el->sqltype),el->sqltype);
       	//printf("%s \n",el->value);
@@ -2927,6 +2930,7 @@ int updateInstance(const char * ns, const char * cn, UtilList *al,UtilList *kl) 
 	
    	CMPIObjectPath *path;
    	CMPIInstance *inst;
+        CMPIStatus rc = {CMPI_RC_OK, NULL};
    	
       
    	int irc, i, sreqSize=sizeof(ModifyInstanceReq)-sizeof(MsgSegment);
@@ -2954,7 +2958,7 @@ int updateInstance(const char * ns, const char * cn, UtilList *al,UtilList *kl) 
    	for (el = (ExpressionLight*)kl->ft->getFirst(kl);el;el=(ExpressionLight*)kl->ft->getNext(kl)) {
       	//printf("a\n");
       	//printf("key: %s %s %d\n",el->name,el->value,el->sqltype);
-      	//val = str2CMPIValue(el->value,el->sqltype,NULL);
+      	//val = str2CMPIValue(el->value,el->sqltype,NULL, &rc);
       	//printf("b\n");
       	CMAddKey(path, el->name, string2cmpival(el->value,el->sqltype),el->sqltype);
    	}

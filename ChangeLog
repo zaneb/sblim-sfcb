@@ -1,7 +1,13 @@
+2011-12-11 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* test/xmltest/SAE*
+	[ 3433733 ] CreationClassNames should be supplied 
+	test case issues
+
 2011-11-30 Narasimha Sharoff <nsharoff@us.ibm.com>
 
 	* cimXmlGen.c, cimXmlGen.h, cimXmlRequest.c, Makefile.am,
-          sqlStatement.c   Added file - utilTypeCk.c
+	sqlStatement.c   Added file - utilTypeCk.c
 	[ 3446179 ] Add a feature to validate CMPI types
 
 2011-11-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>

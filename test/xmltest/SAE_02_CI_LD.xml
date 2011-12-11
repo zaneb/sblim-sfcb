@@ -9,14 +9,8 @@
           </LOCALNAMESPACEPATH>
           <IPARAMVALUE NAME="NewInstance">
               <INSTANCE CLASSNAME="CIM_ListenerDestinationCIMXML">
-                <PROPERTY NAME="SystemCreationClassName" TYPE="string">
-                  <VALUE>CIM_ComputerSystem</VALUE>
-                </PROPERTY>
                 <PROPERTY NAME="SystemName" TYPE="string">
                   <VALUE>localhost</VALUE>
-                </PROPERTY>
-                <PROPERTY NAME="CreationClassName" TYPE="string">
-                  <VALUE>CIM_ListenerDestination</VALUE>
                 </PROPERTY>
                 <PROPERTY NAME="Destination" TYPE="string">
                   <VALUE>CIM_ListenerDestination</VALUE>

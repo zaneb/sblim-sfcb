@@ -55,6 +55,7 @@ extern CMPIData opGetKeyCharsAt(CMPIObjectPath * cop, unsigned int index,
 extern CMPIData __ift_internal_getPropertyAt(const CMPIInstance * ci, 
 					     CMPICount i, char ** name,
 					     CMPIStatus * rc, int readonly);
+extern int invalid_uint(const char *v, const CMPIType type);
 
 
 const char *opGetClassNameChars(CMPIObjectPath * cop);

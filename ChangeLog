@@ -1,3 +1,8 @@
+2012-01-26 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* interopProvider.c, indCIMXMLHandler.c, indRetryTest.sh
+	[ 3478933 ] Sequence Number reset issues
+
 2012-01-25 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* providerMgr.c

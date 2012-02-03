@@ -20,12 +20,12 @@
    unload: never
    namespace: root/interop
 #
-[$ProfileProvider$]
-   provider: ProfileProvider
-   location: sfcProfileProvider
-   type: instance method
-   unload: never
-   namespace: root/interop
+@LOAD_PROFILE_PROVIDER@[$ProfileProvider$]
+@LOAD_PROFILE_PROVIDER@   provider: ProfileProvider
+@LOAD_PROFILE_PROVIDER@   location: sfcProfileProvider
+@LOAD_PROFILE_PROVIDER@   type: method
+@LOAD_PROFILE_PROVIDER@   unload: never
+@LOAD_PROFILE_PROVIDER@   namespace: root/interop
 #
 @LOAD_QUALIFIER_PROVIDER@[$QualifierProvider$]
 @LOAD_QUALIFIER_PROVIDER@   provider: QualifierProvider
@@ -78,10 +78,9 @@
 @LOAD_SFCBACCOUNT_PROVIDER@   parameters: AccountClass=root/cimv2:cim_account
 #
 [SFCB_RegisteredProfile]
-   provider: ProfileProvider
-   location: sfcProfileProvider
+   provider: InternalProvider
+   location: sfcInternalProvider
    type: instance
-   unload: never
    namespace: root/interop
 #
 [CIM_Namespace]

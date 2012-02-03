@@ -61,232 +61,7 @@ char           *https_attr = "NULL";
 
 static const CMPIBroker *_broker;
 
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIContext *
-prepareUpcall(const CMPIContext *ctx)
-{
-  /*
-   * used to invoke the internal provider in upcalls, otherwise we will be 
-   * routed here again
-   */
-  CMPIContext    *ctxLocal;
-  ctxLocal = native_clone_CMPIContext(ctx);
-  CMPIValue       val;
-  val.string = sfcb_native_new_CMPIString("$DefaultProvider$", NULL, 0);
-  ctxLocal->ft->addEntry(ctxLocal, "rerouteToProvider", &val, CMPI_string);
-  return ctxLocal;
-}
-
-
-/*
- * --------------------------------------------------------------------------
- */
-/*
- * Instance Provider Interface 
- */
-/*
- * --------------------------------------------------------------------------
- */
-
-CMPIStatus
-ProfileProviderCleanup(CMPIInstanceMI * mi,
-                       const CMPIContext *ctx, CMPIBoolean terminate)
-{
-  CMPIStatus      st = { CMPI_RC_OK, NULL };
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderCleanup");
-#ifdef HAVE_SLP
-  // Tell SLP update thread that we're shutting down
-  _SFCB_TRACE(1, ("--- Stopping SLP thread"));
-  pthread_kill(slpUpdateThread, SIGUSR2);
-  // Wait for thread to complete
-  pthread_join(slpUpdateThread, NULL);
-  _SFCB_TRACE(1, ("--- SLP Thread stopped"));
-#endif // HAVE_SLP
-  _SFCB_RETURN(st);
-}
-
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIStatus
-ProfileProviderEnumInstanceNames(CMPIInstanceMI * mi,
-                                 const CMPIContext *ctx,
-                                 const CMPIResult *rslt,
-                                 const CMPIObjectPath * ref)
-{
-  CMPIStatus      st = { CMPI_RC_OK, NULL };
-  CMPIEnumeration *enm;
-  CMPIContext    *ctxLocal;
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderEnumInstanceNames");
-
-  ctxLocal = prepareUpcall((CMPIContext *) ctx);
-  enm = _broker->bft->enumerateInstanceNames(_broker, ctxLocal, ref, &st);
-  CMRelease(ctxLocal);
-
-  while (enm && enm->ft->hasNext(enm, &st)) {
-    CMReturnObjectPath(rslt, (enm->ft->getNext(enm, &st)).value.ref);
-  }
-  if (enm)
-    CMRelease(enm);
-  _SFCB_RETURN(st);
-}
-
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIStatus
-ProfileProviderEnumInstances(CMPIInstanceMI * mi,
-                             const CMPIContext *ctx,
-                             const CMPIResult *rslt,
-                             const CMPIObjectPath * ref,
-                             const char **properties)
-{
-  CMPIStatus      st = { CMPI_RC_OK, NULL };
-  CMPIEnumeration *enm;
-  CMPIContext    *ctxLocal;
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderEnumInstances");
-
-  ctxLocal = prepareUpcall((CMPIContext *) ctx);
-  enm =
-      _broker->bft->enumerateInstances(_broker, ctxLocal, ref, properties,
-                                       &st);
-  CMRelease(ctxLocal);
-
-  while (enm && enm->ft->hasNext(enm, &st)) {
-    CMReturnInstance(rslt, (enm->ft->getNext(enm, &st)).value.inst);
-  }
-  if (enm)
-    CMRelease(enm);
-  _SFCB_RETURN(st);
-}
-
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIStatus
-ProfileProviderGetInstance(CMPIInstanceMI * mi,
-                           const CMPIContext *ctx,
-                           const CMPIResult *rslt,
-                           const CMPIObjectPath * cop,
-                           const char **properties)
-{
-
-  CMPIStatus      st = { CMPI_RC_OK, NULL };
-  CMPIContext    *ctxLocal;
-  CMPIInstance   *ci;
-
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderGetInstance");
-
-  ctxLocal = prepareUpcall((CMPIContext *) ctx);
-
-  ci = _broker->bft->getInstance(_broker, ctxLocal, cop, properties, &st);
-  if (st.rc == CMPI_RC_OK) {
-    CMReturnInstance(rslt, ci);
-  }
-
-  CMRelease(ctxLocal);
-
-  _SFCB_RETURN(st);
-
-}
-
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIStatus
-ProfileProviderCreateInstance(CMPIInstanceMI * mi,
-                              const CMPIContext *ctx,
-                              const CMPIResult *rslt,
-                              const CMPIObjectPath * cop,
-                              const CMPIInstance *ci)
-{
-  CMPIStatus      st = { CMPI_RC_OK, NULL };
-  CMPIContext    *ctxLocal;
-  //cimomConfig     cfg;
-
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderCreateInstance");
-
-  ctxLocal = prepareUpcall((CMPIContext *) ctx);
-  CMReturnObjectPath(rslt,
-                     _broker->bft->createInstance(_broker, ctxLocal, cop,
-                                                  ci, &st));
-  CMRelease(ctxLocal);
-#ifdef HAVE_SLP
-  //updateSLPRegistration
-  updateSLPReg(ctx, slpLifeTime);
-#endif // HAVE_SLP
-
-  _SFCB_RETURN(st);
-}
-
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIStatus
-ProfileProviderModifyInstance(CMPIInstanceMI * mi,
-                              const CMPIContext *ctx,
-                              const CMPIResult *rslt,
-                              const CMPIObjectPath * cop,
-                              const CMPIInstance *ci,
-                              const char **properties)
-{
-  CMPIStatus      st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderModifyInstance");
-  _SFCB_RETURN(st);
-}
-
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIStatus
-ProfileProviderDeleteInstance(CMPIInstanceMI * mi,
-                              const CMPIContext *ctx,
-                              const CMPIResult *rslt,
-                              const CMPIObjectPath * cop)
-{
-  CMPIStatus      st = { CMPI_RC_OK, NULL };
-  CMPIContext    *ctxLocal;
-
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderDeleteInstance");
-
-  ctxLocal = prepareUpcall((CMPIContext *) ctx);
-  st = _broker->bft->deleteInstance(_broker, ctxLocal, cop);
-  CMRelease(ctxLocal);
-#ifdef HAVE_SLP
-  //updateSLPRegistration
-  updateSLPReg(ctx, slpLifeTime);
-#endif // HAVE_SLP
-
-  _SFCB_RETURN(st);
-}
-
-/*
- * ------------------------------------------------------------------------- 
- */
-
-CMPIStatus
-ProfileProviderExecQuery(CMPIInstanceMI * mi,
-                         const CMPIContext *ctx,
-                         const CMPIResult *rslt,
-                         const CMPIObjectPath * cop,
-                         const char *lang, const char *query)
-{
-  CMPIStatus      st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderExecQuery");
-  _SFCB_RETURN(st);
-}
-
-CMPIStatus
-ProfileProviderInvokeMethod(CMPIMethodMI * mi,
+CMPIStatus ProfileProviderInvokeMethod(CMPIMethodMI * mi,
                          const CMPIContext *ctx,
                          const CMPIResult *rslt,
                          const CMPIObjectPath * ref,
@@ -303,11 +78,18 @@ ProfileProviderInvokeMethod(CMPIMethodMI * mi,
 CMPIStatus ProfileProviderMethodCleanup(CMPIMethodMI * mi,  
 					const CMPIContext * ctx, CMPIBoolean terminate)  
 {  
-  CMPIStatus st = { CMPI_RC_OK, NULL };  
-  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderMethodCleanup");  
-  _SFCB_RETURN(st);  
+  CMPIStatus      st = { CMPI_RC_OK, NULL };
+  _SFCB_ENTER(TRACE_INDPROVIDER, "ProfileProviderCleanup");
+#ifdef HAVE_SLP
+  // Tell SLP update thread that we're shutting down
+  _SFCB_TRACE(1, ("--- Stopping SLP thread"));
+  pthread_kill(slpUpdateThread, SIGUSR2);
+  // Wait for thread to complete
+  pthread_join(slpUpdateThread, NULL);
+  _SFCB_TRACE(1, ("--- SLP Thread stopped"));
+#endif // HAVE_SLP
+  _SFCB_RETURN(st);
 }
-
 
 #ifdef HAVE_SLP
 #define UPDATE_SLP_REG  spawnUpdateThread(ctx)
@@ -474,17 +256,8 @@ spawnUpdateThread(const CMPIContext *ctx)
 #else // no HAVE_SLP
 #define UPDATE_SLP_REG CMNoHook
 #endif // HAVE_SLP
-/*
- * ------------------------------------------------------------------ *
- * Instance MI Factory NOTE: This is an example using the convenience
- * macros. This is OK as long as the MI has no special requirements, i.e.
- * to store data between calls.
- * ------------------------------------------------------------------ 
- */
 
-//CMInstanceMIStub(ProfileProvider, ProfileProvider, _broker, CMNoHook);
-CMInstanceMIStub(ProfileProvider, ProfileProvider, _broker, UPDATE_SLP_REG);
-CMMethodMIStub(ProfileProvider, ProfileProvider, _broker, CMNoHook);
+CMMethodMIStub(ProfileProvider, ProfileProvider, _broker, UPDATE_SLP_REG);
 
 /* MODELINES */
 /* DO NOT EDIT BELOW THIS COMMENT */

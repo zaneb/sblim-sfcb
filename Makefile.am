@@ -132,6 +132,12 @@ else
     ACCOUNT_PASSTHRU_LIBS = 
 endif
 
+if SLP
+    PROFILE_PROVIDER_LIBS = libsfcProfileProvider.la
+else
+    PROFILE_PROVDIER_LIBS = 
+endif
+
 sfcb_sharedobjects = \
    $(sfcblibdir)/*.so
 
@@ -142,7 +148,7 @@ sfcblib_LTLIBRARIES = \
    libsfcInternalProvider.la \
    libsfcInteropProvider.la \
    libsfcInteropServerProvider.la \
-   libsfcProfileProvider.la \
+   $(PROFILE_PROVIDER_LIBS) \
    libsfcElementCapabilitiesProvider.la \
    libsfcClassProvider.la \
    libsfcClassProviderGz.la \
@@ -170,24 +176,11 @@ sfcblib_LTLIBRARIES += \
    libTestIndicationProvider.la
 endif
 
-# if SLP_ALONE
-# SLP_PROGRAMFILES = cimslp
-# cimslp_SOURCES = \
-# 	cimslp.c \
-# 	cimslpCMPI.c \
-# 	cimslpSLP.c \
-# 	cimslpUtil.c 
-# 
-# cimslp_LDADD=-lslp -lcmpisfcc -lsfcBrokerCore
-# else
-SLP_PROGRAMFILES = 
-# endif
-
 sbin_PROGRAMS = \
    sfcbd 
 
 bin_PROGRAMS = \
-   sfcbmofpp sfcbdump sfcbinst2mof $(SLP_PROGRAMFILES)
+   sfcbmofpp sfcbdump sfcbinst2mof
 
 noinst_PROGRAMS = \
    sfcbdumpP32onI32 classSchema2c
@@ -329,9 +322,7 @@ libsfcIndCIMXMLHandler_la_LIBADD=-lsfcBrokerCore -lsfcInternalProvider $(CIMXMLC
 libsfcIndCIMXMLHandler_la_DEPENDENCIES=libsfcBrokerCore.la libsfcInternalProvider.la \
 	$(CIMXMLCODEC_LIBS) $(HTTP_ADAPTER_LIBS)
 
-libsfcProfileProvider_la_SOURCES = \
-   profileProvider.c \
-   $(SLP_SRC)
+libsfcProfileProvider_la_SOURCES =  $(SLP_SRC)
 libsfcProfileProvider_la_LIBADD=-lsfcBrokerCore 
 libsfcProfileProvider_la_DEPENDENCIES=libsfcBrokerCore.la 
 
@@ -413,7 +404,8 @@ libsfcCimXmlCodec_la_DEPENDENCIES=libsfcBrokerCore.la
 endif
 
 if SLP
-SLP_SRC = cimslp.c \
+SLP_SRC = profileProvider.c \
+          cimslp.c \
           cimslpCMPI.c \
           cimslpSLP.c \
           cimslpUtil.c
@@ -423,6 +415,7 @@ SLP_INC = cimslp.h \
           cimslpUtil.h
 
 else
+SLP_SRC =
 SLP_INC =
 endif
 

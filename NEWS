@@ -19,6 +19,7 @@ Bugs fixed:
 - 3419721 reset CMPIValue buffer in str2CMPIValue
 - 3478930 Handle SIGPIPE in providerMgr
 - 3478933 Sequence Number reset issues
+- 3483294 InternalProvider Should Handle SFCB_RegisteredProfile
 
 Changes in 1.3.13
 =================

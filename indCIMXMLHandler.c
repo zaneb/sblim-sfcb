@@ -60,6 +60,8 @@ static int interOpNameSpace(const CMPIObjectPath *cop, CMPIStatus *st)
    }
    return 1;
 }
+
+int RIEnabled=-1;
    
 /* ------------------------------------------------------------------ *
  * Instance MI Cleanup
@@ -375,6 +377,8 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
       strftime(gtime, 15, "%Y%m%d%H%M%S", &cttm);
     }
 
+    // Even though reliable indications may be disabled, we need to do this 
+    // in case it ever gets enabled.
     // Get the IndicationService name
     CMPIObjectPath * isop = CMNewObjectPath(_broker, "root/interop", "CIM_IndicationService", NULL);
     CMPIEnumeration * isenm = _broker->bft->enumerateInstances(_broker, ctx, isop, NULL, NULL);
@@ -846,53 +850,60 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
    if (interOpNameSpace(ref,&st)==0) _SFCB_RETURN(st);
    
    if (strcasecmp(methodName, "_deliver") == 0) {     
-
-      // Set the indication sequence values
+      // On the first indication, check if reliable indications are enabled.
+      if (RIEnabled == -1) {
+        CMPIObjectPath *op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
+        CMPIEnumeration *isenm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, NULL);
+        CMPIData isinst=CMGetNext(isenm,NULL);
+        CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",NULL);
+        RIEnabled=mc.value.uint16;
+      }
       CMPIInstance *indo=CMGetArg(in,"indication",NULL).value.inst;
       CMPIInstance *ind=CMClone(indo,NULL);
-      CMPIObjectPath * iop=CMGetObjectPath(ind,NULL);
-      CMPIInstance *sub=CMGetArg(in,"subscription",NULL).value.inst;
-      CMPIObjectPath * subop=CMGetObjectPath(sub,NULL);
-      CMPIData handler=CMGetProperty(sub, "Handler", &st);
-      CMPIObjectPath *hop=handler.value.ref;
-      CMPIContext    *ctxLocal = prepareUpcall((CMPIContext *) ctx);
-      CMPIInstance *hdlr=CBGetInstance(_broker, ctxLocal, hop, NULL, &st);
-      CMAddKey(iop,"SFCB_IndicationID",&indID,CMPI_uint32);
-      CMSetProperty(ind,"SFCB_IndicationID",&indID,CMPI_uint32);
+      CMPIContext    *ctxLocal=NULL;
+      CMPIObjectPath *iop=NULL,*subop=NULL;
+      CMPIInstance *sub=NULL;
 
-      // Build the complete sequence context
-      // Get the stub from the handler
-      CMPIString *context = CMGetProperty(hdlr, "SequenceContext", &st).value.string;
-      // and add the sfcb start time
-      char *cstr=malloc( (strlen(context->ft->getCharPtr(context,NULL)) + strlen(sfcBrokerStart) + 1) * sizeof(char));
-      sprintf(cstr,"%s%s",context->ft->getCharPtr(context,NULL),sfcBrokerStart);
-      context = sfcb_native_new_CMPIString(cstr, NULL, 0); 
-      // and put it in the indication
-      CMSetProperty(ind, "SequenceContext", &context, CMPI_string);
-      free(cstr);
-      CMRelease(context);
+      if (RIEnabled) {
+        ctxLocal = prepareUpcall((CMPIContext *) ctx);
+        // Set the indication sequence values
+        iop=CMGetObjectPath(ind,NULL);
+        CMAddKey(iop,"SFCB_IndicationID",&indID,CMPI_uint32);
+        CMSetProperty(ind,"SFCB_IndicationID",&indID,CMPI_uint32);
+        sub=CMGetArg(in,"subscription",NULL).value.inst;
+        CMPIData handler=CMGetProperty(sub, "Handler", &st);
+        CMPIObjectPath *hop=handler.value.ref;
+        CMPIInstance *hdlr=CBGetInstance(_broker, ctxLocal, hop, NULL, &st);
+
+        // Build the complete sequence context
+        // Get the stub from the handler
+        CMPIString *context = CMGetProperty(hdlr, "SequenceContext", &st).value.string;
+        // and add the sfcb start time
+        char *cstr=malloc( (strlen(context->ft->getCharPtr(context,NULL)) + strlen(sfcBrokerStart) + 1) * sizeof(char));
+        sprintf(cstr,"%s%s",context->ft->getCharPtr(context,NULL),sfcBrokerStart);
+        context = sfcb_native_new_CMPIString(cstr, NULL, 0); 
+        // and put it in the indication
+        CMSetProperty(ind, "SequenceContext", &context, CMPI_string);
+        free(cstr);
+        CMRelease(context);
   
-      // Get the proper sequence number
-      CMPIValue lastseq = CMGetProperty(hdlr, "LastSequenceNumber", &st).value;
-      lastseq.sint64++;
-      // Handle wrapping of the signed int
-      if (lastseq.sint64 < 0) lastseq.sint64=0;
-      // Update the last used number in the handler
-      CMSetProperty(hdlr, "LastSequenceNumber", &lastseq.sint64, CMPI_sint64);
-      CBModifyInstance(_broker, ctxLocal, hop, hdlr, NULL);
-      // And the indication
-      CMSetProperty(ind, "SequenceNumber", &lastseq, CMPI_sint64);
+        // Get the proper sequence number
+        CMPIValue lastseq = CMGetProperty(hdlr, "LastSequenceNumber", &st).value;
+        lastseq.sint64++;
+        // Handle wrapping of the signed int
+        if (lastseq.sint64 < 0) lastseq.sint64=0;
+        // Update the last used number in the handler
+        CMSetProperty(hdlr, "LastSequenceNumber", &lastseq.sint64, CMPI_sint64);
+        CBModifyInstance(_broker, ctxLocal, hop, hdlr, NULL);
+        // And the indication
+        CMSetProperty(ind, "SequenceNumber", &lastseq, CMPI_sint64);
+      }
 
       // Now send the indication
       st = deliverInd(ref, in, ind);
 
       if (st.rc != 0) {
-        // Get the retry params from IndService
-        CMPIObjectPath *op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
-        CMPIEnumeration *isenm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, NULL);
-        CMPIData isinst=CMGetNext(isenm,NULL);
-        CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",NULL);
-        if (mc.value.uint16 > 0) {
+        if (RIEnabled){
             _SFCB_TRACE(1,("--- Indication delivery failed, adding to retry queue"));
             // Indication delivery failed, send to retry queue
             // build an element
@@ -900,6 +911,7 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
             element = (RTElement *) malloc(sizeof(*element));
             element->ref=ref->ft->clone(ref,NULL);
             // Get the OP of the subscription and indication
+            subop=CMGetObjectPath(sub,NULL);
             element->sub=subop->ft->clone(subop,NULL);
             element->ind=iop->ft->clone(iop,NULL);
             // Store other attrs
@@ -924,9 +936,9 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
                 CMPIContext * pctx = native_clone_CMPIContext(ctx);
                 pthread_create(&t, &tattr,&retryExport,(void *) pctx);
             }
+            CMRelease(ctxLocal);
         }
       }
-      CMRelease(ctxLocal);
       CMRelease(ind);
    }
    else {

@@ -264,6 +264,8 @@ sslCiphers: ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH
 ## Number of retry attempts before giving up
 ## Default is 3 attempts (not including initial attempt)
 ## A value of 0 disables reliable indications
+## including indication sequence numbers and subscription 
+## removal.
 #DeliveryRetryAttempts: 3
 
 ## The length of time an destination can fail before the subscription

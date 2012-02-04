@@ -652,6 +652,12 @@ void initInterOp(
       CMRelease(enm);
    }  
 
+   CMPIObjectPath *isop=CMNewObjectPath(broker,"root/interop","CIM_IndicationService",NULL);
+   CMPIEnumeration *isenm = broker->bft->enumerateInstances(broker, ctx, isop, NULL, NULL);
+   CMPIData isinst=CMGetNext(isenm,NULL);
+   CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",NULL);
+   int RIEnabled=mc.value.uint16;
+
    _SFCB_TRACE(1,("--- checking for cim_listenerdestination"));
    op=CMNewObjectPath(broker,"root/interop","cim_listenerdestination",&st);
    enm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, &st);
@@ -659,11 +665,14 @@ void initInterOp(
    if(enm) {
       while(enm->ft->hasNext(enm, &st) && (ci=(enm->ft->getNext(enm, &st)).value.inst)) {
          cop=CMGetObjectPath(ci,&st); 
-         // Reset the sequence numbers on sfcb restart
-         CMPIInstance *ldi = _broker->bft->getInstance(_broker, ctxLocal, cop, NULL, NULL);
-         CMPIValue zarro = {.sint64 = -1 };
-         CMSetProperty(ldi, "LastSequenceNumber", &zarro, CMPI_sint64);
-         CBModifyInstance(_broker, ctxLocal, cop, ldi, NULL);
+
+         if (RIEnabled) {
+            // Reset the sequence numbers on sfcb restart
+            CMPIInstance *ldi = _broker->bft->getInstance(_broker, ctxLocal, cop, NULL, NULL);
+            CMPIValue zarro = {.sint64 = -1 };
+            CMSetProperty(ldi, "LastSequenceNumber", &zarro, CMPI_sint64);
+            CBModifyInstance(_broker, ctxLocal, cop, ldi, NULL);
+         }
          addHandler(ci,cop);
       }
       CMRelease(enm);

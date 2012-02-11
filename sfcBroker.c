@@ -34,6 +34,12 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+#include <stdlib.h>
+#include <fcntl.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "trace.h"
 #include "msgqueue.h"
 #include <pthread.h>
@@ -478,6 +484,38 @@ static void usage(int status)
     exit(status);
 }
 
+/* SF 3462309 : Check if there is an instance of sfcbd running; use procfs */
+static int
+sfcb_is_running()
+{
+    #define STRBUF_LEN 512
+    #define BUF_LEN 30
+    struct dirent *dp = NULL;
+    char *strbuf = malloc(STRBUF_LEN);
+    char *buf = malloc(BUF_LEN);
+    int mypid = getpid();
+    int ret = 0;
+
+    DIR *dir = opendir("/proc");
+    while ((dp = readdir(dir)) != NULL) {
+        if (isdigit(dp->d_name[0])) {
+            sprintf(buf, "/proc/%s/exe", dp->d_name);
+            memset(strbuf, 0, STRBUF_LEN);
+            if (readlink(buf, strbuf, STRBUF_LEN) == -1) continue;
+            if (strstr(strbuf, "sfcbd") != NULL) {
+                ret = strtol(dp->d_name, NULL, 0);
+                if (ret == mypid) { ret = 0; continue; }
+                break;
+             }
+        }
+     }
+
+     closedir(dir);
+     free(buf);
+     free(strbuf);
+     return(ret);
+}
+
 static void version()
 {
     fprintf(stdout, "%s " sfcHttpDaemonVersion "\n", name);
@@ -497,6 +535,13 @@ int main(int argc, char *argv[])
    int syslogLevel=LOG_ERR;
    long dSockets,sSockets,pSockets;
    char *pauseStr;
+
+   /* SF 3462309 - If there is an instance running already, return */
+   int pid_found = 0;
+   if ((pid_found = sfcb_is_running()) != 0) {
+      mlogf(M_ERROR, M_SHOW, " --- A previous instance of sfcbd [%d] is running. Exiting.\n", pid_found);
+      exit(1);
+   }
 
    name = strrchr(argv[0], '/');
    if (name != NULL) ++name;

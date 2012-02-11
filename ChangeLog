@@ -1,5 +1,10 @@
 2012-02-11 Narasimha Sharoff <nsharoff@us.ibm.com>
 
+	* sfcBroker.c
+	[ 3462309 ] Do not allow multiple instances of sfcb
+
+2012-02-11 Narasimha Sharoff <nsharoff@us.ibm.com>
+
 	* indCIMXMLHandler.c
 	[ 3485438 ] Segfault while retrying to deliver an indication
 

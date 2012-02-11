@@ -9,6 +9,7 @@ New features:
 - 3433733 CreationClassNames should be supplied
 - 3446179 Add a feature to validate CMPI types
 - 3484025 Disable indication sequencing
+- 3462309 Do not allow multiple instances of sfcb
 
 Bugs fixed: 
 

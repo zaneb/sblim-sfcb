@@ -12,6 +12,7 @@ New features:
 
 Bugs fixed: 
 
+- 3485438 segfault while retrying to deliver an indication
 - 3414700 assocClass ignored for assoc upcalls
 - 3416055 SIGSEGV sometimes does not print provider name
 - 3416167 CIM_InstDeletion not in class repo by default

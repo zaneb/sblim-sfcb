@@ -13,7 +13,6 @@ New features:
 
 Bugs fixed: 
 
-- 3485438 segfault while retrying to deliver an indication
 - 3414700 assocClass ignored for assoc upcalls
 - 3416055 SIGSEGV sometimes does not print provider name
 - 3416167 CIM_InstDeletion not in class repo by default
@@ -23,6 +22,8 @@ Bugs fixed:
 - 3478930 Handle SIGPIPE in providerMgr
 - 3478933 Sequence Number reset issues
 - 3483294 InternalProvider Should Handle SFCB_RegisteredProfile
+- 3485438 segfault while retrying to deliver an indication
+- 3486814 sfcb crashes while freeing the cimxml response
 
 Changes in 1.3.13
 =================

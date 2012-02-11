@@ -1,5 +1,10 @@
 2012-02-11 Narasimha Sharoff <nsharoff@us.ibm.com>
 
+	* cimXmlParser.c
+	[ 3486814 ] sfcb crashes while freeing the cimxml response
+
+2012-02-11 Narasimha Sharoff <nsharoff@us.ibm.com>
+
 	* sfcBroker.c
 	[ 3462309 ] Do not allow multiple instances of sfcb
 

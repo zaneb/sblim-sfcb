@@ -629,10 +629,14 @@ int dqRetry (CMPIContext * ctx,RTElement * cur)
         // queue is empty
         free(cur);
         RQhead=NULL;
+        RQtail=NULL;
     } else {
         //not last
         cur->prev->next=cur->next;
         cur->next->prev=cur->prev;
+        /* 3485438 - update qhead/qtail */
+        if (cur == RQhead) RQhead=cur->next;
+        if (cur == RQtail) RQtail=cur->prev;
         CMRelease(cur->ref);
         CMRelease(cur->sub);
         if (cur) free(cur);

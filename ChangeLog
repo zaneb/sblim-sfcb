@@ -1,5 +1,8 @@
 2012-02-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* test/TestProviders/cmpiTestIndicationProvider.c:
+	[ 3487419 ] TestIndication Provider Does Enable Correctly
+
 	* interopProvider.c
 	[ 3485830 ] SFCB Makes Redundant ActivateFilter Calls
 

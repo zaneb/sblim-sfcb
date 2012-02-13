@@ -590,24 +590,29 @@ static CMPIStatus processSubscription(
    CMSetProperty((CMPIInstance *)ci, "SubscriptionStartTime", &dt, CMPI_dateTime);
    
    su=addSubscription(ci, skey, fi, ha); 
-   fowardSubscription(ctx, fi, OPS_ActivateFilter, &st);
-   
-   if (st.rc != CMPI_RC_OK) removeSubscription(su, skey);
-   //activation succesful, try to enable it
-   else {
-   	  //check property
-   	  CMPIData d = CMGetProperty(ci, "SubscriptionState", &st);
-   	  if(d.state == CMPI_goodValue) {
-   	     if(d.value.uint16 == 2) { //==enabled
-   	        fowardSubscription(ctx, fi, OPS_EnableIndications, &st);
-   	     }
-   	  } else {
-      /* property not set, assume "enable" by default */
-         val.uint16 = 2;
-         st = CMSetProperty((CMPIInstance*)ci, "SubscriptionState", &val, CMPI_uint16);
+   /* send Activate filter request only if we haven't aleady */
+   if (fi->useCount == 1) {
+     fowardSubscription(ctx, fi, OPS_ActivateFilter, &st);
+     if (st.rc != CMPI_RC_OK) removeSubscription(su, skey);
+   }
+
+   /* activation succesful, try to enable it */
+   if (st.rc == CMPI_RC_OK) {
+     /* only enable if state is 2 (default) */
+     CMPIData d = CMGetProperty(ci, "SubscriptionState", &st);
+     if(d.state == CMPI_goodValue) {
+       if(d.value.uint16 == 2 && fi->useCount == 1) {
          fowardSubscription(ctx, fi, OPS_EnableIndications, &st);
-      }
-   }   
+       }
+     } else {
+       /* property not set, assume "enable" by default */
+       val.uint16 = 2;
+       st = CMSetProperty((CMPIInstance*)ci, "SubscriptionState", &val, CMPI_uint16);
+       if (fi->useCount == 1) {
+         fowardSubscription(ctx, fi, OPS_EnableIndications, &st);
+       }
+     }
+   }
       
    _SFCB_RETURN(st); 
 }

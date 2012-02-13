@@ -24,6 +24,7 @@ Bugs fixed:
 - 3483294 InternalProvider Should Handle SFCB_RegisteredProfile
 - 3485438 segfault while retrying to deliver an indication
 - 3486814 sfcb crashes while freeing the cimxml response
+- 3485830 SFCB Makes Redundant ActivateFilter Calls
 
 Changes in 1.3.13
 =================

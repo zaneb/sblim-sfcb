@@ -1,3 +1,8 @@
+2012-02-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* interopProvider.c
+	[ 3485830 ] SFCB Makes Redundant ActivateFilter Calls
+
 2012-02-11 Narasimha Sharoff <nsharoff@us.ibm.com>
 
 	* cimXmlParser.c

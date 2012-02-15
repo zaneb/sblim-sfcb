@@ -136,7 +136,15 @@ void mlogf(int priority, int errout, const char *fmt, ...) {
   char            buf[LOG_MSG_MAX];
  
   va_start(ap, fmt);
-  vsnprintf(buf, LOG_MSG_MAX, fmt, ap);
+  // Leave a space for the /n on the end.
+  vsnprintf(buf, LOG_MSG_MAX-1, fmt, ap);
+  // Now check to make sure we have a /n at the end
+  int buflen=strlen(buf);
+  if ( buf[buflen-1] != '\n' ) {
+    strcat(buf,"\n");
+  } 
+
+
 
   /*
    * we sometimes call mlogf when sfcbd isn't started (i.e. via

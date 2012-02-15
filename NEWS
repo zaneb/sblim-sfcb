@@ -26,6 +26,7 @@ Bugs fixed:
 - 3486814 sfcb crashes while freeing the cimxml response
 - 3485830 SFCB Makes Redundant ActivateFilter Calls
 - 3487419 TestIndication Provider Does Enable Correctly
+- 3487675 Log messages can be concatenated
 
 Changes in 1.3.13
 =================

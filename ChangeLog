@@ -1,3 +1,8 @@
+2012-02-15 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* mlog.c:
+	[ 3487675 ] Log messages can be concatenated
+
 2012-02-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* test/TestProviders/cmpiTestIndicationProvider.c:

@@ -1,3 +1,9 @@
+2012-02-17 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* mlog.c, mlog.h, cimcClientSfcbLocal.c,
+	  sfcBroker.c,sfcbinst2mof.c:
+	[ 3488688 ] Don't spawn logger for clients
+
 2012-02-15 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* mlog.c:

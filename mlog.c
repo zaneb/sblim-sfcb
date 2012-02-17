@@ -30,6 +30,11 @@ const char *_mlog_id = "$Id$";
 #include <signal.h>
 #include "trace.h"              /* for setSignal() */
 #include <sys/wait.h>
+
+// Macro to open the syslog
+#define OPENLOG(level) openlog("sfcb", LOG_PID, LOG_DAEMON); setlogmask(LOG_UPTO(level));
+
+
  
 FILE           *log_w_stream;
 int             logfds[2] = { 0, 0 };
@@ -44,11 +49,10 @@ void runLogger(int listenFd, int level) {
   int             priosysl;
   char            buf[LOG_MSG_MAX];
  
-  openlog("sfcb", LOG_PID, LOG_DAEMON);
-  setlogmask(LOG_UPTO(level));
+  OPENLOG(level);
  
   stream = fdopen(listenFd, "r");
- 
+
   while (!feof(stream)) {
  
     fgets(buf, sizeof(buf), stream);
@@ -78,9 +82,18 @@ void runLogger(int listenFd, int level) {
 /*
  * sets up the logging pipe and forks off the logger process 
  */
-void startLogging(int level) {
+void startLogging(int level, int thread) {
+
+  // if we're a client, just open the log and
+  // don't start a logger.
+  if (! thread ) {
+     OPENLOG(level);
+    return;
+  }
+    
   pipe(logfds);
   int             lpid;
+
   lpid = fork();
 
   if (lpid == 0) {

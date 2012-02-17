@@ -10,6 +10,8 @@ New features:
 - 3446179 Add a feature to validate CMPI types
 - 3484025 Disable indication sequencing
 - 3462309 Do not allow multiple instances of sfcb
+- 3488688 Don't spawn logger for clients
+
 
 Bugs fixed: 
 

@@ -29,7 +29,7 @@
 
 #define LOG_MSG_MAX 4096
 
-void startLogging(int level);
+void startLogging(int level, int thread);
 void closeLogging();
 void mlogf(int priority, int errout, const char* fmt, ...);
 

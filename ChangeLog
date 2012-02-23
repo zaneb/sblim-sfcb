@@ -1,3 +1,8 @@
+2012-02-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* httpAdapter.c, sfcBroker.c:
+	[ 3492362 ] Problem with whitespace trimming if local connect only
+
 2012-02-17 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* mlog.c, mlog.h, cimcClientSfcbLocal.c,

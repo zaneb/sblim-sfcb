@@ -1,3 +1,9 @@
+2012-02-24  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* Makefile.am, sfcbsem.c
+	[ 3493493 ] Add sfcbsem
+	(code by Viktor Mihajlovski)
+
 2012-02-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

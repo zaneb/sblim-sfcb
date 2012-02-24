@@ -11,7 +11,7 @@ New features:
 - 3484025 Disable indication sequencing
 - 3462309 Do not allow multiple instances of sfcb
 - 3488688 Don't spawn logger for clients
-
+- 3493493 Add sfcbsem
 
 Bugs fixed: 
 

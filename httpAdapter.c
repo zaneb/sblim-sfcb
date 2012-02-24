@@ -966,7 +966,7 @@ static int doHttpRequest(CommHndl conn_fd)
        /* for PAM, client's IP address is used for host-based authentication */
         struct sockaddr_storage from;
         socklen_t from_len = sizeof(from);
-        getsockname(conn_fd.socket, (struct sockaddr *)&from, &from_len);
+        getpeername(conn_fd.socket, (struct sockaddr *)&from, &from_len);
 #ifdef USE_INET6
         char ipstr[INET6_ADDRSTRLEN] = {0};
 #else

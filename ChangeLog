@@ -1,5 +1,10 @@
 2012-02-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
+	* httpAdapter.c:
+	[ 3457460 ] PAM_RHOST set wrong
+
+2012-02-23 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
 	* httpAdapter.c, sfcBroker.c:
 	[ 3492362 ] Problem with whitespace trimming if local connect only
 

@@ -1,3 +1,8 @@
+2012-02-28 Dave Heller <hellerda@us.ibm.com>
+
+	* cimslpSLP.c, indCIMXMLExport.c:
+	[ 3495343 ] Bad pointer references in trace statements
+
 2012-02-24  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* Makefile.am, sfcbsem.c

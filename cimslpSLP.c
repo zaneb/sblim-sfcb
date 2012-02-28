@@ -181,7 +181,7 @@ deregisterCIMService(const char *urlsyntax)
     printf
         ("--- Error deregistering service with slp (%i) ... it will now timeout\n",
          err);
-    _SFCB_TRACE(4, ("--- urlsyntax: %s\n", urlsyntax));
+    _SFCB_TRACE(4, ("--- urlsyntax: %s\n", *urlsyntax));
   }
   SLPClose(hslp);
 }
@@ -216,7 +216,7 @@ registerCIMService(cimSLPService css, int slpLifeTime, char **urlsyntax,
     *urlsyntax = (char *) malloc(strlen(css.url_syntax) + 14);   // ("service:wbem:" 
                                                                 // = 13) + \0
     sprintf(*urlsyntax, "service:wbem:%s", css.url_syntax);
-    _SFCB_TRACE(4, ("--- urlsyntax: %s\n", urlsyntax));
+    _SFCB_TRACE(4, ("--- urlsyntax: %s\n", *urlsyntax));
   }
 
   attrstring = malloc(sizeof(char) * SIZE);

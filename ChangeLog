@@ -1,3 +1,8 @@
+2012-02-28  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* interopServerProvider.c:
+	[ 3416164 ] Don't write CIM_IndicationService to disk
+
 2012-02-28 Dave Heller <hellerda@us.ibm.com>
 
 	* cimslpSLP.c, indCIMXMLExport.c:

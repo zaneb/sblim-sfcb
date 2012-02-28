@@ -32,6 +32,7 @@ Bugs fixed:
 - 3492362 Problem with whitespace trimming if local connect only
 - 3457460 PAM_RHOST set wrong
 - 3495343 Bad pointer references in trace statements
+- 3416164 Don't write CIM_IndicationService to disk
 
 Changes in 1.3.13
 =================

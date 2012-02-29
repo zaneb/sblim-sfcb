@@ -31,4 +31,5 @@ else
 endif
 
 #Some wbemcat tests
-TESTS = xmltest.sh IndRetryTest.sh
+export SRCDIR=$(srcdir)
+TESTS = $(srcdir)/xmltest.sh $(srcdir)/IndRetryTest.sh

@@ -22,6 +22,7 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
+AM_CPPFLAGS=-I$(top_srcdir)
 AM_LDFLAGS=-L"$(top_builddir)/.libs"
 
 TESTS_ENVIRONMENT = SFCB_TRACE_FILE="/tmp/sfcbtracetest"

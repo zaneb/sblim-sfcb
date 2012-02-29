@@ -31,4 +31,5 @@ else
 endif
 
 #Some wbemcat tests
+export SRCDIR=$(srcdir)
 TESTS = xmltest.sh 

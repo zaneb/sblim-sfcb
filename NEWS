@@ -35,6 +35,7 @@ Bugs fixed:
 - 3495343 Bad pointer references in trace statements
 - 3416164 Don't write CIM_IndicationService to disk
 - 3495801 Correction to 3495343
+- 3495789 Makefile improvements for test suite
 
 Changes in 1.3.13
 =================

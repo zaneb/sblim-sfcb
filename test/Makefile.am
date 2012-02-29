@@ -23,7 +23,8 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 # Make this base dir available to testcases
-TESTS_ENVIRONMENT = SFCBTDIR=`pwd`
+#TESTS_ENVIRONMENT = SFCBTDIR=`pwd`
+TESTS_ENVIRONMENT = SFCBTDIR=$(srcdir)
 
 if TEST_ENABLED
 SUBDIRS = $(TEST_SUBDIRS)

@@ -35,12 +35,12 @@ if ! touch ./testfile > /dev/null; then
 fi
 rm -f ./testfile
 
-for xmlfile in `ls *xml`
+for xmlfile in `ls $SRCDIR/*xml`
 do
    _TEST=${xmlfile%.xml}
    _TESTOK=$_TEST.OK
    _TESTLINES=$_TEST.lines
-   _TESTRESULT=$_TEST.result
+   _TESTRESULT=$(basename _TEST).result
    _TESTPREREQ=$_TEST.prereq
    _TESTNAME=$_TEST
 

@@ -23,4 +23,5 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 #Some wbemcat tests
+export SRCDIR=$(srcdir)
 TESTS = cmdusage.sh sfcbdump.sh

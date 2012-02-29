@@ -65,13 +65,13 @@ odir () {
 }
 cleanup () {
     # Cleanup created objects and files
-    sendxml IndTest5DeleteSubscription.xml /dev/null
-    sendxml IndTest6DeleteHandler.xml /dev/null
-    sendxml IndTest7DeleteFilter.xml /dev/null
+    sendxml $SRCDIR/IndTest5DeleteSubscription.xml /dev/null
+    sendxml $SRCDIR/IndTest6DeleteHandler.xml /dev/null
+    sendxml $SRCDIR/IndTest7DeleteFilter.xml /dev/null
     odir clean
-    if [ -f RIModIS.XML ]
+    if [ -f ./RIModIS.XML ]
     then
-        rm RIModIS.XML 
+        rm ./RIModIS.XML 
     fi
 }
 
@@ -85,10 +85,10 @@ sendInd () {
     then
         echo -n " initial ..."
         # Invoke method to generate the indication
-        sendxml IndTest4CallMethod.xml /dev/null
+        sendxml $SRCDIR/IndTest4CallMethod.xml /dev/null
         sleep 5; # Wait due to deadlock prevention in localmode (indCIMXMLHandler.c)
     else
-        sendxml IndTest4CallMethod.xml /dev/null
+        sendxml $SRCDIR/IndTest4CallMethod.xml /dev/null
     fi
     # Check if it was sent
     if [ -f $ODIR/SFCB_Listener.txt ]
@@ -100,9 +100,9 @@ sendInd () {
 }
 init () {
     # Create Filter, Handler, Sub to setup indication
-    sendxml IndTest1CreateFilter.xml /dev/null
-    sendxml RICreateHandler.XML /dev/null
-    sendxml IndTest3CreateSubscription.xml /dev/null
+    sendxml $SRCDIR/IndTest1CreateFilter.xml /dev/null
+    sendxml $SRCDIR/RICreateHandler.XML /dev/null
+    sendxml $SRCDIR/IndTest3CreateSubscription.xml /dev/null
 }
 
 ###
@@ -116,7 +116,7 @@ cleanup
 init
 
 # Get the IndicationService that GenMI.pl will use
-sendxml RIEnumIS.XML ./RIEnumIS.result
+sendxml $SRCDIR/RIEnumIS.XML ./RIEnumIS.result
 if [ $? -ne 0 ] 
 then
     echo " Failed to get IndicationService"
@@ -128,13 +128,13 @@ fi
 ###
 echo -n  "  Disabled indication retries: "
 
-./GenMI.pl 1 0 300 1
+$SRCDIR/GenMI.pl 1 0 300 1
 if [ $? -ne 0 ] 
 then
     echo " GenMI.pl FAILED"
     exit 1 
 fi
-sendxml RIModIS.XML /dev/null
+sendxml ./RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
@@ -163,13 +163,13 @@ fi
 ###
 echo -n  "  Enabled indication retries: "
 
-./GenMI.pl 1 5 300 1
+$SRCDIR/GenMI.pl 1 5 300 1
 if [ $? -ne 0 ] 
 then
     echo " GenMI.pl FAILED"
     exit 1; 
 fi
-sendxml RIModIS.XML /dev/null
+sendxml ./RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
@@ -200,13 +200,13 @@ cleanup
 init
 echo -n  "  Subscription disable: "
 
-./GenMI.pl 1 5 2 3
+$SRCDIR/GenMI.pl 1 5 2 3
 if [ $? -ne 0 ] 
 then
     echo " GenMI.pl FAILED"
     exit 1; 
 fi
-sendxml RIModIS.XML /dev/null
+sendxml ./RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
@@ -219,7 +219,7 @@ else
     # Still no odir, so keeps failing, and should disable sub
     echo -n " disable ..."
     sleep 10
-    sendxml RIGetSub.XML ./RIGetSubDisable.result
+    sendxml $SRCDIR/RIGetSub.XML ./RIGetSubDisable.result
     grep -A1 '"SubscriptionState"' ./RIGetSubDisable.result | grep '<VALUE>4</VALUE>' >/dev/null 2>&1
     if [ $? -eq 1 ] 
     then
@@ -239,13 +239,13 @@ cleanup
 init
 echo -n  "  Subscription Removal: "
 
-./GenMI.pl 1 5 2 2
+$SRCDIR/GenMI.pl 1 5 2 2
 if [ $? -ne 0 ] 
 then
     echo " GenMI.pl FAILED"
     exit 1; 
 fi
-sendxml RIModIS.XML /dev/null
+sendxml ./RIModIS.XML /dev/null
 
 # No odir, so initial should fail 
 odir clean
@@ -258,7 +258,7 @@ else
     # Still no odir, so keeps failing, and should remove sub
     echo -n " remove ..."
     sleep 10
-    sendxml RIGetSub.XML ./RIGetSubRemove.result
+    sendxml $SRCDIR/RIGetSub.XML ./RIGetSubRemove.result
     grep '<VALUE>' ./RIGetSubRemove.result >/dev/null 2>&1
     if [ $? -eq 0 ] 
     then
@@ -276,13 +276,13 @@ fi
 cleanup
 init
 echo -n  "  Indication flood: "
-./GenMI.pl 10 3 300 1
+$SRCDIR/GenMI.pl 10 3 300 1
 if [ $? -ne 0 ] 
 then
     echo " GenMI.pl FAILED"
     exit 1; 
 fi
-sendxml RIModIS.XML /dev/null
+sendxml ./RIModIS.XML /dev/null
 
 i=0
 j=0
@@ -341,12 +341,12 @@ fi
 ###
 cleanup
 # Set Indication_Service back to the defaults
-./GenMI.pl 20 3 2592000 2
+$SRCDIR/GenMI.pl 20 3 2592000 2
 if [ $? -ne 0 ] 
 then
     echo " GenMI.pl FAILED"
     exit 1; 
 fi
-sendxml RIModIS.XML /dev/null
+sendxml ./RIModIS.XML /dev/null
 rm RIEnumIS.result
 exit $RC

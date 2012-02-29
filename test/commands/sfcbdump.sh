@@ -1,6 +1,6 @@
 #!/bin/sh
 RC=0
-if ! sfcbdump classSchemas | grep Linux_CSProcessor > /dev/null
+if ! sfcbdump $SRCDIR/classSchemas | grep Linux_CSProcessor > /dev/null
 then
     RC=1 
 fi

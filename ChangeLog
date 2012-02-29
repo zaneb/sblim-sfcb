@@ -1,3 +1,13 @@
+2012-02-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* Makefile.am, test/Makefile.am, test/TestProviders/tests/IndRetryTest.sh,
+	  test/TestProviders/tests/Makefile.am, test/TestProviders/tests/xmltest.sh,
+	  test/commands/Makefile.am, test/commands/sfcbdump.sh,
+	  test/unittest/Makefile.am, test/xmltest/Makefile.am, test/xmltest/xmltest.sh,
+	  test/xmltest/modifyInstance_regprofile.lines:
+	[ 3495789 ] Makefile improvements for test suite
+	(patch by Viktor Mihajlovski)
+
 2012-02-29 Narasimha Sharoff <nsharoff@us.ibm.com>
 
 	* indCIMXMLHandler.c, interopProvider.c

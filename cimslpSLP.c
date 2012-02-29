@@ -181,7 +181,7 @@ deregisterCIMService(const char *urlsyntax)
     printf
         ("--- Error deregistering service with slp (%i) ... it will now timeout\n",
          err);
-    _SFCB_TRACE(4, ("--- urlsyntax: %s\n", *urlsyntax));
+    _SFCB_TRACE(4, ("--- urlsyntax: %s\n", urlsyntax));
   }
   SLPClose(hslp);
 }

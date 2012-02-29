@@ -1530,31 +1530,60 @@ static CMPIData localInvokeMethod(BinRequestContext * binCtx,
 
 int isChild(const char *ns, const char *parent, const char* child)
 {
-   _SFCB_ENTER(TRACE_PROVIDERMGR, "isChild");
-
-   CMPIObjectPath *path;
+   CMPIObjectPath   *path;
+   CMPIStatus        rc;
+   InvokeMethodReq   sreq = BINREQ(OPS_InvokeMethod,5);
+   BinResponseHdr   *resp=NULL;
    BinRequestContext binCtx;
-   OperationHdr req = { OPS_InvokeMethod, 1 };
-   CMPIArgs *in = NewCMPIArgs(NULL);
-   CMPIStatus rc;
-   int irc;
+   OperationHdr      req = { OPS_InvokeMethod, 2 };
+   CMPIArgs         *in;
+   int               irc;
+   
+   _SFCB_ENTER(TRACE_PROVIDERMGR, "isChild");
+  
+   path = TrackedCMPIObjectPath(ns, parent, &rc);
+   sreq.principal = setCharsMsgSegment("$$");
+   sreq.objectPath = setObjectPathMsgSegment(path);
+   
+   in = TrackedCMPIArgs(&rc);
+   CMAddArg(in, "child", child, CMPI_chars);
+   sreq.in = setArgsMsgSegment(in);
+   sreq.out = setArgsMsgSegment(NULL);
+   sreq.method = setCharsMsgSegment("isChild");
+
+   req.nameSpace = setCharsMsgSegment((char *) ns);
+   req.className = setCharsMsgSegment((char *) "$ClassProvider$");
 
    memset(&binCtx,0,sizeof(BinRequestContext));
-   CMAddArg(in, "child", child, CMPI_chars);
-   path = NewCMPIObjectPath(ns, parent, &rc);
-   req.nameSpace = setCharsMsgSegment((char *) ns);
-   req.className = setCharsMsgSegment("$ClassProvider$");
+   binCtx.oHdr = &req;
+   binCtx.bHdr = &sreq.hdr;
+   binCtx.bHdrSize = sizeof(sreq);
+   binCtx.chunkedMode=binCtx.xmlAs=binCtx.noResp=0;
 
-   irc = _methProvider(&binCtx, &req);
-
-   if (irc == MSG_X_PROVIDER) {
-      localInvokeMethod(&binCtx, path, "ischild", in, NULL, &rc,0);
-      irc=(rc.rc==CMPI_RC_OK);
-   }
-   else irc=0;
-   CMRelease(path);
-   CMRelease(in);
+   lockUpCall(Broker);
    
+   irc = getProviderContext(&binCtx, &req);
+   
+   if (irc == MSG_X_PROVIDER) {
+      _SFCB_TRACE(1, ("--- Invoking Provider"));
+      resp = invokeProvider(&binCtx);
+      resp->rc--;
+      irc = (resp->rc == CMPI_RC_OK);
+   }
+   else {
+     mlogf(M_ERROR,M_SHOW,"-- no provider context isChild(%s:%s:%s)\n", 
+	   ns, parent, child);
+     irc = 0;
+   }
+   
+   unlockUpCall(Broker);
+
+   if(resp) free(resp);
+   if(!localMode){
+  	close(binCtx.provA.socket);
+   }
+   closeProviderContext(&binCtx);
+
    _SFCB_RETURN(irc);
 }
 

@@ -1,5 +1,9 @@
 2012-02-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* providerMgr.c:
+	[ 3495806 ] isChild() can cause a provider mismatch
+	(patch by Viktor Mihajlovski)
+
 	* Makefile.am, test/Makefile.am, test/TestProviders/tests/IndRetryTest.sh,
 	  test/TestProviders/tests/Makefile.am, test/TestProviders/tests/xmltest.sh,
 	  test/commands/Makefile.am, test/commands/sfcbdump.sh,

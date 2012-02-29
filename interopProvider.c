@@ -720,6 +720,40 @@ filterInternalProps(CMPIInstance* ci)
   return;
 }
 
+/* feature #3495060 :76814 : Verify the filter and handler information */
+CMPIStatus
+verify_subscription(const CMPIContext * ctx,
+	const CMPIObjectPath *cop, 
+	const CMPIInstance *ci)
+{ 
+      CMPIContext *ctxlocal = NULL;
+      CMPIStatus st = { CMPI_RC_OK, NULL };
+
+      CMPIData sub_filter = CMGetProperty(ci, "Filter", &st);
+      CMPIObjectPath *sub_filter_op = sub_filter.value.ref;
+      ctxlocal = prepareUpcall((CMPIContext *)ctx);
+      CMPIInstance *sub_filter_inst = CBGetInstance(_broker, ctxlocal,
+                    sub_filter_op, NULL, &st);
+      if (sub_filter_inst == NULL) {
+         setStatus(&st,st.rc,"Invalid Subscription Filter");
+         CMRelease(ctxlocal);
+         return st;
+      }
+
+      CMPIData sub_handler = CMGetProperty(ci, "Handler", &st);
+      CMPIObjectPath *sub_handler_op = sub_handler.value.ref;
+      CMPIInstance *sub_handler_inst = CBGetInstance(_broker, ctxlocal,
+                    sub_handler_op, NULL, &st);
+      if (sub_handler_inst == NULL) {
+         setStatus(&st,st.rc,"Invalid Subscription Handler");
+         CMRelease(ctxlocal);
+         return st;
+      }
+
+      CMRelease(ctxlocal);
+      return st;
+}
+
 /* --------------------------------------------------------------------------*/
 /*                       Instance Provider Interface                         */
 /* --------------------------------------------------------------------------*/
@@ -855,6 +889,9 @@ CMPIStatus InteropProviderCreateInstance(
    
    if(isa(nss, cns, "cim_indicationsubscription")) {
       _SFCB_TRACE(1,("--- create cim_indicationsubscription"));
+
+      st = verify_subscription(ctx, cop, ci); /* 3495060 */
+      if (st.rc != CMPI_RC_OK) _SFCB_RETURN(st);
 
       st=processSubscription(_broker,ctx,ciLocal,copLocal);
    }

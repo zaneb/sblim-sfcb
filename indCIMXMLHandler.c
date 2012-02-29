@@ -878,6 +878,10 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
         CMPIData handler=CMGetProperty(sub, "Handler", &st);
         CMPIObjectPath *hop=handler.value.ref;
         CMPIInstance *hdlr=CBGetInstance(_broker, ctxLocal, hop, NULL, &st);
+        if (hdlr == NULL) {
+           mlogf(M_ERROR,M_SHOW,"Deliver indication failed, hdlr is null. rc:%d\n",st.rc);
+           _SFCB_RETURN(st);
+        }
 
         // Build the complete sequence context
         // Get the stub from the handler

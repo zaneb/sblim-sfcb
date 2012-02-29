@@ -1,3 +1,8 @@
+2012-02-29 Narasimha Sharoff <nsharoff@us.ibm.com>
+
+	* indCIMXMLHandler.c, interopProvider.c
+	[ 3495060 ] verify filter and handler information during subscription
+
 2012-02-29 Dave Heller <hellerda@us.ibm.com>
 
 	* cimslpSLP.c:

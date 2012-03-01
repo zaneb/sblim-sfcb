@@ -1,3 +1,8 @@
+2012-02-29 Narasimha Sharoff <nsharoff@us.ibm.com>
+
+	* brokerUpc.c
+	[ 3483200 ] duplicate indication deliveries
+
 2012-02-29  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerMgr.c:

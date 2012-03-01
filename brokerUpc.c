@@ -146,6 +146,7 @@ static CMPIStatus deliverIndication(const CMPIBroker* mb, const CMPIContext* ctx
 		 );
          CBInvokeMethod(mb,ctx,op,"_deliver",in,NULL,&st);
       }
+      classMatch = 0; /* 3483200 */
       se=se->next;
    }   
    

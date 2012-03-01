@@ -1,3 +1,8 @@
+2012-03-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
+
+	* indCIMXMLHandler.c, indRetryTest.sh
+	[ 3484083] Exclude SFCBIndicationID 
+
 2012-03-01  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopProvider.c:

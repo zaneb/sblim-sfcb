@@ -311,6 +311,12 @@ else
     echo " received $count of $lim: FAILED"
     RC=1
 fi
+count=$(grep SFCB_IndicationID $ODIR/SFCB_Listener.txt  | wc -l)
+if [ $count -ne 0 ] 
+then
+    echo "  SFCB_IndicationID property found: FAILED"
+    RC=1
+fi
 
 # Check sequence numbers
 echo -n  "  Indication flood sequence numbers: "

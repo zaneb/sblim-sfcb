@@ -874,6 +874,8 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
         iop=CMGetObjectPath(ind,NULL);
         CMAddKey(iop,"SFCB_IndicationID",&indID,CMPI_uint32);
         CMSetProperty(ind,"SFCB_IndicationID",&indID,CMPI_uint32);
+        // Prevent this property from showing up in the indication
+        filterFlagProperty(ind, "SFCB_IndicationID");
         sub=CMGetArg(in,"subscription",NULL).value.inst;
         CMPIData handler=CMGetProperty(sub, "Handler", &st);
         CMPIObjectPath *hop=handler.value.ref;

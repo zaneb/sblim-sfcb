@@ -38,6 +38,7 @@ Bugs fixed:
 - 3495789 Makefile improvements for test suite
 - 3495806 isChild() can cause a provider mismatch
 - 3483200 duplicate indication deliveries
+- 3496061 IndicationSubscription May Be Undeletable
 
 Changes in 1.3.13
 =================

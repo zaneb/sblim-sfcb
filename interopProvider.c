@@ -687,11 +687,18 @@ void initInterOp(
    enm = _broker->bft->enumerateInstances(_broker, ctxLocal, op, NULL, &st);
    
    if(enm) {
+     CMPIStatus st;
       while(enm->ft->hasNext(enm, &st) && (ci=(enm->ft->getNext(enm, &st)).value.inst)) {      
          CMPIObjectPath *hop;    
          cop=CMGetObjectPath(ci,&st);
          hop=CMGetKey(cop,"handler",NULL).value.ref;
-         processSubscription(broker,ctx,ci,cop);
+         st = processSubscription(broker,ctx,ci,cop);
+	 /* if the on-disk repo is modified between startups, it is
+            possible for a subscription instance to exist w/o a filter or
+            handler. Clean out the useless sub if this is the case */
+	 if (st.rc == CMPI_RC_ERR_NOT_FOUND) {
+	   CBDeleteInstance(_broker, ctxLocal, cop);
+	 }
       }
       CMRelease(enm);   
    }

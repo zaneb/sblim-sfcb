@@ -1,3 +1,8 @@
+2012-03-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* interopProvider.c:
+	[ 3496383 ] Faster Return from CBDeliverIndication
+
 2012-03-01 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c, indRetryTest.sh

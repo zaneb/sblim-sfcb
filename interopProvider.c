@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <pthread.h>
 #include "fileRepository.h"
 #include "utilft.h"
 #include "trace.h"
@@ -1161,6 +1162,27 @@ CMPIStatus InteropProviderMethodCleanup(
    _SFCB_RETURN(st);
 }
 
+typedef struct delivery_info {
+  const CMPIContext* ctx;
+  CMPIObjectPath *hop;  
+  CMPIArgs* hin;
+} DeliveryInfo;
+
+void * sendIndForDelivery(void *di) {
+
+  _SFCB_ENTER(TRACE_INDPROVIDER, "sendIndForDelivery");
+
+  DeliveryInfo* delInfo;
+  delInfo = (DeliveryInfo*)di;
+  CBInvokeMethod(_broker,delInfo->ctx,delInfo->hop,"_deliver",delInfo->hin,NULL,NULL);
+
+  CMRelease((CMPIContext*)delInfo->ctx);
+  CMRelease(delInfo->hop);
+  CMRelease(delInfo->hin);
+  free(di);
+  pthread_exit(NULL);
+}
+
 /* ------------------------------------------------------------------------- */
 
 CMPIStatus InteropProviderInvokeMethod(
@@ -1196,6 +1218,8 @@ CMPIStatus InteropProviderInvokeMethod(
         uint64;
 #endif
       char *ns=(char*)CMGetArg(in,"namespace",NULL).value.string->hdl;
+      pthread_t ind_thread;
+      pthread_attr_t it_attr;
       
       // Add indicationFilterName to the indication
       Filter *filter = filterId;
@@ -1222,7 +1246,17 @@ CMPIStatus InteropProviderInvokeMethod(
             CMPIString *ns=CMGetNameSpace(su->ha->hop,NULL);
             _SFCB_TRACE(1,("--- invoke handler %s %s",(char*)ns->hdl,(char*)str->hdl));
             CMAddArg(hin,"subscription",&su->sci,CMPI_instance);
-            CBInvokeMethod(_broker,ctx,su->ha->hop,"_deliver",hin,NULL,&st);
+
+            pthread_attr_init(&it_attr);
+            pthread_attr_setdetachstate(&it_attr, PTHREAD_CREATE_DETACHED);
+
+            DeliveryInfo* di = malloc(sizeof(DeliveryInfo));
+            di->ctx = native_clone_CMPIContext(ctx);
+            di->hop = CMClone(su->ha->hop, NULL);
+            di->hin = CMClone(hin, NULL);
+
+            pthread_create(&ind_thread, &it_attr,&sendIndForDelivery,(void *) di);
+
             _SFCB_TRACE(1,("--- invoke handler status: %d",st.rc));
          }     
       }   

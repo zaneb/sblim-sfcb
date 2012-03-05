@@ -1,3 +1,8 @@
+2012-03-05  Narasimhma Sharoff  <nsharoff@us.ibm.com>
+
+	* providerDrv.c, providerMgr.c, providerMgr.h, support.c
+	[ 3416060 ] sigsegv in tool_mm_flush()
+
 2012-03-02  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* interopProvider.c:
@@ -13,7 +18,7 @@
 	* interopProvider.c:
 	[ 3496061 ] IndicationSubscription May Be Undeletable
 
-2012-02-29 Narasimha Sharoff <nsharoff@us.ibm.com>
+2012-03-01 Narasimha Sharoff <nsharoff@us.ibm.com>
 
 	* brokerUpc.c
 	[ 3483200 ] duplicate indication deliveries

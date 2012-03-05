@@ -243,7 +243,8 @@ int testStartedProc(int pid, int *left)
          stopped=1;
          (pp+i)->pid=0;
          info=(pp+i)->firstProv;
-         pReg->ft->resetProvider(pReg,pid);
+         if (pReg)
+            pReg->ft->resetProvider(pReg,pid);
       }   
       if ((pp+i)->pid!=0) (*left)++;
    }
@@ -730,6 +731,7 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
          if (info->pid == 0) {
 
             currentProc=getpid();
+            sigprocmask(SIG_SETMASK, &old_mask, NULL);
             setSignal(SIGCHLD, SIG_DFL,0);
             setSignal(SIGTERM, SIG_IGN,0);
             setSignal(SIGHUP, SIG_IGN,0);

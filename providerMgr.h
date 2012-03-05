@@ -347,5 +347,6 @@ BinResponseHdr **invokeProviders(BinRequestContext * binCtx, int *err,
                                  int *count);
 BinResponseHdr *invokeProvider(BinRequestContext * ctx);
 void freeResponseHeaders(BinResponseHdr ** resp, BinRequestContext * ctx);
+sigset_t mask, old_mask;
 
 #endif

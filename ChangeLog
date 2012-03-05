@@ -1,5 +1,10 @@
 2012-03-05  Narasimhma Sharoff  <nsharoff@us.ibm.com>
 
+	* providerDrv.c, providerMgr.c, sfcBroker.c
+	[ 3497096 ] double free during stopProc
+
+2012-03-05  Narasimhma Sharoff  <nsharoff@us.ibm.com>
+
 	* providerDrv.c, providerMgr.c, providerMgr.h, support.c
 	[ 3416060 ] sigsegv in tool_mm_flush()
 

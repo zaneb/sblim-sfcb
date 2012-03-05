@@ -157,6 +157,10 @@ static int stopNextAdapter()
    return 0;
 }
 
+/* 3497096 :77022  */
+extern pthread_mutex_t syncMtx; /* syncronize provider state */
+extern int prov_rdy_state;      /* -1 indicates not ready */
+
 static pthread_mutex_t sdMtx=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  sdCnd=PTHREAD_COND_INITIALIZER;
 static int stopping=0;
@@ -165,17 +169,42 @@ extern int remSem();
 static void stopBroker(void *p)
 {
    struct timespec waitTime;
-   int rc,sa=0,sp=0;
-   
-   stopping=1;
-   
+   int rc,sa=0,sp=0, count = 0;
+
+   /* SF 3497096 bugzilla 77022 */
+   /* stopping is set to prevent other threads calling this routine */
+   pthread_mutex_lock(&syncMtx);
+   if (stopping) {
+      printf("Stopping sfcb is in progress. Please wait...\n");
+      pthread_mutex_unlock(&syncMtx);
+      return;
+   }
+   else {
+      stopping=1;
+      pthread_mutex_unlock(&syncMtx);
+   }
+
+   /* Look for providers ready status. A 5 seconds wait is performed to
+    * avoid a hang here in the event of provider looping, crashing etc
+   */
+   for (;;) {
+       pthread_mutex_lock(&syncMtx);
+       if (prov_rdy_state == -1) {
+          if (count >= 5) break; /* lock will be released later */
+          pthread_mutex_unlock(&syncMtx);
+          sleep(1);
+          count++;
+        }
+        else break; /* lock will be released later */
+   }
+
    stopLocalConnectServer();
    
    for(;;) {
 
       if (adaptersStopped==0) {
          pthread_mutex_lock(&sdMtx);
-         waitTime.tv_sec=time(NULL)+5;
+         waitTime.tv_sec=time(NULL)+1; //5
          waitTime.tv_nsec=0;
          if (sa==0) fprintf(stderr,"--- Stopping adapters\n");
          sa++;
@@ -191,7 +220,7 @@ static void stopBroker(void *p)
       
       if (adaptersStopped) {
          pthread_mutex_lock(&sdMtx);
-         waitTime.tv_sec=time(NULL)+5;
+         waitTime.tv_sec=time(NULL)+1; //5
          waitTime.tv_nsec=0;
          if (sp==0)  fprintf(stderr,"--- Stopping providers\n");
          sp++;
@@ -209,9 +238,11 @@ static void stopBroker(void *p)
    uninitProvProcCtl();
    uninitSocketPairs();
    sunsetControl();
-//   uninitGarbageCollector();
+   uninitGarbageCollector();
    closeLogging();
    free((void *)sfcBrokerStart);
+
+   pthread_mutex_unlock(&syncMtx);
  
    if (restartBroker) {
       char *emsg=strerror(errno);

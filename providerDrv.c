@@ -2744,6 +2744,7 @@ static void *processProviderInvocationRequestsThread(void *prms)
    BinRequestHdr *req = parms->req;
    int i,requestor=0,initRc=0;
    char* errstr = NULL; 
+   char msg[1024];
 
    _SFCB_ENTER(TRACE_PROVIDERDRV, "processProviderInvocationRequestsThread");
 
@@ -2755,11 +2756,26 @@ static void *processProviderInvocationRequestsThread(void *prms)
 
    if (req->operation != OPS_LoadProvider) {
      if (req->provId == NULL) {
-       mlogf(M_ERROR,M_SHOW,"-#- no provider id specified for request --- terminating process.\n");
+       mlogf(M_ERROR,M_SHOW,"-#- no provider id specified for request --- terminating process (%d).\n", currentProc);
+       snprintf(msg,1023, "*** Provider id not specified (%d), exiting",
+		currentProc);
+       resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
+       sendResponse(abs(parms->requestor), resp);
+       free(resp);
        exit(-1);
      }
 
       time(&curProvProc->lastActivity);
+      if (activProvs == NULL) {
+	/* only load provider allowed, exiting should allow for recovery via reload */
+	mlogf(M_ERROR,M_SHOW,"-#- potential race condition in provider reload --- terminating process (%d).\n", currentProc);
+	snprintf(msg,1023, "*** Provider not yet loaded (%d), exiting",
+		 currentProc);
+	resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
+	sendResponse(abs(parms->requestor), resp);
+	free(resp);
+	exit(-1);	
+      }
       for (pInfo = activProvs; pInfo; pInfo = pInfo->next) {
          if (pInfo->provIds.ids == req->provId) {
             pInfo->lastActivity=curProvProc->lastActivity;
@@ -2767,8 +2783,17 @@ static void *processProviderInvocationRequestsThread(void *prms)
          }
       }
       if (pInfo==NULL) {
-         mlogf(M_ERROR,M_SHOW,"-#- Serious provider id / provider process mismatch --- terminating process.\n");
-         exit(-1);
+	/* probably a race, however this provider is still alive, keep it running */
+	mlogf(M_ERROR,M_SHOW,"-#- misdirected provider request (%d) --- skipping request, keep process (%d).\n", req->operation, currentProc);
+	if (req->operation == OPS_InvokeMethod) {
+	  fprintf(stderr,"method: %s",(char*)((InvokeMethodReq*)req)->method.data);
+	}
+	snprintf(msg,1023, "*** Misdirected provider request (%d)",
+		 currentProc);
+	resp = errorCharsResp(CMPI_RC_ERR_FAILED, msg);
+	sendResponse(abs(parms->requestor), resp);
+	free(resp);
+	_SFCB_RETURN(NULL);
       }
       
       if (pInfo->library==NULL) { 

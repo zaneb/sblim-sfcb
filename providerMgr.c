@@ -666,9 +666,10 @@ static void assocProviderList(int *requestor, OperationHdr * req)
        {
 	 /* Oops, even creation of the default provider failed */
 	 mlogf(M_ERROR,M_SHOW,"--- forkProvider failed for defaultProvider\n");
-	 /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
-	  NULL, req->options); */
-	 _SFCB_ABORT();
+	 spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+			 NULL, req->options);
+	 //  _SFCB_ABORT();
+	 _SFCB_EXIT();
        }     
    }
    else {
@@ -742,14 +743,16 @@ static ProviderInfo *getMethodProvider(char *className, char *nameSpace)
 static void classProvider(int *requestor, OperationHdr * req)
 {
   int rc;
+  int dmy;
    _SFCB_ENTER(TRACE_PROVIDERMGR, "classProvider");
    rc = forkProvider(classProvInfoPtr, req, NULL);
    if (rc != CMPI_RC_OK)
     {
       mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in classProvider\n");
-      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
-               NULL, req->options); */
-      _SFCB_ABORT();
+      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+		      NULL, req->options);
+      //      _SFCB_ABORT();
+      _SFCB_EXIT();
     }
   
    _SFCB_TRACE(1,("--- result %d-%lu to with %d-%lu",
@@ -765,14 +768,16 @@ static void classProvider(int *requestor, OperationHdr * req)
 static void qualiProvider(int *requestor, OperationHdr * req)
 {
    int rc;
+   int dmy;
    _SFCB_ENTER(TRACE_PROVIDERMGR, "qualiProvider");
    rc = forkProvider(qualiProvInfoPtr, req, NULL);
    if (rc != CMPI_RC_OK)
     {
       mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in qualiProvider\n");
-      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
-               NULL, req->options); */
-      _SFCB_ABORT();
+      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
+		      NULL, req->options);
+      //      _SFCB_ABORT();
+      _SFCB_EXIT();
     }
    _SFCB_TRACE(1,("--- result %d-%lu to with %d-%lu",   
       *requestor,getInode(*requestor),
@@ -842,9 +847,8 @@ static int _methProvider(BinRequestContext * ctx, OperationHdr * req)
       if (rc != CMPI_RC_OK)
         {
 	  mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in _methProvider (%s)\n", className);
-      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
-               NULL, req->options); */
-	  _SFCB_ABORT();
+	  //	  _SFCB_ABORT();
+	  _SFCB_RETURN(MSG_X_PROVIDER_NOT_FOUND);
         }
       ctx->provA.ids = getProvIds(classProvInfoPtr);
       ctx->provA.socket = classProvInfoPtr->providerSockets.send;
@@ -856,9 +860,8 @@ static int _methProvider(BinRequestContext * ctx, OperationHdr * req)
       if (rc != CMPI_RC_OK)
         {
 	  mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in _methProvider (%s)\n", className);
-      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
-               NULL, req->options); */
-	  _SFCB_ABORT();
+	  // _SFCB_ABORT();
+	  _SFCB_RETURN(MSG_X_PROVIDER_NOT_FOUND);
         }
       ctx->provA.ids = getProvIds(interOpProvInfoPtr);
       ctx->provA.socket = interOpProvInfoPtr->providerSockets.send;
@@ -874,8 +877,6 @@ static int _methProvider(BinRequestContext * ctx, OperationHdr * req)
       }
       else { 
 	 mlogf(M_ERROR,M_SHOW,"--- _methProvider NOT FOUND\n");
-      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
-               NULL, req->options); */
          _SFCB_RETURN(MSG_X_PROVIDER_NOT_FOUND);
       }
    }
@@ -1237,7 +1238,9 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
          if (resp) free(resp);
          resp=NULL;
 //         spRecvResult(&resultSockets.receive, &fromS, (void**) &resp, &size);
-         spRecvResult(&sockets.receive, &fromS, (void**) &resp, &size);
+         if (spRecvResult(&sockets.receive, &fromS, (void**) &resp, &size) < 0) {
+	   size = 0; /* force failure handling */
+	 }
 	 /* nothing received -- construct a failure response */
 	 if (resp == NULL || size == 0) {
 	   resp = calloc(sizeof(BinResponseHdr),1);
@@ -1262,7 +1265,9 @@ static BinResponseHdr *intInvokeProvider(BinRequestContext * ctx,ComSockets sock
 
    else if ((ctx->noResp & 1)==0) {
 //      spRecvResult(&resultSockets.receive, &fromS, (void **) &resp, &size);
-      spRecvResult(&sockets.receive, &fromS, (void **) &resp, &size);
+     if (spRecvResult(&sockets.receive, &fromS, (void **) &resp, &size) < 0) {
+       size = 0; /* force failure case */
+     }
 
       /* nothing received -- construct a failure response */
       if (resp == NULL || size == 0) {
@@ -1417,7 +1422,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    
    irc = getProviderContext(&binCtx, &req);
    
-   if (irc) {
+   if (irc == MSG_X_PROVIDER) {
       _SFCB_TRACE(1, ("--- Invoking Provider"));
       resp = invokeProvider(&binCtx);
       resp->rc--;
@@ -1428,7 +1433,11 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
       }
       else ccl=NULL;
    }
-   else ccl = NULL;
+   else {
+     mlogf(M_ERROR,M_SHOW,"-- no provider context getConstClass(%s:%s)\n", 
+	   ns, cn);
+     ccl = NULL; /* sufficient error indication ? */
+   }
    
    unlockUpCall(Broker);
 
@@ -1464,9 +1473,8 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    if (irc != CMPI_RC_OK) 
     {
       mlogf(M_ERROR,M_SHOW,"--- forkProvider failed in _getConstClass(%s:%s)\n", ns, cn);
-      /*      spSendCtlResult(requestor, &dmy, MSG_X_PROVIDER_NOT_FOUND, 0,
-               NULL, req->options); */
-      _SFCB_ABORT();
+      // _SFCB_ABORT();
+      _SFCB_RETURN(NULL);
     }
   
    memset(&binCtx,0,sizeof(BinRequestContext));

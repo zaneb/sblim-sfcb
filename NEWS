@@ -43,6 +43,7 @@ Bugs fixed:
 - 3496383 Faster Return from CBDeliverIndication
 - 3416060 sigsegv in tool_mm_flush()
 - 3497096 double free during stopProc
+- 3497765 Better Error Handling in sfcb Provider Manager and Driver
 
 Changes in 1.3.13
 =================

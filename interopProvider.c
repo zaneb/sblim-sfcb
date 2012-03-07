@@ -330,6 +330,40 @@ static void removeHandler(
    _SFCB_EXIT();
 }
 
+/* 
+ * Similar to addHandler(), but useCount is maintained
+ * don't need to check for handlerHt because we only get here
+ * if getHandler does not return NULL
+ */
+
+static Handler *updateHandler(
+	CMPIInstance *ci,
+	CMPIObjectPath * op)
+{
+   Handler *ha; 
+   char *key;
+   
+   _SFCB_ENTER(TRACE_INDPROVIDER, "updateHandler");
+      
+   key=normalizeObjectPathCharsDup(op);
+      
+   _SFCB_TRACE(1,("--- Handler: %s",key));
+   
+   // do we need to check??
+   if ((ha=handlerHt->ft->get(handlerHt,key))==NULL) {
+      _SFCB_TRACE(1,("--- No handler %p",ha));
+      if(key) free(key);
+      _SFCB_RETURN(NULL);
+   }
+
+   CMRelease(ha->hci);
+   ha->hci=CMClone(ci,NULL);
+   ha->hop=CMClone(op,NULL);
+   handlerHt->ft->put(handlerHt,key,ha);
+   
+   _SFCB_RETURN(ha);
+}
+
 /* ------------------------------------------------------------------------- */
 
 extern int isChild(const char *ns, const char *parent, const char* child);
@@ -1016,8 +1050,9 @@ CMPIStatus InteropProviderCreateInstance(
    _SFCB_RETURN(st);
 }
 
-/* ------------------------------------------------------------------------- */
-
+/*
+ * ModifyInstance only for IndicationSubscription.SubscriptionState
+ */
 CMPIStatus InteropProviderModifyInstance(
 	CMPIInstanceMI * mi,
 	const CMPIContext * ctx,
@@ -1065,7 +1100,29 @@ CMPIStatus InteropProviderModifyInstance(
 		su->sci=CMClone(ci,NULL);
    	  
 	}
-	else setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"Class not supported");
+   	else if(isa("root/interop", cns, "cim_listenerdestination")) {
+		char *key = normalizeObjectPathCharsDup(cop);
+		_SFCB_TRACE(1,("--- modify cim_indicationsubscription %s",key));
+		Handler *ha;
+		 
+		ha = getHandler(key);
+		free(key);
+		if(!ha) {
+			st.rc = CMPI_RC_ERR_NOT_FOUND;
+			return st;      	
+		}
+		CMPIData newDest = CMGetProperty(ci, "Destination", &st);
+		
+		if(newDest.state != CMPI_goodValue) {
+			st.rc = CMPI_RC_ERR_FAILED;
+			return st;      	
+		}
+		/*replace the instance in the hashtable*/
+		CMRelease(ha->hci);
+		ha->hci=CMClone(ci,NULL);
+   	  
+	}
+	else setStatus(&st,CMPI_RC_ERR_NOT_SUPPORTED,"ModifyInstance for class not supported");
 	
 	if (st.rc==CMPI_RC_OK) {
 		ctxLocal = prepareUpcall((CMPIContext *)ctx);
@@ -1285,6 +1342,15 @@ CMPIStatus InteropProviderInvokeMethod(
          setStatus(&st, CMPI_RC_ERR_NOT_FOUND, "Handler objectnot found");
       }
       if(key) free(key);
+   }
+
+   else if (strcasecmp(methodName, "_updateHandler") == 0) {
+      CMPIInstance *ci=in->ft->getArg(in,"handler",&st).value.inst;
+      CMPIObjectPath *op=in->ft->getArg(in,"key",&st).value.ref;
+      CMPIString *str=CDToString(_broker,op,NULL);
+      CMPIString *ns=CMGetNameSpace(op,NULL);
+      _SFCB_TRACE(1,("--- _updateHandler %s %s",(char*)ns->hdl,(char*)str->hdl));
+      updateHandler(ci,op);     
    }
 
    else if (strcasecmp(methodName, "_startup") == 0) {

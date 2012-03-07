@@ -1,3 +1,8 @@
+2012-03-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* interopProvider.c, indCIMXMLHandler.c, test/xmltest/LD_modify*:
+	[ 3498932 ] Implement ModifyInstance for CIM_ListenerDestination
+
 2012-03-07 Michael Chase-Salerno <bratac@linux.vnet.ibm.com>
 
 	* indCIMXMLHandler.c:

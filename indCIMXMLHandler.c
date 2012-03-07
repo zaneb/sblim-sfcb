@@ -417,6 +417,9 @@ CMPIStatus IndCIMXMLHandlerCreateInstance(CMPIInstanceMI * mi,
    _SFCB_RETURN(st);
 }
 
+/*
+ * ModifyInstance only for ListenerDestination.Destination
+ */
 CMPIStatus IndCIMXMLHandlerModifyInstance(CMPIInstanceMI * mi,
 					  const CMPIContext * ctx,
 					  const CMPIResult * rslt,
@@ -424,9 +427,43 @@ CMPIStatus IndCIMXMLHandlerModifyInstance(CMPIInstanceMI * mi,
 					  const CMPIInstance * ci, 
 					  const char **properties)
 {
-   CMPIStatus st = { CMPI_RC_ERR_NOT_SUPPORTED, NULL };
-   _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerSetInstance");   
-   _SFCB_RETURN(st);
+
+  CMPIStatus st = { CMPI_RC_OK, NULL };
+  CMPIString *cn = CMGetClassName(cop, NULL);
+  const char *cns = cn->ft->getCharPtr(cn,NULL);
+  CMPIArgs *in;
+  CMPIData rv;
+	
+  _SFCB_ENTER(TRACE_INDPROVIDER, "IndCIMXMLHandlerModifyInstance");   
+   
+  if(isa("root/interop", cns, "cim_listenerdestination")) {
+    _SFCB_TRACE(1,("--- modify %s", cns));
+		
+    CMPIData newDest = CMGetProperty(ci, "Destination", &st);
+    fprintf(stderr, "new dest is %s\n", CMGetCharPtr(newDest.value.string));
+
+    if(newDest.state != CMPI_goodValue) {
+      st.rc = CMPI_RC_ERR_FAILED;
+      return st;      	
+    }
+   	  
+    in=CMNewArgs(_broker,NULL);
+    CMAddArg(in,"handler",&ci,CMPI_instance);
+    CMAddArg(in,"key",&cop,CMPI_ref);
+    /* cn needs to be IndicationSub to route the IM call to interopProv */
+    CMPIObjectPath* sop=CMNewObjectPath(_broker,"root/interop","cim_indicationsubscription",&st);
+    rv = CBInvokeMethod(_broker,ctx,sop,"_updateHandler",in,NULL,&st);
+
+    if (st.rc==CMPI_RC_OK) {
+      st=InternalProviderModifyInstance(NULL,ctx,rslt,cop,ci,properties);
+    }
+    else {
+      rv=CBInvokeMethod(_broker,ctx,sop,"_removeHandler",in,NULL,NULL);
+    }
+
+  }
+
+  _SFCB_RETURN(st);
 }
 
 CMPIStatus IndCIMXMLHandlerDeleteInstance(CMPIInstanceMI * mi,

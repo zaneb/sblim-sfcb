@@ -46,6 +46,7 @@ Bugs fixed:
 - 3497765 Better Error Handling in sfcb Provider Manager and Driver
 - 3497950 SFCB Semaphore Handling Improvements
 - 3498275 Remove __Namespace
+- 3498044 RIEnabled conflicts with settable retries
 
 Changes in 1.3.13
 =================

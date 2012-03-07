@@ -854,14 +854,18 @@ CMPIStatus IndCIMXMLHandlerInvokeMethod(CMPIMethodMI * mi,
    if (interOpNameSpace(ref,&st)==0) _SFCB_RETURN(st);
    
    if (strcasecmp(methodName, "_deliver") == 0) {     
+#ifndef SETTABLERETRY
       // On the first indication, check if reliable indications are enabled.
       if (RIEnabled == -1) {
+#endif
         CMPIObjectPath *op=CMNewObjectPath(_broker,"root/interop","CIM_IndicationService",NULL);
         CMPIEnumeration *isenm = _broker->bft->enumerateInstances(_broker, ctx, op, NULL, NULL);
         CMPIData isinst=CMGetNext(isenm,NULL);
         CMPIData mc=CMGetProperty(isinst.value.inst,"DeliveryRetryAttempts",NULL);
         RIEnabled=mc.value.uint16;
+#ifndef SETTABLERETRY
       }
+#endif
       CMPIInstance *indo=CMGetArg(in,"indication",NULL).value.inst;
       CMPIInstance *ind=CMClone(indo,NULL);
       CMPIContext    *ctxLocal=NULL;

@@ -64,6 +64,7 @@ CimAccountPassthroughProviderInvokeMethod(CMPIMethodMI * mi,
                             const CMPIArgs * in, CMPIArgs * out)
 {
   CMPIStatus      st = { CMPI_RC_OK, NULL };
+  CMPIUint8       ret_int = 1;
 
   _SFCB_ENTER(TRACE_PROVIDERS, "CimAccountPassthroughProviderInvokeMethod");
 
@@ -147,6 +148,8 @@ CimAccountPassthroughProviderInvokeMethod(CMPIMethodMI * mi,
       CMPIValue av; 
       av.string = st.msg;
       CMAddArg(out, "Message", &av, CMPI_string);
+      if (st.rc == CMPI_RC_OK)
+	ret_int = 0;
     }
     else {      /* no caInst; probably wrong principal (UserName didn't match) */
       _SFCB_TRACE(1, ("--- Invalid request method: %s", methodName));
@@ -158,6 +161,8 @@ CimAccountPassthroughProviderInvokeMethod(CMPIMethodMI * mi,
     setStatus(&st, CMPI_RC_ERR_METHOD_NOT_FOUND, "Invalid request method");
   }
 
+  CMReturnData (rslt, (CMPIValue *) &ret_int, CMPI_uint8);
+  CMReturnDone(rslt);
   _SFCB_RETURN(st);
 }
 

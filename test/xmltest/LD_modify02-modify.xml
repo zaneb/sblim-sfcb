@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CIM CIMVERSION="2.0" DTDVERSION="2.0">
+<MESSAGE ID="4711" PROTOCOLVERSION="1.0"><SIMPLEREQ><IMETHODCALL NAME="ModifyInstance"><LOCALNAMESPACEPATH><NAMESPACE NAME="root"></NAMESPACE><NAMESPACE NAME="interop"></NAMESPACE></LOCALNAMESPACEPATH>
+<IPARAMVALUE NAME="ModifiedInstance">
+  <VALUE.NAMEDINSTANCE>
+    <INSTANCENAME CLASSNAME="CIM_ListenerDestinationCIMXML">
+      <KEYBINDING NAME="creationclassname"><KEYVALUE VALUETYPE="string">CIM_ListenerDestinationCIMXML</KEYVALUE></KEYBINDING>
+      <KEYBINDING NAME="name"><KEYVALUE VALUETYPE="string">Test_Indication_Handler_</KEYVALUE></KEYBINDING>
+      <KEYBINDING NAME="systemcreationclassname"><KEYVALUE VALUETYPE="string">CIM_ComputerSystem</KEYVALUE></KEYBINDING>
+      <KEYBINDING NAME="systemname"><KEYVALUE VALUETYPE="string">localhost.localdomain</KEYVALUE></KEYBINDING>
+    </INSTANCENAME>
+    <INSTANCE CLASSNAME="CIM_ListenerDestinationCIMXML">
+      <PROPERTY NAME="Destination" TYPE="string"><VALUE>file:///tmp/SFCB_Listener.txt</VALUE></PROPERTY>
+      <PROPERTY NAME="SystemCreationClassName" TYPE="string"><VALUE>CIM_ComputerSystem</VALUE></PROPERTY>
+      <PROPERTY NAME="SystemName" TYPE="string"><VALUE>localhost.localdomain</VALUE></PROPERTY>
+      <PROPERTY NAME="CreationClassName" TYPE="string"><VALUE>CIM_ListenerDestinationCIMXML</VALUE></PROPERTY>
+      <PROPERTY NAME="Name" TYPE="string"><VALUE>Test_Indication_Handler_</VALUE></PROPERTY>
+    </INSTANCE>
+  </VALUE.NAMEDINSTANCE>
+</IPARAMVALUE>
+</IMETHODCALL></SIMPLEREQ>
+</MESSAGE></CIM>

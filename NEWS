@@ -44,6 +44,7 @@ Bugs fixed:
 - 3416060 sigsegv in tool_mm_flush()
 - 3497096 double free during stopProc
 - 3497765 Better Error Handling in sfcb Provider Manager and Driver
+- 3497950 SFCB Semaphore Handling Improvements
 
 Changes in 1.3.13
 =================

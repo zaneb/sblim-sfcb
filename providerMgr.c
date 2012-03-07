@@ -1004,13 +1004,25 @@ void closeProviderContext(BinRequestContext * ctx)
    int i = 0;
     _SFCB_ENTER(TRACE_PROVIDERMGR, "closeProviderContext");
    for(i = 0; i < ctx->pCount; i++) {
-     semAcquire(sfcbSem,PROV_GUARD(ctx->pAs[i].ids.procId));
-     if(semGetValue(sfcbSem, PROV_INUSE(ctx->pAs[i].ids.procId)) != 0) {
-       semAcquire(sfcbSem,PROV_INUSE(ctx->pAs[i].ids.procId));
+     if (semAcquireUnDo(sfcbSem,PROV_GUARD(ctx->pAs[i].ids.procId))) {
+       mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+	     ctx->pAs[i].ids.procId, strerror(errno));
+       _SFCB_ABORT();
+     }
+     if(semGetValue(sfcbSem, PROV_INUSE(ctx->pAs[i].ids.procId)) > 0) {
+       if (semAcquireUnDo(sfcbSem,PROV_INUSE(ctx->pAs[i].ids.procId))) {
+	 mlogf(M_ERROR,M_SHOW,"-#- Fatal error decreasing inuse semaphore for %d, reason: %s\n",
+	       ctx->pAs[i].ids.procId, strerror(errno));
+	 _SFCB_ABORT();
+       }
      } else {
        fprintf(stderr, "--- closeProviderContext not touching sem %d; already zero\n", PROV_INUSE(ctx->pAs[i].ids.procId));
      }
-     semRelease(sfcbSem,PROV_GUARD(ctx->pAs[i].ids.procId));
+     if (semReleaseUnDo(sfcbSem,PROV_GUARD(ctx->pAs[i].ids.procId))) {
+       mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+	     ctx->pAs[i].ids.procId, strerror(errno));
+       _SFCB_ABORT();
+     }
    }
    if (ctx->pAs) free(ctx->pAs);
 }
@@ -1023,15 +1035,30 @@ static void setInuseSem(void *id)
     _SFCB_ENTER(TRACE_PROVIDERMGR, "setInuseSem");
    if (sfcbSem < 0) { //Semaphore Not initialized.
         semKey=ftok(SFCB_BINARY,'S');
-       sfcbSem=semget(semKey,1, 0600);
+	if ((sfcbSem=semget(semKey,1, 0600)) < 0) {
+	  mlogf(M_ERROR,M_SHOW,"-#- Fatal error getting semaphore set, reason: %s\n",
+		strerror(errno));
+	  _SFCB_ABORT();
+	}
    }
 
    ids.ids=id;
 
-   semAcquire(sfcbSem,PROV_GUARD(ids.procId));
-   //semAcquire(sfcbSem,PROV_INUSE(ids.procId));
-   //semReleaseUnDo(sfcbSem,PROV_INUSE(ids.procId));
-   semRelease(sfcbSem,PROV_GUARD(ids.procId));
+   if (semAcquireUnDo(sfcbSem,PROV_GUARD(ids.procId))) {
+     mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+	   ids.procId, strerror(errno));
+     _SFCB_ABORT();
+   }
+   if (semReleaseUnDo(sfcbSem,PROV_INUSE(ids.procId))) {
+     mlogf(M_ERROR,M_SHOW,"-#- Fatal error increasing inuse semaphore for %d, reason: %s\n",
+	   ids.procId, strerror(errno));
+     _SFCB_ABORT();
+   }
+   if (semReleaseUnDo(sfcbSem,PROV_GUARD(ids.procId))) {
+     mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+	   ids.procId, strerror(errno));
+     _SFCB_ABORT();
+   }
    _SFCB_EXIT();
 }
 

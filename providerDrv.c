@@ -156,6 +156,9 @@ static int idleThreadStartHandled=0;
 
 ProviderInfo *activProvs = NULL;
 
+static void increaseInUseSem(int id);
+static void decreaseInUseSem(int id);
+
 unsigned long provSampleInterval=10;
 unsigned long provTimeoutInterval=25;
 unsigned      provAutoGroup=0;
@@ -288,6 +291,52 @@ static int getActivProvCount() {
   for (tmp = activProvs; tmp; tmp = tmp->next)
     count++;
   return count;
+}
+
+static void increaseInUseSem(int id)
+{
+  _SFCB_ENTER(TRACE_PROVIDERDRV, "increaseInUseSem");
+  
+  if (semAcquireUnDo(sfcbSem,PROV_GUARD(id))) {
+    mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+	  id, strerror(errno));
+    _SFCB_ABORT();
+  }
+  if (semReleaseUnDo(sfcbSem,PROV_INUSE(id))) {
+    mlogf(M_ERROR,M_SHOW,"-#- Fatal error increasing inuse semaphore for %d, reason: %s\n",
+	  id, strerror(errno));
+    _SFCB_ABORT();
+  }
+  if (semReleaseUnDo(sfcbSem,PROV_GUARD(id))) {
+    mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+	  id, strerror(errno));
+    _SFCB_ABORT();
+  }
+  _SFCB_EXIT();
+}
+
+static void decreaseInUseSem(int id)
+{
+  _SFCB_ENTER(TRACE_PROVIDERDRV, "decreaseInUseSem");
+  
+  if (semAcquireUnDo(sfcbSem,PROV_GUARD(id))) {
+    mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+	  id, strerror(errno));
+    _SFCB_ABORT();
+  }
+  if (semGetValue(sfcbSem,PROV_INUSE(id)) > 0) {
+    if (semAcquireUnDo(sfcbSem,PROV_INUSE(id))) {
+      mlogf(M_ERROR,M_SHOW,"-#- Fatal error decreasing inuse semaphore for %d, reason: %s\n",
+	    id, strerror(errno));
+      _SFCB_ABORT();
+    }
+  }
+  if (semReleaseUnDo(sfcbSem,PROV_GUARD(id))) {
+    mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+	  id, strerror(errno));
+    _SFCB_ABORT();
+  }
+  _SFCB_EXIT();
 }
 
 typedef struct _provLibAndTypes {
@@ -474,8 +523,12 @@ void* providerIdleThread()
          if (pInfo) {
             proc=curProvProc;
             if (proc) {
-               semAcquireUnDo(sfcbSem,PROV_GUARD(proc->id));
-               if ((val=semGetValue(sfcbSem,PROV_INUSE(proc->id)))==0) {            
+	      if (semAcquireUnDo(sfcbSem,PROV_GUARD(proc->id))) {
+		mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+		      proc->id, strerror(errno));
+		_SFCB_ABORT();
+	      }
+	      if ((val=semGetValue(sfcbSem,PROV_INUSE(proc->id)))==0) {            
                   if ((now-proc->lastActivity)>provTimeoutInterval) {
                      ctx = native_new_CMPIContext(MEM_TRACKED,NULL);
                      noBreak=0;
@@ -542,7 +595,11 @@ void* providerIdleThread()
                      }
                   }
                }
-               semRelease(sfcbSem,PROV_GUARD(proc->id));
+	      if (semReleaseUnDo(sfcbSem,PROV_GUARD(proc->id))) {
+		mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+		      proc->id, strerror(errno));
+		_SFCB_ABORT();
+	      }
             }      
          }
       }
@@ -692,19 +749,35 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
      for (i = 0; i < provProcMax; i++) {
        if ((provProc+i) && provProc[i].pid &&
            provProc[i].group && strcmp(provProc[i].group,info->group)==0) {
-         semAcquire(sfcbSem,PROV_GUARD(provProc[i].id));
-         semRelease(sfcbSem,PROV_INUSE(provProc[i].id));
-         semRelease(sfcbSem,PROV_GUARD(provProc[i].id));
-         info->pid=provProc[i].pid;
-         info->providerSockets=provProc[i].providerSockets;
-         _SFCB_TRACE(1,("--- Process %d shared by %s and %s",provProc[i].pid,info->providerName,
-			provProc[i].firstProv->providerName));
-         if (provProc[i].firstProv) info->next=provProc[i].firstProv;
-         else info->next = NULL;
-         provProc[i].firstProv=info;
-         info->proc=provProc+i;
-         if (info->unload<provProc[i].unload) provProc[i].unload=info->unload;
-         _SFCB_RETURN(provProc[i].pid);
+         if (semAcquireUnDo(sfcbSem,PROV_GUARD(provProc[i].id))) {
+	   mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+		 provProc[i].id, strerror(errno));
+	   _SFCB_ABORT();
+	 }
+	 /* double checking pattern required to prevent race ! */
+	 if ((provProc+i) && provProc[i].pid &&
+	     provProc[i].group && strcmp(provProc[i].group,info->group)==0) {
+	   info->pid=provProc[i].pid;
+	   info->providerSockets=provProc[i].providerSockets;
+	   _SFCB_TRACE(1,("--- Process %d shared by %s and %s",provProc[i].pid,info->providerName,
+			  provProc[i].firstProv->providerName));
+	   if (provProc[i].firstProv) info->next=provProc[i].firstProv;
+	   else info->next = NULL;
+	   provProc[i].firstProv=info;
+	   info->proc=provProc+i;
+	   if (info->unload<provProc[i].unload) provProc[i].unload=info->unload;
+	   if (semReleaseUnDo(sfcbSem,PROV_GUARD(provProc[i].id))) {
+	     mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+		   provProc[i].id, strerror(errno));
+	     _SFCB_ABORT();
+	   }
+	   _SFCB_RETURN(provProc[i].pid);
+	 }
+	 if (semReleaseUnDo(sfcbSem,PROV_GUARD(provProc[i].id))) {
+	   mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+		 provProc[i].id, strerror(errno));
+	   _SFCB_ABORT();
+	 }
        }
      }
    }
@@ -761,13 +834,41 @@ static int getProcess(ProviderInfo * info, ProviderProcess ** proc)
             providerProcess=1;
             info->proc=*proc;
             info->pid=currentProc; 
-                         
-            semSetValue(sfcbSem,PROV_GUARD((*proc)->id),0);
-            semSetValue(sfcbSem,PROV_INUSE((*proc)->id),0);
-            semSetValue(sfcbSem,PROV_ALIVE((*proc)->id),0);
-            semReleaseUnDo(sfcbSem,PROV_ALIVE((*proc)->id));
-            semReleaseUnDo(sfcbSem,PROV_INUSE((*proc)->id));
-            semRelease(sfcbSem,PROV_GUARD((*proc)->id));
+
+	    /* The guard semaphore may never increase beyond 1, unless it is relased more often than
+	       acquired. Therefore it is cleaner to acquire it than to set it to 0 unconditionally, 
+	       which can lead to a race, but we will also check the value to be sure.
+	    */
+            if (semAcquireUnDo(sfcbSem,PROV_GUARD((*proc)->id))) {
+	      mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+		    (*proc)->id, strerror(errno));
+	      _SFCB_ABORT();
+	    }
+	    if (semGetValue(sfcbSem,PROV_GUARD((*proc)->id))) {
+	      mlogf(M_ERROR,M_SHOW,"-#- Fatal error, guard semaphore for %d is not zero\n",
+		    (*proc)->id);
+	      _SFCB_ABORT();	      
+	    }
+            if (semSetValue(sfcbSem,PROV_INUSE((*proc)->id),0)) {
+	      mlogf(M_ERROR,M_SHOW,"-#- Fatal error resetting inuse semaphore for %d, reason: %s\n",
+		    (*proc)->id, strerror(errno));
+	      _SFCB_ABORT();
+	    }
+            if (semSetValue(sfcbSem,PROV_ALIVE((*proc)->id),0)) {
+	      mlogf(M_ERROR,M_SHOW,"-#- Fatal error resetting alive semaphore for %d, step 1, reason: %s\n",
+		    (*proc)->id, strerror(errno));
+	      _SFCB_ABORT();
+	    }
+            if (semReleaseUnDo(sfcbSem,PROV_ALIVE((*proc)->id))) {
+	      mlogf(M_ERROR,M_SHOW,"-#- Fatal error resetting alive semaphore for %d, step 2, reason: %s\n",
+		    (*proc)->id, strerror(errno));
+	      _SFCB_ABORT();
+	    }
+            if (semReleaseUnDo(sfcbSem,PROV_GUARD((*proc)->id))) {
+	      mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+		    (*proc)->id, strerror(errno));
+	      _SFCB_ABORT();
+	    }
             
             processProviderInvocationRequests(info->providerName);
             _SFCB_RETURN(0);
@@ -797,17 +898,21 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
 
    if (info->pid ) {
       proc=info->proc;
-      semAcquire(sfcbSem,PROV_GUARD(proc->id));
-      if ((val=semGetValue(sfcbSem,PROV_ALIVE(proc->id)))) {
-         semRelease(sfcbSem,PROV_INUSE(proc->id));
-         semRelease(sfcbSem,PROV_GUARD(proc->id));
-         _SFCB_TRACE(1, ("--- Provider %s still loaded",info->providerName));
-         _SFCB_RETURN(CMPI_RC_OK)
+      if (semAcquireUnDo(sfcbSem,PROV_GUARD(proc->id))) {
+	mlogf(M_ERROR,M_SHOW,"-#- Fatal error acquiring semaphore for %d, reason: %s\n",
+	      proc->id, strerror(errno));
+	_SFCB_ABORT();
+      }
+      if ((val=semGetValue(sfcbSem,PROV_ALIVE(proc->id))) > 0) {
+	if (semReleaseUnDo(sfcbSem,PROV_GUARD(proc->id))) {
+	  mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+		proc->id, strerror(errno));
+	  _SFCB_ABORT();
+	}
+	_SFCB_TRACE(1, ("--- Provider %s still loaded",info->providerName));
+	_SFCB_RETURN(CMPI_RC_OK);
       }
 
-      semRelease(sfcbSem,PROV_GUARD(proc->id));
-      _SFCB_TRACE(1, ("--- Provider has been unloaded prevously, will reload"));
-      
       info->pid=0;
       for (pInfo=proc->firstProv; pInfo; pInfo=pInfo->next) {
          pInfo->pid=0;
@@ -815,6 +920,14 @@ int forkProvider(ProviderInfo * info, OperationHdr * req, char **msg)
       proc->firstProv=NULL;            
       proc->pid=0; 
       proc->group=NULL; 
+
+      if (semReleaseUnDo(sfcbSem,PROV_GUARD(proc->id))) {
+	mlogf(M_ERROR,M_SHOW,"-#- Fatal error releasing semaphore for %d, reason: %s\n",
+	      proc->id, strerror(errno));
+	_SFCB_ABORT();
+      }
+      _SFCB_TRACE(1, ("--- Provider has been unloaded prevously, will reload"));
+      
    }
 
    _SFCB_TRACE(1, ("--- Forking provider for %s", info->providerName));
@@ -2252,8 +2365,9 @@ static BinResponseHdr *activateFilter(BinRequestHdr *hdr, ProviderInfo* info,
       _SFCB_TRACE(1, ("--- Back from provider rc: %d", rci.rc));
 
       if (rci.rc==CMPI_RC_OK) {
-         resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
-         resp->rc=1;
+	increaseInUseSem(info->provIds.procId);
+	resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+	resp->rc=1;
       }
    }
 
@@ -2319,8 +2433,9 @@ static BinResponseHdr *deactivateFilter(BinRequestHdr *hdr, ProviderInfo* info,
 	 }
 	 TIMING_STOP(hdr,info)
          if (rci.rc==CMPI_RC_OK) {
-            resp->rc=1;
-            _SFCB_RETURN(resp);
+	   decreaseInUseSem(info->provIds.procId);
+	   resp->rc=1;
+	   _SFCB_RETURN(resp);
          }
 
          if (resp) free(resp);
@@ -2366,8 +2481,8 @@ static BinResponseHdr *enableIndications(BinRequestHdr *hdr, ProviderInfo* info,
 	}
 	
 	if (rci.rc==CMPI_RC_OK) {
-		resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
-		resp->rc=1;
+	        resp = (BinResponseHdr *) calloc(1,sizeof(BinResponseHdr));
+	        resp->rc=1;
 	}
 	if (rci.rc!=CMPI_RC_OK) {
 		resp = errorResp(&rci);

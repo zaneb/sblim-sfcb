@@ -1,6 +1,10 @@
 2012-03-06  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c, providerMgr.c:
+	[ 3497950 ] SFCB Semaphore Handling Improvements
+	(patch by Viktor Mihajlovski)
+
+	* providerDrv.c, providerMgr.c:
 	[ 3497765 ] Better Error Handling in sfcb Provider Manager and Driver
 	(patch by Viktor Mihajlovski)
 

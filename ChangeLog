@@ -1,3 +1,8 @@
+2012-03-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* 10_interop.mof, default.reg.in, interopServerProvider.c:
+	[ 3498275 ] Remove __Namespace
+
 2012-03-06  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* providerDrv.c, providerMgr.c:

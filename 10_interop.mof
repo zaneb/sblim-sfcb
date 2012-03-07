@@ -43,12 +43,6 @@ class DMY_SubProfileRequiresProfile : CIM_SubProfileRequiresProfile
 {
 };
 
-class __Namespace
-{
-  [key]
-  string Name;
-};
-
 class DMY_ListenerDestinationCIMXML : CIM_ListenerDestinationCIMXML
 {
 };

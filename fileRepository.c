@@ -308,7 +308,7 @@ static int adjust(BlobIndex *bi, int pos, int adj)
 
 static int rebuild(BlobIndex *bi, const char *id, void *blob, int blen)
 {
-   int ofs,len,xt=0,dt=0;
+  int ofs,len,xt=0,dt=0,rc=0;
    unsigned long pos;
    char *xn=alloca(strlen(bi->dir)+8);
    char *dn=alloca(strlen(bi->dir)+8);
@@ -327,19 +327,24 @@ static int rebuild(BlobIndex *bi, const char *id, void *blob, int blen)
    if (len) copy(d,bi->fd,bi->dlen-(bi->bofs+bi->blen),bi->bofs+bi->blen);
    dt+=len;
    pos=ftell(d);
-   if (blen) fwrite(blob,blen,1,d);
+   if (blen) 
+     rc = fwrite(blob,blen,1,d) - 1;
    dt+=blen;
-   fclose(d);
+   rc += fclose(d);
+   if (rc != 0) return -1;
 
    adjust(bi,bi->pos,bi->blen);
 
    ofs=bi->pos+bi->len;
-   if (bi->pos) fwrite(bi->index,bi->pos,1,x);
+   if (bi->pos) 
+     rc = fwrite(bi->index,bi->pos,1,x) - 1;
    xt+=bi->pos;
    len=bi->dSize-ofs;
-   if (len) fwrite(bi->index+ofs,len,1,x);
+   if (len) 
+     rc += (fwrite(bi->index+ofs,len,1,x) - 1);
    xt+=len;
-   fclose(x);
+   rc += fclose(x);
+   if (rc != 0) return -1;
 
    remove(bi->fnd);
    remove(bi->fnx);
@@ -419,9 +424,13 @@ int addBlob(const char *ns, const char * cls, char *id, void *blob, int len)
    if (bi->dSize==0) {
       bi->fd=fopen(bi->fnd,"wb");
       if (bi->fd==NULL) { fdHandleError(bi); return -1; }
-      fwrite(blob,len,1,bi->fd);
-      fclose(bi->fd);
+      rc = fwrite(blob,len,1,bi->fd) - 1;  /* write the serialized instance */
+      rc += fclose(bi->fd);
       bi->fd=NULL;
+      if (rc != 0) {
+        fdHandleError(bi); 
+        return -1; 
+      }
 
       es=sprintf(idxe,"    %zd %s %d %d\r\n",strlen(id),id,len,0);
       ep=sprintf(idxe,"%d",es);
@@ -429,14 +438,18 @@ int addBlob(const char *ns, const char * cls, char *id, void *blob, int len)
 
       memcpy(bi->index,idxe,es);
       bi->dSize=es;
-      fwrite(bi->index,bi->dSize,1,bi->fx);
-      fclose(bi->fx);
+      rc = fwrite(bi->index,bi->dSize,1,bi->fx) - 1;  /* write idx file */
+      rc += fclose(bi->fx);
       bi->fx=NULL;
+      if (rc != 0) {
+        fdHandleError(bi); 
+        return -1; 
+      }
    }
 
    else {
 
-      if (indxLocate(bi,id)) {
+     if (indxLocate(bi,id)) { /* already have entries in the idx file; append */
          bi->fd=fopen(bi->fnd,"rb");
          if (bi->fd==NULL) { fdHandleError(bi); return -1; }
          else {
@@ -447,18 +460,22 @@ int addBlob(const char *ns, const char * cls, char *id, void *blob, int len)
             idxe[ep]=' ';
             memcpy(bi->index+bi->dSize,idxe,es);
             bi->dSize+=es;
-            rebuild(bi,id,blob,len);
+            if (rebuild(bi,id,blob,len) != 0) { fdHandleError(bi); return -1; }
          }
       }
 
-      else {
+     else { /* first entry in the idx file */
          bi->fd=fopen(bi->fnd,"ab+");
          if (bi->fd==NULL) bi->fd=fopen(bi->fnd,"wb+");
          fseek(bi->fd,0,SEEK_END);
          bi->fpos=ftell(bi->fd);
-         fwrite(blob,len,1,bi->fd);
-         fclose(bi->fd);
+         rc = fwrite(blob,len,1,bi->fd) - 1;
+         rc += fclose(bi->fd);
          bi->fd=NULL;
+         if (rc != 0) {
+           fdHandleError(bi); 
+           return -1; 
+         }
 
          es=sprintf(idxe,"    %zd %s %d %lu\r\n",strlen(id),id,len,bi->fpos);
          ep=sprintf(idxe,"%d",es);
@@ -467,9 +484,13 @@ int addBlob(const char *ns, const char * cls, char *id, void *blob, int len)
          memcpy(bi->index+bi->dSize,idxe,es);
          bi->dSize+=es;
          fseek(bi->fx,0,SEEK_SET);
-         fwrite(bi->index,bi->dSize,1,bi->fx);
-         fclose(bi->fx);
+         rc = fwrite(bi->index,bi->dSize,1,bi->fx) - 1;
+         rc += fclose(bi->fx);
          bi->fx=NULL;
+         if (rc != 0) {
+           fdHandleError(bi); 
+           return -1; 
+         }
      }
    }
    freeBlobIndex(&bi,1);
@@ -491,7 +512,7 @@ int deleteBlob(const char *ns, const char * cls, const char *id)
          else {
             fseek(bi->fd,0,SEEK_END);
             bi->dlen=ftell(bi->fd);
-            rebuild(bi,id,NULL,0);
+            if (rebuild(bi,id,NULL,0) != 0) { fdHandleError(bi); return -1; }
             freeBlobIndex(&bi,1);
             return 0;
          }

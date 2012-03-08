@@ -1188,11 +1188,13 @@ static void handleHttpRequest(int connFd, int sslMode)
 	if (!(conn_fd.ssl = SSL_new(ctx)))
 	  intSSLerror("Error creating SSL object");
 	SSL_set_bio(conn_fd.ssl, sb, sb);
+	char *error_string;
 	while(1) {
 	  int sslacc, sslerr;
 	  sslacc = SSL_accept(conn_fd.ssl);
 	  if (sslacc == 1) {
 	    /* accepted */
+	    _SFCB_TRACE(1, ("--- SSL connection accepted"));
 	    break;
 	  }
 	  sslerr = SSL_get_error(conn_fd.ssl,sslacc);
@@ -1202,20 +1204,132 @@ static void handleHttpRequest(int connFd, int sslMode)
 	    FD_ZERO(&httpfds);
 	    FD_SET(connFd,&httpfds);
 	    if (sslerr == SSL_ERROR_WANT_WRITE) {
+	      _SFCB_TRACE(2, (
+	          "---  Waiting for SSL handshake (WANT_WRITE): timeout=%ld",
+	          httpSelectTimeout.tv_sec));
 	      isReady = select(connFd+1,NULL,&httpfds,NULL,&httpSelectTimeout);
 	    } else {
+	      _SFCB_TRACE(2, (
+	          "---  Waiting for SSL handshake (WANT_READ): timeout=%ld",
+	          httpSelectTimeout.tv_sec));
 	      isReady = select(connFd+1,&httpfds,NULL,NULL,&httpSelectTimeout);
 	    }
 	    if (isReady == 0) {
 	      intSSLerror("Timeout error accepting SSL connection");
 	    } else if (isReady < 0) {
+	      mlogf(M_ERROR, M_SHOW, "--- Error accepting SSL connection: %s\n",
+	            strerror(errno));
 	      intSSLerror("Error accepting SSL connection");
 	    }
+	  // Error determination as follows: First, check the SSL error queue. If
+	  // empty, attempt to determine the correct error string some other way.
+	  // Finally, if the system errno is nonzero, report that as well.
+	  } else if (sslerr == SSL_ERROR_ZERO_RETURN){
+	      int syserrno = errno;
+	      unsigned long sslqerr = ERR_get_error();
+	      if (sslqerr != 0) {
+	        error_string = ERR_error_string(sslqerr, NULL);
+	      } else {
+	        error_string = "TLS/SSL connection has been closed";
+	      }
+	      mlogf(M_ERROR, M_SHOW,
+	          "--- SSL_ERROR_ZERO_RETURN during handshake: %s\n",
+	          error_string);
+	      if (syserrno)
+	        mlogf(M_ERROR, M_SHOW, "--- system errno reports: %s\n",
+	            strerror(syserrno));
+	      intSSLerror("SSL_ERROR_ZERO_RETURN error during SSL handshake");
+	      break;
+	  } else if (sslerr == SSL_ERROR_WANT_X509_LOOKUP){
+	      int syserrno = errno;
+	      unsigned long sslqerr = ERR_get_error();
+	      if (sslqerr != 0) {
+	        error_string = ERR_error_string(sslqerr, NULL);
+	      } else {
+	        error_string = "The client_cert_cb function has not completed";
+	      }
+	      mlogf(M_ERROR, M_SHOW,
+	          "--- SSL_ERROR_WANT_X509_LOOKUP during handshake: %s\n",
+	          error_string);
+	      if (syserrno)
+	        mlogf(M_ERROR, M_SHOW, "--- system errno reports: %s\n",
+	            strerror(syserrno));
+	      intSSLerror("SSL_ERROR_WANT_X509_LOOKUP error during SSL handshake");
+	      break;
+	  } else if (sslerr == SSL_ERROR_WANT_CONNECT){
+	      int syserrno = errno;
+	      unsigned long sslqerr = ERR_get_error();
+	      if (sslqerr != 0) {
+	        error_string = ERR_error_string(sslqerr, NULL);
+	      } else {
+	        error_string = "The connect operation did not complete";
+	      }
+	      mlogf(M_ERROR, M_SHOW,
+	          "--- SSL_ERROR_WANT_CONNECT during handshake: %s\n",
+	          error_string);
+	      if (syserrno)
+	        mlogf(M_ERROR, M_SHOW, "--- system errno reports: %s\n",
+	            strerror(syserrno));
+	      intSSLerror("SSL_ERROR_WANT_CONNECT error during SSL handshake");
+	      break;
+	  } else if (sslerr == SSL_ERROR_SYSCALL){
+	      int syserrno = errno;
+	      unsigned long sslqerr = ERR_get_error();
+	      if (sslqerr != 0) {
+	        error_string = ERR_error_string(sslqerr, NULL);
+	      } else {
+	        if (sslacc == 0) {
+	          error_string = "EOF occurred: client may have aborted";
+	        } else if (sslacc == -1) {
+	          error_string = "BIO reported an I/O error";
+	        } else {  /* possible? */
+	          error_string = "Unknown I/O error";
+	        }
+	      }
+	      mlogf(M_ERROR, M_SHOW,
+	          "--- SSL_ERROR_SYSCALL during handshake: %s\n",
+	          error_string);
+	      if (syserrno)
+	        mlogf(M_ERROR, M_SHOW, "--- system errno reports: %s\n",
+	            strerror(syserrno));
+	      intSSLerror("SSL_ERROR_SYSCALL error during SSL handshake");
+	      break;
+	  } else if (sslerr == SSL_ERROR_SSL){
+	      /* most certificate verification errors will occur here */
+	      int syserrno = errno;
+	      unsigned long sslqerr = ERR_get_error();
+	      if (sslqerr != 0) {
+	        error_string = ERR_error_string(sslqerr, NULL);
+	      } else {
+	        error_string = "Unknown SSL library error";
+	      }
+	      mlogf(M_ERROR, M_SHOW,
+	          "--- SSL_ERROR_SSL during handshake: %s\n",
+	          error_string);
+	      if (syserrno)
+	        mlogf(M_ERROR, M_SHOW, "--- system errno reports: %s\n",
+	            strerror(syserrno));
+	      intSSLerror("SSL_ERROR_SSL error during SSL handshake");
+	      break;
 	  } else {
-	    /* unexpected error */
-	    intSSLerror("Error accepting SSL connection");
-	  } 
-	}
+	      /* unexpected error */
+	      int syserrno = errno;
+	      unsigned long sslqerr = ERR_get_error();
+	      if (sslqerr != 0) {
+	        error_string = ERR_error_string(sslqerr, NULL);
+	      } else {
+	        error_string = "Undefined SSL library error";
+	      }
+	      mlogf(M_ERROR, M_SHOW,
+	          "--- Undefined SSL_ERROR during handshake: %s\n",
+	          error_string);
+	      if (syserrno)
+	        mlogf(M_ERROR, M_SHOW, "--- system errno reports: %s\n",
+	            strerror(syserrno));
+	      intSSLerror("Undefined error accepting SSL connection");
+	      break;
+	  }
+	}  /* while */
 	flags ^= O_NONBLOCK;
 	fcntl(connFd,F_SETFL,flags);
 	sslb = BIO_new(BIO_f_ssl());
@@ -1830,10 +1944,22 @@ int httpDaemon(int argc, char *argv[], int sslMode, int sfcbPid)
 #if defined USE_SSL
 static int get_cert(int preverify_ok,X509_STORE_CTX* x509_ctx)
 {
-  if (preverify_ok) {
-    x509 = X509_STORE_CTX_get_current_cert(x509_ctx);
-  }
-  return preverify_ok;
+  _SFCB_ENTER(TRACE_HTTPDAEMON, "get_cert");
+
+  char    buf[256];
+  int     err, depth;
+
+  x509 = X509_STORE_CTX_get_current_cert(x509_ctx);
+  err = X509_STORE_CTX_get_error(x509_ctx);
+  depth = X509_STORE_CTX_get_error_depth(x509_ctx);
+
+  _SFCB_TRACE(2, ("--- Verify peer certificate chain: level %d:", depth));
+  X509_NAME_oneline(X509_get_subject_name(x509), buf, 256);
+  _SFCB_TRACE(2, ("---  subject=%s", buf));
+  X509_NAME_oneline(X509_get_issuer_name(x509), buf, 256);
+  _SFCB_TRACE(2, ("---  issuer= %s", buf));
+
+  _SFCB_RETURN(preverify_ok);
 }
 
 typedef int (*Validate)(X509 *certificate, char ** principal, int mode);

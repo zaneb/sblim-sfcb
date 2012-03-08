@@ -49,6 +49,7 @@ Bugs fixed:
 - 3498275 Remove __Namespace
 - 3498044 RIEnabled conflicts with settable retries
 - 3426027 cimAccountPassThrough does not set return code
+- 3498719 Better SSL error reporting for sfcb
 
 Changes in 1.3.13
 =================

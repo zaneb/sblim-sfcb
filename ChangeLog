@@ -1,3 +1,8 @@
+2012-03-07 Dave Heller <hellerda@us.ibm.com>
+
+	* httpAdapter.c:
+	[ 3498719 ] Better SSL error reporting for sfcb
+
 2012-03-07  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* cimAccountPassthroughProvider.c:

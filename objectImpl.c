@@ -483,6 +483,63 @@ replaceClStringN(ClObjectHdr * hdr, int id, const char *str, unsigned int length
   _SFCB_EXIT();
 }
 
+/* Removes an object from the string buffer. The CMPIData pointing to that 
+   object remains intact. A call to this function MUST be followed by a
+   call to addClObject(), else one of the CMPIData entries will be invalid.
+
+   id - the number of the entry to be removed   
+ */
+static void
+removeClObject(ClObjectHdr * hdr, int id)
+{
+   _SFCB_ENTER(TRACE_OBJECTIMPL, "removeClObject");
+   //   fprintf(stderr, "replaceClString: %p replacing entry for we're skipping %d\n", hdr, (id-1));
+   char *ts, *fs, *tmpstr = NULL;
+   long i, l, u;
+   ClStrBuf *fb;
+
+   fb = getStrBufPtr(hdr);   
+   ts = (char *) malloc(fb->bUsed); /* tmp string buffer */
+   fs = &fb->buf[0];
+
+   for (u = i = 0; i < fb->iUsed; i++) {
+      if (i != id - 1) {    /* loop through and copy over all _other_ properties */
+        //      fprintf(stderr, "replace: keeping %ld\n", i);
+         char *f = fs + fb->indexPtr[i];
+         l = fb->indexPtr[i+1] - fb->indexPtr[i];
+
+         /* Bugzilla 74159 - Align the string buffer & null terminate */
+         /*if (l % sizeof(long) != 0) {
+           l = ALIGN((fb->indexPtr[i+1] - fb->indexPtr[i]), CLALIGN);
+           tmpstr = calloc(1,l);
+           if (tmpstr == NULL) {
+             _SFCB_TRACE(1, ("objectImpl:replaceClString: calloc failed for tmpstr"));
+           }
+           memcpy(tmpstr, f, l);
+         } */
+
+         fb->indexPtr[i] = u;
+
+         /*if (tmpstr != NULL) {
+           memcpy(ts + u, tmpstr, l);
+           free(tmpstr); 
+           tmpstr = NULL;
+         }
+         else */
+           memcpy(ts + u, f, l);
+
+         u += l;
+      }
+   }
+   memcpy(fs, ts, u);
+   fb->bUsed = u;
+   free(ts);
+
+   fb->iUsed--; /* fixup the item count, since we have one fewer elements */
+
+  _SFCB_EXIT();
+}
+
 //hack to get anything into a stringbuffer
 static void replaceClObject(ClObjectHdr * hdr, int id, const void *obj, int size)
 {
@@ -1493,6 +1550,25 @@ static int addObjectPropertyH(ClObjectHdr * hdr, ClSection * prps,
             else {
                (p + i - 1)->data.value.inst = (CMPIInstance *) addClObject(hdr, blob, size);
             }
+            free(blob);
+         }
+      }
+      /* bugzilla 75997 - hdr->type is args */
+      else if (hdr->type == HDR_Args &&
+               od.type == CMPI_instance && (d.state & CMPI_nullValue) == 0) {
+         if (d.type != CMPI_instance) {
+            _SFCB_RETURN(CMPI_RC_ERR_TYPE_MISMATCH);
+         }
+         else {
+            (p + i - 1)->data = d;
+            int size = getInstanceSerializedSize(d.value.inst);
+            void * blob = malloc(size);
+            getSerializedInstance(d.value.inst, blob);
+	    //fprintf(stderr, "od.value.inst = %ld\n", (long)od.value.inst);
+            if (od.value.inst) {
+               removeClObject(hdr, (long)od.value.inst);
+            }
+            (p + i - 1)->data.value.inst = (CMPIInstance *) addClObject(hdr, blob, size);
             free(blob);
          }
       }

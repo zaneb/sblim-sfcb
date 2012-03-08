@@ -1,3 +1,9 @@
+2012-03-08 Narasimha Sharoff <nsharoff@us.ibm.com>
+
+	* objectImpl.c:
+	[ 3471814 ] segfault in objectImpl.c:131,ClObjectGetClString
+        (Patch by Chris Buccella and Narasimha Sharoff)
+
 2012-03-07 Dave Heller <hellerda@us.ibm.com>
 
 	* httpAdapter.c:

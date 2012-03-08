@@ -1,3 +1,8 @@
+2012-03-08  Narasimha Sharoff  <nsharoff@us.ibm.com>
+
+	* brokerUpc.c:
+	[ 3497209 ] oom panic: out of memory using fsp indprovider
+
 2012-03-08  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* fileRepository.c:

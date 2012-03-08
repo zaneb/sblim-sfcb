@@ -52,6 +52,7 @@ Bugs fixed:
 - 3498719 Better SSL error reporting for sfcb
 - 3471814 segfault in objectImpl.c:131,ClObjectGetClString
 - 3499930 Check file repository writes
+- 3497209 oom panic: out of memory using fsp indprovider
 
 Changes in 1.3.13
 =================

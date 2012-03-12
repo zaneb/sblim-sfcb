@@ -15,6 +15,7 @@ New features:
 - 3495060 Verify filter and handler information during subscription
 - 3498932 Implement ModifyInstance for CIM_ListenerDestination
 - 3367361 Allow for releasing auth handle after CIM request completes
+- 3367363 Add CMPIRole Support
 
 Bugs fixed: 
 

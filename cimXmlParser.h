@@ -90,6 +90,7 @@ typedef struct requestHdr {
    unsigned long cimRequestLength;
    char *errMsg;
    char *className;
+   const char *role;
 } RequestHdr;
 
 

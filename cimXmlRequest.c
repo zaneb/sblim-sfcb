@@ -688,11 +688,12 @@ static RespSegments getClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
    sreq->hdr.operation=OPS_GetClass;
-   sreq->hdr.count=req->properties+2;
+   sreq->hdr.count=req->properties+GC_REQ_REG_SEGMENTS;
 
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq->objectPath = setObjectPathMsgSegment(path);
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->userRole = setCharsMsgSegment(ctx->role);
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
@@ -760,6 +761,7 @@ static RespSegments deleteClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
@@ -806,7 +808,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    int irc;
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   CreateClassReq sreq = BINREQ(OPS_CreateClass, 3);
+   CreateClassReq sreq = BINREQ(OPS_CreateClass, CC_REQ_REG_SEGMENTS);
    
    XtokProperty *p = NULL;
    XtokProperties *ps = NULL;
@@ -923,6 +925,7 @@ static RespSegments createClass(CimXmlRequestContext * ctx, RequestHdr * hdr)
    cls=initConstClass(cl);
 
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.path = setObjectPathMsgSegment(path);
    sreq.cls = setConstClassMsgSegment(&cls);
    sreq.hdr.sessionId=ctx->sessionId;
@@ -965,7 +968,7 @@ static RespSegments enumClassNames(CimXmlRequestContext * ctx,
                                       RequestHdr * hdr)
 {
    CMPIObjectPath *path;
-   EnumClassNamesReq sreq = BINREQ(OPS_EnumerateClassNames, 2);
+   EnumClassNamesReq sreq = BINREQ(OPS_EnumerateClassNames, ECN_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -980,6 +983,7 @@ static RespSegments enumClassNames(CimXmlRequestContext * ctx,
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.flags = req->flags;
    sreq.hdr.sessionId=ctx->sessionId;
 
@@ -1020,7 +1024,7 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
                                       RequestHdr * hdr)
 {
    CMPIObjectPath *path;
-   EnumClassesReq sreq = BINREQ(OPS_EnumerateClasses, 2);
+   EnumClassesReq sreq = BINREQ(OPS_EnumerateClasses, EC_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1034,6 +1038,7 @@ static RespSegments enumClasses(CimXmlRequestContext * ctx,
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.flags = req->flags;
    sreq.hdr.sessionId=ctx->sessionId;
 
@@ -1100,7 +1105,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    RespSegments rsegs;
-   GetInstanceReq *sreq;
+   GetInstanceReq *sreq=NULL;
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokGetInstance *req = (XtokGetInstance *) hdr->cimRequest;
@@ -1109,7 +1114,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
    sreq->hdr.operation=OPS_GetInstance;
-   sreq->hdr.count=req->properties+2; 
+   sreq->hdr.count=req->properties+GI_REQ_REG_SEGMENTS; 
 
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->instanceName.bindings.next; i < m; i++) {
@@ -1121,6 +1126,7 @@ static RespSegments getInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    sreq->objectPath = setObjectPathMsgSegment(path);
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->userRole = setCharsMsgSegment(ctx->role);
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
@@ -1177,7 +1183,7 @@ static RespSegments deleteInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    int irc, i, m;
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, 2);
+   DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, DI_REQ_REG_SEGMENTS);
 
    memset(&binCtx,0,sizeof(BinRequestContext));
    XtokDeleteInstance *req = (XtokDeleteInstance *) hdr->cimRequest;
@@ -1194,6 +1200,7 @@ static RespSegments deleteInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
@@ -1240,7 +1247,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    int irc;
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, 3);
+   CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, CI_REQ_REG_SEGMENTS);
    XtokProperty *p = NULL;
    CMPIStatus rc = {CMPI_RC_OK, NULL};
 
@@ -1260,6 +1267,7 @@ static RespSegments createInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
                   
    sreq.instance = setInstanceMsgSegment(inst);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.sessionId=ctx->sessionId;
 
    path = inst->ft->getObjectPath(inst,&st);
@@ -1328,7 +1336,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
    sreq->hdr.operation=OPS_ModifyInstance;
-   sreq->hdr.count=req->properties+3;
+   sreq->hdr.count=req->properties+MI_REQ_REG_SEGMENTS;
 
    for (i=0; i<req->properties; i++){
       sreq->properties[i]=setCharsMsgSegment(req->propertyList.values[i].value);
@@ -1360,6 +1368,7 @@ static RespSegments modifyInstance(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->instance = setInstanceMsgSegment(inst);
    sreq->path = setObjectPathMsgSegment(path);
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->userRole = setCharsMsgSegment(ctx->role);
    sreq->hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
@@ -1404,7 +1413,7 @@ static RespSegments enumInstanceNames(CimXmlRequestContext * ctx,
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "enumInstanceNames");
    CMPIObjectPath *path;
-   EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, 2);
+   EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, EIN_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1418,6 +1427,7 @@ static RespSegments enumInstanceNames(CimXmlRequestContext * ctx,
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.sessionId=ctx->sessionId;
 
    binCtx.oHdr = (OperationHdr *) req;
@@ -1472,11 +1482,12 @@ static RespSegments enumInstances(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
    sreq->hdr.operation=OPS_EnumerateInstances;
-   sreq->hdr.count=req->properties+2;  
+   sreq->hdr.count=req->properties+EI_REQ_REG_SEGMENTS;  
 
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    sreq->principal = setCharsMsgSegment(ctx->principal);
    sreq->objectPath = setObjectPathMsgSegment(path);
+   sreq->userRole = setCharsMsgSegment(ctx->role);
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++) {
@@ -1571,6 +1582,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.query = setCharsMsgSegment((char*)req->op.query.data);
    sreq.queryLang = setCharsMsgSegment((char*)req->op.queryLang.data);
    sreq.hdr.sessionId=ctx->sessionId;
@@ -1633,7 +1645,7 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "associatorNames");
    CMPIObjectPath *path;
-   AssociatorNamesReq sreq = BINREQ(OPS_AssociatorNames, 6);
+   AssociatorNamesReq sreq = BINREQ(OPS_AssociatorNames, AIN_REQ_REG_SEGMENTS);
    int irc, i, m, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1670,6 +1682,7 @@ static RespSegments associatorNames(CimXmlRequestContext * ctx,
    sreq.assocClass = req->op.assocClass;
    sreq.resultRole = req->op.resultRole;
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.sessionId=ctx->sessionId;
 
    req->op.className = req->op.assocClass;
@@ -1728,7 +1741,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
    sreq->hdr.operation=OPS_Associators;
-   sreq->hdr.count=req->properties+6;
+   sreq->hdr.count=req->properties+AI_REQ_REG_SEGMENTS;
 
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->objectName.bindings.next; i < m; i++) {
@@ -1759,6 +1772,7 @@ static RespSegments associators(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->resultRole = req->op.resultRole;
    sreq->hdr.flags = req->flags;
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->userRole = setCharsMsgSegment(ctx->role);
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
@@ -1825,7 +1839,7 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "referenceNames");
    CMPIObjectPath *path;
-   ReferenceNamesReq sreq = BINREQ(OPS_ReferenceNames, 4);
+   ReferenceNamesReq sreq = BINREQ(OPS_ReferenceNames, RIN_REQ_REG_SEGMENTS);
    int irc, i, m, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1860,6 +1874,7 @@ static RespSegments referenceNames(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq.resultClass = req->op.resultClass;
    sreq.role = req->op.role;
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.sessionId=ctx->sessionId;
 
    req->op.className = req->op.resultClass;
@@ -1919,7 +1934,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    if (req->properties) sreqSize+=req->properties*sizeof(MsgSegment);
    sreq=calloc(1,sreqSize);
    sreq->hdr.operation=OPS_References;
-   sreq->hdr.count=req->properties+4;
+   sreq->hdr.count=req->properties+RI_REQ_REG_SEGMENTS;
 
    path = TrackedCMPIObjectPath(req->op.nameSpace.data, req->op.className.data, NULL);
    for (i = 0, m = req->objectName.bindings.next; i < m; i++) {
@@ -1948,6 +1963,7 @@ static RespSegments references(CimXmlRequestContext * ctx, RequestHdr * hdr)
    sreq->role = req->op.role;
    sreq->hdr.flags = req->flags;
    sreq->principal = setCharsMsgSegment(ctx->principal);
+   sreq->userRole = setCharsMsgSegment(ctx->role);
    sreq->hdr.sessionId=ctx->sessionId;
 
    for (i=0; i<req->properties; i++)
@@ -2122,6 +2138,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    }
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment(ctx->principal);
+   sreq.userRole = setCharsMsgSegment(ctx->role);
    sreq.hdr.sessionId=ctx->sessionId;
 
    if (getControlBool("validateMethodParamTypes", &vmpt))
@@ -2714,6 +2731,7 @@ RespSegments handleCimXmlRequest(CimXmlRequestContext * ctx, int flags)
 #endif 
 
    hdr = scanCimXmlRequest(ctx->cimXmlDoc);
+   hdr.role=ctx->role;
 
 #ifdef SFCB_DEBUG
    if (_sfcb_trace_mask & TRACE_RESPONSETIMING) {

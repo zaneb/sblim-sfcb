@@ -1039,6 +1039,7 @@ static int doHttpRequest(CommHndl conn_fd)
 
    ctx.cimXmlDoc = inBuf.content;
    ctx.principal = inBuf.principal;
+   ctx.role = extras.role;
    ctx.host = inBuf.host;
    ctx.teTrailers = inBuf.trailers;
    ctx.cimXmlDocLength = len - hl;

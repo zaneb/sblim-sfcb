@@ -53,6 +53,7 @@ typedef struct cimXmlRequestContext {
    char *host;
    int  teTrailers;
    unsigned int sessionId;
+   const char *role;
    unsigned long cimXmlDocLength;
    struct commHndl *commHndl;
    struct chunkFunctions *chunkFncs;

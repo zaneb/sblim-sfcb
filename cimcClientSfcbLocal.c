@@ -315,7 +315,7 @@ static CMPIEnumeration * enumInstanceNames(
 	CMPIStatus * rc)
 {
    _SFCB_ENTER(TRACE_CIMXMLPROC, "enumInstanceNames");
-   EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, 2);
+   EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, EIN_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -334,6 +334,7 @@ static CMPIEnumeration * enumInstanceNames(
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -554,7 +555,7 @@ static CMPIObjectPath * createInstance(
    int irc;
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, 3);
+   CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, CI_REQ_REG_SEGMENTS);
    CMPIObjectPath *path;
    OperationHdr oHdr={OPS_CreateInstance,0,3};
 
@@ -572,6 +573,7 @@ static CMPIObjectPath * createInstance(
                   
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.path = setObjectPathMsgSegment(cop);
+   sreq.userRole = setCharsMsgSegment(NULL);
    sreq.instance = setInstanceMsgSegment(inst);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
@@ -701,7 +703,7 @@ static CMPIStatus deleteInstance(
    int irc;
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, 2);
+   DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, DI_REQ_REG_SEGMENTS);
    OperationHdr oHdr={OPS_DeleteInstance,0,2};
    CMPIStatus rc={0,NULL};
     
@@ -717,6 +719,7 @@ static CMPIStatus deleteInstance(
 
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -761,7 +764,7 @@ static CMPIEnumeration * execQuery(
 	const char * lang,
 	CMPIStatus * rc)
 {
-   ExecQueryReq sreq = BINREQ(OPS_ExecQuery, 4);
+   ExecQueryReq sreq = BINREQ(OPS_ExecQuery, EQ_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -804,6 +807,7 @@ static CMPIEnumeration * execQuery(
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.query = setCharsMsgSegment(query);
    sreq.queryLang = setCharsMsgSegment(lang);
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -1040,7 +1044,7 @@ static CMPIEnumeration * associatorNames(
 	const char	* resultRole,
 	CMPIStatus	* rc)
 {
-   AssociatorNamesReq sreq = BINREQ(OPS_AssociatorNames, 6);
+   AssociatorNamesReq sreq = BINREQ(OPS_AssociatorNames, AIN_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1062,6 +1066,7 @@ static CMPIEnumeration * associatorNames(
    sreq.assocClass = setCharsMsgSegment(assocClass);
    sreq.resultRole = setCharsMsgSegment(resultRole);
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
    oHdr.className = sreq.assocClass;
@@ -1112,7 +1117,7 @@ static CMPIEnumeration * referenceNames(
 	const char * role,
 	CMPIStatus * rc)
 {
-   ReferenceNamesReq sreq = BINREQ(OPS_ReferenceNames, 4);
+   ReferenceNamesReq sreq = BINREQ(OPS_ReferenceNames, RIN_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1131,6 +1136,7 @@ static CMPIEnumeration * referenceNames(
    sreq.resultClass = setCharsMsgSegment(resultClass);
    sreq.role = setCharsMsgSegment(role);
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    oHdr.className = sreq.resultClass;
    oHdr.nameSpace=setCharsMsgSegment((char*)ns->hdl);
@@ -1432,7 +1438,7 @@ static CMPIData invokeMethod(
 	CMPIArgs * out,
 	CMPIStatus * rc)
 {
-   InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, 5);
+   InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, IM_REQ_REG_SEGMENTS);
    int irc, i, outc;
    BinResponseHdr *resp;
    BinRequestContext binCtx;
@@ -1467,6 +1473,7 @@ static CMPIData invokeMethod(
       sreq.in = setArgsMsgSegment(argsin);
    sreq.out = setArgsMsgSegment(NULL);
    sreq.method = setCharsMsgSegment(method);
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    binCtx.oHdr = (OperationHdr *) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -1643,7 +1650,7 @@ static CMPIEnumeration* enumClassNames(
 	CMPIFlags flags,
 	CMPIStatus * rc)
 {
-   EnumClassNamesReq sreq = BINREQ(OPS_EnumerateClassNames, 2);
+   EnumClassNamesReq sreq = BINREQ(OPS_EnumerateClassNames, ECN_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1665,6 +1672,7 @@ static CMPIEnumeration* enumClassNames(
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.hdr.flags = flags;
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    binCtx.oHdr = (OperationHdr*) &oHdr;
    binCtx.bHdr = &sreq.hdr;
@@ -1711,7 +1719,7 @@ static CMPIEnumeration * enumClasses(
 	CMPIFlags flags,
 	CMPIStatus * rc)
 {
-   EnumClassesReq sreq = BINREQ(OPS_EnumerateClasses, 2);
+   EnumClassesReq sreq = BINREQ(OPS_EnumerateClasses, EC_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -1733,6 +1741,7 @@ static CMPIEnumeration * enumClasses(
    sreq.objectPath = setObjectPathMsgSegment(cop);
    sreq.principal = setCharsMsgSegment(((ClientEnc*)mb)->data.user);
    sreq.hdr.flags = flags;
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    binCtx.oHdr = (OperationHdr*)&oHdr;
    binCtx.bHdr = &sreq.hdr;

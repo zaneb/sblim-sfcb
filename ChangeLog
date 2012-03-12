@@ -1,5 +1,10 @@
 2012-03-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
+	* brokerUpc.c, cimXmlOps.y, cimXmlParser.h, cimXmlRequest.c,
+	  cimXmlRequest.h, cimcClientSfcbLocal.c, httpAdapter.c, providerDrv.c,
+	  providerMgr.c, providerMgr.h, sfcBasicPAMAuthentication.c:
+	[ 3367363 ] Add CMPIRole Support
+
 	* httpAdapter.c, sfcBasicPAMAuthentication.c:
 	[ 3367361 ] Allow for releasing auth handle after CIM request completes
 

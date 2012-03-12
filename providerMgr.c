@@ -1424,7 +1424,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    CMPIObjectPath *path;
    CMPIConstClass *ccl;
    CMPIStatus rc;
-   GetClassReq sreq = BINREQ(OPS_GetClass,2);
+   GetClassReq sreq = BINREQ(OPS_GetClass,GC_REQ_REG_SEGMENTS);
    BinResponseHdr *resp=NULL;
    BinRequestContext binCtx;
    OperationHdr req = { OPS_GetClass, 2 };
@@ -1435,6 +1435,7 @@ CMPIConstClass *getConstClass(const char *ns, const char *cn)
    path = TrackedCMPIObjectPath(ns, cn, &rc);
    sreq.principal = setCharsMsgSegment("$$");
    sreq.objectPath = setObjectPathMsgSegment(path);
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    req.nameSpace = setCharsMsgSegment((char *) ns);
    req.className = setCharsMsgSegment((char *) cn);
@@ -1483,7 +1484,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
 
    CMPIObjectPath *path;
    CMPIConstClass *ccl = NULL;
-   GetClassReq sreq = BINREQ(OPS_GetClass, 2);
+   GetClassReq sreq = BINREQ(OPS_GetClass, GC_REQ_REG_SEGMENTS);
    BinResponseHdr *resp;
    BinRequestContext binCtx;
    OperationHdr req = { OPS_GetClass, 2 };
@@ -1492,6 +1493,7 @@ static CMPIConstClass *_getConstClass(const char *ns, const char *cn, CMPIStatus
    path = NewCMPIObjectPath(ns, cn, st);
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.principal = setCharsMsgSegment("$$");
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    req.nameSpace = setCharsMsgSegment((char *) ns);
    req.className = setCharsMsgSegment((char *) cn);
@@ -1537,7 +1539,7 @@ static CMPIData localInvokeMethod(BinRequestContext * binCtx,
 {
    _SFCB_ENTER(TRACE_PROVIDERMGR, "localInvokeMethod");
 
-   InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, 5);
+   InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, IM_REQ_REG_SEGMENTS);
    OperationHdr req = { OPS_InvokeMethod, 1 };
    CMPIData data = { 0, CMPI_nullValue, {0} };
    if (out) *out=NULL; /* out is used by getchildren and getassocs */
@@ -1548,6 +1550,7 @@ static CMPIData localInvokeMethod(BinRequestContext * binCtx,
    sreq.objectPath = setObjectPathMsgSegment(path);
    sreq.method = setCharsMsgSegment(method);
    sreq.principal = setCharsMsgSegment("$$");
+   sreq.userRole = setCharsMsgSegment(NULL);
 
    binCtx->oHdr = &req;
    binCtx->bHdr = &sreq.hdr;

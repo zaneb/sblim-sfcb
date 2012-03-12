@@ -646,7 +646,7 @@ iMethodCall
 methodCall
     : localClassPath 
     {
-       $$.op.count = 2;
+       $$.op.count = IM_REQ_REG_SEGMENTS;
        $$.op.type = OPS_InvokeMethod;
        $$.op.nameSpace=setCharsMsgSegment($1.path);
        $$.op.className=setCharsMsgSegment($1.className);
@@ -658,7 +658,7 @@ methodCall
     }   
     | localClassPath paramValues
     {
-       $$.op.count = 2;
+       $$.op.count = IM_REQ_REG_SEGMENTS;
        $$.op.type = OPS_InvokeMethod;
        $$.op.nameSpace=setCharsMsgSegment($1.path);
        $$.op.className=setCharsMsgSegment($1.className);
@@ -669,7 +669,7 @@ methodCall
     }   
     | localInstancePath 
     {
-       $$.op.count = 2;
+       $$.op.count = IM_REQ_REG_SEGMENTS;
        $$.op.type = OPS_InvokeMethod;
        $$.op.nameSpace=setCharsMsgSegment($1.path);
        $$.op.className=setCharsMsgSegment($1.instanceName.className);
@@ -682,7 +682,7 @@ methodCall
     }   
     | localInstancePath paramValues
     {
-       $$.op.count = 2;
+       $$.op.count = IM_REQ_REG_SEGMENTS;
        $$.op.type = OPS_InvokeMethod;
        $$.op.nameSpace=setCharsMsgSegment($1.path);
        $$.op.className=setCharsMsgSegment($1.instanceName.className);
@@ -965,7 +965,7 @@ setQualifierParm
 getClass
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = GC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_GetClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -978,7 +978,7 @@ getClass
     }
     | localNameSpacePath getClassParmsList
     {
-       $$.op.count = 2;
+       $$.op.count = GC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_GetClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.className);
@@ -1079,7 +1079,7 @@ getClassParms
 enumClassNames
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = ECN_REQ_REG_SEGMENTS;
        $$.op.type = OPS_EnumerateClassNames;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1089,12 +1089,11 @@ enumClassNames
     }
     | localNameSpacePath enumClassNamesParmsList
     {
-       $$.op.count = 2;
+       $$.op.count = ECN_REQ_REG_SEGMENTS;
        $$.op.type = OPS_EnumerateClassNames;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.className);
        $$.flags = $2.flags;
-
        setRequest(parm,&$$,sizeof(XtokEnumClassNames),OPS_EnumerateClassNames);
     }
 ;
@@ -1143,7 +1142,7 @@ enumClassNamesParms
 enumClasses
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = EC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_EnumerateClasses;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1153,7 +1152,7 @@ enumClasses
     }
     | localNameSpacePath enumClassesParmsList
     {
-       $$.op.count = 2;
+       $$.op.count = EC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_EnumerateClasses;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.className);
@@ -1237,7 +1236,7 @@ enumClassesParms
 getInstance
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = GI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_GetInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1245,12 +1244,13 @@ getInstance
        $$.propertyList.values = NULL;
        $$.properties=0;
        $$.instNameSet = 0;
+       //$$.userRole=setCharsMsgSegment($$.op.role);
 
        setRequest(parm,&$$,sizeof(XtokGetInstance),OPS_GetInstance);
     }
     | localNameSpacePath getInstanceParmsList
     {
-       $$.op.count = 2;
+       $$.op.count = GI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_GetInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.instanceName.className);
@@ -1353,7 +1353,7 @@ getInstanceParms
 createClass
     : localNameSpacePath
     {
-       $$.op.count = 3;
+       $$.op.count = CC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_CreateClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1363,7 +1363,7 @@ createClass
     }
     | localNameSpacePath createClassParm
     {
-       $$.op.count = 3;
+       $$.op.count = CC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_CreateClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.cls.className);
@@ -1390,7 +1390,7 @@ createClassParm
 createInstance
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = CI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_CreateInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1399,7 +1399,7 @@ createInstance
     }
     | localNameSpacePath createInstanceParm
     {
-       $$.op.count = 2;
+       $$.op.count = CI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_CreateInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.instance.className);
@@ -1425,7 +1425,7 @@ createInstanceParm
 modifyInstance
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = MI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_ModifyInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1437,7 +1437,7 @@ modifyInstance
     }
     | localNameSpacePath modifyInstanceParmsList
     {
-       $$.op.count = 2;
+       $$.op.count = MI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_ModifyInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.namedInstance.path.className);
@@ -1517,7 +1517,7 @@ modifyInstanceParms
 deleteClass
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = DC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_DeleteClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1526,7 +1526,7 @@ deleteClass
     }
     | localNameSpacePath deleteClassParm
     {
-       $$.op.count = 2;
+       $$.op.count = DC_REQ_REG_SEGMENTS;
        $$.op.type = OPS_DeleteClass;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.className);
@@ -1552,7 +1552,7 @@ deleteClassParm
 deleteInstance
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = DI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_DeleteInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1561,7 +1561,7 @@ deleteInstance
     }
     | localNameSpacePath deleteInstanceParm
     {
-       $$.op.count = 2;
+       $$.op.count = DI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_DeleteInstance;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.instanceName.className);
@@ -1588,7 +1588,7 @@ deleteInstanceParm
 enumInstanceNames
     : localNameSpacePath XTOK_IP_CLASSNAME className ZTOK_IPARAMVALUE
     {
-       $$.op.count = 2;
+       $$.op.count = EIN_REQ_REG_SEGMENTS;
        $$.op.type = OPS_EnumerateInstanceNames;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($3);
@@ -1606,7 +1606,7 @@ enumInstanceNames
 enumInstances
     : localNameSpacePath
     {
-       $$.op.count = 2;
+       $$.op.count = EI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_EnumerateInstances;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1618,7 +1618,7 @@ enumInstances
     }
     | localNameSpacePath enumInstancesParmsList
     {
-       $$.op.count = 2;
+       $$.op.count = EI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_EnumerateInstances;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.className);
@@ -1734,7 +1734,7 @@ execQuery
           XTOK_IP_QUERY value ZTOK_IPARAMVALUE
           XTOK_IP_QUERYLANG value ZTOK_IPARAMVALUE
     {
-       $$.op.count = 3;
+       $$.op.count = EQ_REQ_REG_SEGMENTS;
        $$.op.type = OPS_ExecQuery;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.query=setCharsMsgSegment($3.value);
@@ -1746,7 +1746,7 @@ execQuery
           XTOK_IP_QUERYLANG value ZTOK_IPARAMVALUE
           XTOK_IP_QUERY value ZTOK_IPARAMVALUE
     {
-       $$.op.count = 3;
+       $$.op.count = EQ_REQ_REG_SEGMENTS;
        $$.op.type = OPS_ExecQuery;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.query=setCharsMsgSegment($6.value);
@@ -1765,7 +1765,7 @@ execQuery
 associators
     : localNameSpacePath
     {
-       $$.op.count = 6;
+       $$.op.count = AI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_Associators;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1782,7 +1782,7 @@ associators
     }
     | localNameSpacePath associatorsParmsList
     {
-       $$.op.count = 6;
+       $$.op.count = AI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_Associators;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.objectName.className);
@@ -1945,7 +1945,7 @@ associatorsParms
 references
     : localNameSpacePath
     {
-       $$.op.count = 4;
+       $$.op.count = RI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_References;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -1960,7 +1960,7 @@ references
     }
     | localNameSpacePath referencesParmsList
     {
-       $$.op.count = 4;
+       $$.op.count = RI_REQ_REG_SEGMENTS;
        $$.op.type = OPS_References;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.objectName.className);
@@ -2091,7 +2091,7 @@ referencesParms
 associatorNames
     : localNameSpacePath
     {
-       $$.op.count = 6;
+       $$.op.count = AIN_REQ_REG_SEGMENTS;
        $$.op.type = OPS_AssociatorNames;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -2105,7 +2105,7 @@ associatorNames
     }
     | localNameSpacePath associatorNamesParmsList
     {
-       $$.op.count = 6;
+       $$.op.count = AIN_REQ_REG_SEGMENTS;
        $$.op.type = OPS_AssociatorNames;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.objectName.className);
@@ -2203,7 +2203,7 @@ associatorNamesParms
 referenceNames
     : localNameSpacePath
     {
-       $$.op.count = 4;
+       $$.op.count = RIN_REQ_REG_SEGMENTS;
        $$.op.type = OPS_ReferenceNames;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment(NULL);
@@ -2215,7 +2215,7 @@ referenceNames
     }
     | localNameSpacePath referenceNamesParmsList
     {
-       $$.op.count = 4;
+       $$.op.count = RIN_REQ_REG_SEGMENTS;
        $$.op.type = OPS_ReferenceNames;
        $$.op.nameSpace=setCharsMsgSegment($1);
        $$.op.className=setCharsMsgSegment($2.objectName.className);

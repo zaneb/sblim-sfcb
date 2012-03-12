@@ -102,7 +102,7 @@ typedef struct binResponseHdr {
    MsgSegment rvEnc;
    unsigned char rvValue,chunkedMode,moreChunks;
    unsigned long count;         // maps to MsgList
-   MsgSegment object[1];
+   MsgSegment object[1]; /* WARNING: brokerUpc references segments positionally! */
 } BinResponseHdr;
 
 struct chunkFunctions;
@@ -158,33 +158,43 @@ typedef struct getClassReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
    MsgSegment properties[1];
 } GetClassReq;
+#define GC_REQ_REG_SEGMENTS 3
 
 typedef struct enumClassNamesReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
 } EnumClassNamesReq;
+#define ECN_REQ_REG_SEGMENTS 3
 
 typedef struct enumClassesReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
 } EnumClassesReq;
+#define EC_REQ_REG_SEGMENTS 3
 
 typedef struct enumInstanceNamesReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
 } EnumInstanceNamesReq;
+#define EIN_REQ_REG_SEGMENTS 3
 
 typedef struct enumInstancesReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
    MsgSegment properties[1];
 } EnumInstancesReq;
+#define EI_REQ_REG_SEGMENTS 3
 
 typedef struct execQueryReq {
    BinRequestHdr hdr;
@@ -192,7 +202,9 @@ typedef struct execQueryReq {
    MsgSegment objectPath;
    MsgSegment query;
    MsgSegment queryLang;
+   MsgSegment userRole;
 } ExecQueryReq;
+#define EQ_REQ_REG_SEGMENTS 5
 
 typedef struct associatorsReq {
    BinRequestHdr hdr;
@@ -202,8 +214,10 @@ typedef struct associatorsReq {
    MsgSegment role;
    MsgSegment assocClass;
    MsgSegment resultRole;
+   MsgSegment userRole;
    MsgSegment properties[1];
 } AssociatorsReq;
+#define AI_REQ_REG_SEGMENTS 7
 
 typedef struct referencesReq {
    BinRequestHdr hdr;
@@ -211,8 +225,10 @@ typedef struct referencesReq {
    MsgSegment objectPath;
    MsgSegment resultClass;
    MsgSegment role;
+   MsgSegment userRole;
    MsgSegment properties[1];
 } ReferencesReq;
+#define RI_REQ_REG_SEGMENTS 5
 
 typedef struct associatorNamesReq {
    BinRequestHdr hdr;
@@ -222,7 +238,9 @@ typedef struct associatorNamesReq {
    MsgSegment role;
    MsgSegment assocClass;
    MsgSegment resultRole;
+   MsgSegment userRole;
 } AssociatorNamesReq;
+#define AIN_REQ_REG_SEGMENTS 7
 
 typedef struct referenceNamesReq {
    BinRequestHdr hdr;
@@ -230,48 +248,62 @@ typedef struct referenceNamesReq {
    MsgSegment objectPath;
    MsgSegment resultClass;
    MsgSegment role;
+   MsgSegment userRole;
 } ReferenceNamesReq;
+#define RIN_REQ_REG_SEGMENTS 5
 
 typedef struct getInstanceReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
    MsgSegment properties[1];
 } GetInstanceReq;
+#define GI_REQ_REG_SEGMENTS 3
 
 typedef struct createClassReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment path;
    MsgSegment cls;
+   MsgSegment userRole;
 } CreateClassReq;
+#define CC_REQ_REG_SEGMENTS 4
 
 typedef struct createInstanceReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment path;
    MsgSegment instance;
+   MsgSegment userRole;
 } CreateInstanceReq;
+#define CI_REQ_REG_SEGMENTS 4
 
 typedef struct modifyInstanceReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment path;
    MsgSegment instance;
+   MsgSegment userRole;
    MsgSegment properties[1];
 } ModifyInstanceReq;
+#define MI_REQ_REG_SEGMENTS 4
 
 typedef struct deleteInstanceReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
 } DeleteInstanceReq;
+#define DI_REQ_REG_SEGMENTS 3
 
 typedef struct deleteClassReq {
    BinRequestHdr hdr;
    MsgSegment principal;
    MsgSegment objectPath;
+   MsgSegment userRole;
 } DeleteClassReq;
+#define DC_REQ_REG_SEGMENTS 3
 
 typedef struct invokeMethodReq {
    BinRequestHdr hdr;
@@ -280,7 +312,9 @@ typedef struct invokeMethodReq {
    MsgSegment method;
    MsgSegment in;
    MsgSegment out;
+   MsgSegment userRole;
 } InvokeMethodReq;
+#define IM_REQ_REG_SEGMENTS 6
 
 typedef struct loadProviderReq {
    BinRequestHdr hdr;

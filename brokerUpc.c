@@ -586,7 +586,7 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, 3);
+   CreateInstanceReq sreq = BINREQ(OPS_CreateInstance, CI_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_CreateInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
    CMPIObjectPath *op = NULL,*tOp=NULL;
@@ -605,6 +605,7 @@ static CMPIObjectPath *createInstance(const CMPIBroker * broker,
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data)); 
 
       sreq.instance = setInstanceMsgSegment(inst);
+      sreq.userRole = setCharsMsgSegment(NULL);
       
       checkReroute(broker, context, &oHdr);
       
@@ -689,6 +690,7 @@ static CMPIStatus modifyInstance(const CMPIBroker * broker,
       sreq=(ModifyInstanceReq*)calloc(1,sreqSize);
       sreq->hdr.count=ps+3;
       sreq->hdr.operation=OPS_ModifyInstance;
+      sreq->userRole = setCharsMsgSegment(NULL);
       
       setContext(&binCtx, &oHdr, &sreq->hdr, sreqSize, context, cop, NULL, NULL);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data));
@@ -746,7 +748,7 @@ static CMPIStatus deleteInstance(const CMPIBroker * broker,
 {
    BinRequestContext binCtx;
    BinResponseHdr *resp;
-   DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, 2);
+   DeleteInstanceReq sreq = BINREQ(OPS_DeleteInstance, DI_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_DeleteInstance, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL };
    int initrc = 0; 
@@ -762,6 +764,7 @@ static CMPIStatus deleteInstance(const CMPIBroker * broker,
    
       setContext(&binCtx, &oHdr, &sreq.hdr, sizeof(sreq), context, cop, NULL, NULL);
       _SFCB_TRACE(1,("--- for %s %s",(char*)oHdr.nameSpace.data,(char*)oHdr.className.data));
+      sreq.userRole = setCharsMsgSegment(NULL);
       
       checkReroute(broker, context, &oHdr); 
       
@@ -811,7 +814,7 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
                                   const char *lang, CMPIStatus * rc)
 {
    BinRequestContext binCtx;
-   ExecQueryReq sreq = BINREQ(OPS_ExecQuery, 4);
+   ExecQueryReq sreq = BINREQ(OPS_ExecQuery, EQ_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_ExecQuery, 2 };
    CMPIStatus st = { CMPI_RC_OK, NULL },rci = { CMPI_RC_OK, NULL};
    CMPIEnumeration *enm = NULL;
@@ -831,6 +834,7 @@ static CMPIEnumeration *execQuery(const CMPIBroker * broker,
       
       sreq.query = setCharsMsgSegment(query);
       sreq.queryLang = setCharsMsgSegment(lang);
+      sreq.userRole = setCharsMsgSegment(NULL);
       
       irc = getProviderContext(&binCtx, &oHdr);
 
@@ -897,8 +901,9 @@ static CMPIEnumeration *enumInstances(const CMPIBroker * broker,
                                       const CMPIObjectPath * cop,
                                       const char **props, CMPIStatus * rc)
 {
-   EnumInstancesReq sreq = BINREQ(OPS_EnumerateInstances, 2);
+   EnumInstancesReq sreq = BINREQ(OPS_EnumerateInstances, EI_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_EnumerateInstances, 2 };
+   sreq.userRole = setCharsMsgSegment(NULL);
    
    return genericEnumRequest(broker, context, cop, props, NULL, NULL, NULL,
                              NULL, OPS_EnumerateInstances, &sreq.hdr, &oHdr,
@@ -909,8 +914,9 @@ static CMPIEnumeration *enumInstanceNames(const CMPIBroker * broker,
                                       const CMPIContext * context,
                                       const CMPIObjectPath * cop, CMPIStatus * rc)
 {
-   EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, 2);
+   EnumInstanceNamesReq sreq = BINREQ(OPS_EnumerateInstanceNames, EIN_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_EnumerateInstanceNames, 2 };
+   sreq.userRole = setCharsMsgSegment(NULL);
    
    return genericEnumRequest(broker, context, cop, NULL, NULL, NULL, NULL,
                              NULL, OPS_EnumerateInstanceNames, &sreq.hdr, &oHdr,
@@ -934,13 +940,14 @@ static CMPIEnumeration *associators(const CMPIBroker * broker,
                                     const char *resultrole, const char **props,
                                     CMPIStatus * rc)
 {
-   AssociatorsReq sreq = BINREQ(OPS_Associators, 6);
+   AssociatorsReq sreq = BINREQ(OPS_Associators, AI_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_Associators, 6 };
    
    sreq.resultClass = setCharsMsgSegment(resultclass);
    sreq.role = setCharsMsgSegment(role);
    sreq.assocClass = setCharsMsgSegment(assocclass);
    sreq.resultRole = setCharsMsgSegment(resultrole);
+   sreq.userRole = setCharsMsgSegment(NULL);
    
    return genericEnumRequest(broker, context, cop, props, assocclass,
                              resultclass, role, resultrole, OPS_Associators,
@@ -956,13 +963,14 @@ static CMPIEnumeration *associatorNames(const CMPIBroker * broker,
                                         const char *role,
                                         const char *resultrole, CMPIStatus * rc)
 {
-   AssociatorNamesReq sreq = BINREQ(OPS_AssociatorNames, 6);
+   AssociatorNamesReq sreq = BINREQ(OPS_AssociatorNames, AIN_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_AssociatorNames, 6 };
    
    sreq.resultClass = setCharsMsgSegment(resultclass);
    sreq.role = setCharsMsgSegment(role);
    sreq.assocClass = setCharsMsgSegment(assocclass);
    sreq.resultRole = setCharsMsgSegment(resultrole);
+   sreq.userRole = setCharsMsgSegment(NULL);
    
    return genericEnumRequest(broker, context, cop, NULL, assocclass, resultclass,
                              role, resultrole, OPS_AssociatorNames, &sreq.hdr, &oHdr,
@@ -976,11 +984,12 @@ static CMPIEnumeration *references(const CMPIBroker * broker,
                                    const char *role, const char **props,
                                    CMPIStatus * rc)
 {
-   ReferencesReq sreq = BINREQ(OPS_References, 4);
+   ReferencesReq sreq = BINREQ(OPS_References, RI_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_References, 4 };
    
    sreq.role = setCharsMsgSegment(role);
    sreq.resultClass = setCharsMsgSegment(resultclass);
+   sreq.userRole = setCharsMsgSegment(NULL);
    
    return genericEnumRequest(broker, context, cop, props, NULL,
                              resultclass, role, NULL, OPS_References,
@@ -993,11 +1002,12 @@ static CMPIEnumeration *referenceNames(const CMPIBroker * broker,
                                        const char *resultclass,
                                        const char *role, CMPIStatus * rc)
 {
-   ReferenceNamesReq sreq = BINREQ(OPS_ReferenceNames, 4);
+   ReferenceNamesReq sreq = BINREQ(OPS_ReferenceNames, RIN_REQ_REG_SEGMENTS);
    OperationHdr oHdr = { OPS_ReferenceNames, 4 };
    
    sreq.role = setCharsMsgSegment(role);
    sreq.resultClass = setCharsMsgSegment(resultclass);
+   sreq.userRole = setCharsMsgSegment(NULL);
    
    return genericEnumRequest(broker, context, cop, NULL, NULL, resultclass,
                              role, NULL, OPS_ReferenceNames, &sreq.hdr, &oHdr,
@@ -1045,7 +1055,7 @@ static CMPIData invokeMethod(const CMPIBroker * broker, const CMPIContext * cont
    
       size=sizeof(InvokeMethodReq)+(x*sizeof(MsgSegment));
       sreq=(InvokeMethodReq*)calloc(1,size);
-      sreq->hdr.count=5+x;
+      sreq->hdr.count=IM_REQ_REG_SEGMENTS+x;
       sreq->hdr.operation=OPS_InvokeMethod;
       
       lockUpCall(broker);
@@ -1055,8 +1065,10 @@ static CMPIData invokeMethod(const CMPIBroker * broker, const CMPIContext * cont
       sreq->in = setArgsMsgSegment(in);
       sreq->out = setArgsMsgSegment(NULL);
       sreq->method = setCharsMsgSegment(method);
+      sreq->userRole = setCharsMsgSegment(NULL);
+
       
-      if (x) for (n=5,i=0,s=CMGetArgCount(in,NULL); i<s; i++) {
+      if (x) for (n=IM_REQ_REG_SEGMENTS,i=0,s=CMGetArgCount(in,NULL); i<s; i++) {
          CMPIData d=CMGetArgAt(in,i,NULL,NULL);
          BinRequestHdr *req=(BinRequestHdr*)sreq;
          if (d.type==CMPI_instance) {

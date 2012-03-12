@@ -14,6 +14,7 @@ New features:
 - 3493493 Add sfcbsem
 - 3495060 Verify filter and handler information during subscription
 - 3498932 Implement ModifyInstance for CIM_ListenerDestination
+- 3367361 Allow for releasing auth handle after CIM request completes
 
 Bugs fixed: 
 

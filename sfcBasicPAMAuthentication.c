@@ -57,6 +57,10 @@ static int sfcBasicConv(int num_msg, const struct pam_message **msg,
   return PAM_CONV_ERR;
 }
 
+void closePam(pam_handle_t* handle) {
+  int rc = PAM_SUCCESS;
+  pam_end(handle, rc);
+}
 
 static int _sfcBasicAuthenticateRemote(char *user, char *pw, AuthExtras *extras)
 {
@@ -90,7 +94,13 @@ static int _sfcBasicAuthenticateRemote(char *user, char *pw, AuthExtras *extras)
     retval = 0;
   }
   
-  pam_end(pamh, rc);
+   /* if we keep the handle around, it means we'll call pam_end() later */
+  if (extras) {
+    extras->authHandle = pamh;
+    extras->release = closePam;
+  }
+  else
+    pam_end(pamh, rc);
 
   return retval;
 }

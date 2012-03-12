@@ -1,3 +1,8 @@
+2012-03-12  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* httpAdapter.c, sfcBasicPAMAuthentication.c:
+	[ 3367361 ] Allow for releasing auth handle after CIM request completes
+
 2012-03-08  Narasimha Sharoff  <nsharoff@us.ibm.com>
 
 	* brokerUpc.c:

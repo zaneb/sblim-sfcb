@@ -957,7 +957,7 @@ static int doHttpRequest(CommHndl conn_fd)
        }
    }
 #endif
-   AuthExtras      extras = {NULL, NULL, NULL};
+   AuthExtras      extras = {NULL, NULL, NULL, NULL};
 
    if (!authorized && !discardInput && doBa) {
 

@@ -1,3 +1,8 @@
+2012-03-15  Chris Buccella  <buccella@linux.vnet.ibm.com>
+
+	* brokerUpc.c:
+	[ 3504607 ] CMPIRole Support in brokerUpc
+
 2012-03-13  Chris Buccella  <buccella@linux.vnet.ibm.com>
 
 	* httpAdapter.c:

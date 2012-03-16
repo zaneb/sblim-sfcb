@@ -1552,7 +1552,7 @@ static RespSegments execQuery(CimXmlRequestContext * ctx, RequestHdr * hdr)
    _SFCB_ENTER(TRACE_CIMXMLPROC, "execQuery");
 
    CMPIObjectPath *path;
-   ExecQueryReq sreq = BINREQ(OPS_ExecQuery, 4);
+   ExecQueryReq sreq = BINREQ(OPS_ExecQuery, EQ_REQ_REG_SEGMENTS);
    int irc, l = 0, err = 0;
    BinResponseHdr **resp;
    BinRequestContext binCtx;
@@ -2119,7 +2119,7 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
    BinRequestContext binCtx;
    BinResponseHdr *resp;
    RespSegments rsegs;
-   InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, 5);
+   InvokeMethodReq sreq = BINREQ(OPS_InvokeMethod, IM_REQ_REG_SEGMENTS);
    CMPIArgs *in=TrackedCMPIArgs(NULL);
    XtokParamValue *p;
    CMPIStatus st = {CMPI_RC_OK, NULL};
@@ -2189,6 +2189,8 @@ static RespSegments invokeMethod(CimXmlRequestContext * ctx, RequestHdr * hdr)
                                                  
    _SFCB_TRACE(1, ("--- Provider context gotten"));
    if (irc == MSG_X_PROVIDER) {
+     fprintf(stderr, "cimXmlRequest: before invokeProvider, ctx.role is \"%s\"\n", ctx->role);
+
       RespSegments rs;
       resp = invokeProvider(&binCtx);
       closeProviderContext(&binCtx);

@@ -2190,7 +2190,6 @@ static RespSegments getProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
    CMPIData data;
    CMPIStatus rc;
    UtilStringBuffer *sb;
-   CMPIString *tmpString = NewCMPIString(NULL, NULL);
    int irc, i, m;
    BinRequestContext binCtx;
    BinResponseHdr *resp;
@@ -2238,8 +2237,7 @@ static RespSegments getProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
          inst = relocateSerializedInstance(resp->object[0].data);
          sb = UtilFactory->newStrinBuffer(1024);
          data = inst->ft->getProperty(inst, req->name, NULL);
-         data2xml(&data, NULL, tmpString, NULL, NULL, 0, NULL, 0, sb, NULL, 0, 0);
-         CMRelease(tmpString);
+         value2xml(data, sb, 1);
          rsegs=iMethodResponse(hdr, sb);
      if (resp) {
        free(resp);
@@ -2251,10 +2249,8 @@ static RespSegments getProperty(CimXmlRequestContext * ctx, RequestHdr * hdr)
       if (resp) {
     free(resp);
       }
-      CMRelease(tmpString);
       _SFCB_RETURN(rs);
    }
-   CMRelease(tmpString);
    closeProviderContext(&binCtx);
 
    _SFCB_RETURN(ctxErrResponse(hdr, &binCtx,0));
